@@ -44,7 +44,7 @@
              do (if eof-error-p
                     (error 'end-of-file :stream input-stream)
                     (return-from read-common eof-value))
-             while (eq (sicl-readtable:syntax-type *readtable* char)
+             while (eq (eclector.readtable:syntax-type *readtable* char)
                        :whitespace)
              finally (unread-char  char input-stream))
           (let* ((start (source-position input-stream *client*))

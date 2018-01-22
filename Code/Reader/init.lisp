@@ -1,16 +1,16 @@
 (cl:in-package #:eclector.reader)
 
 (defparameter *standard-readtable*
-  (make-instance 'sicl-simple-readtable:readtable))
+  (make-instance 'eclector.readtable.simple:readtable))
 
 (loop for char in '(#\Space #\Tab #\Linefeed #\Return #\Page)
-      do (setf (sicl-readtable:syntax-type *standard-readtable* char)
+      do (setf (eclector.readtable:syntax-type *standard-readtable* char)
                :whitespace))
 
-(setf (sicl-readtable:syntax-type *standard-readtable* #\\)
+(setf (eclector.readtable:syntax-type *standard-readtable* #\\)
       :single-escape)
 
-(setf (sicl-readtable:syntax-type *standard-readtable* #\|)
+(setf (eclector.readtable:syntax-type *standard-readtable* #\|)
       :multiple-escape)
 
 (loop for (char reader-macro) in '((#\( 'left-parenthesis)
@@ -20,10 +20,10 @@
                                    (#\; 'semicolon)
                                    (#\` 'backquote)
                                    (#\, 'comma))
-      do (sicl-readtable:set-macro-character
+      do (eclector.readtable:set-macro-character
           *standard-readtable* char reader-macro))
 
-(sicl-readtable:make-dispatch-macro-character
+(eclector.readtable:make-dispatch-macro-character
  *standard-readtable* #\# t)
 
 (loop for (dispatch-char sub-char reader-macro) in '((#\# #\' 'sharpsign-single-quote)
@@ -46,7 +46,7 @@
                                                      (#\# #\# 'sharpsign-sharpsign)
                                                      (#\# #\< 'sharpsign-invalid)
                                                      (#\# #\) 'sharpsign-invalid))
-      do (sicl-readtable:set-dispatch-macro-character
+      do (eclector.readtable:set-dispatch-macro-character
           *standard-readtable* dispatch-char sub-char reader-macro))
 
-(setf *readtable* (sicl-readtable:copy-readtable *standard-readtable*))
+(setf *readtable* (eclector.readtable:copy-readtable *standard-readtable*))

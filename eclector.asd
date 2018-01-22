@@ -6,11 +6,25 @@
 
   :depends-on ("alexandria"
                "concrete-syntax-tree"
-               "sicl-simple-readtable"
                "closer-mop")
 
-  :components ((:module "Reader"
+  :components ((:module "Readtable"
+                :pathname "Code/Readtable"
+                :serial t
+                :components ((:file "packages")
+                             (:file "generic-functions")))
+
+               (:module "Simple-Readtable"
+                :pathname "Code/Readtable/Simple"
+                :depends-on ("Readtable")
+                :serial t
+                :components ((:file "packages")
+                             (:file "readtable")
+                             (:file "methods")))
+
+               (:module "Reader"
                 :pathname "Code/Reader"
+                :depends-on ("Readtable")
                 :serial t
                 :components ((:file "packages")
                              (:file "more-variables")

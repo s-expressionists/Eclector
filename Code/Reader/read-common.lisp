@@ -3,7 +3,7 @@
 (defgeneric call-reader-macro (function input-stream char))
 
 (defmethod call-reader-macro (function input-stream char)
-  (funcall (sicl-readtable:get-macro-character *readtable* char)
+  (funcall (eclector.readtable:get-macro-character *readtable* char)
            input-stream
            char))
 
@@ -17,13 +17,13 @@
          (if eof-error-p
              (error 'end-of-file :stream input-stream)
              (return-from read-common eof-value)))
-       (case (sicl-readtable:syntax-type *readtable* char)
+       (case (eclector.readtable:syntax-type *readtable* char)
          (:whitespace
           (go step-1-start))
          ((:terminating-macro :non-terminating-macro)
           (let ((values (multiple-value-list
                          (call-reader-macro
-                          (sicl-readtable:get-macro-character *readtable* char)
+                          (eclector.readtable:get-macro-character *readtable* char)
                           input-stream
                           char))))
             (if (null values)
@@ -46,7 +46,7 @@
                                    :fill-pointer 0)))
     (let ((char (read-char input-stream nil nil)))
       (tagbody
-         (ecase (sicl-readtable:syntax-type *readtable* char)
+         (ecase (eclector.readtable:syntax-type *readtable* char)
            (:single-escape
             (let ((char (read-char input-stream nil nil)))
               (when (null char)
@@ -66,7 +66,7 @@
          (let ((char (read-char input-stream nil nil)))
            (when (null char)
              (go step-10-terminate-token))
-           (ecase (sicl-readtable:syntax-type *readtable* char)
+           (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :non-terminating-macro)
               (vector-push-extend char token)
               (vector-push-extend nil token-escapes)
@@ -95,7 +95,7 @@
              (if eof-error-p
                  (error 'end-of-file :stream input-stream)
                  (return-from read-token eof-value)))
-           (ecase (sicl-readtable:syntax-type *readtable* char)
+           (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :terminating-macro
                :non-terminating-macro :whitespace)
               (vector-push-extend char token)

@@ -1,7 +1,7 @@
 (cl:in-package #:eclector.reader)
 
 (defun convert-according-to-readtable-case (token token-escapes)
-  (ecase (sicl-readtable:readtable-case *readtable*)
+  (ecase (eclector.readtable:readtable-case *readtable*)
     (:upcase
      (loop for escape across token-escapes
            for i from 0
