@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 (defgeneric call-reader-macro (function input-stream char))
 

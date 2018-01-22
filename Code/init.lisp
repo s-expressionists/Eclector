@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 (defparameter *standard-readtable*
   (make-instance 'sicl-simple-readtable:readtable))

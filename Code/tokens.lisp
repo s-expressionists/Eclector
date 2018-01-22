@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 (defgeneric interpret-symbol (token
                               position-package-marker-1

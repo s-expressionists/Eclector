@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 (defgeneric fixup (object seen-objects mapping))
 

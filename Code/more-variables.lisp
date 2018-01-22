@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 (defparameter *backquote-allowed-p* t)
 

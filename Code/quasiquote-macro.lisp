@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 ;;; As recommended by the HyperSpec, the backquote and comma reader
 ;;; macros generate a data structure that corresponds to the one used

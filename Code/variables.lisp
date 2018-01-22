@@ -1,4 +1,4 @@
-(cl:in-package #:sicl-reader)
+(cl:in-package #:eclector)
 
 ;;;; This file contains definitions of standardized variables that
 ;;;; affect the behavior of the reader.  See section 2.1.2 in the
