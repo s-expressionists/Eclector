@@ -40,4 +40,28 @@
                              (:file "fixup")))
 
                (:static-file "README.md")
-               (:static-file "LICENSE-BSD")))
+               (:static-file "LICENSE-BSD"))
+
+  :in-order-to ((test-op (test-op "eclector/test"))))
+
+(defsystem "eclector/test"
+  :depends-on ("eclector"
+               "fiveam")
+
+  :components ((:module "Test"
+                :components ((:file "packages")))
+
+               (:module "Readtable"
+                :pathname "Test/Readtable"
+                :depends-on ("Test")
+                :serial t
+                :components ((:file "packages")))
+
+               (:module "Reader"
+                :pathname "Test/Reader"
+                :depends-on ("Test")
+                :serial t
+                :components ((:file "packages"))))
+
+  :perform (test-op (operation component)
+             (uiop:symbol-call '#:eclector.test '#:run-tests)))
