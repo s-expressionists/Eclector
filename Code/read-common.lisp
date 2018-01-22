@@ -4,8 +4,8 @@
 
 (defmethod call-reader-macro (function input-stream char)
   (funcall (sicl-readtable:get-macro-character *readtable* char)
-	   input-stream
-	   char))
+           input-stream
+           char))
 
 (defgeneric read-common (input-stream eof-error-p eof-value))
 
@@ -39,7 +39,7 @@
 
 (defmethod read-common :around (input-stream eof-error-p eof-value)
   (let ((*backquote-allowed-p* *backquote-in-subforms-allowed-p*)
-	(*backquote-in-subforms-allowed-p* nil))
+        (*backquote-in-subforms-allowed-p* nil))
     (if (boundp '*stack*)
         (let ((*stack* (cons '() *stack*)))
           (loop for char = (read-char input-stream nil nil)
@@ -88,12 +88,12 @@
 
 (defmethod read-token (input-stream eof-error-p eof-value)
   (let ((token (make-array 100
-			   :element-type 'character
-			   :adjustable t
-			   :fill-pointer 0))
-	(token-escapes (make-array 100
-				   :adjustable t
-				   :fill-pointer 0)))
+                           :element-type 'character
+                           :adjustable t
+                           :fill-pointer 0))
+        (token-escapes (make-array 100
+                                   :adjustable t
+                                   :fill-pointer 0)))
     (let ((char (read-char input-stream nil nil)))
       (tagbody
          (ecase (sicl-readtable:syntax-type *readtable* char)

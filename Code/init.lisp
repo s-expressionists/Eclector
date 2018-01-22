@@ -5,7 +5,7 @@
 
 (loop for char in '(#\Space #\Tab #\Linefeed #\Return #\Page)
       do (setf (sicl-readtable:syntax-type *standard-readtable* char)
-	       :whitespace))
+               :whitespace))
 
 (setf (sicl-readtable:syntax-type *standard-readtable* #\\)
       :single-escape)

@@ -23,7 +23,7 @@
 (defun semicolon (stream char)
   (declare (ignore char))
   (loop for char = (read-char stream nil nil t)
-	until (or (null char) (eql char #\Newline))
+        until (or (null char) (eql char #\Newline))
         finally (when (eql char #\Newline)
                   (unread-char char stream )))
   (values))
@@ -48,7 +48,7 @@
 ;;; Reader macro for double quote.
 ;;;
 ;;; We identify a single escape character by its syntax type, so that
-;;; if a user wants a different escape chacacter, we can handle that. 
+;;; if a user wants a different escape chacacter, we can handle that.
 ;;;
 ;;; Furthermore, They HyperSpec says that the reader signals an error
 ;;; if end-of-file is encountered before an object has been entirely
@@ -63,14 +63,14 @@
 
 (defun double-quote (stream char)
   (let ((result (make-array 100
-			    :element-type 'character
-			    :adjustable t
-			    :fill-pointer 0)))
+                            :element-type 'character
+                            :adjustable t
+                            :fill-pointer 0)))
     (loop for char2 = (read-char stream t nil t)
-	  until (eql char2 char)
-	  do (when (eq (sicl-readtable:syntax-type *readtable* char2) :single-escape)
-	       (setf char2 (read-char stream t nil t)))
-	     (vector-push-extend char2 result))
+          until (eql char2 char)
+          do (when (eq (sicl-readtable:syntax-type *readtable* char2) :single-escape)
+               (setf char2 (read-char stream t nil t)))
+             (vector-push-extend char2 result))
     (copy-seq result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,13 +78,13 @@
 ;;; Reader macros for backquote and comma.
 ;;;
 ;;; The control structure we use for backquote requires some
-;;; explanation.  
+;;; explanation.
 ;;;
 ;;; The HyperSpec says that backquote and comma are allowed only
 ;;; inside lists and vectors.  Since READ can be called recursively
 ;;; from other functions as well (such as the reader for arrays, or
 ;;; user-defined readers), we somehow need to detect whether we are
-;;; about to read a list or a vector.  
+;;; about to read a list or a vector.
 ;;;
 ;;; Perhaps the easiest way to do this would be to bind a flag to
 ;;; false in all readers EXCEPT the ones for lists and vectors.  This
@@ -139,7 +139,7 @@
   (declare (ignore char))
   (unless *backquote-allowed-p*
     (error 'invalid-context-for-backquote
-	   :stream stream))
+           :stream stream))
   (let ((*backquote-depth* (1+ *backquote-depth*)))
     (with-preserved-backquote-context
       (wrap-in-quasiquote (read stream t nil t) *client*))))
@@ -148,15 +148,15 @@
   (declare (ignore char))
   (unless (plusp *backquote-depth*)
     (error 'comma-not-inside-backquote
-	   :stream stream))
+           :stream stream))
   (let* ((char2 (read-char stream t nil t))
-	 (at-sign-p (if (eql char2 #\@)
-			t
-			(progn (unread-char char2 stream) nil)))
-	 (*backquote-depth* (1- *backquote-depth*)))
+         (at-sign-p (if (eql char2 #\@)
+                        t
+                        (progn (unread-char char2 stream) nil)))
+         (*backquote-depth* (1- *backquote-depth*)))
     (with-preserved-backquote-context
       (let ((form (read stream t nil t)))
-	(if at-sign-p
+        (if at-sign-p
             (wrap-in-unquote-splicing form *client*)
             (wrap-in-unquote form *client*))))))
 
@@ -226,26 +226,26 @@
 (defun left-parenthesis (stream char)
   (declare (ignore char))
   (let ((reversed-result '())
-	(tail nil)
-	(*consing-dot-allowed-p* t))
+        (tail nil)
+        (*consing-dot-allowed-p* t))
     (with-preserved-backquote-context
       (handler-case
-	  (loop for object = (read stream t nil t)
-		do (if (eq object *consing-dot*)
-		       (progn (setf *consing-dot-allowed-p* nil)
-			      (handler-case
-				  (setf tail (read stream t nil t))
-				(end-of-list ()
-				  (error 'consing-dot-most-be-followed-by-object
-					 :stream stream)))
-			      ;; This call to read must not succeed.
-			      (read stream t nil t)
-			      (error 'multiple-objects-following-consing-dot
-				     :stream stream))
-		       (push object reversed-result)))
-	(end-of-list ()
-	  (return-from left-parenthesis
-	    (nreconc reversed-result tail)))))))
+          (loop for object = (read stream t nil t)
+                do (if (eq object *consing-dot*)
+                       (progn (setf *consing-dot-allowed-p* nil)
+                              (handler-case
+                                  (setf tail (read stream t nil t))
+                                (end-of-list ()
+                                  (error 'consing-dot-most-be-followed-by-object
+                                         :stream stream)))
+                              ;; This call to read must not succeed.
+                              (read stream t nil t)
+                              (error 'multiple-objects-following-consing-dot
+                                     :stream stream))
+                       (push object reversed-result)))
+        (end-of-list ()
+          (return-from left-parenthesis
+            (nreconc reversed-result tail)))))))
 
 (defun right-parenthesis (stream char)
   (declare (ignore char))
@@ -254,7 +254,7 @@
   ;; context where it is not allowed.
   (signal *end-of-list*)
   (error 'invalid-context-for-right-parenthesis
-	 :stream stream))
+         :stream stream))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -264,8 +264,8 @@
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-single-quote))
+          :parameter parameter
+          :macro-name 'sharpsign-single-quote))
   (with-preserved-backquote-context
     `(function ,(read stream t nil t))))
 
@@ -277,44 +277,44 @@
   (declare (ignore char))
   (with-preserved-backquote-context
     (if (null parameter)
-	(let ((reversed-elements '()))
-	  (handler-case
-	      (loop for object = (read stream t nil t)
-		    do (push object reversed-elements))
-	    (end-of-list ()
-	      (return-from sharpsign-left-parenthesis
-		(coerce (nreverse reversed-elements) 'simple-vector)))))
-	(let ((result (make-array parameter))
-	      (index 0))
-	  (handler-case
-	      (progn 
-		(loop until (= index parameter)
-		      for object = (read stream t nil t)
-		      do (setf (aref result index) object)
-			 (incf index))
-		;; Read the closing right parenthesis
-		(read stream t nil t)
-		;; If we come here, then there were more objects
-		;; than specified by the parameter.
-		(warn 'extraneous-objects-ignored
-		      :parameter parameter
-		      :macro-name 'sharpsign-left-parenthesis)
-		;; Read until the handler is invoked.
-		(loop do (read stream t nil t)))
-	    (end-of-list ()
-	      ;; Come here when a closing parenthesis was found.
-	      (unless (= index parameter)
-		(if (zerop index)
-		    ;; No objects were supplied, but the parameter given
-		    ;; was greater than zero.
-		    (warn 'no-objects-supplied
-			  :parameter parameter
-			  :macro-name 'sharpsign-left-parenthesis)
-		    ;; Duplicate the last object supplied.
-		    (loop for i from index below parameter
-			  do (setf (aref result i) (aref result (1- index))))))
-	      (return-from sharpsign-left-parenthesis result)))))))
-      
+        (let ((reversed-elements '()))
+          (handler-case
+              (loop for object = (read stream t nil t)
+                    do (push object reversed-elements))
+            (end-of-list ()
+              (return-from sharpsign-left-parenthesis
+                (coerce (nreverse reversed-elements) 'simple-vector)))))
+        (let ((result (make-array parameter))
+              (index 0))
+          (handler-case
+              (progn
+                (loop until (= index parameter)
+                      for object = (read stream t nil t)
+                      do (setf (aref result index) object)
+                         (incf index))
+                ;; Read the closing right parenthesis
+                (read stream t nil t)
+                ;; If we come here, then there were more objects
+                ;; than specified by the parameter.
+                (warn 'extraneous-objects-ignored
+                      :parameter parameter
+                      :macro-name 'sharpsign-left-parenthesis)
+                ;; Read until the handler is invoked.
+                (loop do (read stream t nil t)))
+            (end-of-list ()
+              ;; Come here when a closing parenthesis was found.
+              (unless (= index parameter)
+                (if (zerop index)
+                    ;; No objects were supplied, but the parameter given
+                    ;; was greater than zero.
+                    (warn 'no-objects-supplied
+                          :parameter parameter
+                          :macro-name 'sharpsign-left-parenthesis)
+                    ;; Duplicate the last object supplied.
+                    (loop for i from index below parameter
+                          do (setf (aref result i) (aref result (1- index))))))
+              (return-from sharpsign-left-parenthesis result)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macro for sharpsign dot.
@@ -323,8 +323,8 @@
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-dot))
+          :parameter parameter
+          :macro-name 'sharpsign-dot))
   (with-preserved-backquote-context
     (eval (read stream t nil t))))
 
@@ -335,87 +335,87 @@
 (defparameter *character-names*
   (let ((table (make-hash-table :test 'equal)))
     (loop for (name . char) in '(("NEWLINE" .   #.(code-char 10))
-				 ("SPACE" .     #.(code-char 32))
-				 ("RUBOUT" .    #.(code-char 127))
-				 ("PAGE" .      #.(code-char 12))
-				 ("TAB" .       #.(code-char 9))
-				 ("BACKSPACE" . #.(code-char 8))
-				 ("RETURN" .    #.(code-char 13))
-				 ("LINEFEED" .  #.(code-char 10)))
-	  do (setf (gethash name table) char))
+                                 ("SPACE" .     #.(code-char 32))
+                                 ("RUBOUT" .    #.(code-char 127))
+                                 ("PAGE" .      #.(code-char 12))
+                                 ("TAB" .       #.(code-char 9))
+                                 ("BACKSPACE" . #.(code-char 8))
+                                 ("RETURN" .    #.(code-char 13))
+                                 ("LINEFEED" .  #.(code-char 10)))
+          do (setf (gethash name table) char))
     table))
 
 (defun sharpsign-backslash (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-backslash))
+          :parameter parameter
+          :macro-name 'sharpsign-backslash))
   (let ((char1 (read-char stream nil nil t)))
     (when (null char1)
       (error 'end-of-file :stream stream))
     (let ((char2 (read-char stream nil nil t)))
       (cond ((null char2)
-	     char1)
-	    ((not (eq (sicl-readtable:syntax-type *readtable* char2) :constituent))
-	     (unread-char char2 stream)
-	     char1)
-	    (t
-	     (let ((token (make-array 10
-				      :element-type 'character
-				      :adjustable t
-				      :fill-pointer 0)))
-	       (vector-push-extend char1 token)
-	       (vector-push-extend char2 token)
-	       (tagbody
-		even-escapes
-		  (let ((char (read-char stream nil nil t)))
-		    (when (null char)
-		      (go terminate))
-		    (ecase (sicl-readtable:syntax-type *readtable* char)
-		      ((:constituent :non-terminating-macro)
-		       (vector-push-extend char token)
-		       (go even-escapes))
-		      (:single-escape
-		       (let ((char (read-char stream nil nil t)))
-			 (when (null char)
-			   (error 'end-of-file :stream stream))
-			 (vector-push-extend char token))
-		       (go even-escapes))
-		      (:multiple-escape
-		       (go odd-escapes))
-		      (:terminating-macro
-		       (unread-char char stream)
-		       (go terminate))
-		      (:whitespace
-		       (when *preserve-whitespace*
-			 (unread-char char stream))
-		       (go terminate))))
-		odd-escapes
-		  (let ((char (read-char stream nil nil t)))
-		    (when (null char)
-		      (error 'end-of-file :stream stream))
-		    (ecase (sicl-readtable:syntax-type *readtable* char)
-		      ((:constituent :terminating-macro
-			:non-terminating-macro :whitespace)
-		       (vector-push-extend char token)
-		       (go odd-escapes))
-		      (:single-escape
-		       (let ((char (read-char stream nil nil t)))
-			 (when (null char)
-			   (error 'end-of-file :stream stream))
-			 (vector-push-extend char token))
-		       (go odd-escapes))
-		      (:multiple-escape
-		       (go even-escapes))))
-		terminate
-		  (let* ((upcase (string-upcase token))
+             char1)
+            ((not (eq (sicl-readtable:syntax-type *readtable* char2) :constituent))
+             (unread-char char2 stream)
+             char1)
+            (t
+             (let ((token (make-array 10
+                                      :element-type 'character
+                                      :adjustable t
+                                      :fill-pointer 0)))
+               (vector-push-extend char1 token)
+               (vector-push-extend char2 token)
+               (tagbody
+                even-escapes
+                  (let ((char (read-char stream nil nil t)))
+                    (when (null char)
+                      (go terminate))
+                    (ecase (sicl-readtable:syntax-type *readtable* char)
+                      ((:constituent :non-terminating-macro)
+                       (vector-push-extend char token)
+                       (go even-escapes))
+                      (:single-escape
+                       (let ((char (read-char stream nil nil t)))
+                         (when (null char)
+                           (error 'end-of-file :stream stream))
+                         (vector-push-extend char token))
+                       (go even-escapes))
+                      (:multiple-escape
+                       (go odd-escapes))
+                      (:terminating-macro
+                       (unread-char char stream)
+                       (go terminate))
+                      (:whitespace
+                       (when *preserve-whitespace*
+                         (unread-char char stream))
+                       (go terminate))))
+                odd-escapes
+                  (let ((char (read-char stream nil nil t)))
+                    (when (null char)
+                      (error 'end-of-file :stream stream))
+                    (ecase (sicl-readtable:syntax-type *readtable* char)
+                      ((:constituent :terminating-macro
+                        :non-terminating-macro :whitespace)
+                       (vector-push-extend char token)
+                       (go odd-escapes))
+                      (:single-escape
+                       (let ((char (read-char stream nil nil t)))
+                         (when (null char)
+                           (error 'end-of-file :stream stream))
+                         (vector-push-extend char token))
+                       (go odd-escapes))
+                      (:multiple-escape
+                       (go even-escapes))))
+                terminate
+                  (let* ((upcase (string-upcase token))
                          (char (gethash upcase *character-names*)))
-		    (if (null char)
-			(error 'unknown-character-name
-			       :stream stream
-			       :name token)
-			(return-from sharpsign-backslash char))))))))))
+                    (if (null char)
+                        (error 'unknown-character-name
+                               :stream stream
+                               :name token)
+                        (return-from sharpsign-backslash char))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -423,203 +423,203 @@
 
 (defun read-rational (stream base)
   (let ((numerator 0)
-	(denominator 0))
+        (denominator 0))
     (tagbody
      start
        (let ((char (read-char stream t nil t)))
-	 (ecase (sicl-readtable:syntax-type *readtable* char)
-	   ((:whitespace :terminating-macro
-	     :non-terminating-macro :single-escape :multiple-escape)
-	    (error 'digit-expected
-		   :character-found char
-		   :base base))
-	   (:constituent
-	    (unless (digit-char-p char base)
-	      (error 'digit-expected
-		     :character-found char
-		     :base base))
-	    (setf numerator
-		  (+ (* base numerator) (digit-char-p char base)))
-	    (go numerator))))
+         (ecase (sicl-readtable:syntax-type *readtable* char)
+           ((:whitespace :terminating-macro
+             :non-terminating-macro :single-escape :multiple-escape)
+            (error 'digit-expected
+                   :character-found char
+                   :base base))
+           (:constituent
+            (unless (digit-char-p char base)
+              (error 'digit-expected
+                     :character-found char
+                     :base base))
+            (setf numerator
+                  (+ (* base numerator) (digit-char-p char base)))
+            (go numerator))))
      numerator
        (let ((char (read-char stream nil nil t)))
-	 (when (null char)
-	   (return-from read-rational numerator))
-	 (ecase (sicl-readtable:syntax-type *readtable* char)
-	   (:whitespace
-	    (when *preserve-whitespace*
-	      (unread-char char stream))
-	    (return-from read-rational numerator))
-	   (:terminating-macro
-	    (unread-char char stream)
-	    (return-from read-rational numerator))
-	   ((:non-terminating-macro :single-escape :multiple-escape)
-	    (error 'digit-expected
-		   :character-found char
-		   :base base))
-	   (:constituent
-	    (when (eql char #\/)
-	      (go denominator-start))
-	    (unless (digit-char-p char base)
-	      (error 'digit-expected
-		     :character-found char
-		     :base base))
-	    (setf numerator
-		  (+ (* base numerator) (digit-char-p char base)))
-	    (go numerator))))
+         (when (null char)
+           (return-from read-rational numerator))
+         (ecase (sicl-readtable:syntax-type *readtable* char)
+           (:whitespace
+            (when *preserve-whitespace*
+              (unread-char char stream))
+            (return-from read-rational numerator))
+           (:terminating-macro
+            (unread-char char stream)
+            (return-from read-rational numerator))
+           ((:non-terminating-macro :single-escape :multiple-escape)
+            (error 'digit-expected
+                   :character-found char
+                   :base base))
+           (:constituent
+            (when (eql char #\/)
+              (go denominator-start))
+            (unless (digit-char-p char base)
+              (error 'digit-expected
+                     :character-found char
+                     :base base))
+            (setf numerator
+                  (+ (* base numerator) (digit-char-p char base)))
+            (go numerator))))
      denominator-start
        (let ((char (read-char stream t nil t)))
-	 (ecase (sicl-readtable:syntax-type *readtable* char)
-	   ((:whitespace :terminating-macro
-	     :non-terminating-macro :single-escape :multiple-escape)
-	    (error 'digit-expected
-		   :character-found char
-		   :base base))
-	   (:constituent
-	    (unless (digit-char-p char base)
-	      (error 'digit-expected
-		     :character-found char
-		     :base base))
-	    (setf denominator
-		  (+ (* base denominator) (digit-char-p char base)))
-	    (go denominator))))
+         (ecase (sicl-readtable:syntax-type *readtable* char)
+           ((:whitespace :terminating-macro
+             :non-terminating-macro :single-escape :multiple-escape)
+            (error 'digit-expected
+                   :character-found char
+                   :base base))
+           (:constituent
+            (unless (digit-char-p char base)
+              (error 'digit-expected
+                     :character-found char
+                     :base base))
+            (setf denominator
+                  (+ (* base denominator) (digit-char-p char base)))
+            (go denominator))))
      denominator
        (let ((char (read-char stream nil nil t)))
-	 (when (null char)
-	   (return-from read-rational (/ numerator denominator)))
-	 (ecase (sicl-readtable:syntax-type *readtable* char)
-	   (:whitespace
-	    (when *preserve-whitespace*
-	      (unread-char char stream))
-	    (return-from read-rational (/ numerator denominator)))
-	   (:terminating-macro
-	    (unread-char char stream)
-	    (return-from read-rational (/ numerator denominator)))
-	   ((:non-terminating-macro :single-escape :multiple-escape)
-	    (error 'digit-expected
-		   :character-found char
-		   :base base))
-	   (:constituent
-	    (unless (digit-char-p char base)
-	      (error 'digit-expected
-		     :character-found char
-		     :base base))
-	    (setf denominator
-		  (+ (* base denominator) (digit-char-p char base)))
-	    (go denominator)))))))
+         (when (null char)
+           (return-from read-rational (/ numerator denominator)))
+         (ecase (sicl-readtable:syntax-type *readtable* char)
+           (:whitespace
+            (when *preserve-whitespace*
+              (unread-char char stream))
+            (return-from read-rational (/ numerator denominator)))
+           (:terminating-macro
+            (unread-char char stream)
+            (return-from read-rational (/ numerator denominator)))
+           ((:non-terminating-macro :single-escape :multiple-escape)
+            (error 'digit-expected
+                   :character-found char
+                   :base base))
+           (:constituent
+            (unless (digit-char-p char base)
+              (error 'digit-expected
+                     :character-found char
+                     :base base))
+            (setf denominator
+                  (+ (* base denominator) (digit-char-p char base)))
+            (go denominator)))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-b))
+          :parameter parameter
+          :macro-name 'sharpsign-b))
   (read-rational stream 2.))
-	   
+
 (defun sharpsign-x (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-x))
+          :parameter parameter
+          :macro-name 'sharpsign-x))
   (read-rational stream 16.))
-	   
+
 (defun sharpsign-o (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-o))
+          :parameter parameter
+          :macro-name 'sharpsign-o))
   (read-rational stream 8.))
-	   
+
 (defun sharpsign-r (stream char parameter)
   (declare (ignore char))
   (unless (<= 2 parameter 36)
     (error 'invalid-radix
-	   :stream stream
-	   :radix parameter))
+           :stream stream
+           :radix parameter))
   (read-rational stream parameter))
 
 (defun sharpsign-asterisk (stream char parameter)
   (declare (ignore char))
   (if (null parameter)
       (let ((v (make-array 10 :element-type 'bit :adjustable t :fill-pointer 0))
-	    (illegal-character-p nil))
-	(loop for char = (read-char stream nil nil t)
-	      for syntax-type = (sicl-readtable:syntax-type *readtable* char)
-	      for value = (digit-char-p char)
-	      until (or (null char)
-			(eq syntax-type :terminating-macro)
-			(eq syntax-type :whitespace))
-	      do (if (null value)
-		     (setf illegal-character-p char)
-		     (vector-push-extend value v)))
-	(cond (*read-suppress*
-	       nil)
-	      (illegal-character-p
-	       (error 'digit-expected
-		      :stream stream
-		      :character-found illegal-character-p
-		      :base 2.))
-	      (t
-	       (coerce v 'simple-bit-vector))))
+            (illegal-character-p nil))
+        (loop for char = (read-char stream nil nil t)
+              for syntax-type = (sicl-readtable:syntax-type *readtable* char)
+              for value = (digit-char-p char)
+              until (or (null char)
+                        (eq syntax-type :terminating-macro)
+                        (eq syntax-type :whitespace))
+              do (if (null value)
+                     (setf illegal-character-p char)
+                     (vector-push-extend value v)))
+        (cond (*read-suppress*
+               nil)
+              (illegal-character-p
+               (error 'digit-expected
+                      :stream stream
+                      :character-found illegal-character-p
+                      :base 2.))
+              (t
+               (coerce v 'simple-bit-vector))))
       (let ((result (make-array parameter :element-type 'bit))
-	    (index 0)
-	    (illegal-character-p nil)
-	    (too-many-bits-p nil))
-	(loop for char = (read-char stream nil nil t)
-	      for syntax-type = (sicl-readtable:syntax-type *readtable* char)
-	      for value = (digit-char-p char)
-	      until (or (null char)
-			(eq syntax-type :terminating-macro)
-			(eq syntax-type :whitespace))
-	      do (cond ((null value)
-			(setf illegal-character-p char))
-		       ((>= index parameter)
-			(setf too-many-bits-p t))
-		       (t
-			(setf (sbit result index) value)))
-		 (incf index))
-	(cond (*read-suppress*
-	       nil)
-	      (illegal-character-p
-	       (error 'digit-expected
-		      :stream stream
-		      :character-found illegal-character-p
-		      :base 2.))
-	      (too-many-bits-p
-	       (error 'too-many-elements
-		      :stream stream
-		      :expected-number parameter
-		      :number-found index))
-	      ((zerop index)
-	       (error 'no-elements-found
-		      :stream stream
-		      :expected-number parameter))
-	      (t
-	       (loop for i from index below parameter
-		     do (setf (sbit result i) (sbit result (1- index))))
-	       result)))))
+            (index 0)
+            (illegal-character-p nil)
+            (too-many-bits-p nil))
+        (loop for char = (read-char stream nil nil t)
+              for syntax-type = (sicl-readtable:syntax-type *readtable* char)
+              for value = (digit-char-p char)
+              until (or (null char)
+                        (eq syntax-type :terminating-macro)
+                        (eq syntax-type :whitespace))
+              do (cond ((null value)
+                        (setf illegal-character-p char))
+                       ((>= index parameter)
+                        (setf too-many-bits-p t))
+                       (t
+                        (setf (sbit result index) value)))
+                 (incf index))
+        (cond (*read-suppress*
+               nil)
+              (illegal-character-p
+               (error 'digit-expected
+                      :stream stream
+                      :character-found illegal-character-p
+                      :base 2.))
+              (too-many-bits-p
+               (error 'too-many-elements
+                      :stream stream
+                      :expected-number parameter
+                      :number-found index))
+              ((zerop index)
+               (error 'no-elements-found
+                      :stream stream
+                      :expected-number parameter))
+              (t
+               (loop for i from index below parameter
+                     do (setf (sbit result i) (sbit result (1- index))))
+               result)))))
 
 (defun sharpsign-vertical-bar (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-vertical-bar))
+          :parameter parameter
+          :macro-name 'sharpsign-vertical-bar))
   (loop for char = (read-char stream t nil t)
-	do (cond ((eql char #\#)
-		  (let ((char2 (read-char stream t nil t)))
-		    (if (eql char2 #\|)
-			(sharpsign-vertical-bar stream #\| nil)
-			(unread-char char2 stream))))
-		 ((eql char #\|)
-		  (let ((char2 (read-char stream t nil t)))
-		    (if (eql char2 #\#)
-			(return-from sharpsign-vertical-bar (values))
-			(unread-char char2 stream))))
-		 (t
-		  nil))))
+        do (cond ((eql char #\#)
+                  (let ((char2 (read-char stream t nil t)))
+                    (if (eql char2 #\|)
+                        (sharpsign-vertical-bar stream #\| nil)
+                        (unread-char char2 stream))))
+                 ((eql char #\|)
+                  (let ((char2 (read-char stream t nil t)))
+                    (if (eql char2 #\#)
+                        (return-from sharpsign-vertical-bar (values))
+                        (unread-char char2 stream))))
+                 (t
+                  nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -627,42 +627,42 @@
 
 (defun determine-dimensions (rank initial-contents)
   (cond ((zerop rank)
-	 '())
-	((not (or (and (listp initial-contents)
-		       (cleavir-code-utilities:proper-list-p initial-contents))
-		  (typep initial-contents 'sequence)))
-	 (error 'type-error
-		:expected-type 'sequence
-		:datum initial-contents))
-	(t
-	 (let ((length (length initial-contents)))
-	   (if (zerop length)
-	       (make-list rank :initial-element 0)
-	       (cons length (determine-dimensions
-			     (1- rank) (elt initial-contents 0))))))))
+         '())
+        ((not (or (and (listp initial-contents)
+                       (cleavir-code-utilities:proper-list-p initial-contents))
+                  (typep initial-contents 'sequence)))
+         (error 'type-error
+                :expected-type 'sequence
+                :datum initial-contents))
+        (t
+         (let ((length (length initial-contents)))
+           (if (zerop length)
+               (make-list rank :initial-element 0)
+               (cons length (determine-dimensions
+                             (1- rank) (elt initial-contents 0))))))))
 
 (defun check-dimensions (dimensions initial-contents)
   (cond ((null dimensions)
-	 t)
-	((zerop (car dimensions))
-	 (or (null initial-contents)
-	     (and (typep initial-contents 'sequence)
-		  (zerop (length initial-contents)))))
-	((not (or (and (listp initial-contents)
-		       (cleavir-code-utilities:proper-list-p initial-contents))
-		  (typep initial-contents 'sequence)))
-	 (error 'type-error
-		:expected-type 'sequence
-		:datum initial-contents))
-	((/= (length initial-contents) (car dimensions))
-	 (error 'incorrect-initialization-length
-		:datum initial-contents
-		:expected-length (car dimensions)))
-	(t
-	 (every (lambda (subseq)
-		  (check-dimensions (cdr dimensions) subseq))
-		initial-contents))))
-	 
+         t)
+        ((zerop (car dimensions))
+         (or (null initial-contents)
+             (and (typep initial-contents 'sequence)
+                  (zerop (length initial-contents)))))
+        ((not (or (and (listp initial-contents)
+                       (cleavir-code-utilities:proper-list-p initial-contents))
+                  (typep initial-contents 'sequence)))
+         (error 'type-error
+                :expected-type 'sequence
+                :datum initial-contents))
+        ((/= (length initial-contents) (car dimensions))
+         (error 'incorrect-initialization-length
+                :datum initial-contents
+                :expected-length (car dimensions)))
+        (t
+         (every (lambda (subseq)
+                  (check-dimensions (cdr dimensions) subseq))
+                initial-contents))))
+
 (defun sharpsign-a (stream char parameter)
   (declare (ignore char))
   (let ((init (read stream t nil t)))
@@ -679,63 +679,63 @@
     (return-from symbol-from-token nil))
   (convert-according-to-readtable-case token token-escapes)
   (make-symbol (copy-seq token)))
-      
+
 
 (defun sharpsign-colon (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-colon))
+          :parameter parameter
+          :macro-name 'sharpsign-colon))
   (let ((token (make-array 10
-			   :element-type 'character
-			   :adjustable t
-			   :fill-pointer 0))
-	(token-escapes (make-array 10
-				   :adjustable t
-				   :fill-pointer 0)))
+                           :element-type 'character
+                           :adjustable t
+                           :fill-pointer 0))
+        (token-escapes (make-array 10
+                                   :adjustable t
+                                   :fill-pointer 0)))
     (tagbody
      even-escapes
        (let ((char (read-char stream nil nil t)))
-	 (if (null char)
-	     (return-from sharpsign-colon
-	       (symbol-from-token token token-escapes))
-	     (ecase (sicl-readtable:syntax-type *readtable* char)
-	       (:whitespace
-		(when *preserve-whitespace*
-		  (unread-char char stream))
-		(return-from sharpsign-colon
-		  (symbol-from-token token token-escapes)))
-	       (:terminating-macro
-		(unread-char char stream)
-		(return-from sharpsign-colon
-		  (symbol-from-token token token-escapes)))
-	       (:single-escape
-		(let ((char2 (read-char stream t nil t)))
-		  (vector-push-extend char2 token)
-		  (vector-push-extend t token-escapes))
-		(go even-escapes))
-	       (:multiple-escape
-		(go odd-escapes))
-	       ((:constituent :non-terminating-macro)
-		(vector-push-extend char token)
-		(vector-push-extend nil token-escapes)
-		(go even-escapes)))))
+         (if (null char)
+             (return-from sharpsign-colon
+               (symbol-from-token token token-escapes))
+             (ecase (sicl-readtable:syntax-type *readtable* char)
+               (:whitespace
+                (when *preserve-whitespace*
+                  (unread-char char stream))
+                (return-from sharpsign-colon
+                  (symbol-from-token token token-escapes)))
+               (:terminating-macro
+                (unread-char char stream)
+                (return-from sharpsign-colon
+                  (symbol-from-token token token-escapes)))
+               (:single-escape
+                (let ((char2 (read-char stream t nil t)))
+                  (vector-push-extend char2 token)
+                  (vector-push-extend t token-escapes))
+                (go even-escapes))
+               (:multiple-escape
+                (go odd-escapes))
+               ((:constituent :non-terminating-macro)
+                (vector-push-extend char token)
+                (vector-push-extend nil token-escapes)
+                (go even-escapes)))))
      odd-escapes
        (let ((char (read-char stream t nil t)))
-	 (case (sicl-readtable:syntax-type *readtable* char)
-	   (:single-escape
-	    (let ((char2 (read-char stream t nil t)))
-	      (vector-push-extend char2 token)
-	      (vector-push-extend t token-escapes)
-	      (go odd-escapes)))
-	   (:multiple-escape
-	    (go even-escapes))
-	   (t
-	    (vector-push-extend char token)
-	    (vector-push-extend t token-escapes)
-	    (go odd-escapes)))))))	    
-    
+         (case (sicl-readtable:syntax-type *readtable* char)
+           (:single-escape
+            (let ((char2 (read-char stream t nil t)))
+              (vector-push-extend char2 token)
+              (vector-push-extend t token-escapes)
+              (go odd-escapes)))
+           (:multiple-escape
+            (go even-escapes))
+           (t
+            (vector-push-extend char token)
+            (vector-push-extend t token-escapes)
+            (go odd-escapes)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macro for sharpsign C.
@@ -744,8 +744,8 @@
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-c))
+          :parameter parameter
+          :macro-name 'sharpsign-c))
   (apply #'complex (read stream t nil t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -756,13 +756,13 @@
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-p))
+          :parameter parameter
+          :macro-name 'sharpsign-p))
   (let ((expression (read stream t nil t)))
     (unless (stringp expression)
       (error 'type-error
-	     :expected-type 'string
-	     :datum expression))
+             :expected-type 'string
+             :datum expression))
     (parse-namestring expression)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -771,66 +771,66 @@
 
 (defun check-feature-expression (feature-expression)
   (unless (or (symbolp feature-expression)
-	      (and (cleavir-code-utilities:proper-list-p feature-expression)
-		   (consp feature-expression)))
+              (and (cleavir-code-utilities:proper-list-p feature-expression)
+                   (consp feature-expression)))
     (error 'type-error
-	   :datum feature-expression
-	   :expected-type '(or symbol cons)))
+           :datum feature-expression
+           :expected-type '(or symbol cons)))
   (when (consp feature-expression)
     (unless (member (car feature-expression) '(:not :or :and))
       (error 'type-error
-	     :datum (car feature-expression)
-	     :expected-type '(member :not :or :and)))
+             :datum (car feature-expression)
+             :expected-type '(member :not :or :and)))
     (when (eq (car feature-expression) :not)
       (unless (null (cddr feature-expression))
-	(error 'single-feature-expected
-	       :features (cdr feature-expression))))
+        (error 'single-feature-expected
+               :features (cdr feature-expression))))
     (loop for feature in (cdr feature-expression)
-	  do (unless (symbolp feature)
-	       (error 'type-error
-		      :datum feature
-		      :expected-type 'symbol)))))
+          do (unless (symbolp feature)
+               (error 'type-error
+                      :datum feature
+                      :expected-type 'symbol)))))
 
 (defun evaluate-feature-expression (feature-expression)
   (if (symbolp feature-expression)
       (member feature-expression *features* :test #'eq)
       (ecase (car feature-expression)
-	(:not
-	 (evaluate-feature-expression (cadr feature-expression)))
-	(:or
-	 (some #'evaluate-feature-expression (cdr feature-expression)))
-	(:and
-	 (every #'evaluate-feature-expression (cdr feature-expression))))))
+        (:not
+         (evaluate-feature-expression (cadr feature-expression)))
+        (:or
+         (some #'evaluate-feature-expression (cdr feature-expression)))
+        (:and
+         (every #'evaluate-feature-expression (cdr feature-expression))))))
 
 (defun sharpsign-plus (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-p))
+          :parameter parameter
+          :macro-name 'sharpsign-p))
   (let* ((*package* (find-package '#:keyword))
-	 (feature-expression (read stream t nil t)))
+         (feature-expression (read stream t nil t)))
     (check-feature-expression feature-expression)
     (if (evaluate-feature-expression feature-expression)
-	(read stream t nil t)
-	(let ((*read-suppress* t))
-	  (read stream t nil t)
-	  (values)))))
+        (read stream t nil t)
+        (let ((*read-suppress* t))
+          (read stream t nil t)
+          (values)))))
 
 (defun sharpsign-minus (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
-	  :parameter parameter
-	  :macro-name 'sharpsign-p))
+          :parameter parameter
+          :macro-name 'sharpsign-p))
   (let* ((*package* (find-package '#:keyword))
-	 (feature-expression (read stream t nil t)))
+         (feature-expression (read stream t nil t)))
     (check-feature-expression feature-expression)
     (if (evaluate-feature-expression feature-expression)
-	(let ((*read-suppress* t))
-	  (read stream t nil t)
-	  (values))
-	(read stream t nil t))))
+        (let ((*read-suppress* t))
+          (read stream t nil t)
+          (values))
+        (read stream t nil t))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -839,8 +839,8 @@
 (defun sharpsign-invalid (stream char parameter)
   (declare (ignore parameter))
   (error 'sharpsign-invalid
-	 :stream stream
-	 :character-found char))
+         :stream stream
+         :character-found char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

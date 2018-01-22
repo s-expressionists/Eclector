@@ -2,7 +2,7 @@
 
 ;;;; This file contains definitions of standardized variables that
 ;;;; affect the behavior of the reader.  See section 2.1.2 in the
-;;;; HyperSpec for the meaning of these variables.  
+;;;; HyperSpec for the meaning of these variables.
 ;;;;
 ;;;; When the reader is compiled for the purpose of cross compilation,
 ;;;; this file can not be used, because it would violate the Common

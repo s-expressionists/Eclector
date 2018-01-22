@@ -51,7 +51,7 @@
     :initarg :desired-symbol
     :reader desired-symbol)))
 
-(define-condition two-package-markers-must-not-be-first (reader-error)  
+(define-condition two-package-markers-must-not-be-first (reader-error)
   ((%desired-symbol
     :initarg :desired-symbol
     :reader desired-symbol)))
@@ -60,7 +60,7 @@
   ((%desired-symbol
     :initarg :desired-symbol
     :reader desired-symbol)))
-  
+
 (define-condition unknown-macro-sub-character (reader-error)
   ((%sub-char :initarg :sub-char :reader sub-char)))
 
@@ -75,7 +75,7 @@
 (define-condition no-objects-supplied (warning)
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))
-  
+
 (define-condition read-time-evaluation-inhibited (reader-error)
   ())
 

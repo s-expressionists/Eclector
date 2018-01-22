@@ -20,10 +20,10 @@
         result)))
 
 (defun read (&optional
-	       (input-stream *standard-input*)
-	       (eof-error-p t)
-	       (eof-value nil)
-	       (recursive-p nil))
+               (input-stream *standard-input*)
+               (eof-error-p t)
+               (eof-value nil)
+               (recursive-p nil))
   (read-aux input-stream eof-error-p eof-value recursive-p recursive-p))
 
 (defun read-preserving-whitespace (&optional
