@@ -1,5 +1,14 @@
 (cl:in-package #:eclector)
 
+(defgeneric source-position (stream client)
+  (:method (stream client)
+    (declare (ignore client))
+    (file-position stream)))
+
+;;; A list of sub-lists the form
+;;;
+;;;   (CHILDREN-OF-CURRENT-NODE CHILDREN-OF-PARENT ...)
+;;;
 (defvar *stack*)
 
 (defun create-cst (expression children source)
@@ -7,26 +16,23 @@
       (make-instance 'cst:atom-cst
                      :raw expression
                      :source source)
-      (labels ((aux (expression)
+      (labels ((cons-cst (expression &optional source)
+                 (destructuring-bind (car . cdr) expression
+                   (make-instance 'cst:cons-cst
+                                  :raw expression
+                                  :first (aux car)
+                                  :rest (aux cdr)
+                                  :source source)))
+               (aux (expression)
                  (let ((cst (find expression children :key #'cst:raw)))
-                   (if (null cst)
-                       (if (atom expression)
-                           (cst:cst-from-expression expression)
-                           (make-instance 'cst:cons-cst
-                                          :raw expression
-                                          :first (aux (car expression))
-                                          :rest (aux (cdr expression))))
-                       cst))))
-        (make-instance 'cst:cons-cst
-                       :raw expression
-                       :first (aux (car expression))
-                       :rest (aux (cdr expression))
-                       :source source))))
-
-(defgeneric source-position (stream client)
-  (:method (stream client)
-    (declare (ignore client))
-    (file-position stream)))
+                   (cond
+                     ((not (null cst))
+                      cst)
+                     ((atom expression)
+                      (cst:cst-from-expression expression))
+                     (t
+                      (cons-cst expression))))))
+        (cons-cst expression source))))
 
 (defmethod read-common :around (input-stream eof-error-p eof-value)
   (let ((*backquote-allowed-p* *backquote-in-subforms-allowed-p*)
@@ -45,6 +51,7 @@
                  (result (call-next-method))
                  (end (source-position input-stream *client*))
                  (source (cons start end))
+                 ;; TODO reverse necessary?
                  (cst (create-cst result (reverse (first *stack*)) source)))
             (push cst (second *stack*))
             result))
