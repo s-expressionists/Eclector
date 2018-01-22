@@ -32,16 +32,3 @@
                                      (eof-value nil)
                                      (recursive-p nil))
   (read-aux input-stream eof-error-p eof-value recursive-p t))
-
-(defun cst-read (&rest arguments)
-  (destructuring-bind (&optional eof-error-p eof-value) (rest arguments)
-    (let* ((*stack* (list '()))
-           (result (apply #'read arguments)))
-      ;; If we come here, that means that either the call to READ
-      ;; succeeded without encountering end-of-file, or that
-      ;; EOF-ERROR-P is false, end-of-file was encountered, and
-      ;; EOF-VALUE was returned.  In the latter case, we want
-      ;; CST-READ to return EOF-VALUE.
-      (if (and (null eof-error-p) (eq eof-value result))
-          eof-value
-          (first (first *stack*))))))
