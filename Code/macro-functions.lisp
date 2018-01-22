@@ -629,7 +629,7 @@
   (cond ((zerop rank)
          '())
         ((not (or (and (listp initial-contents)
-                       (cleavir-code-utilities:proper-list-p initial-contents))
+                       (alexandria:proper-list-p initial-contents))
                   (typep initial-contents 'sequence)))
          (error 'type-error
                 :expected-type 'sequence
@@ -649,7 +649,7 @@
              (and (typep initial-contents 'sequence)
                   (zerop (length initial-contents)))))
         ((not (or (and (listp initial-contents)
-                       (cleavir-code-utilities:proper-list-p initial-contents))
+                       (alexandria:proper-list-p initial-contents))
                   (typep initial-contents 'sequence)))
          (error 'type-error
                 :expected-type 'sequence
@@ -771,7 +771,7 @@
 
 (defun check-feature-expression (feature-expression)
   (unless (or (symbolp feature-expression)
-              (and (cleavir-code-utilities:proper-list-p feature-expression)
+              (and (alexandria:proper-list-p feature-expression)
                    (consp feature-expression)))
     (error 'type-error
            :datum feature-expression

@@ -4,7 +4,7 @@
   :license "BSD"
   :version (:read-file-form "version.sexp")
 
-  :depends-on ("cleavir-code-utilities"
+  :depends-on ("alexandria"
                "concrete-syntax-tree"
                "sicl-simple-readtable"
                "closer-mop")
