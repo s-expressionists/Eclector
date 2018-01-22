@@ -1,0 +1,27 @@
+(defsystem "eclector"
+  :author "Robert Strandh"
+  :maintainer "Jan Moringen"
+  :license "BSD"
+  :version (:read-file-form "version.sexp")
+
+  :depends-on ("cleavir-code-utilities"
+               "concrete-syntax-tree"
+               "sicl-simple-readtable"
+               "closer-mop")
+
+  :components ((:module "Code"
+                :serial t
+                :components ((:file "packages")
+                             (:file "more-variables")
+                             (:file "additional-conditions")
+                             (:file "utilities")
+                             (:file "tokens")
+                             (:file "read-common")
+                             (:file "read")
+                             (:file "macro-functions")
+                             (:file "init")
+                             (:file "quasiquote-macro")
+                             (:file "fixup")))
+
+               (:static-file "README.md")
+               (:static-file "LICENSE-BSD")))
