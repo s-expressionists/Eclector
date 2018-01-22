@@ -441,11 +441,26 @@
                    (go numerator))
                   ((char= char #\-)
                    (setf sign -1)
-                   (go numerator))
+                   (go after-sign))
                   (t
                    (error 'digit-expected
                           :character-found char
                           :base base))))))
+     after-sign
+       (let ((char (read-char stream t nil t)))
+         (ecase (eclector.readtable:syntax-type *readtable* char)
+           ((:whitespace :terminating-macro
+             :non-terminating-macro :single-escape :multiple-escape)
+            (error 'digit-expected
+                   :character-found char
+                   :base base))
+           (:constituent
+            (unless (digit-char-p char base)
+              (error 'digit-expected
+                     :character-found char
+                     :base base))
+            (setf numerator (digit-char-p char base))
+            (go numerator))))
      numerator
        (let ((char (read-char stream nil nil t)))
          (when (null char)

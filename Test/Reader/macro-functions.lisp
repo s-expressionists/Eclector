@@ -23,6 +23,7 @@
         '(;; Error cases
           (" "      10 nil eclector.reader:digit-expected)
           ("x"      10 nil eclector.reader:digit-expected)
+          ("- "     10 nil eclector.reader:digit-expected)
           ("-x"     10 nil eclector.reader:digit-expected)
           ("1x"     10 nil eclector.reader:digit-expected)
           ("1#"     10 t   eclector.reader:digit-expected)
