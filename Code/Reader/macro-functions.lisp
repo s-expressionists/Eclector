@@ -423,7 +423,8 @@
 
 (defun read-rational (stream base)
   (let ((numerator 0)
-        (denominator 0))
+        (denominator 0)
+        (sign 1))
     (tagbody
      start
        (let ((char (read-char stream t nil t)))
@@ -434,25 +435,29 @@
                    :character-found char
                    :base base))
            (:constituent
-            (unless (digit-char-p char base)
-              (error 'digit-expected
-                     :character-found char
-                     :base base))
-            (setf numerator
-                  (+ (* base numerator) (digit-char-p char base)))
-            (go numerator))))
+            (cond ((digit-char-p char base)
+                   (setf numerator
+                         (+ (* base numerator) (digit-char-p char base)))
+                   (go numerator))
+                  ((char= char #\-)
+                   (setf sign -1)
+                   (go numerator))
+                  (t
+                   (error 'digit-expected
+                          :character-found char
+                          :base base))))))
      numerator
        (let ((char (read-char stream nil nil t)))
          (when (null char)
-           (return-from read-rational numerator))
+           (return-from read-rational (* sign numerator)))
          (ecase (eclector.readtable:syntax-type *readtable* char)
            (:whitespace
             (when *preserve-whitespace*
               (unread-char char stream))
-            (return-from read-rational numerator))
+            (return-from read-rational (* sign numerator)))
            (:terminating-macro
             (unread-char char stream)
-            (return-from read-rational numerator))
+            (return-from read-rational (* sign numerator)))
            ((:non-terminating-macro :single-escape :multiple-escape)
             (error 'digit-expected
                    :character-found char
@@ -486,15 +491,15 @@
      denominator
        (let ((char (read-char stream nil nil t)))
          (when (null char)
-           (return-from read-rational (/ numerator denominator)))
+           (return-from read-rational (* sign (/ numerator denominator))))
          (ecase (eclector.readtable:syntax-type *readtable* char)
            (:whitespace
             (when *preserve-whitespace*
               (unread-char char stream))
-            (return-from read-rational (/ numerator denominator)))
+            (return-from read-rational (* sign (/ numerator denominator))))
            (:terminating-macro
             (unread-char char stream)
-            (return-from read-rational (/ numerator denominator)))
+            (return-from read-rational (* sign (/ numerator denominator))))
            ((:non-terminating-macro :single-escape :multiple-escape)
             (error 'digit-expected
                    :character-found char
