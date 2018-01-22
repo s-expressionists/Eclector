@@ -61,7 +61,8 @@
                 :pathname "Test/Reader"
                 :depends-on ("Test")
                 :serial t
-                :components ((:file "packages"))))
+                :components ((:file "packages")
+                             (:file "macro-functions"))))
 
   :perform (test-op (operation component)
              (uiop:symbol-call '#:eclector.test '#:run-tests)))
