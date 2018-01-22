@@ -1,4 +1,4 @@
-(cl:in-package #:eclector)
+(cl:in-package #:eclector.reader)
 
 (defgeneric interpret-symbol (token
                               position-package-marker-1

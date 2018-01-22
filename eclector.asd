@@ -9,7 +9,8 @@
                "sicl-simple-readtable"
                "closer-mop")
 
-  :components ((:module "Code"
+  :components ((:module "Reader"
+                :pathname "Code/Reader"
                 :serial t
                 :components ((:file "packages")
                              (:file "more-variables")

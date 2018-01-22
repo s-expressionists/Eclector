@@ -1,4 +1,4 @@
-(cl:defpackage #:eclector
+(cl:defpackage #:eclector.reader
   (:use #:common-lisp)
   ;; When the reader is compiled for the purpose of cross compilation,
   ;; we must shadow a certain number of symbols that would otherwise

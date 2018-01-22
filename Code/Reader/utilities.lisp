@@ -1,4 +1,4 @@
-(cl:in-package #:eclector)
+(cl:in-package #:eclector.reader)
 
 (defun convert-according-to-readtable-case (token token-escapes)
   (ecase (sicl-readtable:readtable-case *readtable*)

@@ -1,4 +1,4 @@
-(cl:in-package #:eclector)
+(cl:in-package #:eclector.reader)
 
 (defgeneric source-position (stream client)
   (:method (stream client)
