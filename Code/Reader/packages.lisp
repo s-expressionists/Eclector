@@ -50,9 +50,11 @@
    #:two-package-markers-must-be-adjacent
    #:two-package-markers-must-not-be-first
    #:symbol-can-have-at-most-two-package-markers
+   #:numeric-parameter-supplied-but-ignored
    #:unknown-character-name
    #:digit-expected
    #:invalid-default-float-format
+   #:single-feature-expected
    ;; Names of macros related to backquote.
    ;; We export them so that the pretty printer
    ;; can use them properly.

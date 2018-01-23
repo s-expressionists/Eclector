@@ -76,3 +76,46 @@
           ("10"     36 nil 36)
           ("a"      36 nil 10)
           ("z"      36 nil 35))))
+
+(test sharpsign-plus-minus/smoke
+  "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
+
+  (mapc (lambda (input-parameter-expected)
+          (destructuring-bind
+                (input parameter plus-expected &optional minus-expected)
+              input-parameter-expected
+            (flet ((do-it (which)
+                     (with-input-from-string (stream input)
+                       (ecase which
+                         (:plus  (eclector.reader::sharpsign-plus
+                                  stream #\+ parameter))
+                         (:minus (eclector.reader::sharpsign-minus
+                                  stream #\- parameter))))))
+              (case plus-expected
+                (type-error
+                 (signals type-error (do-it :plus))
+                 (signals type-error (do-it :minus)))
+                (eclector.reader:single-feature-expected
+                 (signals eclector.reader:single-feature-expected (do-it :plus))
+                 (signals eclector.reader:single-feature-expected (do-it :minus)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it :plus))
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it :minus)))
+                (t
+                 (is (equal plus-expected  (do-it :plus)))
+                 (is (equal minus-expected (do-it :minus))))))))
+        '(;; Errors
+          ("1"               nil type-error)
+          ("(1)"             nil type-error)
+          ("(not :foo :bar)" nil eclector.reader:single-feature-expected)
+          ("(not 1)"         nil type-error)
+          ("(and 1)"         nil type-error)
+          ("(or 1)"          nil type-error)
+          ;; Warnings
+          ("(and) 1"         1   eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Valid
+          ("common-lisp 1"   nil 1   nil)
+          ("(and) 1"         nil 1   nil)
+          ("(or) 1"          nil nil 1))))
