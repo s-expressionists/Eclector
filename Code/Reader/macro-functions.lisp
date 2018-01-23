@@ -773,7 +773,7 @@
         (:and
          (every #'evaluate-feature-expression (cdr feature-expression))))))
 
-(defun sharpsign-plus (stream char parameter)
+(defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
   (unless (null parameter)
     (warn 'numeric-parameter-supplied-but-ignored
@@ -784,28 +784,16 @@
                (*read-suppress* nil))
            (read stream t nil t))))
     (check-feature-expression feature-expression)
-    (if (evaluate-feature-expression feature-expression)
-        (read stream t nil t)
-        (let ((*read-suppress* t))
+    (if (alexandria:xor (evaluate-feature-expression feature-expression)
+                        invertp)
           (read stream t nil t)
-          (values)))))
+          (values))))
+
+(defun sharpsign-plus (stream char parameter)
+  (sharpsign-plus-minus stream char parameter nil))
 
 (defun sharpsign-minus (stream char parameter)
-  (declare (ignore char))
-  (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-p))
-  (let ((feature-expression
-         (let ((*package* (find-package '#:keyword))
-               (*read-suppress* nil))
-           (read stream t nil t))))
-    (check-feature-expression feature-expression)
-    (if (evaluate-feature-expression feature-expression)
-        (let ((*read-suppress* t))
-          (read stream t nil t)
-          (values))
-        (read stream t nil t))))
+  (sharpsign-plus-minus stream char parameter t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
