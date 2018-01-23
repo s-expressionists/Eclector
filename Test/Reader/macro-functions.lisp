@@ -119,4 +119,5 @@
           ("common-lisp 1"       nil 1   nil)
           ("(not common-lisp) 1" nil nil 1)
           ("(and) 1"             nil 1   nil)
-          ("(or) 1"              nil nil 1))))
+          ("(or) 1"              nil nil 1)
+          ("(not (not (and))) 1" nil 1   nil))))
