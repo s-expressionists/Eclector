@@ -770,7 +770,7 @@
       (member feature-expression *features* :test #'eq)
       (ecase (car feature-expression)
         (:not
-         (evaluate-feature-expression (cadr feature-expression)))
+         (not (evaluate-feature-expression (cadr feature-expression))))
         (:or
          (some #'evaluate-feature-expression (cdr feature-expression)))
         (:and
