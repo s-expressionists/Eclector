@@ -123,4 +123,6 @@
           ("(or) 1"              nil nil nil 1)
           ("(not (not (and))) 1" nil nil 1   nil)
           ;; With *read-supress* bound to t
-          ("(and) 1"             nil t   nil nil))))
+          ("(and) 1"             nil t   nil nil)
+          ;; In which package is the guarded expression read?
+          ("(and) foo"           nil nil foo nil))))

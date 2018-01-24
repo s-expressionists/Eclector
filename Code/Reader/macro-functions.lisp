@@ -779,10 +779,10 @@
     (warn 'numeric-parameter-supplied-but-ignored
           :parameter parameter
           :macro-name 'sharpsign-p))
-  (let* ((*package* (find-package '#:keyword))
-         (feature-expression
-          (let ((*read-suppress* nil))
-            (read stream t nil t))))
+  (let ((feature-expression
+         (let ((*package* (find-package '#:keyword))
+               (*read-suppress* nil))
+           (read stream t nil t))))
     (check-feature-expression feature-expression)
     (if (evaluate-feature-expression feature-expression)
         (read stream t nil t)
@@ -796,10 +796,10 @@
     (warn 'numeric-parameter-supplied-but-ignored
           :parameter parameter
           :macro-name 'sharpsign-p))
-  (let* ((*package* (find-package '#:keyword))
-         (feature-expression
-          (let ((*read-suppress* nil))
-            (read stream t nil t))))
+  (let ((feature-expression
+         (let ((*package* (find-package '#:keyword))
+               (*read-suppress* nil))
+           (read stream t nil t))))
     (check-feature-expression feature-expression)
     (if (evaluate-feature-expression feature-expression)
         (let ((*read-suppress* t))
