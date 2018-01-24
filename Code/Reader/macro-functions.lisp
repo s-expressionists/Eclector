@@ -780,7 +780,9 @@
           :parameter parameter
           :macro-name 'sharpsign-p))
   (let* ((*package* (find-package '#:keyword))
-         (feature-expression (read stream t nil t)))
+         (feature-expression
+          (let ((*read-suppress* nil))
+            (read stream t nil t))))
     (check-feature-expression feature-expression)
     (if (evaluate-feature-expression feature-expression)
         (read stream t nil t)
@@ -795,7 +797,9 @@
           :parameter parameter
           :macro-name 'sharpsign-p))
   (let* ((*package* (find-package '#:keyword))
-         (feature-expression (read stream t nil t)))
+         (feature-expression
+          (let ((*read-suppress* nil))
+            (read stream t nil t))))
     (check-feature-expression feature-expression)
     (if (evaluate-feature-expression feature-expression)
         (let ((*read-suppress* t))

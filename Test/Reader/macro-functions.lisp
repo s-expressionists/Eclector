@@ -80,10 +80,11 @@
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
 
-  (mapc (lambda (input-parameter-expected)
+  (mapc (lambda (input-parameter-context-expected)
           (destructuring-bind
-                (input parameter plus-expected &optional minus-expected)
-              input-parameter-expected
+                (input parameter *read-suppress*
+                 plus-expected &optional minus-expected)
+              input-parameter-context-expected
             (flet ((do-it (which)
                      (with-input-from-string (stream input)
                        (ecase which
@@ -107,17 +108,19 @@
                  (is (equal plus-expected  (do-it :plus)))
                  (is (equal minus-expected (do-it :minus))))))))
         '(;; Errors
-          ("1"                   nil type-error)
-          ("(1)"                 nil type-error)
-          ("(not :foo :bar)"     nil eclector.reader:single-feature-expected)
-          ("(not 1)"             nil type-error)
-          ("(and 1)"             nil type-error)
-          ("(or 1)"              nil type-error)
+          ("1"                   nil nil type-error)
+          ("(1)"                 nil nil type-error)
+          ("(not :foo :bar)"     nil nil eclector.reader:single-feature-expected)
+          ("(not 1)"             nil nil type-error)
+          ("(and 1)"             nil nil type-error)
+          ("(or 1)"              nil nil type-error)
           ;; Warnings
-          ("(and) 1"             1   eclector.reader:numeric-parameter-supplied-but-ignored)
+          ("(and) 1"             1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
-          ("common-lisp 1"       nil 1   nil)
-          ("(not common-lisp) 1" nil nil 1)
-          ("(and) 1"             nil 1   nil)
-          ("(or) 1"              nil nil 1)
-          ("(not (not (and))) 1" nil 1   nil))))
+          ("common-lisp 1"       nil nil 1   nil)
+          ("(not common-lisp) 1" nil nil nil 1)
+          ("(and) 1"             nil nil 1   nil)
+          ("(or) 1"              nil nil nil 1)
+          ("(not (not (and))) 1" nil nil 1   nil)
+          ;; With *read-supress* bound to t
+          ("(and) 1"             nil t   nil nil))))
