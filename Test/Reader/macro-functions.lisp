@@ -147,6 +147,10 @@
                 (eclector.reader:sharpsign-sharpsign-undefined-label
                  (signals eclector.reader:sharpsign-sharpsign-undefined-label
                    (do-it)))
+                (recursive-cons
+                 (let ((result (do-it)))
+                   (is-true (consp result))
+                   (is (eq result (car result)))))
                 (t
                  (is (equalp expected (do-it))))))))
         '(;; sharpsign equals errors
@@ -159,4 +163,5 @@
           ;;
           ("(#1=1)"         (1))
           ("(#1=1 #1#)"     (1 1))
-          ("(#1=1 #1# #1#)" (1 1 1)))))
+          ("(#1=1 #1# #1#)" (1 1 1))
+          ("#1=(#1#)"       recursive-cons))))
