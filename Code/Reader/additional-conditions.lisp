@@ -1,5 +1,8 @@
 (cl:in-package #:eclector.reader)
 
+(defun %reader-error (stream datum &rest arguments)
+  (apply #'error datum (append arguments (list :stream stream))))
+
 (define-condition backquote-condition (reader-error)
   ())
 
@@ -68,15 +71,17 @@
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))
 
-(defun numeric-parameter-ignored (macro-name parameter)
+(defun numeric-parameter-ignored (stream macro-name parameter)
+  (declare (ignore stream))
   (error 'numeric-parameter-supplied-but-ignored
          :parameter parameter :macro-name macro-name))
 
 (define-condition numeric-parameter-not-supplied-but-required (reader-error)
   ((%macro-name :initarg :macro-name :reader macro-name)))
 
-(defun numeric-parameter-not-supplied (macro-name)
-  (error 'numeric-parameter-not-supplied-but-required :macro-name macro-name))
+(defun numeric-parameter-not-supplied (stream macro-name)
+  (%reader-error stream 'numeric-parameter-not-supplied-but-required
+                 :macro-name macro-name))
 
 (define-condition extraneous-objects-ignored (warning)
   ((%parameter :initarg :parameter :reader parameter)

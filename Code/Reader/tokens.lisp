@@ -13,9 +13,9 @@
          (intern token *package*))
         ((null position-package-marker-2)
          (cond ((= position-package-marker-1 (1- (length token)))
-                (error 'symbol-name-must-not-end-with-package-marker
-                       :stream input-stream
-                       :desired-symbol token))
+                (%reader-error input-stream
+                               'symbol-name-must-not-end-with-package-marker
+                               :desired-symbol token))
                ((= position-package-marker-1 0)
                 (intern (subseq token 1) '#:keyword))
                (t
@@ -24,20 +24,17 @@
                      (subseq token (1+ position-package-marker-1))
                      (subseq token 0 position-package-marker-1))
                   (cond ((null symbol)
-                         (error 'symbol-does-not-exist
-                                :stream input-stream
-                                :desired-symbol token))
+                         (%reader-error input-stream 'symbol-does-not-exist
+                                        :desired-symbol token))
                         ((eq status :internal)
-                         (error 'symbol-is-not-external
-                                :stream input-stream
-                                :desired-symbol token))
+                         (%reader-error input-stream 'symbol-is-not-external
+                                        :desired-symbol token))
                         (t
                          symbol))))))
         (t
          (if (= position-package-marker-1 (1- (length token)))
-             (error 'symbol-name-must-not-end-with-package-marker
-                    :stream input-stream
-                    :desired-symbol token)
+             (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
+                            :desired-symbol token)
              (intern (subseq token (1+ position-package-marker-2))
                      (subseq token 0 position-package-marker-1))))))
 
@@ -55,7 +52,7 @@
         ;; *specifier which the implementation chooses to allow
         (if (subtypep *read-default-float-format* 'float)
             *read-default-float-format*
-            (error 'invalid-default-float-format
+            (error 'invalid-default-float-format ; FIXME this is currently a READER-ERROR, but we do not have a stream at this point
                    :float-format *read-default-float-format*)))))
     ((#\f #\F)'single-float)
     ((#\s #\S) 'short-float)
@@ -151,8 +148,7 @@
            (if *consing-dot-allowed-p*
                (return-from interpret-token
                  *consing-dot*)
-               (error 'invalid-context-for-consing-dot
-                      :stream input-stream))
+               (%reader-error input-stream 'invalid-context-for-consing-dot))
            (if (= length index)
            (return-from interpret-token
              (* sign mantissa/numerator))
@@ -429,19 +425,18 @@
                            (setf position-package-marker-1 index))
                           ((null position-package-marker-2)
                            (cond ((/= position-package-marker-1 (1- index))
-                                  (error 'two-package-markers-must-be-adjacent
-                                         :stream input-stream
-                                         :desired-symbol token))
+                                  (%reader-error
+                                   input-stream 'two-package-markers-must-be-adjacent
+                                   :desired-symbol token))
                                  ((= position-package-marker-1 0)
-                                  (error 'two-package-markers-must-not-be-first
-                                         :stream input-stream
-                                         :desired-symbol token))
+                                  (%reader-error
+                                   input-stream 'two-package-markers-must-not-be-first
+                                   :desired-symbol token))
                                  (t
                                   (setf position-package-marker-2 index))))
                           (t
-                           (error 'symbol-can-have-at-most-two-package-markers
-                                  :stream input-stream
-                                  :desired-symbol token)))
+                           (%reader-error input-stream 'symbol-can-have-at-most-two-package-markers
+                                          :desired-symbol token)))
                     (go symbol))
                    (t
                     (go symbol))))))))

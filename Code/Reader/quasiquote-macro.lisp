@@ -38,7 +38,7 @@
            (unquote
             (cadr argument))
            (unquote-splicing
-            ;; Hmm.  This condition type is a subclass of
+            ;; FIXME This condition type is a subclass of
             ;; reader-error, which should be given a stream, but at
             ;; this point we no longer have the stream available.
             (error 'undefined-use-of-backquote))
