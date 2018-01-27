@@ -68,6 +68,16 @@
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))
 
+(defun numeric-parameter-ignored (macro-name parameter)
+  (error 'numeric-parameter-supplied-but-ignored
+         :parameter parameter :macro-name macro-name))
+
+(define-condition numeric-parameter-not-supplied-but-required (reader-error)
+  ((%macro-name :initarg :macro-name :reader macro-name)))
+
+(defun numeric-parameter-not-supplied (macro-name)
+  (error 'numeric-parameter-not-supplied-but-required :macro-name macro-name))
+
 (define-condition extraneous-objects-ignored (warning)
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))

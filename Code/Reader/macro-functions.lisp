@@ -263,9 +263,7 @@
 (defun sharpsign-single-quote (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-single-quote))
+    (numeric-parameter-ignored 'sharpsign-single-quote parameter))
   (with-preserved-backquote-context
     `(function ,(read stream t nil t))))
 
@@ -322,9 +320,7 @@
 (defun sharpsign-dot (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-dot))
+    (numeric-parameter-ignored 'sharpsign-dot parameter))
   (with-preserved-backquote-context
     (eval (read stream t nil t))))
 
@@ -348,9 +344,7 @@
 (defun sharpsign-backslash (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-backslash))
+    (numeric-parameter-ignored 'sharpsign-backslash parameter))
   (let ((char1 (read-char stream nil nil t)))
     (when (null char1)
       (error 'end-of-file :stream stream))
@@ -485,25 +479,19 @@
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-b))
+    (numeric-parameter-ignored 'sharpsign-b parameter))
   (read-rational stream 2.))
 
 (defun sharpsign-x (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-x))
+    (numeric-parameter-ignored 'sharpsign-x parameter))
   (read-rational stream 16.))
 
 (defun sharpsign-o (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-o))
+    (numeric-parameter-ignored 'sharpsign-o parameter))
   (read-rational stream 8.))
 
 (defun sharpsign-r (stream char parameter)
@@ -578,9 +566,7 @@
 (defun sharpsign-vertical-bar (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-vertical-bar))
+    (numeric-parameter-ignored 'sharpsign-vertical-bar parameter))
   (loop for char = (read-char stream t nil t)
         do (cond ((eql char #\#)
                   (let ((char2 (read-char stream t nil t)))
@@ -717,9 +703,7 @@
 (defun sharpsign-c (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-c))
+    (numeric-parameter-ignored 'sharpsign-c parameter))
   (apply #'complex (read stream t nil t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -729,9 +713,7 @@
 (defun sharpsign-p (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-p))
+    (numeric-parameter-ignored 'sharpsign-p parameter))
   (let ((expression (read stream t nil t)))
     (unless (stringp expression)
       (error 'type-error
@@ -776,9 +758,7 @@
 (defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-p))
+    (numeric-parameter-ignored 'sharpsign-p parameter))
   (let ((feature-expression
          (let ((*package* (find-package '#:keyword))
                (*read-suppress* nil))
@@ -811,10 +791,9 @@
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
-  (cond ((null parameter)
-         ;; FIXME: define this error condition
-         (error 'sharpsign-sharpsign-must-have-parameter))
-        ((nth-value 1 (gethash parameter *labels*))
+  (when (null parameter)
+    (numeric-parameter-not-supplied 'sharpsign-equals))
+  (cond ((nth-value 1 (gethash parameter *labels*))
          ;; FIXME: define this error condition
          (error 'sharpsign-sharpsign-label-defined-more-than-once))
         (t
@@ -833,10 +812,9 @@
 
 (defun sharpsign-sharpsign (stream char parameter)
   (declare (ignore char stream))
-  (cond ((null parameter)
-         ;; FIXME: define this error condition
-         (error 'sharpsign-equals-must-have-parameter))
-        ((not (nth-value 1 (gethash parameter *labels*)))
+  (when (null parameter)
+    (numeric-parameter-not-supplied 'sharpsign-equals))
+  (cond ((not (nth-value 1 (gethash parameter *labels*)))
          ;; FIXME: define this error condition
          (error 'sharpsign-equals-undefined-label))
         (t

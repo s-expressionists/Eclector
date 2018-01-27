@@ -51,6 +51,7 @@
    #:two-package-markers-must-not-be-first
    #:symbol-can-have-at-most-two-package-markers
    #:numeric-parameter-supplied-but-ignored
+   #:numeric-parameter-not-supplied-but-required
    #:unknown-character-name
    #:digit-expected
    #:invalid-default-float-format
