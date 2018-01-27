@@ -10,13 +10,16 @@
       (let* ((*preserve-whitespace* preserve-whitespace-p)
              (*labels* (make-hash-table))
              (result (read-common input-stream eof-error-p eof-value)))
+        ;; *labels* maps labels to conses of the form
+        ;; (TEMPORARY-OBJECT . FINAL-OBJECT). For the fixup step,
+        ;; these conses into a hash-table mapping temporary objects to
+        ;; final objects.
         (unless (zerop (hash-table-count *labels*))
-          (let ((mapping (make-hash-table :test #'equal)))
-            (maphash (lambda (key value)
-                       (declare (ignore key))
-                       (setf (gethash (car value) mapping) (cdr value)))
-                     *labels*)
-            (fixup result (make-hash-table :test #'eq) mapping)))
+          (let ((seen (make-hash-table :test #'eq))
+                (mapping (alexandria:alist-hash-table
+                          (alexandria:hash-table-values *labels*)
+                          :test #'equal)))
+            (fixup result seen mapping)))
         result)))
 
 (defun read (&optional
