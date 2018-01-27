@@ -126,3 +126,33 @@
           ("(and) 1"             nil t   nil nil)
           ;; In which package is the guarded expression read?
           ("(and) foo"           nil nil foo nil))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Reader macros for sharpsign equals and sharpsign sharpsign.
+
+(test sharpsign-equal/sharpsign
+  (mapc (lambda (input-expected)
+          (destructuring-bind (input expected) input-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (eclector.reader:read stream))))
+              (case expected
+                (eclector.reader:numeric-parameter-not-supplied-but-required
+                 (signals eclector.reader:numeric-parameter-not-supplied-but-required
+                   (do-it)))
+                (error
+                 (signals error (do-it)))
+                (t
+                 (is (equalp expected (do-it))))))))
+        '(;; sharpsign equals errors
+          ("#="             eclector.reader:numeric-parameter-not-supplied-but-required)
+          ("(#1=1 #1=2)"    error)
+          ;; sharpsign sharpsign errors
+          ("##"             eclector.reader:numeric-parameter-not-supplied-but-required)
+          ("#1#"            error)
+          ("(#1=1 #2#)"     error)
+          ;;
+          ("(#1=1)"         (1))
+          ("(#1=1 #1#)"     (1 1))
+          ("(#1=1 #1# #1#)" (1 1 1)))))
