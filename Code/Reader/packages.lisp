@@ -56,6 +56,8 @@
    #:digit-expected
    #:invalid-default-float-format
    #:single-feature-expected
+   #:sharpsign-equals-label-defined-more-than-once
+   #:sharpsign-sharpsign-undefined-label
    ;; Names of macros related to backquote.
    ;; We export them so that the pretty printer
    ;; can use them properly.

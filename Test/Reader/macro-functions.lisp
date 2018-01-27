@@ -141,17 +141,21 @@
                 (eclector.reader:numeric-parameter-not-supplied-but-required
                  (signals eclector.reader:numeric-parameter-not-supplied-but-required
                    (do-it)))
-                (error
-                 (signals error (do-it)))
+                (eclector.reader:sharpsign-equals-label-defined-more-than-once
+                 (signals eclector.reader:sharpsign-equals-label-defined-more-than-once
+                   (do-it)))
+                (eclector.reader:sharpsign-sharpsign-undefined-label
+                 (signals eclector.reader:sharpsign-sharpsign-undefined-label
+                   (do-it)))
                 (t
                  (is (equalp expected (do-it))))))))
         '(;; sharpsign equals errors
           ("#="             eclector.reader:numeric-parameter-not-supplied-but-required)
-          ("(#1=1 #1=2)"    error)
+          ("(#1=1 #1=2)"    eclector.reader:sharpsign-equals-label-defined-more-than-once)
           ;; sharpsign sharpsign errors
           ("##"             eclector.reader:numeric-parameter-not-supplied-but-required)
-          ("#1#"            error)
-          ("(#1=1 #2#)"     error)
+          ("#1#"            eclector.reader:sharpsign-sharpsign-undefined-label)
+          ("(#1=1 #2#)"     eclector.reader:sharpsign-sharpsign-undefined-label)
           ;;
           ("(#1=1)"         (1))
           ("(#1=1 #1#)"     (1 1))

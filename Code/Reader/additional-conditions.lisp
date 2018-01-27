@@ -123,3 +123,9 @@
 
 (define-condition sharpsign-invalid (reader-error)
   ((%character-found :initarg :character-found :reader character-found)))
+
+(define-condition sharpsign-equals-label-defined-more-than-once (reader-error)
+  ((%label :initarg :label :reader label)))
+
+(define-condition sharpsign-sharpsign-undefined-label (reader-error)
+  ((%label :initarg :label :reader label)))
