@@ -62,6 +62,7 @@
                 :depends-on ("Test")
                 :serial t
                 :components ((:file "packages")
+                             (:file "tokens")
                              (:file "macro-functions"))))
 
   :perform (test-op (operation component)
