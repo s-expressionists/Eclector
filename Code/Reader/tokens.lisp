@@ -149,9 +149,6 @@
                (return-from interpret-token
                  *consing-dot*)
                (%reader-error input-stream 'invalid-context-for-consing-dot))
-           (if (= length index)
-           (return-from interpret-token
-             (* sign mantissa/numerator))
            (let ((char (aref token index)))
              (cond ((eq (aref token-escapes index) t)
                     (go symbol))
@@ -166,7 +163,7 @@
                     (setf position-package-marker-1 index)
                     (go symbol))
                    (t
-                    (go symbol))))))
+                    (go symbol)))))
      sign-dot
        ;; sign decimal-point
        (incf index)
