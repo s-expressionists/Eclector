@@ -38,6 +38,10 @@
              (intern (subseq token (1+ position-package-marker-2))
                      (subseq token 0 position-package-marker-1))))))
 
+(declaim (inline exponent-marker-p))
+(defun exponent-marker-p (char)
+  (member char '(#\e #\E #\f #\F #\s #\S #\d #\D #\l #\L) :test #'char=))
+
 (declaim (inline reader-float-format))
 (defun reader-float-format (&optional (exponent-marker #\E))
   (ecase exponent-marker
@@ -54,7 +58,7 @@
             *read-default-float-format*
             (error 'invalid-default-float-format ; FIXME this is currently a READER-ERROR, but we do not have a stream at this point
                    :float-format *read-default-float-format*)))))
-    ((#\f #\F)'single-float)
+    ((#\f #\F) 'single-float)
     ((#\s #\S) 'short-float)
     ((#\d #\D) 'double-float)
     ((#\l #\L) 'long-float)))
@@ -213,7 +217,7 @@
                     (go integer))
                    ((eql char #\/)
                     (go ratio-start))
-                   ((member char '(#\e #\E #\f #\F #\s #\S #\d #\D #\l #\L))
+                   ((exponent-marker-p char)
                     (setf exponent-marker char)
                     (go float-exponent-start))
                    ((eql char #\:)
@@ -237,7 +241,7 @@
                     (setf fraction-denominator
                           (* fraction-denominator 10))
                     (go float-no-exponent))
-                   ((member char '(#\e #\E #\f #\F #\s #\S #\d #\D #\l #\L))
+                   ((exponent-marker-p char)
                     (setf exponent-marker char)
                     (go float-exponent-start))
                    ((eql char #\:)
@@ -324,7 +328,7 @@
                     (setf fraction-denominator
                           (* fraction-denominator 10))
                     (go float-no-exponent))
-                   ((member char '(#\e #\E #\f #\F #\s #\S #\d #\D #\l #\L))
+                   ((exponent-marker-p char)
                     (setf exponent-marker char)
                     (go float-exponent-start))
                    ((eql char #\:)
