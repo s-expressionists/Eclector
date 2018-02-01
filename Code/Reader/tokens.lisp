@@ -294,7 +294,7 @@
        (incf index)
        (if (= length index)
            (return-from interpret-token
-             (/ mantissa/numerator denominator))
+             (* sign (/ mantissa/numerator denominator)))
            (let ((char (aref token index)))
              (cond ((eq (aref token-escapes index) t)
                     (go symbol))
@@ -313,8 +313,9 @@
        (incf index)
        (if (= length index)
            (return-from interpret-token
-             (coerce (+ mantissa/numerator
-                        (/ fraction-numerator fraction-denominator))
+             (coerce (* sign
+                        (+ mantissa/numerator
+                           (/ fraction-numerator fraction-denominator)))
                      (reader-float-format)))
            (let ((char (aref token index)))
              (cond ((eq (aref token-escapes index) t)
@@ -389,7 +390,8 @@
        (incf index)
        (if (= length index)
            (return-from interpret-token
-             (coerce (* (+ mantissa/numerator
+             (coerce (* sign
+                        (+ mantissa/numerator
                            (/ fraction-numerator
                               fraction-denominator))
                         (expt 10 (* exponent-sign exponent)))
