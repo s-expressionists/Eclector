@@ -16,12 +16,17 @@
                          (with-input-from-string (stream "")
                            (eclector.reader:interpret-token
                             token token-escapes stream))))
-                  (is (equal expected (do-it)))))))
+                  (case expected
+                    (eclector.reader:invalid-context-for-consing-dot
+                     (signals eclector.reader:invalid-context-for-consing-dot
+                              (do-it)))
+                    (t
+                     (is (equal expected (do-it)))))))))
        ;; TODO *read-case*, *read-base* parameters
        '(;; empty
          (""        nil ||)
          ;; "consing dot"
-         ;; ("."       nil )
+         ("."       nil eclector.reader:invalid-context-for-consing-dot)
 
          ;; symbol
          ;; ("||"      nil ||)
