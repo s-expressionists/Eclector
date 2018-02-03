@@ -32,7 +32,7 @@
                         (t
                          symbol))))))
         (t
-         (if (= position-package-marker-1 (1- (length token)))
+         (if (= position-package-marker-2 (1- (length token)))
              (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
                             :desired-symbol token)
              (intern (subseq token (1+ position-package-marker-2))

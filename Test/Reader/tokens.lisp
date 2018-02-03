@@ -61,7 +61,7 @@
 
          ("aa"         #*01  |Aa|)
          ("a:"         nil   eclector.reader:symbol-name-must-not-end-with-package-marker)
-         ; ("a::"        nil   eclector.reader:symbol-name-must-not-end-with-package-marker)
+         ("a::"        nil   eclector.reader:symbol-name-must-not-end-with-package-marker)
          ("a:::"       nil   eclector.reader:symbol-can-have-at-most-two-package-markers)
          ("a:a:"       nil   eclector.reader:two-package-markers-must-be-adjacent)
          ("::a"        nil   eclector.reader:two-package-markers-must-not-be-first)
