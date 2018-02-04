@@ -16,7 +16,7 @@
                  (flet ((do-it ()
                           (with-input-from-string (stream "")
                             (eclector.reader:interpret-token
-                             token token-escapes stream))))
+                             (copy-seq token) token-escapes stream))))
                    (case expected
                      (eclector.reader:invalid-context-for-consing-dot
                       (signals eclector.reader:invalid-context-for-consing-dot
