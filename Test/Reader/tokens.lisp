@@ -8,10 +8,10 @@
 
   (map nil (lambda (arguments-context-expected)
              (destructuring-bind
-                   (token token-escapes *read-base* expected)
+                   (token maybe-token-escapes *read-base* expected)
                  arguments-context-expected
-               (let ((token-escapes (if token-escapes
-                                        (map 'vector #'plusp token-escapes)
+               (let ((token-escapes (if maybe-token-escapes
+                                        (map 'vector #'plusp maybe-token-escapes)
                                         (make-array (length token)
                                                     :initial-element nil))))
                  (flet ((do-it ()
@@ -35,6 +35,8 @@
                       (signals eclector.reader:two-package-markers-must-not-be-first
                         (do-it)))
                      (t
+                      (unless (or maybe-token-escapes (zerop (length token)))
+                        (assert (equal expected (read-from-string token))))
                       (is (equal expected (do-it)))))))))
        '(;; empty
          (""           nil     10 ||)
