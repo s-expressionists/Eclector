@@ -35,7 +35,7 @@
          ;; ("NP:NIX"                         2   nil nil package-does-not-exist)
          ("CL:NIX"                         2   nil nil eclector.reader:symbol-does-not-exist)
          ("ECLECTOR.READER.TEST:INTERNAL"  20  nil nil eclector.reader:symbol-is-not-external)
-         ;; ("CL:NIL"                         2   nil nil nil)
+         ("CL:NIL"                         2   nil nil nil)
          ("CL:ABS"                         2   nil nil abs)
 
          ("::"                             0   1   nil eclector.reader:symbol-name-must-not-end-with-package-marker)

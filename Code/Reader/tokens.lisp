@@ -23,7 +23,7 @@
                     (find-symbol
                      (subseq token (1+ position-package-marker-1))
                      (subseq token 0 position-package-marker-1))
-                  (cond ((null symbol)
+                  (cond ((null status)
                          (%reader-error input-stream 'symbol-does-not-exist
                                         :desired-symbol token))
                         ((eq status :internal)
