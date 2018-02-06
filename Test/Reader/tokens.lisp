@@ -3,8 +3,49 @@
 (def-suite* :eclector.reader.tokens
     :in :eclector.reader)
 
+(test interpet-symbol.smoke
+  "Smoke test for the default method on INTERPRET-SYMBOL."
+
+  (map nil (lambda (arguments-package-expected)
+             (destructuring-bind (token marker1 marker2 package expected)
+                 arguments-package-expected
+               (let ((*package* (or package *package*)))
+                 (flet ((do-it ()
+                          (with-input-from-string (stream "")
+                            (eclector.reader:interpret-symbol
+                             token marker1 marker2 stream))))
+                   (case expected
+                     (eclector.reader:symbol-name-must-not-end-with-package-marker
+                      (signals eclector.reader:symbol-name-must-not-end-with-package-marker
+                        (do-it)))
+                     (eclector.reader:symbol-does-not-exist
+                      (signals eclector.reader:symbol-does-not-exist (do-it)))
+                     (eclector.reader:symbol-is-not-external
+                      (signals eclector.reader:symbol-is-not-external (do-it)))
+                     (t
+                      (is (equal expected (do-it)))))))))
+       '((""                               nil nil nil ||)
+         ("a"                              nil nil nil |a|)
+         ("A"                              nil nil nil a)
+         ("A:"                             1   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+
+         (":"                              0   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+         (":a"                             0   nil nil :|a|)
+         (":A"                             0   nil nil :a)
+         ;; ("NP:NIX"                         2   nil nil package-does-not-exist)
+         ("CL:NIX"                         2   nil nil eclector.reader:symbol-does-not-exist)
+         ("ECLECTOR.READER.TEST:INTERNAL"  20  nil nil eclector.reader:symbol-is-not-external)
+         ;; ("CL:NIL"                         2   nil nil nil)
+         ("CL:ABS"                         2   nil nil abs)
+
+         ("::"                             0   1   nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+         ;; ("NP::NIX"                        2   3   nil package-does-not-exist)
+         ("ECLECTOR.READER.TEST::INTERNAL" 20  21  nil internal)
+         ("CL::NIL"                        2   3   nil nil)
+         ("CL::ABS"                        2   3   nil abs))))
+
 (test interpret-token.default.smoke
-  "Smoke test for default method on INTERPRET-TOKEN."
+  "Smoke test for the default method on INTERPRET-TOKEN."
 
   (map nil (lambda (arguments-context-expected)
              (destructuring-bind
