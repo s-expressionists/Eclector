@@ -132,6 +132,8 @@
 ;;; Reader macros for sharpsign equals and sharpsign sharpsign.
 
 (test sharpsign-equal/sharpsign
+  "Smoke test for the SHARPSIGN-{EQUAL,SHARPSIGN} functions."
+
   (mapc (lambda (input-expected)
           (destructuring-bind (input expected) input-expected
             (flet ((do-it ()
@@ -164,4 +166,11 @@
           ("(#1=1)"         (1))
           ("(#1=1 #1#)"     (1 1))
           ("(#1=1 #1# #1#)" (1 1 1))
-          ("#1=(#1#)"       recursive-cons))))
+          ("#1=(#1#)"       recursive-cons)
+          ;; There was problem leading to unrelated expressions of the
+          ;; forms (nil) and (t) being replaced by the fixup
+          ;; processor.
+          ("(#1=1 (nil))"   (1 (nil)))
+          ("(#1=((nil)))"   (((nil))))
+          ("(#1=1 (t))"     (1 (t)))
+          ("(#1=((t)))"     (((t)))))))

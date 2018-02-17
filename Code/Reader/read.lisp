@@ -18,7 +18,7 @@
           (let ((seen (make-hash-table :test #'eq))
                 (mapping (alexandria:alist-hash-table
                           (alexandria:hash-table-values *labels*)
-                          :test #'equal)))
+                          :test #'eq)))
             (fixup result seen mapping)))
         result)))
 
