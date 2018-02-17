@@ -138,8 +138,7 @@
 (defun backquote (stream char)
   (declare (ignore char))
   (unless *backquote-allowed-p*
-    (error 'invalid-context-for-backquote
-           :stream stream))
+    (%reader-error stream 'invalid-context-for-backquote))
   (let ((*backquote-depth* (1+ *backquote-depth*)))
     (with-preserved-backquote-context
       (wrap-in-quasiquote (read stream t nil t) *client*))))
@@ -147,8 +146,7 @@
 (defun comma (stream char)
   (declare (ignore char))
   (unless (plusp *backquote-depth*)
-    (error 'comma-not-inside-backquote
-           :stream stream))
+    (%reader-error stream 'comma-not-inside-backquote))
   (let* ((char2 (read-char stream t nil t))
          (at-sign-p (if (eql char2 #\@)
                         t
@@ -236,12 +234,10 @@
                               (handler-case
                                   (setf tail (read stream t nil t))
                                 (end-of-list ()
-                                  (error 'consing-dot-most-be-followed-by-object
-                                         :stream stream)))
+                                  (%reader-error stream 'consing-dot-most-be-followed-by-object)))
                               ;; This call to read must not succeed.
                               (read stream t nil t)
-                              (error 'multiple-objects-following-consing-dot
-                                     :stream stream))
+                              (%reader-error stream 'multiple-objects-following-consing-dot))
                        (push object reversed-result)))
         (end-of-list ()
           (return-from left-parenthesis
@@ -253,8 +249,7 @@
   ;; condition, which means that the right parenthesis was found in a
   ;; context where it is not allowed.
   (signal *end-of-list*)
-  (error 'invalid-context-for-right-parenthesis
-         :stream stream))
+  (%reader-error stream 'invalid-context-for-right-parenthesis))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -497,9 +492,7 @@
 (defun sharpsign-r (stream char parameter)
   (declare (ignore char))
   (unless (<= 2 parameter 36)
-    (error 'invalid-radix
-           :stream stream
-           :radix parameter))
+    (%reader-error stream 'invalid-radix :radix parameter))
   (read-rational stream parameter))
 
 (defun sharpsign-asterisk (stream char parameter)
@@ -519,10 +512,9 @@
         (cond (*read-suppress*
                nil)
               (illegal-character-p
-               (error 'digit-expected
-                      :stream stream
-                      :character-found illegal-character-p
-                      :base 2.))
+               (%reader-error stream 'digit-expected
+                              :character-found illegal-character-p
+                              :base 2.))
               (t
                (coerce v 'simple-bit-vector))))
       (let ((result (make-array parameter :element-type 'bit))
@@ -545,18 +537,15 @@
         (cond (*read-suppress*
                nil)
               (illegal-character-p
-               (error 'digit-expected
-                      :stream stream
+               (%reader-error stream 'digit-expected
                       :character-found illegal-character-p
                       :base 2.))
               (too-many-bits-p
-               (error 'too-many-elements
-                      :stream stream
+               (%reader-error stream 'too-many-elements
                       :expected-number parameter
                       :number-found index))
               ((zerop index)
-               (error 'no-elements-found
-                      :stream stream
+               (%reader-error stream 'no-elements-found
                       :expected-number parameter))
               (t
                (loop for i from index below parameter
@@ -781,9 +770,7 @@
 
 (defun sharpsign-invalid (stream char parameter)
   (declare (ignore parameter))
-  (error 'sharpsign-invalid
-         :stream stream
-         :character-found char))
+  (%reader-error stream 'sharpsign-invalid :character-found char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
