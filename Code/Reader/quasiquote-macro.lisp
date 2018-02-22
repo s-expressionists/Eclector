@@ -16,21 +16,35 @@
 ;;; indirectly by calling TRANSFORM-COMPOUND on the (potentially
 ;;; dottet) list.
 
-(defun transform (form)
-  (if (consp form)
-      (case (car form)
-        (unquote
-         `(list ,(cadr form)))
-        (unquote-splicing
-         (cadr form))
-        (t
-         `(list ,(transform-quasiquote-argument form))))
-      `(list ,(transform-quasiquote-argument form))))
+(defun transform (form &optional (wrap-in-list t))
+  (flet ((maybe-wrap (thing)
+           (if wrap-in-list
+               `(list ,thing)
+               thing)))
+   (if (consp form)
+       (case (car form)
+         (unquote
+          (maybe-wrap (cadr form)))
+         (unquote-splicing
+          (unless wrap-in-list
+            (error "illegal ~S in dotted list" 'unquote-splicing))
+          (cadr form))
+         (t
+          (maybe-wrap (transform-quasiquote-argument form))))
+       (maybe-wrap (transform-quasiquote-argument form)))))
 
 (defun transform-compound (compound)
-  (if (atom compound)
-      `((quote ,compound))
-      (cons (transform (first compound)) (transform-compound (rest compound)))))
+  (labels ((rec (object)
+             (typecase object
+               ((not cons)
+                `((quote ,object)))
+               ((cons t (or (not cons) (cons (eql unquote))))
+                (list (transform (car object)) (transform (cdr object) nil)))
+               ((cons t (cons (eql unquote-splicing)))
+                (error "illegal ~S in dotted list" 'unquote-splicing))
+               (t
+                (list* (transform (car object)) (rec (cdr object)))))))
+    (rec compound)))
 
 (defun transform-quasiquote-argument (argument)
   (cond ((consp argument)

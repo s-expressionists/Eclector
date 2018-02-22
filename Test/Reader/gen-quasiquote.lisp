@@ -19,7 +19,14 @@
                                    (lambda (stream object)
                                      (write-string string stream)
                                      (princ (second object) stream)))
-                                 0 dispatch))
+                                 2 dispatch)
+        :do (set-pprint-dispatch `cons
+                                 (lambda (stream object)
+                                   (pprint-logical-block (stream object :prefix "(" :suffix ")")
+                                     (princ (car object) stream)
+                                     (write-string " . " stream)
+                                     (princ (cdr object) stream)))
+                                 1 dispatch))
   dispatch)
 
 (defun hostify (expression)
@@ -38,9 +45,9 @@
 ;;; expressions.
 ;;;
 ;;; The central function, GEN-QUASIQUOTE-EXPRESSION, uses the helper
-;;; generators to make UNQUOTE, UNQUOTE-SPLICING, QUASIQUOTE, vector
-;;; and form sub-expressions. GEN-QUASIQUOTE-EXPRESSION takes randomly
-;;; applies helper generators, taking care of constraints:
+;;; generators to make UNQUOTE, UNQUOTE-SPLICING, QUASIQUOTE, CONS,
+;;; vector and form sub-expressions. GEN-QUASIQUOTE-EXPRESSION takes
+;;; randomly applies helper generators, taking care of constraints:
 ;;;
 ;;; 1) limiting the depth and width of the resulting expression tree
 ;;;
@@ -68,6 +75,10 @@
   (lambda ()
     (list 'eclector.reader:quasiquote (funcall argument))))
 
+(defun gen-cons (car cdr)
+  (lambda ()
+    (cons (funcall car) (funcall cdr))))
+
 (defun gen-vector (elements &key (length (gen-integer :min 0 :max 3)))
   (let ((elements (gen-list :length length :elements elements)))
     (lambda ()
@@ -89,19 +100,22 @@
                                           &key (qq-allowed t) (qq-depth 0) splicing-allowed list-needed in-vector-p
                                           &allow-other-keys)
              (flet ((make-gen (generator &rest gen-inner-args)
-                      (list (funcall generator
-                                     (lambda ()
-                                       (apply #'gen-inner max-depth (append gen-inner-args args)))))))
+                      (funcall generator
+                               (lambda ()
+                                 (apply #'gen-inner max-depth (append gen-inner-args args))))))
                (append (when (and (plusp qq-depth) splicing-allowed)
-                         (make-gen #'gen-unquote-splicing :qq-depth (1- qq-depth) :list-needed t :splicing-allowed nil))
+                         (list (make-gen #'gen-unquote-splicing :qq-depth (1- qq-depth) :list-needed t :splicing-allowed nil)))
                        (when (plusp qq-depth)
-                         (make-gen #'gen-unquote :qq-depth (1- qq-depth) :splicing-allowed nil))
+                         (list (make-gen #'gen-unquote :qq-depth (1- qq-depth) :splicing-allowed nil)))
                        (unless (or (not qq-allowed) (plusp qq-depth) in-vector-p)
-                         (make-gen #'gen-quasiquote :qq-depth (1+ qq-depth) :splicing-allowed nil))
+                         (list (make-gen #'gen-quasiquote :qq-depth (1+ qq-depth) :splicing-allowed nil)))
+                       (when (plusp qq-depth)
+                         (list (gen-cons (make-gen #'identity)
+                                         (make-gen #'identity :splicing-allowed nil))))
                        (unless list-needed
-                         (make-gen #'gen-vector :splicing-allowed t :in-vector-p t))
-                       (make-gen #'gen-quoted-form :qq-allowed nil)
-                       (make-gen #'gen-compound-form :list-needed nil :splicing-allowed t))))
+                         (list (make-gen #'gen-vector :splicing-allowed t :in-vector-p t)))
+                       (list (make-gen #'gen-quoted-form :qq-allowed nil))
+                       (list (make-gen #'gen-compound-form :list-needed nil :splicing-allowed t)))))
            (gen-inner (max-depth &rest args &key depth-reached list-needed &allow-other-keys)
              (when (zerop max-depth)
                (incf (car depth-reached)))
