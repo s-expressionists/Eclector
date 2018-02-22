@@ -73,16 +73,21 @@
     (lambda ()
       (coerce (funcall elements) 'vector))))
 
+(defun gen-quoted-form (argument)
+  (lambda ()
+    (list 'quote (funcall argument))))
+
 (defun gen-compound-form (arguments &key (operator (gen-one-element 'list))
                                          (length (gen-integer :min 0 :max 3)))
   (let ((args (gen-list :length length :elements arguments)))
     (lambda ()
       (list* (funcall operator) (funcall args)))))
 
-;; TODO quote
 (defun gen-quasiquote-expression (&key (atom (gen-integer :min -10 :max 10))
                                        (depth (gen-integer :min 0 :max 7)))
-  (labels ((allowed-generators (max-depth &rest args &key (qq-depth 0) splicing-allowed list-needed in-vector-p &allow-other-keys)
+  (labels ((allowed-generators (max-depth &rest args
+                                          &key (qq-allowed t) (qq-depth 0) splicing-allowed list-needed in-vector-p
+                                          &allow-other-keys)
              (flet ((make-gen (generator &rest gen-inner-args)
                       (list (funcall generator
                                      (lambda ()
@@ -91,10 +96,11 @@
                          (make-gen #'gen-unquote-splicing :qq-depth (1- qq-depth) :list-needed t :splicing-allowed nil))
                        (when (plusp qq-depth)
                          (make-gen #'gen-unquote :qq-depth (1- qq-depth) :splicing-allowed nil))
-                       (unless (or (plusp qq-depth) in-vector-p)
+                       (unless (or (not qq-allowed) (plusp qq-depth) in-vector-p)
                          (make-gen #'gen-quasiquote :qq-depth (1+ qq-depth) :splicing-allowed nil))
                        (unless list-needed
                          (make-gen #'gen-vector :splicing-allowed t :in-vector-p t))
+                       (make-gen #'gen-quoted-form :qq-allowed nil)
                        (make-gen #'gen-compound-form :list-needed nil :splicing-allowed t))))
            (gen-inner (max-depth &rest args &key depth-reached list-needed &allow-other-keys)
              (when (zerop max-depth)
