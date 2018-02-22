@@ -62,6 +62,9 @@
                 :depends-on ("Test")
                 :serial t
                 :components ((:file "packages")
+
+                             (:file "gen-quasiquote")
+
                              (:file "tokens")
                              (:file "macro-functions"))))
 
