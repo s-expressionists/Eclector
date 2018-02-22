@@ -66,7 +66,8 @@
                              (:file "gen-quasiquote")
 
                              (:file "tokens")
-                             (:file "macro-functions"))))
+                             (:file "macro-functions")
+                             (:file "quasiquote-macro"))))
 
   :perform (test-op (operation component)
              (uiop:symbol-call '#:eclector.test '#:run-tests)))
