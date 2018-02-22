@@ -46,7 +46,7 @@
 
 (defsystem "eclector/test"
   :depends-on ("eclector"
-               "fiveam")
+               (:version "fiveam" "1.4"))
 
   :components ((:module "Test"
                 :components ((:file "packages")))
