@@ -140,13 +140,17 @@
 (defmethod eclector.concrete-syntax-tree:source-position ((stream t) (client custom-client))
   (- (call-next-method)))
 
+(defmethod eclector.concrete-syntax-tree:make-source-range
+    ((client custom-client) (start t) (end t))
+  (vector start end))
+
 (test read-cst/custom-client
   "Test using a custom client with CST-READ."
 
   (let ((result (with-input-from-string (stream "#||# 1")
                   (let ((eclector.reader:*client* (make-instance 'custom-client)))
                     (eclector.concrete-syntax-tree:cst-read stream)))))
-    (is (equal '(-5 . -6) (cst:source result)))))
+    (is (equalp #(-5 -6) (cst:source result)))))
 
 ;;; Skipped input
 

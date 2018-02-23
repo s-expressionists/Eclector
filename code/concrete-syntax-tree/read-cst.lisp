@@ -10,6 +10,11 @@
     (declare (ignore client))
     (file-position stream)))
 
+(defgeneric make-source-range (client start end)
+  (:method (client start end)
+    (declare (ignore client))
+    (cons start end)))
+
 (defgeneric record-skipped-input (client stream reason source)
   (:method (client stream reason source)
     (declare (ignore client stream reason source))))
@@ -76,10 +81,11 @@
                          (return t)))))
 
   (defmethod eclector.reader:note-skipped-input ((client cst-client) input-stream reason)
-    (let ((start *start*)
-          (end (source-position input-stream client)))
+    (let* ((start *start*)
+           (end (source-position input-stream client))
+           (range (make-source-range client start end)))
       ;; Notify CLIENT of the skipped input and the reason.
-      (record-skipped-input client input-stream reason (cons start end))
+      (record-skipped-input client input-stream reason range)
       ;; Try to advance to the next non-whitespace input character,
       ;; then update *START*. This way, the source location for an
       ;; object subsequently read from the stream will not include the
@@ -99,7 +105,7 @@
                  (*start* (source-position input-stream client))
                  (result (call-next-method))
                  (end (source-position input-stream client))
-                 (source (cons *start* end))
+                 (source (make-source-range client *start* end))
                  ;; TODO reverse necessary?
                  (cst (create-cst client result (reverse (first *stack*)) source)))
             (push cst (second *stack*))

@@ -150,6 +150,13 @@ mostly compatible with the standard \commonlisp{} function
   \texttt{eclector.reader:read} behave suitably.
 \end{itemize}
 
+\Defgeneric {make-source-range} {client start end}
+
+This generic function is called in order to turn the range of input
+characters designated by \textit{start} and \textit{end} into a range
+representation suitable for \textit{client}.  The default method
+returns \texttt{(cons start end)}.
+
 \Defgeneric {record-skipped-input} {client input-stream reason source}
 
 This generic function is called after the reader skipped over a range
