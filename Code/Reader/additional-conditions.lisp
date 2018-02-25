@@ -3,6 +3,8 @@
 (defun %reader-error (stream datum &rest arguments)
   (apply #'error datum (append arguments (list :stream stream))))
 
+;;; Conditions related to quasiquotation
+
 (define-condition backquote-condition (reader-error)
   ())
 
@@ -12,8 +14,13 @@
 (define-condition comma-not-inside-backquote (backquote-condition)
   ())
 
+(define-condition unquote-splicing-in-dotted-list (backquote-condition)
+  ())
+
 (define-condition undefined-use-of-backquote (backquote-condition)
   ())
+
+;;; Conditions related to consing dot
 
 (define-condition invalid-context-for-consing-dot (reader-error)
   ())

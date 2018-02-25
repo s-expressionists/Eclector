@@ -27,7 +27,8 @@
           (maybe-wrap (cadr form)))
          (unquote-splicing
           (unless wrap-in-list
-            (error "illegal ~S in dotted list" 'unquote-splicing))
+            ;; FIXME see comment for UNDEFINED-USE-OF-BACKQUOTE below
+            (error 'unquote-splicing-in-dotted-list))
           (cadr form))
          (t
           (maybe-wrap (transform-quasiquote-argument form))))
@@ -41,7 +42,8 @@
                ((cons t (or (not cons) (cons (eql unquote))))
                 (list (transform (car object)) (transform (cdr object) nil)))
                ((cons t (cons (eql unquote-splicing)))
-                (error "illegal ~S in dotted list" 'unquote-splicing))
+                ;; FIXME see comment for UNDEFINED-USE-OF-BACKQUOTE below
+                (error 'unquote-splicing-in-dotted-list))
                (t
                 (list* (transform (car object)) (rec (cdr object)))))))
     (rec compound)))

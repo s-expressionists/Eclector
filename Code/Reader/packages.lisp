@@ -37,6 +37,7 @@
    #:backquote-condition
    #:invalid-context-for-backquote
    #:comma-not-inside-backquote
+   #:unquote-splicing-in-dotted-list
    #:undefined-use-of-backquote
    #:invalid-context-for-consing-dot
    #:consing-dot-most-be-followed-by-object
