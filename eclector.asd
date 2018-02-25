@@ -9,23 +9,23 @@
                "concrete-syntax-tree"
                "closer-mop")
 
-  :components ((:module "Readtable"
-                :pathname "Code/Readtable"
+  :components ((:module "readtable"
+                :pathname "code/readtable"
                 :serial t
                 :components ((:file "packages")
                              (:file "generic-functions")))
 
-               (:module "Simple-Readtable"
-                :pathname "Code/Readtable/Simple"
-                :depends-on ("Readtable")
+               (:module "simple-readtable"
+                :pathname "code/readtable/simple"
+                :depends-on ("readtable")
                 :serial t
                 :components ((:file "packages")
                              (:file "readtable")
                              (:file "methods")))
 
-               (:module "Reader"
-                :pathname "Code/Reader"
-                :depends-on ("Readtable")
+               (:module "reader"
+                :pathname "code/reader"
+                :depends-on ("readtable")
                 :serial t
                 :components ((:file "packages")
                              (:file "more-variables")
@@ -49,18 +49,18 @@
   :depends-on ("eclector"
                (:version "fiveam" "1.4"))
 
-  :components ((:module "Test"
+  :components ((:module "test"
                 :components ((:file "packages")))
 
-               (:module "Readtable"
-                :pathname "Test/Readtable"
-                :depends-on ("Test")
+               (:module "readtable"
+                :pathname "test/readtable"
+                :depends-on ("test")
                 :serial t
                 :components ((:file "packages")))
 
-               (:module "Reader"
-                :pathname "Test/Reader"
-                :depends-on ("Test")
+               (:module "reader"
+                :pathname "test/reader"
+                :depends-on ("test")
                 :serial t
                 :components ((:file "packages")
 
