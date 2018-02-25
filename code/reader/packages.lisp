@@ -21,7 +21,6 @@
    #:*client*
    #:read
    #:read-preserving-whitespace
-   #:cst-read
    #:*preserve-whitespace*
    #:read-common
    #:read-token
