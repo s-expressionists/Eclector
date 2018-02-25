@@ -1,5 +1,6 @@
 (defsystem "eclector"
-  :author "Robert Strandh"
+  :author ("Robert Strandh"
+           "Jan Moringen")
   :maintainer "Jan Moringen"
   :license "BSD"
   :version (:read-file-form "version.sexp")
