@@ -26,9 +26,6 @@
          (unquote
           (maybe-wrap (cadr form)))
          (unquote-splicing
-          (unless wrap-in-list
-            ;; FIXME see comment for UNDEFINED-USE-OF-BACKQUOTE below
-            (error 'unquote-splicing-in-dotted-list))
           (cadr form))
          (t
           (maybe-wrap (transform-quasiquote-argument form))))
@@ -37,8 +34,6 @@
 (defun transform-compound (compound)
   (labels ((rec (object)
              (typecase object
-               ((not cons)
-                `((quote ,object)))
                ((cons t (or (not cons) (cons (eql unquote))))
                 (list (transform (car object)) (transform (cdr object) nil)))
                ((cons t (cons (eql unquote-splicing)))
