@@ -87,11 +87,13 @@
               input-parameter-context-expected
             (flet ((do-it (which)
                      (with-input-from-string (stream input)
-                       (ecase which
-                         (:plus  (eclector.reader::sharpsign-plus
-                                  stream #\+ parameter))
-                         (:minus (eclector.reader::sharpsign-minus
-                                  stream #\- parameter))))))
+                       (values
+                        (ecase which
+                          (:plus  (eclector.reader::sharpsign-plus
+                                   stream #\+ parameter))
+                          (:minus (eclector.reader::sharpsign-minus
+                                   stream #\- parameter)))
+                        (file-position stream)))))
               (case plus-expected
                 (type-error
                  (signals type-error (do-it :plus))
@@ -105,8 +107,12 @@
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it :minus)))
                 (t
-                 (is (equal plus-expected  (do-it :plus)))
-                 (is (equal minus-expected (do-it :minus))))))))
+                 (multiple-value-bind (value position) (do-it :plus)
+                   (is (equal plus-expected value))
+                   (is (equal (length input) position)))
+                 (multiple-value-bind (value position) (do-it :minus)
+                   (is (equal minus-expected value))
+                   (is (equal (length input) position))))))))
         '(;; Errors
           ("1"                   nil nil type-error)
           ("(1)"                 nil nil type-error)
