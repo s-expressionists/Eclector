@@ -6,7 +6,6 @@
   :version (:read-file-form "version.sexp")
 
   :depends-on ("alexandria"
-               "concrete-syntax-tree"
                "closer-mop")
 
   :components ((:module "readtable"
