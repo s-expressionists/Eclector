@@ -55,6 +55,8 @@
             (error 'undefined-use-of-backquote))
            (t
             `(append ,@(transform-compound argument)))))
+        ((stringp argument)
+         argument)
         ((vectorp argument)
          `(apply #'vector
                  ,(transform-quasiquote-argument
