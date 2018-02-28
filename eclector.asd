@@ -65,6 +65,7 @@
                              (:file "gen-quasiquote")
 
                              (:file "tokens")
+                             (:file "read")
                              (:file "macro-functions")
                              (:file "quasiquote-macro"))))
 
