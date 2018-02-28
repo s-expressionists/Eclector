@@ -14,6 +14,11 @@
                                            :do (princ element stream)
                                                (write-string " " stream))))
                                  1 dispatch)
+        :do (set-pprint-dispatch `string
+                                 (lambda (stream object)
+                                   (let ((*print-pretty* nil))
+                                     (prin1 object stream)))
+                                 2 dispatch)
         :do (set-pprint-dispatch `(cons (eql ,operator))
                                  (let ((string string))
                                    (lambda (stream object)
@@ -63,6 +68,14 @@
 
 (defvar *need-list-p* nil)
 
+(defun gen-atom (&key (integer (gen-integer :min -10 :max 10))
+                      (string (gen-string :length (gen-integer :min 0 :max 5)
+                                          :elements (gen-one-element
+                                                     #\a #\b #\c #\d))))
+  (let ((kind-gen (gen-one-element integer string)))
+    (lambda ()
+      (funcall (funcall kind-gen)))))
+
 (defun gen-unquote (argument)
   (lambda ()
     (list 'eclector.reader:unquote (funcall argument))))
@@ -94,7 +107,7 @@
     (lambda ()
       (list* (funcall operator) (funcall args)))))
 
-(defun gen-quasiquote-expression (&key (atom (gen-integer :min -10 :max 10))
+(defun gen-quasiquote-expression (&key (atom (gen-atom))
                                        (depth (gen-integer :min 0 :max 7)))
   (labels ((allowed-generators (max-depth &rest args
                                           &key (qq-allowed t) (qq-depth 0) splicing-allowed list-needed in-vector-p

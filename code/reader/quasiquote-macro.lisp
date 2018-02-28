@@ -54,7 +54,7 @@
      (error 'undefined-use-of-backquote))
     (cons
      `(append ,@(transform-compound argument)))
-    (vector
+    ((and vector (not string))
      `(apply #'vector
              ,(transform-quasiquote-argument
                (coerce argument 'list))))

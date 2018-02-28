@@ -21,7 +21,11 @@
                    (signals eclector.reader:unquote-splicing-in-dotted-list
                      (do-it)))
                   (t
-                   (is (equalp expected (eval (do-it))))))))))
+                   (typecase expected
+                     ((and vector (not string))
+                      (is (equalp expected (eval (do-it)))))
+                     (t
+                      (is (equal expected (eval (do-it))))))))))))
         '(("`,1"           1)
           ("`,@1"          eclector.reader:undefined-use-of-backquote)
 
@@ -32,7 +36,9 @@
           ("`(1 . ,@'(2))" eclector.reader:unquote-splicing-in-dotted-list)
 
           ("`#(,1)"        #(1))
-          ("`#(,@'(1))"    #(1)))))
+          ("`#(,@'(1))"    #(1))
+
+          ("`\"foo\""      "foo"))))
 
 (test expand-quasiquote.host-equivalence.random
   "Checks equivalence to host's result of expanded and evaluated
@@ -41,6 +47,11 @@
   (let () #+no ((*num-trials* 100000)
         (*max-trials* 100000))
     (for-all ((expression (gen-quasiquote-expression)))
-      (let ((host-expression (hostify expression)))
-        (is (equalp (eval host-expression)
-                    (hostify (eval expression))))))))
+      (let* ((host-expression (hostify expression))
+             (host-result     (eval host-expression))
+             (eclector-result (hostify (eval expression))))
+        (typecase host-result
+          (string
+           (is (equal host-result eclector-result)))
+          (t ; not ideal since this may compare nested strings using EQUALP
+           (is (equalp host-result eclector-result))))))))
