@@ -734,15 +734,15 @@
           do (check-feature-expression feature))))
 
 (defun evaluate-feature-expression (feature-expression)
-  (if (symbolp feature-expression)
-      (member feature-expression *features* :test #'eq)
-      (ecase (car feature-expression)
-        (:not
-         (not (evaluate-feature-expression (cadr feature-expression))))
-        (:or
-         (some #'evaluate-feature-expression (cdr feature-expression)))
-        (:and
-         (every #'evaluate-feature-expression (cdr feature-expression))))))
+  (typecase feature-expression
+    (symbol
+     (member feature-expression *features* :test #'eq))
+    ((cons (eql :not))
+     (not (evaluate-feature-expression (second feature-expression))))
+    ((cons (eql :or))
+     (some #'evaluate-feature-expression (rest feature-expression)))
+    ((cons (eql :and))
+     (every #'evaluate-feature-expression (rest feature-expression)))))
 
 (defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
