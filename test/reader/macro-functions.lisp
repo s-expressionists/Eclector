@@ -114,24 +114,29 @@
                    (is (equal minus-expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          ("1"                   nil nil type-error)
-          ("(1)"                 nil nil type-error)
-          ("(not :foo :bar)"     nil nil eclector.reader:single-feature-expected)
-          ("(not 1)"             nil nil type-error)
-          ("(and 1)"             nil nil type-error)
-          ("(or 1)"              nil nil type-error)
+          ("1"                     nil nil type-error)
+          ("(1)"                   nil nil type-error)
+          ("(not :foo :bar)"       nil nil eclector.reader:single-feature-expected)
+          ("(not 1)"               nil nil type-error)
+          ("(and 1)"               nil nil type-error)
+          ("(or 1)"                nil nil type-error)
           ;; Warnings
-          ("(and) 1"             1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ("(and) 1"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
-          ("common-lisp 1"       nil nil 1   nil)
-          ("(not common-lisp) 1" nil nil nil 1)
-          ("(and) 1"             nil nil 1   nil)
-          ("(or) 1"              nil nil nil 1)
-          ("(not (not (and))) 1" nil nil 1   nil)
+          ("common-lisp 1"         nil nil 1   nil)
+          ("(not common-lisp) 1"   nil nil nil 1)
+          ("(and) 1"               nil nil 1   nil)
+          ("(or) 1"                nil nil nil 1)
+          ("(not (not (and))) 1"   nil nil 1   nil)
           ;; With *read-supress* bound to t
-          ("(and) 1"             nil t   nil nil)
+          ("(and) 1"               nil t   nil nil)
           ;; In which package is the guarded expression read?
-          ("(and) foo"           nil nil foo nil))))
+          ("(and) foo"             nil nil foo nil)
+          ;; Vendor extension shouldn't break other implementations
+          ;; when guarded properly
+          ("(and some-lisp
+                 (version> \"1\"))
+            1"                     nil nil nil 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

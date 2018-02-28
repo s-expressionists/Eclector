@@ -729,11 +729,10 @@
     (when (eq (car feature-expression) :not)
       (unless (null (cddr feature-expression))
         (error 'single-feature-expected
-               :features (cdr feature-expression))))
-    (loop for feature in (cdr feature-expression)
-          do (check-feature-expression feature))))
+               :features (cdr feature-expression))))))
 
 (defun evaluate-feature-expression (feature-expression)
+  (check-feature-expression feature-expression)
   (typecase feature-expression
     (symbol
      (member feature-expression *features* :test #'eq))
@@ -752,7 +751,6 @@
          (let ((*package* (find-package '#:keyword))
                (*read-suppress* nil))
            (read stream t nil t))))
-    (check-feature-expression feature-expression)
     (if (alexandria:xor (evaluate-feature-expression feature-expression)
                         invertp)
           (read stream t nil t)
