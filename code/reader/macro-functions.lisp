@@ -317,7 +317,9 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-dot parameter))
   (with-preserved-backquote-context
-    (eval (read stream t nil t))))
+    (if *read-suppress*
+        (read stream t nil t)
+        (eval (read stream t nil t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

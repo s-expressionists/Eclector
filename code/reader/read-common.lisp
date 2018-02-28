@@ -31,9 +31,13 @@
                           (eclector.readtable:get-macro-character *readtable* char)
                           input-stream
                           char))))
-            (if (null values)
-                (go step-1-start)
-                (return-from read-common (car values)))))
+            (cond
+              (*read-suppress*
+               nil)
+              ((null values)
+               (go step-1-start))
+              (t
+               (return-from read-common (car values))))))
          (t
           (unread-char char input-stream)
           (return-from read-common

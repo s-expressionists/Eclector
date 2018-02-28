@@ -29,7 +29,10 @@
           ("1"               nil nil 1)
           ("(+ 1 2)"         nil nil 3)
 
-          ("`1"              nil nil 1))))
+          ("`1"              nil nil 1)
+
+          ;; Interaction with *READ-SUPPRESS*.
+          ("(error \"foo\")" nil t   nil))))
 
 (test read-rational/smoke
   "Smoke test for the READ-RATIONAL reader macro function."
