@@ -315,9 +315,15 @@
 (defun sharpsign-dot (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-dot parameter))
-  (with-preserved-backquote-context
-    (eval (read stream t nil t))))
+    (warn 'numeric-parameter-supplied-but-ignored
+          :parameter parameter
+          :macro-name 'sharpsign-dot))
+  (if *read-suppress*
+      (with-preserved-backquote-context
+          (read stream t nil t) ; throw away the result
+        (values))
+      (with-preserved-backquote-context
+          (eval (read stream t nil t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
