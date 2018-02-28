@@ -1,5 +1,10 @@
 (cl:in-package #:eclector.concrete-syntax-tree)
 
+(defclass cst-client ()
+  ())
+
+(defvar *cst-client* (make-instance 'cst-client))
+
 (defgeneric source-position (stream client)
   (:method (stream client)
     (declare (ignore client))
@@ -34,33 +39,32 @@
                       (cons-cst expression))))))
         (cons-cst expression source))))
 
-(defmethod eclector.reader:read-common :around (input-stream eof-error-p eof-value)
-  (let ((eclector.reader::*backquote-allowed-p* eclector.reader::*backquote-in-subforms-allowed-p*)
-        (eclector.reader::*backquote-in-subforms-allowed-p* nil))
-    (if (boundp '*stack*)
-        (let ((*stack* (cons '() *stack*)))
-          (loop for char = (read-char input-stream nil nil)
-             when (null char)
-             do (if eof-error-p
-                    (error 'end-of-file :stream input-stream)
-                    (return-from eclector.reader:read-common eof-value))
-             while (eq (eclector.readtable:syntax-type
-                        eclector.reader:*readtable* char)
-                       :whitespace)
-             finally (unread-char  char input-stream))
-          (let* ((start (source-position input-stream eclector.reader:*client*))
-                 (result (call-next-method))
-                 (end (source-position input-stream eclector.reader:*client*))
-                 (source (cons start end))
-                 ;; TODO reverse necessary?
-                 (cst (create-cst result (reverse (first *stack*)) source)))
-            (push cst (second *stack*))
-            result))
-        (call-next-method))))
+(defmethod eclector.reader:read-common :around ((client cst-client) input-stream eof-error-p eof-value)
+  (if (boundp '*stack*)
+      (let ((*stack* (cons '() *stack*)))
+        (loop for char = (read-char input-stream nil nil)
+           when (null char)
+           do (if eof-error-p
+                  (error 'end-of-file :stream input-stream)
+                  (return-from eclector.reader:read-common eof-value))
+           while (eq (eclector.readtable:syntax-type
+                      eclector.reader:*readtable* char)
+                     :whitespace)
+           finally (unread-char char input-stream))
+        (let* ((start (source-position input-stream client))
+               (result (call-next-method))
+               (end (source-position input-stream client))
+               (source (cons start end))
+               ;; TODO reverse necessary?
+               (cst (create-cst result (reverse (first *stack*)) source)))
+          (push cst (second *stack*))
+          result))
+      (call-next-method)))
 
 (defun cst-read (&rest arguments)
   (destructuring-bind (&optional eof-error-p eof-value) (rest arguments)
-    (let* ((*stack* (list '()))
+    (let* ((eclector.reader:*client* (or eclector.reader:*client* *cst-client*))
+           (*stack* (list '()))
            (result (apply #'eclector.reader:read arguments)))
       ;; If we come here, that means that either the call to READ
       ;; succeeded without encountering end-of-file, or that

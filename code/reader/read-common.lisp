@@ -7,9 +7,14 @@
            input-stream
            char))
 
-(defgeneric read-common (input-stream eof-error-p eof-value))
+(defgeneric read-common (client input-stream eof-error-p eof-value))
 
-(defmethod read-common (input-stream eof-error-p eof-value)
+(defmethod read-common :around (client input-stream eof-error-p eof-value)
+  (let ((*backquote-allowed-p* *backquote-in-subforms-allowed-p*)
+        (*backquote-in-subforms-allowed-p* nil))
+    (call-next-method)))
+
+(defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
    step-1-start
      (let ((char (read-char input-stream nil nil)))

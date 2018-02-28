@@ -6,10 +6,10 @@
     (input-stream eof-error-p eof-value recursive-p preserve-whitespace-p)
   (if recursive-p
       (let ((*preserve-whitespace* preserve-whitespace-p))
-        (read-common input-stream eof-error-p eof-value))
+        (read-common *client* input-stream eof-error-p eof-value))
       (let* ((*preserve-whitespace* preserve-whitespace-p)
              (*labels* (make-hash-table))
-             (result (read-common input-stream eof-error-p eof-value)))
+             (result (read-common *client* input-stream eof-error-p eof-value)))
         ;; *labels* maps labels to conses of the form
         ;; (TEMPORARY-OBJECT . FINAL-OBJECT). For the fixup step,
         ;; these conses into a hash-table mapping temporary objects to
