@@ -17,4 +17,5 @@
                       (is (typep result 'cst:cst))
                       (is (eql (length input) position))))))))
 
-       '(("(cons 1 2)" t))))
+       '(("(cons 1 2)"  t)
+         ("#+(or) `1 2" t))))

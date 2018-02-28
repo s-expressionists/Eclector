@@ -751,12 +751,13 @@
          (let ((*package* (find-package '#:keyword))
                (*read-suppress* nil))
            (read stream t nil t))))
-    (if (alexandria:xor (evaluate-feature-expression feature-expression)
-                        invertp)
+    (with-preserved-backquote-context
+      (if (alexandria:xor (evaluate-feature-expression feature-expression)
+                          invertp)
           (read stream t nil t)
           (let ((*read-suppress* t))
             (read stream t nil t)
-            (values)))))
+            (values))))))
 
 (defun sharpsign-plus (stream char parameter)
   (sharpsign-plus-minus stream char parameter nil))

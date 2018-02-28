@@ -20,4 +20,5 @@
                       (is (equal expected       result))
                       (is (eql   (length input) position))))))))
 
-       '(("(cons 1 2)" (cons 1 2)))))
+       '(("(cons 1 2)"  (cons 1 2))
+         ("#+(or) `1 2" 2))))
