@@ -44,23 +44,22 @@
     (rec compound)))
 
 (defun transform-quasiquote-argument (argument)
-  (cond ((consp argument)
-         (case (car argument)
-           (unquote
-            (cadr argument))
-           (unquote-splicing
-            ;; FIXME This condition type is a subclass of
-            ;; reader-error, which should be given a stream, but at
-            ;; this point we no longer have the stream available.
-            (error 'undefined-use-of-backquote))
-           (t
-            `(append ,@(transform-compound argument)))))
-        ((vectorp argument)
-         `(apply #'vector
-                 ,(transform-quasiquote-argument
-                   (coerce argument 'list))))
-        (t
-         `(quote ,argument))))
+  (typecase argument
+    ((cons (eql unquote))
+     (second argument))
+    ((cons (eql unquote-splicing))
+     ;; FIXME This condition type is a subclass of
+     ;; reader-error, which should be given a stream, but at
+     ;; this point we no longer have the stream available.
+     (error 'undefined-use-of-backquote))
+    (cons
+     `(append ,@(transform-compound argument)))
+    (vector
+     `(apply #'vector
+             ,(transform-quasiquote-argument
+               (coerce argument 'list))))
+    (t
+     `(quote ,argument))))
 
 (defun expand (form)
   (if (atom form)
