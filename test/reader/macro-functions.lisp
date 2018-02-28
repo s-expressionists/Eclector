@@ -3,6 +3,34 @@
 (def-suite* :eclector.reader.macro-functions
     :in :eclector.reader)
 
+(test sharpsign-dot/smoke
+  "Smoke test for the SHARPSIGN-DOT reader macro function."
+
+  (mapc (lambda (input-parameters-expected)
+          (destructuring-bind (input parameter read-suppress expected)
+              input-parameters-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (let ((*read-suppress* read-suppress))
+                                 (eclector.reader::sharpsign-dot
+                                  stream #\. parameter))
+                               (file-position stream)))))
+              (case expected
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (equal expected       result))
+                   (is (eql   (length input) position))))))))
+        '(;; Error cases
+          ("1"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Good inputs
+          ("1"               nil nil 1)
+          ("(+ 1 2)"         nil nil 3)
+
+          ("`1"              nil nil 1))))
+
 (test read-rational/smoke
   "Smoke test for the READ-RATIONAL reader macro function."
 
