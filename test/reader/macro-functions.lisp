@@ -108,13 +108,43 @@
           ("a"      36 nil 10)
           ("z"      36 nil 35))))
 
+(test sharpsign-p/smoke
+  "Smoke test for the SHARPSIGN-P function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind
+                (input parameter read-suppress expected)
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values
+                          (eclector.reader::sharpsign-p stream #\P parameter)
+                          (file-position stream))))))
+              (case expected
+                (type-error
+                 (signals type-error (do-it)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equal expected value))
+                   (is (equal (length input) position))))))))
+        '(;; Errors
+          ("1"       nil nil type-error)
+          ;; Warnings
+          ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Valid
+          ("\"foo\"" nil nil #P"foo"))))
+
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
 
   (mapc (lambda (input-parameter-context-expected)
           (destructuring-bind
                 (input parameter *read-suppress*
-                 plus-expected &optional minus-expected)
+                       plus-expected &optional minus-expected)
               input-parameter-context-expected
             (flet ((do-it (which)
                      (with-input-from-string (stream input)
