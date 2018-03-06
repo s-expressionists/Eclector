@@ -32,10 +32,12 @@
                           input-stream
                           char))))
             (cond
-              (*read-suppress*
-               nil)
               ((null values)
                (go step-1-start))
+              ;; This case takes care of reader macro not returning
+              ;; nil when *READ-SUPPRESS* is true.
+              (*read-suppress*
+               (return-from read-common nil))
               (t
                (return-from read-common (car values))))))
          (t
