@@ -706,11 +706,12 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-p parameter))
   (let ((expression (read stream t nil t)))
-    (unless (stringp expression)
-      (error 'type-error
-             :expected-type 'string
-             :datum expression))
-    (parse-namestring expression)))
+    (unless *read-suppress*
+      (unless (stringp expression)
+        (error 'type-error
+               :expected-type 'string
+               :datum expression))
+      (parse-namestring expression))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

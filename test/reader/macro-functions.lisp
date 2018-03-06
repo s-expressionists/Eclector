@@ -136,7 +136,9 @@
           ;; Warnings
           ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
-          ("\"foo\"" nil nil #P"foo"))))
+          ("\"foo\"" nil nil #P"foo")
+          ;; With *read-supress* bound to t
+          ("\"foo\"" nil t   nil))))
 
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
