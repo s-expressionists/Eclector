@@ -635,9 +635,7 @@
 (defun sharpsign-colon (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
-    (warn 'numeric-parameter-supplied-but-ignored
-          :parameter parameter
-          :macro-name 'sharpsign-colon))
+    (numeric-parameter-ignored stream 'sharpsign-colon parameter))
   (let ((token (make-array 10
                            :element-type 'character
                            :adjustable t

@@ -133,7 +133,6 @@
                    (is (equal (length input) position))))))))
         '(;; Errors
           ("1"       nil nil type-error)
-          ;; Warnings
           ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("\"foo\"" nil nil #P"foo")
@@ -183,7 +182,6 @@
           ("(not 1)"               nil nil type-error)
           ("(and 1)"               nil nil type-error)
           ("(or 1)"                nil nil type-error)
-          ;; Warnings
           ("(and) 1"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("common-lisp 1"         nil nil 1   nil)

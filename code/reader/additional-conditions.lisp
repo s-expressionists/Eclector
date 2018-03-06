@@ -74,14 +74,13 @@
 (define-condition unknown-macro-sub-character (reader-error)
   ((%sub-char :initarg :sub-char :reader sub-char)))
 
-(define-condition numeric-parameter-supplied-but-ignored (warning)
+(define-condition numeric-parameter-supplied-but-ignored (reader-error)
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))
 
 (defun numeric-parameter-ignored (stream macro-name parameter)
-  (declare (ignore stream))
-  (error 'numeric-parameter-supplied-but-ignored
-         :parameter parameter :macro-name macro-name))
+  (%reader-error stream 'numeric-parameter-supplied-but-ignored
+                 :parameter parameter :macro-name macro-name))
 
 (define-condition numeric-parameter-not-supplied-but-required (reader-error)
   ((%macro-name :initarg :macro-name :reader macro-name)))
