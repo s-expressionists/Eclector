@@ -15,7 +15,7 @@ all : $(NAME).pdf
 %.pdf_t: %.fig %.pdf
 	fig2dev -Lpdftex_t -m 0.75 -p $(basename $<).pdf $< $@
 
-%.code: %.lisp 
+%.code: %.lisp
 	./codify $<
 
 $(NAME).pdf: $(TEXFILES) $(PDF) $(PDF_T) $(VERBATIM) $(CODEFILES) $(BIBFILES)
