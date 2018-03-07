@@ -2,7 +2,14 @@
   (:use
    #:cl)
 
+  ;; Result and source location protocol
   (:export
-   #:source-position
+   #:source-position)
 
-   #:cst-read))
+  ;; Read protocol
+  (:export
+   #:cst-read)
+
+  ;; Client class (can be used as a superclass)
+  (:export
+   #:cst-client))
