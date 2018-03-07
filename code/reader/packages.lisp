@@ -27,7 +27,6 @@
    #:call-reader-macro
    #:interpret-token
    #:interpret-symbol
-   #:source-position
    ;; Backquote customization.
    #:wrap-in-quasiquote
    #:wrap-in-unquote
