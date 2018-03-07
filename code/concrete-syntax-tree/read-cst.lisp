@@ -16,6 +16,8 @@
 ;;;
 (defvar *stack*)
 
+(defvar *start*)
+
 (defun create-cst (expression children source)
   (if (atom expression)
       (make-instance 'cst:atom-cst
@@ -39,27 +41,37 @@
                       (cons-cst expression))))))
         (cons-cst expression source))))
 
-(defmethod eclector.reader:read-common :around ((client cst-client) input-stream eof-error-p eof-value)
-  (if (boundp '*stack*)
-      (let ((*stack* (cons '() *stack*)))
-        (loop for char = (read-char input-stream nil nil)
-           when (null char)
-           do (if eof-error-p
-                  (error 'end-of-file :stream input-stream)
-                  (return-from eclector.reader:read-common eof-value))
-           while (eq (eclector.readtable:syntax-type
-                      eclector.reader:*readtable* char)
-                     :whitespace)
-           finally (unread-char char input-stream))
-        (let* ((start (source-position input-stream client))
-               (result (call-next-method))
-               (end (source-position input-stream client))
-               (source (cons start end))
-               ;; TODO reverse necessary?
-               (cst (create-cst result (reverse (first *stack*)) source)))
-          (push cst (second *stack*))
-          result))
-      (call-next-method)))
+(flet ((skip-whitespace (stream eof-error-p)
+         (loop for char = (read-char stream nil nil)
+               when (null char)
+                 do (if eof-error-p
+                        (error 'end-of-file :stream stream)
+                        (return nil))
+               while (eq (eclector.readtable:syntax-type
+                          eclector.reader:*readtable* char)
+                         :whitespace)
+               finally (progn
+                         (unread-char char stream)
+                         (return t)))))
+
+  (defmethod eclector.reader:note-skipped-input ((client cst-client) input-stream)
+    (skip-whitespace input-stream nil)
+    (setf *start* (source-position input-stream client)))
+
+  (defmethod eclector.reader:read-common :around ((client cst-client) input-stream eof-error-p eof-value)
+    (if (boundp '*stack*)
+        (let ((*stack* (cons '() *stack*)))
+          (unless (skip-whitespace input-stream eof-error-p)
+            (return-from eclector.reader:read-common eof-value))
+          (let* ((*start* (source-position input-stream client))
+                 (result (call-next-method))
+                 (end (source-position input-stream client))
+                 (source (cons *start* end))
+                 ;; TODO reverse necessary?
+                 (cst (create-cst result (reverse (first *stack*)) source)))
+            (push cst (second *stack*))
+            result))
+        (call-next-method))))
 
 (defun cst-read (&rest arguments)
   (destructuring-bind (&optional eof-error-p eof-value) (rest arguments)
