@@ -26,7 +26,7 @@
       (rec cst))))
 
 (test read-cst/smoke
-  "Smoke test for the READ-CST function."
+  "Smoke test for the CST-READ function."
 
   (mapc (lambda (input-and-expected)
           (destructuring-bind (input expected-raw &optional expected-location)
@@ -48,6 +48,7 @@
                    ;; Consumed all input.
                    (is (eql (length input) position))))))))
 
-        '(("(cons 1 2)"    (cons 1 2) ( 0 . 10))
-          ("#+(or) `1 2"   2          (10 . 11))
-          ("#|comment|# 1" 1          (12 . 13)))))
+        '(("(cons 1 2)"                  (cons 1 2) ( 0 . 10))
+          ("#+(or) `1 2"                 2          (10 . 11))
+          ("#|comment|# 1"               1          (12 . 13))
+          (#.(format nil "; comment~%1") 1          (10 . 11)))))
