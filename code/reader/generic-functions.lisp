@@ -4,6 +4,10 @@
 
 (defgeneric read-token (input-stream eof-error-p eof-value))
 
+(defgeneric note-skipped-input (client input-stream)
+  (:method ((client t) (input-stream t))
+    (declare (ignore client input-stream))))
+
 (defgeneric interpret-token (token token-escapes input-stream))
 
 (defgeneric interpret-symbol (token

@@ -25,7 +25,8 @@
   (loop for char = (read-char stream nil nil t)
         until (or (null char) (eql char #\Newline))
         finally (when (eql char #\Newline)
-                  (unread-char char stream )))
+                  (unread-char char stream)))
+  (note-skipped-input *client* stream)
   (values))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -567,7 +568,9 @@
                  ((eql char #\|)
                   (let ((char2 (read-char stream t nil t)))
                     (if (eql char2 #\#)
-                        (return-from sharpsign-vertical-bar (values))
+                        (progn
+                          (note-skipped-input *client* stream)
+                          (return-from sharpsign-vertical-bar (values)))
                         (unread-char char2 stream))))
                  (t
                   nil))))
@@ -758,6 +761,7 @@
           (read stream t nil t)
           (let ((*read-suppress* t))
             (read stream t nil t)
+            (note-skipped-input *client* stream)
             (values))))))
 
 (defun sharpsign-plus (stream char parameter)

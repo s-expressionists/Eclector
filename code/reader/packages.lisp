@@ -24,6 +24,7 @@
    #:*preserve-whitespace*
    #:read-common
    #:read-token
+   #:note-skipped-input
    #:interpret-token
    #:interpret-symbol
    #:call-reader-macro
