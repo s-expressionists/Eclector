@@ -29,19 +29,24 @@
   "Smoke test for the READ-CST function."
 
   (mapc (lambda (input-and-expected)
-          (destructuring-bind (input expected) input-and-expected
+          (destructuring-bind (input expected-raw &optional expected-location)
+              input-and-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
                        (values (eclector.concrete-syntax-tree:cst-read stream)
                                (file-position stream)))))
-              (case expected
+              (case expected-raw
                 (t
                  (multiple-value-bind (result position) (do-it)
+                   ;; CST result and its raw content.
                    (is (typep result 'cst:cst))
                    (is-consistent-with-raw result)
                    (let ((raw (cst:raw result)))
-                     (is (equal expected raw)))
+                     (is (equal expected-raw raw)))
+                   ;; Expected source location.
+                   (is (equal expected-location (cst:source result)))
+                   ;; Consumed all input.
                    (is (eql (length input) position))))))))
 
-        '(("(cons 1 2)"  (cons 1 2))
-          ("#+(or) `1 2" 2))))
+        '(("(cons 1 2)"  (cons 1 2) (0 . 10))
+          ("#+(or) `1 2" 2          (0 . 11)))))
