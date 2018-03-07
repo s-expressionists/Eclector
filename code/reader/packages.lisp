@@ -24,9 +24,10 @@
    #:*preserve-whitespace*
    #:read-common
    #:read-token
-   #:call-reader-macro
    #:interpret-token
    #:interpret-symbol
+   #:call-reader-macro
+   #:fixup
    ;; Backquote customization.
    #:wrap-in-quasiquote
    #:wrap-in-unquote

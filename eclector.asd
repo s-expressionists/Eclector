@@ -27,6 +27,7 @@
                 :depends-on ("readtable")
                 :serial t
                 :components ((:file "packages")
+                             (:file "generic-functions")
                              (:file "more-variables")
                              (:file "additional-conditions")
                              (:file "utilities")

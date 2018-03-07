@@ -1,10 +1,5 @@
 (cl:in-package #:eclector.reader)
 
-(defgeneric interpret-symbol (token
-                              position-package-marker-1
-                              position-package-marker-2
-                              input-stream))
-
 (defmethod interpret-symbol (token
                              position-package-marker-1
                              position-package-marker-2
@@ -62,8 +57,6 @@
     ((#\s #\S) 'short-float)
     ((#\d #\D) 'double-float)
     ((#\l #\L) 'long-float)))
-
-(defgeneric interpret-token (token token-escapes input-stream))
 
 (declaim (ftype (function (&key (:base (integer 2 36))) function)
                 make-integer-accumulator))

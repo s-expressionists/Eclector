@@ -1,13 +1,9 @@
 (cl:in-package #:eclector.reader)
 
-(defgeneric call-reader-macro (function input-stream char))
-
 (defmethod call-reader-macro (function input-stream char)
   (funcall (eclector.readtable:get-macro-character *readtable* char)
            input-stream
            char))
-
-(defgeneric read-common (client input-stream eof-error-p eof-value))
 
 (defmethod read-common :around (client input-stream eof-error-p eof-value)
   (let ((*backquote-allowed-p* *backquote-in-subforms-allowed-p*)
@@ -44,8 +40,6 @@
           (unread-char char input-stream)
           (return-from read-common
             (read-token input-stream eof-error-p eof-value)))))))
-
-(defgeneric read-token (input-stream eof-error-p eof-value))
 
 (defmethod read-token (input-stream eof-error-p eof-value)
   (let ((token (make-array 100
