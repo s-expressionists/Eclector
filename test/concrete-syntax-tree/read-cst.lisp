@@ -52,3 +52,19 @@
           ("#+(or) `1 2"                 2          (10 . 11))
           ("#|comment|# 1"               1          (12 . 13))
           (#.(format nil "; comment~%1") 1          (10 . 11)))))
+
+;;; Custom client
+
+(defclass custom-client (eclector.concrete-syntax-tree:cst-client)
+  ())
+
+(defmethod eclector.concrete-syntax-tree:source-position ((stream t) (client custom-client))
+  (- (call-next-method)))
+
+(test read-cst/custom-client
+  "Test using a custom client with CST-READ."
+
+  (let ((result (with-input-from-string (stream "#||# 1")
+                  (let ((eclector.reader:*client* (make-instance 'custom-client)))
+                    (eclector.concrete-syntax-tree:cst-read stream)))))
+    (is (equal '(-5 . -6) (cst:source result)))))
