@@ -2,7 +2,7 @@
 
 ## Introduction ##
 
-The eclector systems provides a portable implementation of a reader
+The `eclector` system provides a portable implementation of a reader
 following the Common Lisp specification.
 
 ## Tutorial ##
