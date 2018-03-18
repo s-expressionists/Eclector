@@ -2,9 +2,9 @@
 
 \section{Packages}
 
-\subsection{Package for ordinary reader functions}
+\subsection{Package for ordinary reader features}
 
-The package for ordinary reader functions is named
+The package for ordinary reader features is named
 \texttt{eclector.reader}.  To use features of this package, we
 recommend the use of explicit package prefixes, simply because this
 package shadows and exports names that are also exported from the
@@ -13,4 +13,16 @@ cause conflicts with the \texttt{common-lisp} package otherwise.
 
 \subsection{Package for readtable features}
 
+The package for readtable-related features is named
+\texttt{eclector.readertable}.  To use features of this package, we
+recommend the use of explicit package prefixes, simply because this
+package shadows and exports names that are also exported from the
+\texttt{common-lisp} package.  Importing this package will likely
+cause conflicts with the \texttt{common-lisp} package otherwise.
+
 \subsection{Package for CST features}
+
+The package for features related to concrete syntax trees is named
+eclector.concrete-syntax-tree.  Although this package does not shadow
+any symbol in the \texttt{common-lisp} package, we still recommend the
+use of explicit package prefixes to refer to symbols in this package.
