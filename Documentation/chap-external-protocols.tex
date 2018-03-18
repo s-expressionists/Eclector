@@ -26,3 +26,14 @@ The package for features related to concrete syntax trees is named
 eclector.concrete-syntax-tree.  Although this package does not shadow
 any symbol in the \texttt{common-lisp} package, we still recommend the
 use of explicit package prefixes to refer to symbols in this package.
+
+\section{Ordinary reader features}
+
+\Defun {read} {\optional (input-stream \texttt{*standard-input*})\\
+  (eof-error-p \texttt{t})
+  (eof-value \texttt{nil})
+  (recursive-p \texttt{nil})}
+
+This function is the main entry point for the ordinary reader.  It is
+entirely compatible with the standard \commonlisp{} function with the
+same name.
