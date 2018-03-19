@@ -46,3 +46,12 @@ Client code that wants to override or extend the default behavior of
 some generic function of \sysname{} should bind this variable to some
 standard object and provide a method on that generic function,
 specialized to the class of that standard object.
+
+\Defgeneric {read-common} {client input-stream eof-error-p eof-value}
+
+This generic function is called by \texttt{read}, passing it the value
+of the variable \texttt{*client*} and the corresponding parameters.
+Client code can add methods on this function, specializing them to the
+client class of their choice.  The actions that \texttt{read} need to
+take for different values of the parameter \texttt{recursive-p} have
+already been taken before \texttt{read} calls this generic function.
