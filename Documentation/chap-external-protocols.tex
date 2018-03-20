@@ -52,6 +52,16 @@ specialized to the class of that standard object.
 This generic function is called by \texttt{read}, passing it the value
 of the variable \texttt{*client*} and the corresponding parameters.
 Client code can add methods on this function, specializing them to the
-client class of their choice.  The actions that \texttt{read} need to
+client class of its choice.  The actions that \texttt{read} need to
 take for different values of the parameter \texttt{recursive-p} have
 already been taken before \texttt{read} calls this generic function.
+
+\Defgeneric {note-skipped-input} {client input-stream}
+
+This generic function is called whenever the reader skips some input
+such as a comment or a form that must be skipped because of a reader
+conditional.  It is called with the value of the variable
+\texttt{*client*} and the input stream from which the input is being
+read.  The default method on this generic function does nothing.
+Client code can supply a method that specializes to the client class
+of its choice.
