@@ -73,3 +73,16 @@ been detected that a token should be read.  This function is
 responsible for accumulating the characters of the token and then
 calling \texttt{interpret-token} (see below) in order to create and
 return a token.
+
+\Defgeneric {interpret-token} {token token-escapes input-stream}
+
+This generic function is called by \texttt{read-token} in order to
+create a token from accumulated token characters.  the parameter
+\textit{token} is a string containing the characters that make up the
+token.  The parameter \textit{token-escapes} is a vector of Boolean
+values (i.e. \texttt{nil} or \texttt{t}) with the same length as the
+string \textit{token}.  It indicates, for each character in
+\textit{token} whether the character was \emph{escaped} or read
+normally.  This information is used to convert the characters in
+\textit{token} according to the \emph{readtable case} of the current
+readtable before a token is constructed.
