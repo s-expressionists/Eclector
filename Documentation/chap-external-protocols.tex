@@ -86,3 +86,20 @@ string \textit{token}.  It indicates, for each character in
 normally.  This information is used to convert the characters in
 \textit{token} according to the \emph{readtable case} of the current
 readtable before a token is constructed.
+
+\Defgeneric {interpret-symbol} {token position-package-marker-1\\
+  position-package-marker-2 input-stream}
+
+This generic function is called by the default method on
+\texttt{interpret-token} when the syntax of the token corresponds to
+that of a valid symbol.  The parameter \textit{token} is a string that
+contains all the characters of the token.  The parameter
+\textit{position-package-marker-1} contains the index into
+\textit{token} of the first package marker, or \texttt{nil} if the
+token contains no package markers.  The parameter
+\textit{position-package-marker-2} contains the index into
+\textit{token} of the second package marker, or \texttt{nil} if the
+token contains no package markers or only a single package marker.
+The parameter \textit{input-stream} is the input stream from which the
+characters were read.  It can be used by client code to specialize the
+behavior of this generic function.
