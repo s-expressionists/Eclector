@@ -8,6 +8,8 @@
     (alexandria:once-only (cst)
       `(values (,cst-operator ,cst) (,operator (cst:raw ,cst))))))
 
+;;; Smoke test
+
 (defun is-consistent-with-raw (cst)
   (let ((seen (make-hash-table :test #'eq)))
     (labels ((rec (cst)
@@ -52,6 +54,63 @@
           ("#+(or) `1 2"                 2          (10 . 11))
           ("#|comment|# 1"               1          (12 . 13))
           (#.(format nil "; comment~%1") 1          (10 . 11)))))
+
+;;; Source locations
+
+(defun check-source-locations (cst expected-source-locations)
+  (labels ((check (cst expected)
+             (destructuring-bind (expected-location . children) expected
+               (is (equal expected-location (cst:source cst)))
+               (cond
+                 ((not children)
+                  (is-true (cst:atom cst)))
+                 ((not (cst:consp cst))
+                  (fail "Expected CONS CST, but got ~S" cst))
+                 (t
+                  (check (cst:first cst) (first children))
+                  (check (cst:rest cst) (rest children)))))))
+    (check cst expected-source-locations)))
+
+(test read-cst/source-locations
+  "Test source locations assigned by CST-READ."
+
+  (mapc (lambda (input-expected)
+          (destructuring-bind (input expected) input-expected
+            (let ((result (with-input-from-string (stream input)
+                            (eclector.concrete-syntax-tree:cst-read stream))))
+              (check-source-locations result expected))))
+        (macrolet ((scons ((&optional start end) &optional car cdr)
+                     `(cons ,(if start `(cons ,start ,end) 'nil)
+                            ,(if car `(cons ,car ,cdr) 'nil))))
+          `(;; Sanity check
+            ("(1 2 3)"      ,(scons (0 7)
+                                    (scons (1 2)) ; 1
+                                    (scons ()
+                                           (scons (3 4)) ; 2
+                                           (scons ()
+                                                  (scons (5 6)) ; 3
+                                                  (scons ())))))
+
+            ;; Simple reader macro
+            ("#.(list 1 2)" ,(scons (0 12)
+                                    (scons (8 9)) ; 1
+                                    (scons ()
+                                           (scons (10 11)) ; 2
+                                           (scons ()))))
+
+            ;; Nested reader macros
+            ("#.(list* 1 '#.(list 2))" ,(scons (0 23)
+                                               (scons (9 10)) ; 1
+                                               (scons (12 22) ; #.(...)
+                                                      (scons (20 21)) ; 2
+                                                      (scons ()))))
+
+            ;; Heuristic fails here
+            ("#.(list 1 1)" ,(scons (0 12)
+                                    (scons (8 9)) ; 1
+                                    (scons ()
+                                           (scons (8 9)) ; 1
+                                           (scons ()))))))))
 
 ;;; Custom client
 

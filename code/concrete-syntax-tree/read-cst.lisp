@@ -18,28 +18,17 @@
 
 (defvar *start*)
 
-(defun create-cst (expression children source)
+(defun create-cst (client expression children source)
   (if (atom expression)
       (make-instance 'cst:atom-cst
                      :raw expression
                      :source source)
-      (labels ((cons-cst (expression &optional source)
-                 (destructuring-bind (car . cdr) expression
-                   (make-instance 'cst:cons-cst
-                                  :raw expression
-                                  :first (aux car)
-                                  :rest (aux cdr)
-                                  :source source)))
-               (aux (expression)
-                 (let ((cst (find expression children :key #'cst:raw)))
-                   (cond
-                     ((not (null cst))
-                      cst)
-                     ((atom expression)
-                      (cst:cst-from-expression expression))
-                     (t
-                      (cons-cst expression))))))
-        (cons-cst expression source))))
+      (destructuring-bind (car . cdr) expression
+        (make-instance 'cst:cons-cst
+                       :raw expression
+                       :first (cst:reconstruct car children client)
+                       :rest (cst:reconstruct cdr children client)
+                       :source source))))
 
 (flet ((skip-whitespace (stream eof-error-p)
          (loop for char = (read-char stream nil nil)
@@ -68,7 +57,7 @@
                  (end (source-position input-stream client))
                  (source (cons *start* end))
                  ;; TODO reverse necessary?
-                 (cst (create-cst result (reverse (first *stack*)) source)))
+                 (cst (create-cst client result (reverse (first *stack*)) source)))
             (push cst (second *stack*))
             result))
         (call-next-method))))
