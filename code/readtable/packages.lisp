@@ -1,6 +1,8 @@
 (cl:defpackage #:eclector.readtable
   (:use #:common-lisp)
-  (:shadow #:copy-readtable
+  ;; Shadowed standard symbols
+  (:shadow #:*readtable*
+           #:copy-readtable
            #:make-dispatch-macro-character
            #:readtable-case
            #:readtablep
@@ -9,7 +11,8 @@
            #:get-dispatch-macro-character
            #:set-dispatch-macro-character
            #:set-syntax-from-char)
-  (:export #:copy-readtable
+  (:export #:*readtable*
+           #:copy-readtable
            #:copy-readtable-into
            #:make-dispatch-macro-character
            #:readtable-case

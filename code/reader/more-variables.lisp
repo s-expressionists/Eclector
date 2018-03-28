@@ -16,6 +16,4 @@
 
 (defparameter *preserve-whitespace* nil)
 
-(defparameter *readtable* nil)
-
 (defparameter *client* nil)

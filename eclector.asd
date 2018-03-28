@@ -12,6 +12,7 @@
                 :pathname "code/readtable"
                 :serial t
                 :components ((:file "packages")
+                             (:file "variables")
                              (:file "generic-functions")))
 
                (:module "simple-readtable"
