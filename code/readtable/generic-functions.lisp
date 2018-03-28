@@ -48,7 +48,15 @@
 ;;; This function is the generic version of the standard Common Lisp
 ;;; function with the same name.
 (defgeneric (setf syntax-from-char)
-    (from-readtable to-readtable to-char from-char))
+    (from-char to-char to-readtable from-readtable)
+  (:method (from-char to-char to-readtable from-readtable)
+    (setf (syntax-type to-readtable to-char) (syntax-type from-readtable from-char))
+    from-char))
+
+(defun set-syntax-from-char (to-char from-char &optional
+                                               (to-readtable *readtable*)
+                                               (from-readtable *readtable*))
+  (setf (syntax-from-char to-char to-readtable from-readtable) from-char))
 
 ;;; This function returns the syntax type of the character CHAR in
 ;;; READTABLE.  The syntax type is one of :WHITESPACE,

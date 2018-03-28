@@ -69,7 +69,9 @@
                              (:file "tokens")
                              (:file "read")
                              (:file "macro-functions")
-                             (:file "quasiquote-macro"))))
+                             (:file "quasiquote-macro")
+
+                             (:file "readtable"))))
 
   :perform (test-op (operation component)
              (uiop:symbol-call '#:eclector.test '#:run-tests)))

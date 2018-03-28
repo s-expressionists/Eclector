@@ -21,5 +21,8 @@
            #:set-macro-character
            #:get-dispatch-macro-character
            #:set-dispatch-macro-character
-           #:syntax-type
-           #:set-syntax-from-char))
+           #:set-syntax-from-char)
+  ;; Other exported symbols
+  (:export
+   #:syntax-type
+   #:syntax-from-char)) ; SETF
