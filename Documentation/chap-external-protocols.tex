@@ -103,3 +103,19 @@ token contains no package markers or only a single package marker.
 The parameter \textit{input-stream} is the input stream from which the
 characters were read.  It can be used by client code to specialize the
 behavior of this generic function.
+
+\Defgeneric {call-reader-macro} {function input-stream char}
+
+This generic function is called when the reader has determined that
+some character is associated with a reader macro.  The parameter
+\textit{function} is the reader macro function that is associated with
+the macro character.  The parameter \textit{input-stream} is the input
+stream from which the reader macro function will read additional input
+to accomplish its task.  The parameter \textit{char} is the character
+that was read and was determined to be associated with the reader
+macro function.
+
+The default method on this generic function simply calls
+\textit{function}, passing it \textit{input-stream} and \textit{char}
+as arguments.  The default method therefore does the same thing that
+the standard \commonlisp{} function \texttt{funcall} does.
