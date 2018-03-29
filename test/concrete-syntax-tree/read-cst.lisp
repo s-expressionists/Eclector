@@ -91,6 +91,13 @@
                                                   (scons (5 6)) ; 3
                                                   (scons ())))))
 
+            ;; EQL children
+            ("(1 1)"        ,(scons (0 5)
+                                    (scons (1 2)) ; first 1
+                                    (scons ()
+                                           (scons (3 4)) ; second 1
+                                           (scons ()))))
+
             ;; Simple reader macro
             ("#.(list 1 2)" ,(scons (0 12)
                                     (scons (8 9)) ; 1
@@ -107,9 +114,9 @@
 
             ;; Heuristic fails here
             ("#.(list 1 1)" ,(scons (0 12)
-                                    (scons (8 9)) ; 1
+                                    (scons (10 11)) ; second 1 (arbitrarily)
                                     (scons ()
-                                           (scons (8 9)) ; 1
+                                           (scons (10 11)) ; second 1 (arbitrarily)
                                            (scons ()))))))))
 
 ;;; Custom client
