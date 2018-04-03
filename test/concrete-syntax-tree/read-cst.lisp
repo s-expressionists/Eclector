@@ -31,29 +31,42 @@
   "Smoke test for the CST-READ function."
 
   (mapc (lambda (input-and-expected)
-          (destructuring-bind (input expected-raw &optional expected-location)
+          (destructuring-bind
+              (input eof-error expected-raw &optional expected-location)
               input-and-expected
-            (flet ((do-it ()
-                     (with-input-from-string (stream input)
-                       (values (eclector.concrete-syntax-tree:cst-read stream)
-                               (file-position stream)))))
-              (case expected-raw
-                (t
-                 (multiple-value-bind (result position) (do-it)
-                   ;; CST result and its raw content.
-                   (is (typep result 'cst:cst))
-                   (is-consistent-with-raw result)
-                   (let ((raw (cst:raw result)))
-                     (is (equal expected-raw raw)))
-                   ;; Expected source location.
-                   (is (equal expected-location (cst:source result)))
-                   ;; Consumed all input.
-                   (is (eql (length input) position))))))))
+            (let ((input (format nil input)))
+              (flet ((do-it ()
+                       (with-input-from-string (stream input)
+                         (values (eclector.concrete-syntax-tree:cst-read
+                                  stream eof-error :eof)
+                                 (file-position stream)))))
+                (case expected-raw
+                  (end-of-file
+                   (signals end-of-file (do-it)))
+                  (:eof
+                   (is (eq :eof (do-it))))
+                  (t
+                   (multiple-value-bind (result position) (do-it)
+                     ;; CST result and its raw content.
+                     (is (typep result 'cst:cst))
+                     (is-consistent-with-raw result)
+                     (let ((raw (cst:raw result)))
+                       (is (equal expected-raw raw)))
+                     ;; Expected source location.
+                     (is (equal expected-location (cst:source result)))
+                     ;; Consumed all input.
+                     (is (eql (length input) position)))))))))
 
-        '(("(cons 1 2)"                  (cons 1 2) ( 0 . 10))
-          ("#+(or) `1 2"                 2          (10 . 11))
-          ("#|comment|# 1"               1          (12 . 13))
-          (#.(format nil "; comment~%1") 1          (10 . 11)))))
+        '(;; End of file
+          (""              t   end-of-file)
+          (""              nil :eof)
+          ("; comment"     t   end-of-file)
+          ("; comment"     nil :eof)
+          ;; Actually reading something
+          ("(cons 1 2)"    t   (cons 1 2) ( 0 . 10))
+          ("#+(or) `1 2"   t   2          (10 . 11))
+          ("#|comment|# 1" t   1          (12 . 13))
+          ("; comment~%1"  t   1          (10 . 11)))))
 
 ;;; Source locations
 
