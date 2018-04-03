@@ -39,9 +39,9 @@
          (t
           (unread-char char input-stream)
           (return-from read-common
-            (read-token input-stream eof-error-p eof-value)))))))
+            (read-token client input-stream eof-error-p eof-value)))))))
 
-(defmethod read-token (input-stream eof-error-p eof-value)
+(defmethod read-token (client input-stream eof-error-p eof-value)
   (let ((token (make-array 100
                            :element-type 'character
                            :adjustable t

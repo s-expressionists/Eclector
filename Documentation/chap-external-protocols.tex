@@ -67,7 +67,7 @@ read.  The default method on this generic function does nothing.
 Client code can supply a method that specializes to the client class
 of its choice.
 
-\Defgeneric {read-token} {input-stream eof-error-p eof-value}
+\Defgeneric {read-token} {client input-stream eof-error-p eof-value}
 
 This generic function is called by \texttt{read-common} when it has
 been detected that a token should be read.  This function is

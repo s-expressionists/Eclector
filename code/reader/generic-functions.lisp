@@ -2,7 +2,7 @@
 
 (defgeneric read-common (client input-stream eof-error-p eof-value))
 
-(defgeneric read-token (input-stream eof-error-p eof-value))
+(defgeneric read-token (client input-stream eof-error-p eof-value))
 
 (defgeneric note-skipped-input (client input-stream)
   (:method ((client t) (input-stream t))
