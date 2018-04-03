@@ -4,7 +4,8 @@
 
   ;; Result and source location protocol
   (:export
-   #:source-position)
+   #:source-position
+   #:record-skipped-input)
 
   ;; Read protocol
   (:export

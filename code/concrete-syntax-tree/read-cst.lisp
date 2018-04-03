@@ -10,6 +10,10 @@
     (declare (ignore client))
     (file-position stream)))
 
+(defgeneric record-skipped-input (client stream reason source)
+  (:method (client stream reason source)
+    (declare (ignore client stream reason source))))
+
 ;;; A list of sub-lists the form
 ;;;
 ;;;   (CHILDREN-OF-CURRENT-NODE CHILDREN-OF-PARENT ...)
@@ -71,16 +75,28 @@
                          (unread-char char stream)
                          (return t)))))
 
-  (defmethod eclector.reader:note-skipped-input ((client cst-client) input-stream)
-    (skip-whitespace input-stream nil)
-    (setf *start* (source-position input-stream client)))
+  (defmethod eclector.reader:note-skipped-input ((client cst-client) input-stream reason)
+    (let ((start *start*)
+          (end (source-position input-stream client)))
+      ;; Notify CLIENT of the skipped input and the reason.
+      (record-skipped-input client input-stream reason (cons start end))
+      ;; Try to advance to the next non-whitespace input character,
+      ;; then update *START*. This way, the source location for an
+      ;; object subsequently read from the stream will not include the
+      ;; whitespace.
+      (skip-whitespace input-stream nil) ; TODO
+      (setf *start* (source-position input-stream client))))
 
   (defmethod eclector.reader:read-common :around ((client cst-client) input-stream eof-error-p eof-value)
     (if (boundp '*stack*)
         (let ((*stack* (cons '() *stack*)))
           (unless (skip-whitespace input-stream eof-error-p)
             (return-from eclector.reader:read-common eof-value))
-          (let* ((*start* (source-position input-stream client))
+          (let* (;; *START* is used and potentially modified in
+                 ;; NOTE-SKIPPED-INPUT to reflect skipped input
+                 ;; (comments, reader macros, *READ-SUPPRESS*) before
+                 ;; actually reading something.
+                 (*start* (source-position input-stream client))
                  (result (call-next-method))
                  (end (source-position input-stream client))
                  (source (cons *start* end))

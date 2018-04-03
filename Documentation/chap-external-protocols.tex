@@ -57,15 +57,25 @@ client class of its choice.  The actions that \texttt{read} need to
 take for different values of the parameter \texttt{recursive-p} have
 already been taken before \texttt{read} calls this generic function.
 
-\Defgeneric {note-skipped-input} {client input-stream}
+\Defgeneric {note-skipped-input} {client input-stream reason}
 
 This generic function is called whenever the reader skips some input
 such as a comment or a form that must be skipped because of a reader
 conditional.  It is called with the value of the variable
-\texttt{*client*} and the input stream from which the input is being
-read.  The default method on this generic function does nothing.
-Client code can supply a method that specializes to the client class
-of its choice.
+\texttt{*client*}, the input stream from which the input is being read
+and an object indicating the reason for skipping the input.  The
+default method on this generic function does nothing.  Client code can
+supply a method that specializes to the client class of its choice.
+
+\Defvar {*skip-reason*}
+
+This variable is used by the reader to determine why a range of input
+characters has been skipped.  To this end, internal functions of the
+reader as well as reader macros can set this variable to a suitable
+value before skipping over some input.  This information is relayed to
+the client using the
+\texttt{eclector.concrete-syntax-tree:record-skipped-input} generic
+function (see~\ref{sec:cst-reader-features}).
 
 \Defgeneric {read-token} {client input-stream eof-error-p eof-value}
 
@@ -122,6 +132,7 @@ as arguments.  The default method therefore does the same thing that
 the standard \commonlisp{} function \texttt{funcall} does.
 
 \section{CST reader features}
+\label{sec:cst-reader-features}
 
 \Defun {cst-read} {\optional (input-stream \texttt{*standard-input*})\\
   (eof-error-p \texttt{t})
@@ -138,3 +149,27 @@ mostly compatible with the standard \commonlisp{} function
   since it sets up a dynamic environment in which calls to
   \texttt{eclector.reader:read} behave suitably.
 \end{itemize}
+
+\Defgeneric {record-skipped-input} {client input-stream reason source}
+
+This generic function is called after the reader skipped over a range
+of characters in \textit{input-stream}.  The value of the
+\textit{source} parameter delimits the skipped range using start and
+end positions obtained via \texttt{source-position}.
+
+Reasons for skipping input include comments, the \texttt{\#+} and
+\texttt{\#-} reader macros and \texttt{*read-suppress*}.  The
+aforementioned reasons are reflected by the value of the
+\textit{reason} parameter as follows:
+
+\begin{tabular}{ll}
+  Input                                          & Value of the \textit{reason} parameter\\
+  \hline
+  Comment starting with $n$ \texttt{;}           & \texttt{(:line-comment . $n$)}\\
+  Comment delimited by \texttt{\#|} \texttt{|\#} & \texttt{:block-comment}\\
+  \texttt{\#+\textit{false-feature-expression}}  & \texttt{:reader-macro}\\
+  \texttt{\#-\textit{true-feature-expression}}   & \texttt{:reader-macro}\\
+  \texttt{*read-suppress*} is true               & \texttt{*read-suppress*}
+\end{tabular}
+
+The default method does nothing.

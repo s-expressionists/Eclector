@@ -19,6 +19,7 @@
    #:readtable
    #:*readtable*
    #:*client*
+   #:*skip-reason*
    #:read
    #:read-preserving-whitespace
    #:*preserve-whitespace*

@@ -4,9 +4,9 @@
 
 (defgeneric read-token (client input-stream eof-error-p eof-value))
 
-(defgeneric note-skipped-input (client input-stream)
-  (:method ((client t) (input-stream t))
-    (declare (ignore client input-stream))))
+(defgeneric note-skipped-input (client input-stream reason)
+  (:method ((client t) (input-stream t) (reason t))
+    (declare (ignore client input-stream reason))))
 
 (defgeneric interpret-token (token token-escapes input-stream))
 

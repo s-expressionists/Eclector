@@ -147,3 +147,46 @@
                   (let ((eclector.reader:*client* (make-instance 'custom-client)))
                     (eclector.concrete-syntax-tree:cst-read stream)))))
     (is (equal '(-5 . -6) (cst:source result)))))
+
+;;; Skipped input
+
+(defclass skipped-input-recording-client
+    (eclector.concrete-syntax-tree:cst-client)
+  ((skipped :accessor skipped
+            :initform '())))
+
+(defmethod eclector.concrete-syntax-tree:record-skipped-input
+    ((client skipped-input-recording-client) (stream t) (kind t) (source t))
+  (alexandria:appendf (skipped client) (list (list kind source))))
+
+(test record-skipped-input/smoke
+  "Smoke test for the RECORD-SKIPPED-INPUT function."
+
+  (mapc
+   (lambda (input-expected)
+     (destructuring-bind (input expected) input-expected
+       (let ((input (format nil input)))
+         (flet ((do-it ()
+                  (let ((client
+                          (make-instance 'skipped-input-recording-client)))
+                    (with-input-from-string (stream input)
+                      (values
+                       (let ((eclector.reader:*client* client))
+                         (eclector.concrete-syntax-tree:cst-read
+                          stream))
+                       (file-position stream)
+                       (skipped client))))))
+           (multiple-value-bind (result position skipped) (do-it)
+             (declare (ignore result))
+             (is (eql (length input) position))
+             (is (equal expected skipped)))))))
+   '(;; No skipping
+     ("1"            ())
+     ;; Comments
+     ("#||# 1"       ((:block-comment (0 . 4))))
+     ("; test~% 1"   (((:line-comment . 1) (0 . 6))))
+     (";; test~% 1"  (((:line-comment . 2) (0 . 7))))
+     (";;; test~% 1" (((:line-comment . 3) (0 . 8))))
+     ;; Reader conditionals
+     ("#+(or) 1 2"   ((*read-suppress* (7 . 8))
+                      (:reader-macro (0 . 9)))))))

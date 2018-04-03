@@ -22,11 +22,16 @@
 
 (defun semicolon (stream char)
   (declare (ignore char))
-  (loop for char = (read-char stream nil nil t)
+  (loop with state = :semicolon
+        for char = (read-char stream nil nil t)
         until (or (null char) (eql char #\Newline))
+        if (and (eq state :semicolon) (char= char #\;))
+        count 1 into semicolons
+        else
+        do (setf state nil)
         finally (when (eql char #\Newline)
+                  (setf *skip-reason* (cons :line-comment (1+ semicolons)))
                   (unread-char char stream)))
-  (note-skipped-input *client* stream)
   (values))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -569,7 +574,7 @@
                   (let ((char2 (read-char stream t nil t)))
                     (if (eql char2 #\#)
                         (progn
-                          (note-skipped-input *client* stream)
+                          (setf *skip-reason* :block-comment)
                           (return-from sharpsign-vertical-bar (values)))
                         (unread-char char2 stream))))
                  (t
@@ -761,7 +766,6 @@
           (read stream t nil t)
           (let ((*read-suppress* t))
             (read stream t nil t)
-            (note-skipped-input *client* stream)
             (values))))))
 
 (defun sharpsign-plus (stream char parameter)

@@ -13,7 +13,8 @@
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
    step-1-start
-     (let ((char (read-char input-stream nil nil)))
+     (let ((*skip-reason* nil)
+           (char (read-char input-stream nil nil)))
        (when (null char)
          (if eof-error-p
              (error 'end-of-file :stream input-stream)
@@ -29,10 +30,14 @@
                           char))))
             (cond
               ((null values)
+               (note-skipped-input client input-stream
+                                   (or *skip-reason* :reader-macro))
                (go step-1-start))
               ;; This case takes care of reader macro not returning
               ;; nil when *READ-SUPPRESS* is true.
               (*read-suppress*
+               (note-skipped-input client input-stream
+                                   (or *skip-reason* '*read-suppress*))
                (return-from read-common nil))
               (t
                (return-from read-common (car values))))))
@@ -119,6 +124,10 @@
               (go step-8-even-escapes))))
        step-10-terminate-token
          (return-from read-token
-           (if *read-suppress*
-               nil
-               (interpret-token token token-escapes input-stream)))))))
+           (cond
+             (*read-suppress*
+              (note-skipped-input client input-stream
+                                  (or *skip-reason* '*read-suppress*))
+              nil)
+             (t
+              (interpret-token token token-escapes input-stream))))))))
