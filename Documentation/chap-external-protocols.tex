@@ -23,9 +23,10 @@ cause conflicts with the \texttt{common-lisp} package otherwise.
 \subsection{Package for CST features}
 
 The package for features related to concrete syntax trees is named
-eclector.concrete-syntax-tree.  Although this package does not shadow
-any symbol in the \texttt{common-lisp} package, we still recommend the
-use of explicit package prefixes to refer to symbols in this package.
+\texttt{eclector.concrete-syntax-tree}.  Although this package does
+not shadow any symbol in the \texttt{common-lisp} package, we still
+recommend the use of explicit package prefixes to refer to symbols in
+this package.
 
 \section{Ordinary reader features}
 
@@ -119,3 +120,21 @@ The default method on this generic function simply calls
 \textit{function}, passing it \textit{input-stream} and \textit{char}
 as arguments.  The default method therefore does the same thing that
 the standard \commonlisp{} function \texttt{funcall} does.
+
+\section{CST reader features}
+
+\Defun {cst-read} {\optional (input-stream \texttt{*standard-input*})\\
+  (eof-error-p \texttt{t})
+  (eof-value \texttt{nil})}
+
+This function is the main entry point for the CST reader.  It is
+mostly compatible with the standard \commonlisp{} function
+\texttt{read}.  The differences are:
+
+\begin{itemize}
+\item The return value, unless \textit{eof-value} is returned, is an
+  instance of a subclass of \texttt{concrete-syntax-tree:cst}.
+\item The function does not accept a \textit{recursive} parameter
+  since it sets up a dynamic environment in which calls to
+  \texttt{eclector.reader:read} behave suitably.
+\end{itemize}
