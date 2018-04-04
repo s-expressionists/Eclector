@@ -2,7 +2,7 @@
 
 (in-suite :eclector.reader)
 
-(test read.smoke
+(test read/smoke
   "Smoke test for the READ function."
 
   ;; This test focuses on interactions between different parts of the

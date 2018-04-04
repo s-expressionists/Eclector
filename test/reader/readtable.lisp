@@ -2,7 +2,7 @@
 
 (in-suite :eclector)
 
-(test readtable-interaction.smoke
+(test readtable-interaction/smoke
   "Smoke test for the interaction between READ and the readtable."
 
   (mapc

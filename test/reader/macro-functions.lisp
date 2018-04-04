@@ -203,7 +203,7 @@
 ;;;
 ;;; Reader macros for sharpsign equals and sharpsign sharpsign.
 
-(test sharpsign-equal/sharpsign
+(test sharpsign-{equal\,sharpsign}/smoke
   "Smoke test for the SHARPSIGN-{EQUAL,SHARPSIGN} functions."
 
   (mapc (lambda (input-expected)

@@ -3,7 +3,7 @@
 (def-suite* :eclector.reader.quasiquote
     :in :eclector.reader)
 
-(test expand-quasiquote.smoke
+(test expand-quasiquote/smoke
   "Smoke test for QUASIQUOTE expansion. This covers some of the error
    cases the random test cannot."
 
@@ -40,7 +40,7 @@
 
           ("`\"foo\""      "foo"))))
 
-(test expand-quasiquote.host-equivalence.random
+(test expand-quasiquote.host-equivalence/random
   "Checks equivalence to host's result of expanded and evaluated
    random QUASIQUOTE expressions."
 
