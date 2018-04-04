@@ -54,42 +54,42 @@
         (token-escapes (make-array 100
                                    :adjustable t
                                    :fill-pointer 0)))
-    (let ((char (read-char input-stream nil nil)))
+    (flet ((push-char (char escapesp)
+             (vector-push-extend char token)
+             (vector-push-extend escapesp token-escapes)
+             char)
+           (read-char-handling-eof ()
+             (let ((char (read-char input-stream nil nil)))
+               (cond ((not (null char))
+                      char)
+                     (eof-error-p
+                      (error 'end-of-file :stream input-stream))
+                     (t
+                      (return-from read-token eof-value))))))
       (tagbody
-         (ecase (eclector.readtable:syntax-type *readtable* char)
-           (:single-escape
-            (let ((char (read-char input-stream nil nil)))
-              (when (null char)
-                (if eof-error-p
-                    (error 'end-of-file :stream input-stream)
-                    (return-from read-token eof-value)))
-              (vector-push-extend char token)
-              (vector-push-extend t token-escapes)
-              (go step-8-even-escapes)))
-           (:multiple-escape
-            (go step-9-odd-escapes))
-           (:constituent
-            (vector-push-extend char token)
-            (vector-push-extend nil token-escapes)
-            (go step-8-even-escapes)))
+         ;; This function is only called when a character is available
+         ;; in INPUT-STREAM.
+         (let ((char (read-char input-stream)))
+           (ecase (eclector.readtable:syntax-type *readtable* char)
+             (:single-escape
+              (push-char (read-char-handling-eof) t)
+              (go step-8-even-escapes))
+             (:multiple-escape
+              (go step-9-odd-escapes))
+             (:constituent
+              (push-char char nil)
+              (go step-8-even-escapes))))
        step-8-even-escapes
          (let ((char (read-char input-stream nil nil)))
            (when (null char)
              (go step-10-terminate-token))
            (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :non-terminating-macro)
-              (vector-push-extend char token)
-              (vector-push-extend nil token-escapes)
+              (push-char char nil)
               (go step-8-even-escapes))
              (:single-escape
-              (let ((char (read-char input-stream nil nil)))
-                (when (null char)
-                  (if eof-error-p
-                      (error 'end-of-file :stream input-stream)
-                      (return-from read-token eof-value)))
-                (vector-push-extend char token)
-                (vector-push-extend t token-escapes)
-                (go step-8-even-escapes)))
+              (push-char (read-char-handling-eof) t)
+              (go step-8-even-escapes))
              (:multiple-escape
               (go step-9-odd-escapes))
              (:terminating-macro
@@ -100,26 +100,15 @@
                 (unread-char char input-stream))
               (go step-10-terminate-token))))
        step-9-odd-escapes
-         (let ((char (read-char input-stream nil nil)))
-           (when (null char)
-             (if eof-error-p
-                 (error 'end-of-file :stream input-stream)
-                 (return-from read-token eof-value)))
+         (let ((char (read-char-handling-eof)))
            (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :terminating-macro
                :non-terminating-macro :whitespace)
-              (vector-push-extend char token)
-              (vector-push-extend t token-escapes)
+              (push-char char t)
               (go step-9-odd-escapes))
              (:single-escape
-              (let ((char (read-char input-stream nil nil)))
-                (when (null char)
-                  (if eof-error-p
-                      (error 'end-of-file :stream input-stream)
-                      (return-from read-token eof-value)))
-                (vector-push-extend char token)
-                (vector-push-extend t token-escapes)
-                (go step-9-odd-escapes)))
+              (push-char (read-char-handling-eof) t)
+              (go step-9-odd-escapes))
              (:multiple-escape
               (go step-8-even-escapes))))
        step-10-terminate-token
