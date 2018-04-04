@@ -3,6 +3,58 @@
 (def-suite* :eclector.reader.tokens
     :in :eclector.reader)
 
+(test read-token.smoke
+  "Smoke test for the default method on READ-TOKEN."
+
+  (map nil (lambda (input-args-expected)
+             (destructuring-bind
+                 (input eof-error-p eof-value preserve-whitespace
+                  expected &optional (expected-position (length input)))
+                 input-args-expected
+               (flet ((do-it ()
+                        (with-input-from-string (stream input)
+                          (values (let ((*package*
+                                          (find-package '#:eclector.reader.test)) ; TODO use a client that does not intern in INTERPRET-TOKEN
+                                        (eclector.reader:*preserve-whitespace*
+                                          preserve-whitespace))
+                                    (eclector.reader:read-token
+                                     t stream eof-error-p eof-value))
+                                  (file-position stream)))))
+                 (case expected
+                   (end-of-file
+                    (signals end-of-file (do-it)))
+                   (t
+                    (multiple-value-bind (value position) (do-it)
+                      (is (equalp expected          value))
+                      (is (eql    expected-position position))))))))
+       '(("a"     t   nil nil |A|)
+         ("\\"    t   nil nil end-of-file)
+         ("\\"    nil nil nil nil)
+         ("\\a"   t   nil nil |a|)
+         ("|a|"   t   nil nil |a|)
+
+         ("aa"    t   nil nil |AA|)
+         ("a#"    t   nil nil |A#|)
+         ("a\\"   t   nil nil end-of-file)
+         ("a\\"   nil nil nil nil)
+         ("a\\a"  t   nil nil |Aa|)
+         ("a|a|"  t   nil nil |Aa|)
+         ("a,"    t   nil nil |A|  1)
+         ("a "    t   nil nil |A|)
+         ("a "    t   nil t   |A|  1)
+
+         ("|"     t   nil nil end-of-file)
+         ("|"     nil nil nil nil)
+         ("|a|"   t   nil nil |a|)
+         ("|#|"   t   nil nil |#|)
+         ("|,|"   t   nil nil |,|)
+         ("| |"   t   nil nil | |)
+         ("|\\"   t   nil nil end-of-file)
+         ("|\\"   nil nil nil nil)
+         ("|\\|"  t   nil nil end-of-file)
+         ("|\\|"  nil nil nil nil)
+         ("|\\||" t   nil nil |\||))))
+
 (test interpet-symbol.smoke
   "Smoke test for the default method on INTERPRET-SYMBOL."
 
