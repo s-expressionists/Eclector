@@ -520,7 +520,7 @@
               when (eq syntax-type :terminating-macro)
               do (unread-char char stream)
                  (return)
-              do (if (and (not (null char)) (null value))
+              do (if (null value)
                      (setf illegal-character-p char)
                      (vector-push-extend value v)))
         (cond (*read-suppress*
@@ -547,7 +547,7 @@
               when (eq syntax-type :terminating-macro)
               do (unread-char char stream)
                  (return)
-              do (cond ((and (not (null char)) (null value))
+              do (cond ((null value)
                         (setf illegal-character-p char))
                        ((>= index parameter)
                         (setf too-many-bits-p t))
