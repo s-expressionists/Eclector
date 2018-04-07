@@ -56,7 +56,10 @@
    #:numeric-parameter-not-supplied-but-required
    #:unknown-character-name
    #:digit-expected
+   #:invalid-radix
    #:invalid-default-float-format
+   #:too-many-elements
+   #:no-elements-found
    #:single-feature-expected
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-sharpsign-undefined-label
