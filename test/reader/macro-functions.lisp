@@ -153,7 +153,9 @@
           (""    nil t   nil)
           ("1"   nil t   nil)
           ("11"  2   t   nil)
-          ("1"   2   t   nil))))
+          ("1"   2   t   nil)
+          ("abc" 2   t   nil)
+          ("abc" nil t   nil))))
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P function."
