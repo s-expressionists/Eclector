@@ -505,72 +505,54 @@
 
 (defun sharpsign-asterisk (stream char parameter)
   (declare (ignore char))
-  (if (null parameter)
-      (let ((v (make-array 10 :element-type 'bit :adjustable t :fill-pointer 0))
-            (illegal-character-p nil))
-        (loop for char = (read-char stream nil nil t)
-              for syntax-type = (if (not (null char))
-                                    (eclector.readtable:syntax-type *readtable* char)
-                                    nil)
-              for value = (if (not (null char))
-                              (digit-char-p char 2)
-                              nil)
-              until (or (null char)
-                        (eq syntax-type :whitespace))
-              when (eq syntax-type :terminating-macro)
-              do (unread-char char stream)
-                 (return)
-              do (if (null value)
-                     (setf illegal-character-p char)
-                     (vector-push-extend value v)))
-        (cond (*read-suppress*
-               nil)
-              (illegal-character-p
-               (%reader-error stream 'digit-expected
-                              :character-found illegal-character-p
-                              :base 2.))
-              (t
-               (coerce v 'simple-bit-vector))))
-      (let ((result (make-array parameter :element-type 'bit))
-            (index 0)
-            (illegal-character-p nil)
-            (too-many-bits-p nil))
-        (loop for char = (read-char stream nil nil t)
-              for syntax-type = (if (not (null char))
-                                    (eclector.readtable:syntax-type *readtable* char)
-                                    nil)
-              for value = (if (not (null char))
-                              (digit-char-p char 2)
-                              nil)
-              until (or (null char)
-                        (eq syntax-type :whitespace))
-              when (eq syntax-type :terminating-macro)
-              do (unread-char char stream)
-                 (return)
-              do (cond ((null value)
-                        (setf illegal-character-p char))
-                       ((>= index parameter)
-                        (setf too-many-bits-p t))
-                       (t
-                        (setf (sbit result index) value)))
-                 (incf index))
-        (cond (*read-suppress*
-               nil)
-              (illegal-character-p
-               (%reader-error stream 'digit-expected
-                      :character-found illegal-character-p
-                      :base 2.))
-              (too-many-bits-p
-               (%reader-error stream 'too-many-elements
-                      :expected-number parameter
-                      :number-found index))
-              ((zerop index)
-               (%reader-error stream 'no-elements-found
-                      :expected-number parameter))
-              (t
-               (loop for i from index below parameter
-                     do (setf (sbit result i) (sbit result (1- index))))
-               result)))))
+  (let ((read-suppress *read-suppress*)
+        (readtable *readtable*))
+    (flet ((next-bit ()
+             (let ((char (read-char stream nil nil t)))
+               (multiple-value-bind (syntax-type value)
+                   (unless (null char)
+                     (values (eclector.readtable:syntax-type
+                              readtable char)
+                             (digit-char-p char 2)))
+                 (when (eq syntax-type :terminating-macro)
+                   (unread-char char stream))
+                 (cond
+                   ((member syntax-type '(nil :whitespace :terminating-macro))
+                    nil)
+                   (read-suppress
+                    t)
+                   ((null value)
+                    (%reader-error stream 'digit-expected
+                                   :character-found char
+                                   :base 2.))
+                   (t
+                    value))))))
+      (cond
+        (read-suppress
+         (loop for value = (next-bit) while value))
+        ((null parameter)
+         (loop with bits = (make-array 10 :element-type 'bit
+                                          :adjustable t :fill-pointer 0)
+               for value = (next-bit)
+               while value
+               do (vector-push-extend value bits)
+               finally (return (coerce bits 'simple-bit-vector))))
+        (t
+         (loop with result = (make-array parameter :element-type 'bit)
+               for index from 0
+               for value = (next-bit)
+               while value
+               do (if (>= index parameter)
+                      (%reader-error stream 'too-many-elements
+                                     :expected-number parameter
+                                     :number-found index)
+                      (setf (sbit result index) value))
+               finally (return
+                         (if (zerop index)
+                             (%reader-error stream 'no-elements-found
+                                            :expected-number parameter)
+                             (fill result (sbit result (1- index))
+                                   :start index)))))))))
 
 (defun sharpsign-vertical-bar (stream char parameter)
   (declare (ignore char))
