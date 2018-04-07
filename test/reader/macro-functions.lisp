@@ -108,6 +108,53 @@
           ("a"      36 nil 10)
           ("z"      36 nil 35))))
 
+(test sharpsign-asterisk/smoke
+  "Smoke test for the SHARPSIGN-ASTERISK function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind
+              (input parameter read-suppress expected
+               &optional (expected-position (length input)))
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values
+                          (eclector.reader::sharpsign-asterisk stream #\* parameter)
+                          (file-position stream))))))
+              (case expected
+                (eclector.reader:digit-expected
+                 (signals eclector.reader:digit-expected (do-it)))
+                (eclector.reader:no-elements-found
+                 (signals eclector.reader:no-elements-found (do-it)))
+                (eclector.reader:too-many-elements
+                 (signals eclector.reader:too-many-elements (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equalp expected value))
+                   (is (equal expected-position position))))))))
+        '(;; Errors
+          ("a"   nil nil eclector.reader:digit-expected)
+          ("2"   nil nil eclector.reader:digit-expected)
+          (""    2   nil eclector.reader:no-elements-found)
+          ("a"   2   nil eclector.reader:digit-expected)
+          ("111" 2   nil eclector.reader:too-many-elements)
+          ;; Valid
+          (""    nil nil #*)
+          (" "   nil nil #*)
+          (")"   nil nil #*   0)
+          ("11"  nil nil #*11)
+          ("11 " nil nil #*11)
+          ("11)" nil nil #*11 2)
+          ("1"   2   nil #2*1)
+          ("1 "  2   nil #2*1)
+          ("1)"  2   nil #2*1 1)
+          ;; With *read-suppress* bound to t
+          (""    nil t   nil)
+          ("1"   nil t   nil)
+          ("11"  2   t   nil)
+          ("1"   2   t   nil))))
+
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P function."
 
