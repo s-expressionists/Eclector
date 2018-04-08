@@ -14,6 +14,7 @@
                 :pathname "code/concrete-syntax-tree"
                 :serial t
                 :components ((:file "package")
+                             (:file "generic-functions")
                              (:file "read-cst"))))
 
   :in-order-to ((test-op (test-op "eclector-concrete-syntax-tree/test"))))
