@@ -3,6 +3,28 @@
 (def-suite* :eclector.reader.macro-functions
     :in :eclector.reader)
 
+(test semicolon/smoke
+  "Smoke test for the SEMICOLON reader macro function."
+
+  (mapc (lambda (input-expected)
+          (destructuring-bind (input expected &optional expected-position)
+              input-expected
+            (let* ((input (format nil input))
+                   (expected-position (or expected-position
+                                          (length input))))
+              (multiple-value-bind (result position)
+                  (with-input-from-string (stream input)
+                    (values
+                     (multiple-value-list
+                      (eclector.reader::semicolon stream #\;))
+                     (file-position stream)))
+                (is (equal expected          result))
+                (is (eql   expected-position position))))))
+        '((""    ())
+          ("~%"  () 0)
+          (";"   ())
+          (";~%" () 1))))
+
 (test sharpsign-dot/smoke
   "Smoke test for the SHARPSIGN-DOT reader macro function."
 
