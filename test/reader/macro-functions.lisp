@@ -25,6 +25,39 @@
           (";"   ())
           (";~%" () 1))))
 
+(test double-quote/smoke
+  "Smoke test for the DOUBLE-QUOTE reader macro function."
+
+  (mapc (lambda (input-expected)
+          (destructuring-bind (input expected &optional expected-position)
+              input-expected
+            (let* ((input (format nil input))
+                   (expected-position (or expected-position
+                                          (length input))))
+              (flet ((do-it ()
+                       (with-input-from-string (stream input)
+                         (values (eclector.reader::double-quote stream #\")
+                                 (file-position stream)))))
+                (case expected
+                  (end-of-file
+                   (signals end-of-file (do-it)))
+                  (t
+                   (multiple-value-bind (result position) (do-it)
+                     (is (equal expected          result))
+                     (is (eql   expected-position position)))))))))
+        '((""       end-of-file)
+
+          ("\""     "")
+
+          ("a"      end-of-file)
+
+          ("\\a"    end-of-file)
+          ("\\a\""  "a")
+          ("\\\\"   end-of-file)
+          ("\\\\\"" "\\")
+          ("\\\""   end-of-file)
+          ("\\\"\"" "\""))))
+
 (test sharpsign-dot/smoke
   "Smoke test for the SHARPSIGN-DOT reader macro function."
 
