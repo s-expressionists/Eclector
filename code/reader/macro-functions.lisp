@@ -68,16 +68,17 @@
 ;;; return a simple vector.
 
 (defun double-quote (stream char)
-  (let ((result (make-array 100
-                            :element-type 'character
-                            :adjustable t
-                            :fill-pointer 0)))
-    (loop for char2 = (read-char stream t nil t)
-          until (eql char2 char)
-          do (when (eq (eclector.readtable:syntax-type *readtable* char2) :single-escape)
-               (setf char2 (read-char stream t nil t)))
-             (vector-push-extend char2 result))
-    (copy-seq result)))
+  (loop with result = (make-array 100
+                                  :element-type 'character
+                                  :adjustable t
+                                  :fill-pointer 0)
+        with readtable = *readtable*
+        for char2 = (read-char stream t nil t)
+        until (eql char2 char)
+        when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
+        do (setf char2 (read-char stream t nil t))
+        do (vector-push-extend char2 result)
+        finally (return (copy-seq result))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
