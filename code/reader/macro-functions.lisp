@@ -236,16 +236,17 @@
     (with-preserved-backquote-context
       (handler-case
           (loop for object = (read stream t nil t)
-                do (if (eq object *consing-dot*)
-                       (progn (setf *consing-dot-allowed-p* nil)
-                              (handler-case
-                                  (setf tail (read stream t nil t))
-                                (end-of-list ()
-                                  (%reader-error stream 'consing-dot-most-be-followed-by-object)))
-                              ;; This call to read must not succeed.
-                              (read stream t nil t)
-                              (%reader-error stream 'multiple-objects-following-consing-dot))
-                       (push object reversed-result)))
+                if (eq object *consing-dot*)
+                do (setf *consing-dot-allowed-p* nil)
+                   (handler-case
+                       (setf tail (read stream t nil t))
+                     (end-of-list ()
+                       (%reader-error stream 'consing-dot-most-be-followed-by-object)))
+                   ;; This call to read must not succeed.
+                   (read stream t nil t)
+                   (%reader-error stream 'multiple-objects-following-consing-dot)
+                else
+                do (push object reversed-result))
         (end-of-list ()
           (return-from left-parenthesis
             (nreconc reversed-result tail)))))))
