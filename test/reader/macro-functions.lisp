@@ -62,32 +62,30 @@
   "Smoke test for the LEFT-PARENTHESIS reader macro function."
 
   (mapc (lambda (input-expected)
-          (destructuring-bind (input expected &optional expected-position)
+          (destructuring-bind (input expected
+                               &optional (expected-position (length input)))
               input-expected
-            (let* ((input (format nil input))
-                   (expected-position (or expected-position
-                                          (length input))))
-              (flet ((do-it ()
-                       (with-input-from-string (stream input)
-                         (values (eclector.reader::left-parenthesis stream #\()
-                                 (file-position stream)))))
-                (case expected
-                  (end-of-file
-                   (signals end-of-file (do-it)))
-                  (eclector.reader:consing-dot-most-be-followed-by-object
-                   (signals eclector.reader:consing-dot-most-be-followed-by-object
-                     (do-it)))
-                  (eclector.reader:multiple-objects-following-consing-dot
-                   (signals eclector.reader:multiple-objects-following-consing-dot
-                     (do-it)))
-                  (eclector.reader:invalid-context-for-consing-dot
-                   (signals eclector.reader:invalid-context-for-consing-dot
-                     (do-it)))
-                  (t
-                   (multiple-value-bind (result position) (do-it)
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (eclector.reader::left-parenthesis stream #\()
+                               (file-position stream)))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:consing-dot-most-be-followed-by-object
+                 (signals eclector.reader:consing-dot-most-be-followed-by-object
+                   (do-it)))
+                (eclector.reader:multiple-objects-following-consing-dot
+                 (signals eclector.reader:multiple-objects-following-consing-dot
+                   (do-it)))
+                (eclector.reader:invalid-context-for-consing-dot
+                 (signals eclector.reader:invalid-context-for-consing-dot
+                   (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
 
-                     (is (equal expected          result))
-                     (is (eql   expected-position position)))))))))
+                   (is (equal expected          result))
+                   (is (eql   expected-position position))))))))
         '((""      end-of-file)
 
           ("."     end-of-file)
