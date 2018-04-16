@@ -297,9 +297,9 @@
                 (read stream t nil t)
                 ;; If we come here, then there were more objects
                 ;; than specified by the parameter.
-                (warn 'extraneous-objects-ignored
-                      :parameter parameter
-                      :macro-name 'sharpsign-left-parenthesis)
+                (%reader-error stream 'too-many-elements
+                               :expected-number parameter
+                               :number-found (1+ parameter))
                 ;; Read until the handler is invoked.
                 (loop do (read stream t nil t)))
             (end-of-list ()
@@ -308,9 +308,8 @@
                 (if (zerop index)
                     ;; No objects were supplied, but the parameter given
                     ;; was greater than zero.
-                    (warn 'no-objects-supplied
-                          :parameter parameter
-                          :macro-name 'sharpsign-left-parenthesis)
+                    (%reader-error stream 'no-elements-found
+                                   :expected-number parameter)
                     ;; Duplicate the last object supplied.
                     (loop for i from index below parameter
                           do (setf (aref result i) (aref result (1- index))))))

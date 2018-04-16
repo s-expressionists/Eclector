@@ -89,14 +89,6 @@
   (%reader-error stream 'numeric-parameter-not-supplied-but-required
                  :macro-name macro-name))
 
-(define-condition extraneous-objects-ignored (warning)
-  ((%parameter :initarg :parameter :reader parameter)
-   (%macro-name :initarg :macro-name :reader macro-name)))
-
-(define-condition no-objects-supplied (warning)
-  ((%parameter :initarg :parameter :reader parameter)
-   (%macro-name :initarg :macro-name :reader macro-name)))
-
 (define-condition read-time-evaluation-inhibited (reader-error)
   ())
 
