@@ -102,6 +102,50 @@
           ;; preserve whitespace.
           (") "    ()    1))))
 
+(test sharpsign-left-parenthesis/smoke
+  "Smoke test for the SHARPSIGN-LEFT-PARENTHESIS reader macro function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind (input parameter read-suppress expected
+                               &optional (expected-position (length input)))
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values (eclector.reader::sharpsign-left-parenthesis
+                                  stream #\( parameter)
+                                 (file-position stream))))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:no-elements-found
+                 (signals eclector.reader:no-elements-found (do-it)))
+                (eclector.reader:too-many-elements
+                 (signals eclector.reader:too-many-elements (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+
+                   (is (equalp expected          result))
+                   (is (eql    expected-position position))))))))
+        '(;; Errors
+          (""       nil nil end-of-file)
+          ("1"      nil nil end-of-file)
+          (")"      2   nil eclector.reader:no-elements-found)
+          ("1 1 1)" 2   nil eclector.reader:too-many-elements)
+          ;; Valid
+          (")"      nil nil #())
+          (") "     nil nil #()    1)
+          ("))"     nil nil #()    1)
+          ("1 1)"   nil nil #(1 1))
+          ("1 1) "  nil nil #(1 1) 4)
+          ("1)"     2   nil #2(1))
+          ;; With *read-suppress* bound to t
+          (")"      nil t   nil)
+          ("1)"     nil t   nil)
+          ("1)"     2   t   nil)
+          ("1 1)"   2   t   nil)
+          ("1 2 3)" 2   t   nil))))
+
 (test sharpsign-dot/smoke
   "Smoke test for the SHARPSIGN-DOT reader macro function."
 
