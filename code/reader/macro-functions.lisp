@@ -277,43 +277,38 @@
 (defun sharpsign-left-parenthesis (stream char parameter)
   (declare (ignore char))
   (with-preserved-backquote-context
-    (if (null parameter)
-        (let ((reversed-elements '()))
-          (handler-case
-              (loop for object = (read stream t nil t)
-                    do (push object reversed-elements))
-            (end-of-list ()
-              (return-from sharpsign-left-parenthesis
-                (coerce (nreverse reversed-elements) 'simple-vector)))))
-        (let ((result (make-array parameter))
-              (index 0))
-          (handler-case
-              (progn
-                (loop until (= index parameter)
-                      for object = (read stream t nil t)
-                      do (setf (aref result index) object)
-                         (incf index))
-                ;; Read the closing right parenthesis
-                (read stream t nil t)
-                ;; If we come here, then there were more objects
-                ;; than specified by the parameter.
-                (%reader-error stream 'too-many-elements
-                               :expected-number parameter
-                               :number-found (1+ parameter))
-                ;; Read until the handler is invoked.
-                (loop do (read stream t nil t)))
-            (end-of-list ()
-              ;; Come here when a closing parenthesis was found.
-              (unless (= index parameter)
-                (if (zerop index)
-                    ;; No objects were supplied, but the parameter given
-                    ;; was greater than zero.
-                    (%reader-error stream 'no-elements-found
-                                   :expected-number parameter)
-                    ;; Duplicate the last object supplied.
-                    (loop for i from index below parameter
-                          do (setf (aref result i) (aref result (1- index))))))
-              (return-from sharpsign-left-parenthesis result)))))))
+    (flet ((next-element ()
+             (handler-case
+                 (values (read stream t nil t) t)
+               (end-of-list ()
+                 (values nil nil)))))
+      (cond
+        (*read-suppress*
+         (loop for elementp = (nth-value 1 (next-element))
+               while elementp))
+        ((null parameter)
+         (loop with result = (make-array 10 :adjustable t :fill-pointer 0)
+               for (element elementp) = (multiple-value-list (next-element))
+               while elementp
+               do (vector-push-extend element result)
+               finally (return (coerce result 'simple-vector))))
+        (t
+         (loop with result = (make-array parameter)
+               for index from 0
+               for (element elementp) = (multiple-value-list
+                                         (next-element))
+               while elementp
+               do (if (>= index parameter)
+                      (%reader-error stream 'too-many-elements
+                                     :expected-number parameter
+                                     :number-found index)
+                      (setf (aref result index) element))
+               finally (return
+                         (if (zerop index)
+                             (%reader-error stream 'no-elements-found
+                                            :expected-number parameter)
+                             (fill result (aref result (1- index))
+                                   :start index)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
