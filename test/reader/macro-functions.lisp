@@ -102,6 +102,42 @@
           ;; preserve whitespace.
           (") "    ()    1))))
 
+(test sharpsign-single-quote/smoke
+  "Smoke test for the SHARPSIGN-SINGLE-QUOTE reader macro function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind (input parameter read-suppress expected
+                               &optional (expected-position (length input)))
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values (eclector.reader::sharpsign-single-quote
+                                  stream #\' parameter)
+                                 (file-position stream))))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+
+                   (is (equal expected          result))
+                   (is (eql   expected-position position))))))))
+        '(;; Errors
+          (""           nil nil end-of-file)
+          ("5"          nil nil (function 5))
+          ("X"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Valid
+          ("X"          nil nil (function X))
+          ("CL-USER::X" nil nil (function cl-user::x))
+          ("X "         nil nil (function X)          1)
+          ;; With *READ-SUPPRESS* bound to T
+          ("X"          nil t   nil)
+          ("5"          nil t   nil)
+          ("X"          1   t   nil))))
+
 (test sharpsign-left-parenthesis/smoke
   "Smoke test for the SHARPSIGN-LEFT-PARENTHESIS reader macro function."
 
