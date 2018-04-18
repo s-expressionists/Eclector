@@ -79,8 +79,9 @@
    (%macro-name :initarg :macro-name :reader macro-name)))
 
 (defun numeric-parameter-ignored (stream macro-name parameter)
-  (%reader-error stream 'numeric-parameter-supplied-but-ignored
-                 :parameter parameter :macro-name macro-name))
+  (unless *read-suppress*
+    (%reader-error stream 'numeric-parameter-supplied-but-ignored
+                   :parameter parameter :macro-name macro-name)))
 
 (define-condition numeric-parameter-not-supplied-but-required (reader-error)
   ((%macro-name :initarg :macro-name :reader macro-name)))

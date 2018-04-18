@@ -139,7 +139,7 @@
           ("1 1)"   nil nil #(1 1))
           ("1 1) "  nil nil #(1 1) 4)
           ("1)"     2   nil #2(1))
-          ;; With *read-suppress* bound to t
+          ;; With *READ-SUPPRESS* bound to T
           (")"      nil t   nil)
           ("1)"     nil t   nil)
           ("1)"     2   t   nil)
@@ -173,9 +173,9 @@
           ("(+ 1 2)"         nil nil 3)
 
           ("`1"              nil nil 1)
-
-          ;; Interaction with *READ-SUPPRESS*.
-          ("(error \"foo\")" nil t   nil))))
+          ;; With *READ-SUPPRESS* bound to T
+          ("(error \"foo\")" nil t   nil)
+          ("1"               1   t   nil))))
 
 (test read-rational/smoke
   "Smoke test for the READ-RATIONAL reader macro function."
@@ -292,11 +292,13 @@
           ("1"   2   nil #2*1)
           ("1 "  2   nil #2*1)
           ("1)"  2   nil #2*1 1)
-          ;; With *read-suppress* bound to t
+          ;; With *READ-SUPPRESS* bound to T
           (""    nil t   nil)
           ("1"   nil t   nil)
-          ("11"  2   t   nil)
+          (""    2   t   nil)
           ("1"   2   t   nil)
+          ("11"  2   t   nil)
+          ("111" 2   t   nil)
           ("abc" 2   t   nil)
           ("abc" nil t   nil))))
 
@@ -328,8 +330,9 @@
           ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("\"foo\"" nil nil #P"foo")
-          ;; With *read-supress* bound to t
-          ("\"foo\"" nil t   nil))))
+          ;; With *READ-SUPPRESS* bound to T
+          ("\"foo\"" nil t   nil)
+          ("\"foo\"" 1   t   nil))))
 
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
@@ -381,8 +384,9 @@
           ("(and) 1"               nil nil 1   nil)
           ("(or) 1"                nil nil nil 1)
           ("(not (not (and))) 1"   nil nil 1   nil)
-          ;; With *read-supress* bound to t
+          ;; With *READ-SUPPRESS* bound to T
           ("(and) 1"               nil t   nil nil)
+          ("(and) 1"               1   t   nil nil)
           ;; In which package is the guarded expression read?
           ("(and) foo"             nil nil foo nil)
           ;; Vendor extension shouldn't break other implementations
