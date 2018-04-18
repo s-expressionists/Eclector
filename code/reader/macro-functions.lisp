@@ -268,7 +268,10 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-single-quote parameter))
   (with-preserved-backquote-context
-    `(function ,(read stream t nil t))))
+    (let ((name (read stream t nil t)))
+      (if *read-suppress*
+          nil
+          `(function ,name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
