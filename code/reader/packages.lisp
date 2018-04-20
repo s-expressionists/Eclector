@@ -39,7 +39,7 @@
    #:invalid-context-for-backquote
    #:comma-not-inside-backquote
    #:unquote-splicing-in-dotted-list
-   #:undefined-use-of-backquote
+   #:unquote-splicing-at-top
    #:invalid-context-for-consing-dot
    #:consing-dot-most-be-followed-by-object
    #:multiple-objects-following-consing-dot

@@ -17,7 +17,7 @@
 (define-condition unquote-splicing-in-dotted-list (backquote-condition)
   ())
 
-(define-condition undefined-use-of-backquote (backquote-condition)
+(define-condition unquote-splicing-at-top (backquote-condition)
   ())
 
 ;;; Conditions related to consing dot

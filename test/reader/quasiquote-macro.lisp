@@ -14,8 +14,8 @@
               (flet ((do-it ()
                        (macroexpand-1 form)))
                 (case expected
-                  (eclector.reader:undefined-use-of-backquote
-                   (signals eclector.reader:undefined-use-of-backquote
+                  (eclector.reader:unquote-splicing-at-top
+                   (signals eclector.reader:unquote-splicing-at-top
                      (do-it)))
                   (eclector.reader:unquote-splicing-in-dotted-list
                    (signals eclector.reader:unquote-splicing-in-dotted-list
@@ -27,7 +27,7 @@
                      (t
                       (is (equal expected (eval (do-it))))))))))))
         '(("`,1"           1)
-          ("`,@1"          eclector.reader:undefined-use-of-backquote)
+          ("`,@1"          eclector.reader:unquote-splicing-at-top)
 
           ("`(1 ,2)"       (1 2))
           ("`(1 ,@'(2))"   (1 2))

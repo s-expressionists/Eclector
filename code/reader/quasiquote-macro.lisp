@@ -37,7 +37,7 @@
                ((cons t (or (not cons) (cons (eql unquote))))
                 (list (transform (car object)) (transform (cdr object) nil)))
                ((cons t (cons (eql unquote-splicing)))
-                ;; FIXME see comment for UNDEFINED-USE-OF-BACKQUOTE below
+                ;; FIXME see comment for UNQUOTE-SPLICING-AT-TOP below
                 (error 'unquote-splicing-in-dotted-list))
                (t
                 (list* (transform (car object)) (rec (cdr object)))))))
@@ -51,7 +51,7 @@
      ;; FIXME This condition type is a subclass of
      ;; reader-error, which should be given a stream, but at
      ;; this point we no longer have the stream available.
-     (error 'undefined-use-of-backquote))
+     (error 'unquote-splicing-at-top))
     (cons
      `(append ,@(transform-compound argument)))
     ((and vector (not string))
