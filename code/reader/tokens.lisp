@@ -10,7 +10,7 @@
          (cond ((= position-package-marker-1 (1- (length token)))
                 (%reader-error input-stream
                                'symbol-name-must-not-end-with-package-marker
-                               :desired-symbol token))
+                               :token token))
                ((= position-package-marker-1 0)
                 (intern (subseq token 1) '#:keyword))
                (t
@@ -34,7 +34,7 @@
         (t
          (if (= position-package-marker-2 (1- (length token)))
              (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
-                            :desired-symbol token)
+                            :token token)
              (intern (subseq token (1+ position-package-marker-2))
                      (subseq token 0 position-package-marker-1))))))
 
@@ -279,14 +279,14 @@
                      (cond ((/= position-package-marker-1 (1- index))
                             (%reader-error
                              input-stream 'two-package-markers-must-be-adjacent
-                             :desired-symbol token))
+                             :token token))
                            ((= position-package-marker-1 0)
                             (%reader-error
                              input-stream 'two-package-markers-must-not-be-first
-                             :desired-symbol token))
+                             :token token))
                            (t
                             (setf position-package-marker-2 index))))
                     (t
                      (%reader-error input-stream 'symbol-can-have-at-most-two-package-markers
-                                    :desired-symbol token)))
+                                    :token token)))
               (go symbol))))))))

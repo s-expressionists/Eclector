@@ -41,33 +41,30 @@
 (define-condition char-must-be-a-dispatching-character (error)
   ((%disp-char :initarg :disp-char :reader disp-char)))
 
-(define-condition symbol-does-not-exist (reader-error)
+(define-condition symbol-access-error (reader-error)
   ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
    (%package :initarg :package :reader desired-symbol-package)))
 
-(define-condition symbol-is-not-external (reader-error)
-  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
-   (%package :initarg :package :reader desired-symbol-package)))
+(define-condition symbol-does-not-exist (symbol-access-error)
+  ())
 
-(define-condition symbol-name-must-not-end-with-package-marker (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
+(define-condition symbol-is-not-external (symbol-access-error)
+  ())
 
-(define-condition two-package-markers-must-be-adjacent (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
+(define-condition symbol-syntax-error (reader-error)
+  ((%token :initarg :token :reader token)))
 
-(define-condition two-package-markers-must-not-be-first (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
+(define-condition symbol-name-must-not-end-with-package-marker (symbol-syntax-error)
+  ())
 
-(define-condition symbol-can-have-at-most-two-package-markers (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
+(define-condition two-package-markers-must-be-adjacent (symbol-syntax-error)
+  ())
+
+(define-condition two-package-markers-must-not-be-first (symbol-syntax-error)
+  ())
+
+(define-condition symbol-can-have-at-most-two-package-markers (symbol-syntax-error)
+  ())
 
 (define-condition unknown-macro-sub-character (reader-error)
   ((%sub-char :initarg :sub-char :reader sub-char)))
