@@ -9,7 +9,7 @@
 
 ;;; Conditions related to quasiquotation
 
-(define-condition stream-position-reader-error (reader-error)
+(define-condition stream-position-reader-error (acclimation:condition reader-error)
   ((%stream-position :initarg :stream-position
                      :reader stream-position)))
 
@@ -42,11 +42,11 @@
 (define-condition invalid-context-for-right-parenthesis (stream-position-reader-error)
   ())
 
-(define-condition sub-char-must-not-be-a-decimal-digit (error)
+(define-condition sub-char-must-not-be-a-decimal-digit (acclimation:condition error)
   ((%disp-char :initarg :disp-char :reader disp-char)
    (%sub-char :initarg :sub-char :reader sub-char)))
 
-(define-condition char-must-be-a-dispatching-character (error)
+(define-condition char-must-be-a-dispatching-character (acclimation:condition error)
   ((%disp-char :initarg :disp-char :reader disp-char)))
 
 (define-condition symbol-access-error (stream-position-reader-error)
@@ -116,11 +116,11 @@
 (define-condition no-elements-found (stream-position-reader-error)
   ((%expected-number :initarg :expected-number :reader expected-number)))
 
-(define-condition incorrect-initialization-length (error)
+(define-condition incorrect-initialization-length (acclimation:condition error)
   ((%expected-length :initarg :expected-length :reader expected-length )
    (%datum :initarg :datum :reader datum)))
 
-(define-condition single-feature-expected (error)
+(define-condition single-feature-expected (acclimation:condition error)
   ((%features :initarg :features :reader features)))
 
 (define-condition sharpsign-invalid (stream-position-reader-error)
