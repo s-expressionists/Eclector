@@ -1,6 +1,13 @@
 (cl:in-package #:eclector.reader)
 
 ;;; FIXME: most of these should have file position, etc. if available.
+;;; Put that stuff in this method.
+
+(defmethod acclimation:report-condition :after
+    ((condition reader-error)
+     stream
+     (language acclimation:english))
+  (format stream "~&~% Stream: ~a" (stream-error-stream condition)))
 
 ;; TODO: invalid-context-for-backquote
 
