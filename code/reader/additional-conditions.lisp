@@ -3,6 +3,10 @@
 (defun %reader-error (stream datum &rest arguments)
   (apply #'error datum (append arguments (list :stream stream))))
 
+;;; Common supertype
+;;; acclimation:condition goes first so that its report is used.
+(define-condition reader-error (acclimation:condition cl:reader-error) ())
+
 ;;; Conditions related to quasiquotation
 
 (define-condition backquote-condition (reader-error)
@@ -17,7 +21,7 @@
 (define-condition unquote-splicing-in-dotted-list (backquote-condition)
   ())
 
-(define-condition undefined-use-of-backquote (backquote-condition)
+(define-condition unquote-splicing-at-top (backquote-condition)
   ())
 
 ;;; Conditions related to consing dot
@@ -34,24 +38,22 @@
 (define-condition invalid-context-for-right-parenthesis (reader-error)
   ())
 
-(define-condition sub-char-must-not-be-a-decimal-digit (error)
+(define-condition sub-char-must-not-be-a-decimal-digit (acclimation:condition error)
   ((%disp-char :initarg :disp-char :reader disp-char)
    (%sub-char :initarg :sub-char :reader sub-char)))
 
-(define-condition char-must-be-a-dispatching-character (error)
+(define-condition char-must-be-a-dispatching-character (acclimation:condition error)
   ((%disp-char :initarg :disp-char :reader disp-char)))
 
-(define-condition symbol-name-must-not-end-with-package-marker (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
-
 (define-condition symbol-does-not-exist (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
+  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
+   (%package :initarg :package :reader desired-symbol-package)))
 
 (define-condition symbol-is-not-external (reader-error)
+  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
+   (%package :initarg :package :reader desired-symbol-package)))
+
+(define-condition symbol-name-must-not-end-with-package-marker (reader-error)
   ((%desired-symbol
     :initarg :desired-symbol
     :reader desired-symbol)))
@@ -107,17 +109,17 @@
   ((%float-format :initarg :float-format :reader float-format)))
 
 (define-condition too-many-elements (reader-error)
-  ((%exptected-number :initarg :expected-number :reader expected-number)
+  ((%expected-number :initarg :expected-number :reader expected-number)
    (%number-found :initarg :number-found :reader number-found)))
 
 (define-condition no-elements-found (reader-error)
-  ((%exptected-number :initarg :expected-number :reader expected-number)))
+  ((%expected-number :initarg :expected-number :reader expected-number)))
 
-(define-condition incorrect-initialization-length (error)
+(define-condition incorrect-initialization-length (acclimation:condition error)
   ((%expected-length :initarg :expected-length :reader expected-length )
    (%datum :initarg :datum :reader datum)))
 
-(define-condition single-feature-expected (error)
+(define-condition single-feature-expected (acclimation:condition error)
   ((%features :initarg :features :reader features)))
 
 (define-condition sharpsign-invalid (reader-error)

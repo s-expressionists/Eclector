@@ -14,18 +14,22 @@
                ((= position-package-marker-1 0)
                 (intern (subseq token 1) '#:keyword))
                (t
-                (multiple-value-bind (symbol status)
-                    (find-symbol
-                     (subseq token (1+ position-package-marker-1))
-                     (subseq token 0 position-package-marker-1))
-                  (cond ((null status)
-                         (%reader-error input-stream 'symbol-does-not-exist
-                                        :desired-symbol token))
-                        ((eq status :internal)
-                         (%reader-error input-stream 'symbol-is-not-external
-                                        :desired-symbol token))
-                        (t
-                         symbol))))))
+                (let ((symbol-name (subseq token (1+ position-package-marker-1)))
+                      (package-name (subseq token 0 position-package-marker-1)))
+                  (multiple-value-bind (symbol status)
+                      ;; If the package doesn't exist find-symbol will signal an error
+                      ;; (hopefully? Doesn't seem to be defined, but it's usual)
+                      ;; so the later find-packages should be okay.
+                      (find-symbol symbol-name package-name)
+                    (cond ((null status)
+                           (%reader-error input-stream 'symbol-does-not-exist
+                                          :symbol-name symbol-name
+                                          :package (find-package package-name)))
+                          ((eq status :internal)
+                           (%reader-error input-stream 'symbol-is-not-external
+                                          :symbol-name symbol-name
+                                          :package (find-package package-name)))
+                          (t symbol)))))))
         (t
          (if (= position-package-marker-2 (1- (length token)))
              (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
