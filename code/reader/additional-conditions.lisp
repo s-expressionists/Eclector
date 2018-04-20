@@ -41,17 +41,15 @@
 (define-condition char-must-be-a-dispatching-character (error)
   ((%disp-char :initarg :disp-char :reader disp-char)))
 
-(define-condition symbol-name-must-not-end-with-package-marker (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
-
 (define-condition symbol-does-not-exist (reader-error)
-  ((%desired-symbol
-    :initarg :desired-symbol
-    :reader desired-symbol)))
+  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
+   (%package :initarg :package :reader desired-symbol-package)))
 
 (define-condition symbol-is-not-external (reader-error)
+  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
+   (%package :initarg :package :reader desired-symbol-package)))
+
+(define-condition symbol-name-must-not-end-with-package-marker (reader-error)
   ((%desired-symbol
     :initarg :desired-symbol
     :reader desired-symbol)))
