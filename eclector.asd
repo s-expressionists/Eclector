@@ -6,7 +6,8 @@
   :version (:read-file-form "version.sexp")
 
   :depends-on ("alexandria"
-               "closer-mop")
+               "closer-mop"
+               "acclimation")
 
   :components ((:module "readtable"
                 :pathname "code/readtable"
@@ -31,6 +32,7 @@
                              (:file "generic-functions")
                              (:file "more-variables")
                              (:file "additional-conditions")
+                             (:file "condition-reporters-english")
                              (:file "utilities")
                              (:file "tokens")
                              (:file "read-common")
