@@ -433,7 +433,7 @@
                (ecase type
                  ((:whitespace :terminating-macro
                    :non-terminating-macro :single-escape :multiple-escape)
-                  (digit-expected base))
+                  (digit-expected char))
                  (:constituent
                   (if (char= char #\-)
                       (values -1 0)
