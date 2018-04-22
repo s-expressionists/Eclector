@@ -49,7 +49,22 @@
             (desired-symbol-name condition)
             (package-name (desired-symbol-package condition))))
 
-  ;; TODO: package marker stuff
+  (define-reporter ((condition symbol-name-must-not-end-with-package-marker) stream)
+    (format stream "Symbol name must not end with a package ~
+                    marker (the : character)."))
+
+  (define-reporter ((condition two-package-markers-must-be-adjacent) stream)
+    (format stream "If a symbol token contains two package markers, ~
+                    they must be adjacent as in package::symbol."))
+
+  (define-reporter ((condition two-package-markers-must-not-be-first) stream)
+    (format stream "A symbol token must not start with two package ~
+                    markers as in ::name."))
+
+  (define-reporter ((condition symbol-can-have-at-most-two-package-markers) stream)
+    (format stream "A symbol token must not contain more than two ~
+                    package markers as in package:::symbol or ~
+                    package::first:rest."))
 
   ;; unknown macro sub character not used yet
 
