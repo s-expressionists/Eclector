@@ -25,6 +25,9 @@
   (define-reporter ((condition consing-dot-most-be-followed-by-object) stream)
     (format stream "An object must follow a consing dot."))
 
+  (define-reporter ((condition multiple-objects-following-consing-dot) stream)
+    (format stream "Only a single object can follow a consing dot."))
+
   (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
     (format stream "Unmatched close parenthesis."))
 
