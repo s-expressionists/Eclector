@@ -338,6 +338,47 @@
           ("abc" 2   t   nil)
           ("abc" nil t   nil))))
 
+(test sharpsign-vertical-bar/smoke
+  "Smoke test for the SHARPSIGN-VERTICAL-BAR function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind
+              (input parameter read-suppress expected
+               &optional (expected-position (length input)))
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values
+                          (eclector.reader::sharpsign-vertical-bar
+                           stream #\| parameter)
+                          (file-position stream))))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equalp expected value))
+                   (is (equal expected-position position))))))))
+        '(;; Errors
+          (""         nil nil end-of-file)
+          ("a"        nil nil end-of-file)
+          ("a|"       nil nil end-of-file)
+          ("a#||#"    nil nil end-of-file)
+          ("a|#"      1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Valid
+          ("a|#"      nil nil nil)
+          ("a# |#"    nil nil nil)
+          ("a| |#"    nil nil nil)
+          ("a#|b|#|#" nil nil nil)
+          ;; With *READ-SUPPRESS* bound to T
+          ("a|#"      nil t   nil)
+          ("a# |#"    nil t   nil)
+          ("a| |#"    nil t   nil)
+          ("a#|b|#|#" nil t   nil))))
+
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P function."
 
