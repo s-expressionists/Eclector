@@ -423,7 +423,8 @@
                (values char (eclector.readtable:syntax-type *readtable* char))
                (values nil nil)))
            (digit-expected (char)
-             (error 'digit-expected :character-found char :base base))
+             (%reader-error stream 'digit-expected
+                            :character-found char :base base))
            (ensure-digit (char)
              (alexandria:if-let ((value (digit-char-p char base)))
                value
