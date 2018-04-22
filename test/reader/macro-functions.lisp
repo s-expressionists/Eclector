@@ -380,7 +380,7 @@
           ("a#|b|#|#" nil t   nil))))
 
 (test sharpsign-p/smoke
-  "Smoke test for the SHARPSIGN-P function."
+  "Smoke test for the SHARPSIGN-P reader macro function."
 
   (mapc (lambda (input-parameter-read-suppress-expected)
           (destructuring-bind
@@ -393,6 +393,8 @@
                           (eclector.reader::sharpsign-p stream #\P parameter)
                           (file-position stream))))))
               (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
                 (type-error
                  (signals type-error (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
@@ -403,6 +405,7 @@
                    (is (equal expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
+          (""        nil nil end-of-file)
           ("1"       nil nil type-error)
           ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
