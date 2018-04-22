@@ -695,7 +695,16 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-c parameter))
-  (apply #'complex (read stream t nil t)))
+  (let ((parts (read stream t nil t)))
+    (cond
+      (*read-suppress*
+       nil)
+      ((typep parts '(cons real (cons real null)))
+       (complex (first parts) (second parts)))
+      (t
+       (error 'type-error
+              :datum parts
+              :expected-type '(cons real (cons real null)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
