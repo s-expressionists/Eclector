@@ -15,6 +15,9 @@
                        (values (eclector.reader:read stream)
                                (file-position stream)))))
               (case expected
+                (eclector.reader:comma-not-inside-backquote
+                 (signals eclector.reader:comma-not-inside-backquote
+                   (do-it)))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected       result))
@@ -23,6 +26,9 @@
         '(("(cons 1 2)"                 (cons 1 2))
           ("#+(or) `1 2"                2)
           ("#+(or) #.(error \"foo\") 2" 2)
+
+          ;; Some context-sensitive cases.
+          (",foo"                       eclector.reader:comma-not-inside-backquote)
 
           ;; Interaction between *READ-SUPPRESS* and reader macros.
           ("#+(or) #|skipme|# 1 2"      2)
