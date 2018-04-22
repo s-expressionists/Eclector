@@ -2,168 +2,113 @@
 
 ;; TODO: invalid-context-for-backquote
 
-(defmethod acclimation:report-condition
-    ((condition comma-not-inside-backquote)
-     stream
-     (language acclimation:english))
-  (format stream "Comma not inside backquote."))
+(macrolet
+    ((define-reporter (((condition-var condition-specializer) stream-var)
+                       &body body)
+       `(defmethod acclimation:report-condition
+            ((,condition-var ,condition-specializer)
+             ,stream-var
+             (language acclimation:english))
+          ,@body)))
 
-(defmethod acclimation:report-condition
-    ((condition unquote-splicing-in-dotted-list)
-     stream
-     (language acclimation:english))
-  (format stream "Splicing unquote at end of list (like a . ,@b)."))
+  (define-reporter ((condition comma-not-inside-backquote) stream)
+      (format stream "Comma not inside backquote."))
 
-(defmethod acclimation:report-condition
-    ((condition unquote-splicing-at-top)
-     stream
-     (language acclimation:english))
-  (format stream "Splicing unquote as backquote form (like `,@foo)."))
+  (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
+    (format stream "Splicing unquote at end of list (like a . ,@b)."))
 
-;; TODO: consing dot, right paren
+  (define-reporter ((condition unquote-splicing-at-top) stream)
+    (format stream "Splicing unquote as backquote form (like `,@foo)."))
 
-(defmethod acclimation:report-condition
-    ((condition consing-dot-most-be-followed-by-object)
-     stream
-     (language acclimation:english))
-  (format stream "An object must follow a consing dot."))
+  ;; TODO: consing dot, right paren
 
-(defmethod acclimation:report-condition
-    ((condition invalid-context-for-right-parenthesis)
-     stream
-     (language acclimation:english))
-  (format stream "Unmatched close parenthesis."))
+  (define-reporter ((condition consing-dot-most-be-followed-by-object) stream)
+    (format stream "An object must follow a consing dot."))
 
-(defmethod acclimation:report-condition
-    ((condition sub-char-must-not-be-a-decimal-digit)
-     stream
-     (language acclimation:english))
-  (format stream "~:c cannot be defined as a dispatch macro ~
-                  sub-character, as it is a decimal digit."
-          (sub-char condition)))
+  (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
+    (format stream "Unmatched close parenthesis."))
 
-(defmethod acclimation:report-condition
-    ((condition char-must-be-a-dispatching-character)
-     stream
-     (language acclimation:english))
-  (format stream "~:c cannot have a dispatch macro set for it, as it ~
-                  has not been defined as a dispatch macro~@
-                  (as by ~a)"
-          (disp-char condition) 'cl:make-dispatch-macro-character))
+  (define-reporter ((condition sub-char-must-not-be-a-decimal-digit) stream)
+    (format stream "~:c cannot be defined as a dispatch macro ~
+                    sub-character, as it is a decimal digit."
+            (sub-char condition)))
 
-(defmethod acclimation:report-condition
-    ((condition symbol-does-not-exist)
-     stream
-     (language acclimation:english))
-  (format stream "Symbol named ~s not found in the ~a package."
-          (desired-symbol-name condition)
-          (package-name (desired-symbol-package condition))))
+  (define-reporter ((condition char-must-be-a-dispatching-character) stream)
+    (format stream "~:c cannot have a dispatch macro set for it, as it ~
+                    has not been defined as a dispatch macro~@
+                    (as by ~a)"
+            (disp-char condition) 'cl:make-dispatch-macro-character))
 
-(defmethod acclimation:report-condition
-    ((condition symbol-is-not-external)
-     stream
-     (language acclimation:english))
-  (format stream "Symbol named ~s is not external in the ~a package."
-          (desired-symbol-name condition)
-          (package-name (desired-symbol-package condition))))
+  (define-reporter ((condition symbol-does-not-exist) stream)
+    (format stream "Symbol named ~s not found in the ~a package."
+            (desired-symbol-name condition)
+            (package-name (desired-symbol-package condition))))
 
-;; TODO: package marker stuff
+  (define-reporter ((condition symbol-is-not-external) stream)
+    (format stream "Symbol named ~s is not external in the ~a package."
+            (desired-symbol-name condition)
+            (package-name (desired-symbol-package condition))))
 
-;; unknown macro sub character not used yet
+  ;; TODO: package marker stuff
 
-(defmethod acclimation:report-condition
-    ((condition numeric-parameter-supplied-but-ignored)
-     stream
-     (language acclimation:english))
-  (format stream "Dispatch reader macro ~a was supplied with a numeric ~
-                  parameter it does not accept."
-          (macro-name condition)))
+  ;; unknown macro sub character not used yet
 
-(defmethod acclimation:report-condition
-    ((condition numeric-parameter-not-supplied-but-required)
-     stream
-     (language acclimation:english))
-  (format stream "Dispatch reader macro ~a requires a numeric ~
-                  parameter, but none was supplied."
-          (macro-name condition)))
+  (define-reporter ((condition numeric-parameter-supplied-but-ignored) stream)
+    (format stream "Dispatch reader macro ~a was supplied with a ~
+                    numeric parameter it does not accept."
+            (macro-name condition)))
 
-;; read time evaluation inhibited not used yet
+  (define-reporter ((condition numeric-parameter-not-supplied-but-required) stream)
+    (format stream "Dispatch reader macro ~a requires a numeric ~
+                    parameter, but none was supplied."
+            (macro-name condition)))
 
-(defmethod acclimation:report-condition
-    ((condition unknown-character-name)
-     stream
-     (language acclimation:english))
-  (format stream "Unrecognized character name: ~s" (name condition)))
+  ;; read time evaluation inhibited not used yet
 
-(defmethod acclimation:report-condition
-    ((condition digit-expected)
-     stream
-     (language acclimation:english))
-  (format stream "~:c is not a digit in base ~d."
-          (character-found condition) (base condition)))
+  (define-reporter ((condition unknown-character-name) stream)
+    (format stream "Unrecognized character name: ~s" (name condition)))
 
-(defmethod acclimation:report-condition
-    ((condition invalid-radix)
-     stream
-     (language acclimation:english))
-  (format stream "~d is too ~:[big~;small~] to be a radix."
-          (radix condition) (< (radix condition) 2)))
+  (define-reporter ((condition digit-expected) stream)
+    (format stream "~:c is not a digit in base ~d."
+            (character-found condition) (base condition)))
 
-(defmethod acclimation:report-condition
-    ((condition invalid-default-float-format)
-     stream
-     (language acclimation:english))
-  (format stream "~a is not a valid ~a."
-          (float-format condition) 'cl:*read-default-float-format*))
+  (define-reporter ((condition invalid-radix) stream)
+    (format stream "~d is too ~:[big~;small~] to be a radix."
+            (radix condition) (< (radix condition) 2)))
 
-(defmethod acclimation:report-condition
-    ((condition too-many-elements)
-     stream
-     (language acclimation:english))
-  (format stream "Bit vector was specified to have length ~d, but ~d ~
-                  elements were found."
-          (expected-number condition) (number-found condition)))
+  (define-reporter ((condition invalid-default-float-format) stream)
+    (format stream "~a is not a valid ~a."
+            (float-format condition) 'cl:*read-default-float-format*))
 
-(defmethod acclimation:report-condition
-    ((condition no-elements-found)
-     stream
-     (language acclimation:english))
-  (format stream "Bit vector was specified to have length ~d, but no ~
-                  elements were found."
-          (expected-number condition)))
+  (define-reporter ((condition too-many-elements) stream)
+    (format stream "Bit vector was specified to have length ~d, but ~d ~
+                    elements were found."
+            (expected-number condition) (number-found condition)))
 
-(defmethod acclimation:report-condition
-    ((condition incorrect-initialization-length)
-     stream
-     (language acclimation:english))
-  (format stream "Array was specified to have length ~d, but provided ~
-                  initial-contents don't match:~%~a"
-          (expected-length condition) (datum condition)))
+  (define-reporter ((condition no-elements-found) stream)
+    (format stream "Bit vector was specified to have length ~d, but no ~
+                    elements were found."
+            (expected-number condition)))
 
-(defmethod acclimation:report-condition
-    ((condition single-feature-expected)
-     stream
-     (language acclimation:english))
-  (format stream "Bad feature expression- found multiple features when ~
-                  only one was expected:~%~a"
-          (features condition)))
+  (define-reporter ((condition incorrect-initialization-length) stream)
+    (format stream "Array was specified to have length ~d, but ~
+                    provided initial-contents don't match:~%~a"
+            (expected-length condition) (datum condition)))
 
-(defmethod acclimation:report-condition
-    ((condition sharpsign-invalid)
-     stream
-     (language acclimation:english))
-  (format stream "~:c is not a valid subchar for the # dispatch macro."
-          (character-found condition)))
+  (define-reporter ((condition single-feature-expected) stream)
+    (format stream "Bad feature expression- found multiple features ~
+                    when only one was expected:~%~a"
+            (features condition)))
 
-(defmethod acclimation:report-condition
-    ((condition sharpsign-equals-label-defined-more-than-once)
-     stream
-     (language acclimation:english))
-  (format stream "Sharpsign reader macro label ~d defined more than once."
-          (label condition)))
+  (define-reporter ((condition sharpsign-invalid) stream)
+    (format stream "~:c is not a valid subchar for the # dispatch macro."
+            (character-found condition)))
 
-(defmethod acclimation:report-condition
-    ((condition sharpsign-sharpsign-undefined-label)
-     stream
-     (language acclimation:english))
-  (format stream "Reference to undefined label #~d#." (label condition)))
+  (define-reporter ((condition sharpsign-equals-label-defined-more-than-once) stream)
+    (format stream "Sharpsign reader macro label ~d defined more than once."
+            (label condition)))
+
+  (define-reporter ((condition sharpsign-sharpsign-undefined-label) stream)
+    (format stream "Reference to undefined label #~d#." (label condition)))
+
+  ) ; MACROLET DEFINE-REPORTER
