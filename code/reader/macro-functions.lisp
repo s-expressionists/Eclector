@@ -784,7 +784,8 @@
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
   (cond ((nth-value 1 (gethash parameter *labels*))
-         (%reader-error stream 'sharpsign-equals-label-defined-more-than-once))
+         (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
+                        :label parameter))
         (t
          (let ((contents (cons (list nil) nil)))
            (setf (gethash parameter *labels*) contents)
@@ -804,7 +805,8 @@
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
   (cond ((not (nth-value 1 (gethash parameter *labels*)))
-         (%reader-error stream 'sharpsign-sharpsign-undefined-label))
+         (%reader-error stream 'sharpsign-sharpsign-undefined-label
+                        :label parameter))
         (t
          (let ((contents (gethash parameter *labels*)))
            (if (caar contents)
