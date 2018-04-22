@@ -12,7 +12,7 @@
           ,@body)))
 
   (define-reporter ((condition comma-not-inside-backquote) stream)
-      (format stream "Comma not inside backquote."))
+    (format stream "Comma not inside backquote."))
 
   (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
     (format stream "Splicing unquote at end of list (like a . ,@b)."))
@@ -21,6 +21,9 @@
     (format stream "Splicing unquote as backquote form (like `,@foo)."))
 
   ;; TODO: consing dot, right paren
+
+  (define-reporter ((condition invalid-context-for-consing-dot) stream)
+    (format stream "A consing dot appeared in an illegal position."))
 
   (define-reporter ((condition consing-dot-most-be-followed-by-object) stream)
     (format stream "An object must follow a consing dot."))
