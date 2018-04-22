@@ -379,6 +379,52 @@
           ("a| |#"    nil t   nil)
           ("a#|b|#|#" nil t   nil))))
 
+(test sharpsign-c/smoke
+  "Smoke test for the SHARPSIGN-C reader macro function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind
+              (input parameter read-suppress expected)
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values
+                          (eclector.reader::sharpsign-c stream #\C parameter)
+                          (file-position stream))))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (type-error
+                 (signals type-error (do-it)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equal expected value))
+                   (is (equal (length input) position))))))))
+        '(;; Errors
+          (""        nil nil end-of-file)
+          ("\"foo\"" nil nil type-error)
+          ("(0)"     nil nil type-error)
+          ("(0 0 0)" nil nil type-error)
+          ("#(0 0)"  nil nil type-error)
+          ("(:a 0)"  nil nil type-error)
+          ("(0 :a)"  nil nil type-error)
+          ("(0 0)"   1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Valid
+          ("(0 0)"   nil nil #C(0 0))
+          ("(-1 0)"  nil nil #C(-1 0))
+          ("(0 1/2)" nil nil #C(0 1/2))
+          ;; With *READ-SUPPRESS* bound to T
+          ("(0)"     nil t   nil)
+          ("(0 0 0)" nil t   nil)
+          ("#(0 0)"  nil t   nil)
+          ("(:a 0)"  nil t   nil)
+          ("(0 :a)"  nil t   nil)
+          ("(0 0)"   nil t   nil))))
+
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
 
