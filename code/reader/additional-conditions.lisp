@@ -7,11 +7,11 @@
                                  (when position
                                    (list :stream-position position))))))
 
-;;; Conditions related to quasiquotation
-
 (define-condition stream-position-reader-error (acclimation:condition reader-error)
   ((%stream-position :initarg :stream-position
                      :reader stream-position)))
+
+;;; Conditions related to quasiquotation
 
 (define-condition backquote-condition (stream-position-reader-error)
   ())
