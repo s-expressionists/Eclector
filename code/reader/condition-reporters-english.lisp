@@ -20,8 +20,6 @@
   (define-reporter ((condition unquote-splicing-at-top) stream)
     (format stream "Splicing unquote as backquote form (like `,@foo)."))
 
-  ;; TODO: consing dot, right paren
-
   (define-reporter ((condition invalid-context-for-consing-dot) stream)
     (format stream "A consing dot appeared in an illegal position."))
 
