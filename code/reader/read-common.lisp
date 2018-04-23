@@ -14,11 +14,9 @@
   (tagbody
    step-1-start
      (let ((*skip-reason* nil)
-           (char (read-char input-stream nil nil)))
+           (char (read-char input-stream eof-error-p)))
        (when (null char)
-         (if eof-error-p
-             (error 'end-of-file :stream input-stream)
-             (return-from read-common eof-value)))
+         (return-from read-common eof-value))
        (case (eclector.readtable:syntax-type *readtable* char)
          (:whitespace
           (go step-1-start))
@@ -59,13 +57,10 @@
              (vector-push-extend escapesp token-escapes)
              char)
            (read-char-handling-eof ()
-             (let ((char (read-char input-stream nil nil)))
-               (cond ((not (null char))
-                      char)
-                     (eof-error-p
-                      (error 'end-of-file :stream input-stream))
-                     (t
-                      (return-from read-token eof-value))))))
+             (let ((char (read-char input-stream eof-error-p)))
+               (if (not (null char))
+                   char
+                   (return-from read-token eof-value)))))
       (tagbody
          ;; This function is only called when a character is available
          ;; in INPUT-STREAM.
