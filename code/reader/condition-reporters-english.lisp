@@ -12,7 +12,12 @@
           ,@body)))
 
   (define-reporter ((condition comma-not-inside-backquote) stream)
-    (format stream "Comma not inside backquote."))
+    (format stream "~:[Comma~;Splicing comma~] not inside backquote."
+            (at-sign-p condition)))
+
+  (define-reporter ((condition object-must-follow-comma) stream)
+    (format stream "An object must follow a~:[~; splicing~] comma."
+            (at-sign-p condition)))
 
   (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
     (format stream "Splicing unquote at end of list (like a . ,@b)."))

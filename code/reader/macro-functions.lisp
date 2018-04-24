@@ -152,15 +152,20 @@
 
 (defun comma (stream char)
   (declare (ignore char))
-  (unless (plusp *backquote-depth*)
-    (%reader-error stream 'comma-not-inside-backquote))
-  (let* ((char2 (read-char stream t nil t))
+  (let* ((inside-backquote-p (plusp *backquote-depth*))
+         (char2 (read-char stream t nil t))
          (at-sign-p (if (eql char2 #\@)
                         t
                         (progn (unread-char char2 stream) nil)))
          (*backquote-depth* (1- *backquote-depth*)))
+    (unless inside-backquote-p
+      (%reader-error stream 'comma-not-inside-backquote :at-sign-p at-sign-p))
     (with-preserved-backquote-context
-      (let ((form (read stream t nil t)))
+      (let ((form (handler-case
+                      (read stream t nil t)
+                    (end-of-list ()
+                      (%reader-error stream 'object-must-follow-comma
+                                     :at-sign-p at-sign-p)))))
         (if at-sign-p
             (wrap-in-unquote-splicing form *client*)
             (wrap-in-unquote form *client*))))))

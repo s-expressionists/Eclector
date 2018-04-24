@@ -8,7 +8,13 @@
 (define-condition invalid-context-for-backquote (backquote-condition)
   ())
 
-(define-condition comma-not-inside-backquote (backquote-condition)
+(define-condition comma-syntax-error (backquote-condition)
+  ((%at-sign-p :initarg :at-sign-p :reader at-sign-p)))
+
+(define-condition comma-not-inside-backquote (comma-syntax-error)
+  ())
+
+(define-condition object-must-follow-comma (comma-syntax-error)
   ())
 
 (define-condition unquote-splicing-in-dotted-list (backquote-condition)

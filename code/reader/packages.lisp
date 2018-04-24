@@ -48,6 +48,7 @@
    #:backquote-condition
    #:invalid-context-for-backquote
    #:comma-not-inside-backquote
+   #:object-must-follow-comma
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
    #:invalid-context-for-consing-dot

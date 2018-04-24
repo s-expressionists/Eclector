@@ -18,6 +18,9 @@
                 (eclector.reader:comma-not-inside-backquote
                  (signals eclector.reader:comma-not-inside-backquote
                    (do-it)))
+                (eclector.reader:object-must-follow-comma
+                 (signals eclector.reader:object-must-follow-comma
+                   (do-it)))
                 (eclector.reader:unknown-macro-sub-character
                  (signals eclector.reader:unknown-macro-sub-character
                    (do-it)))
@@ -33,6 +36,9 @@
 
           ;; Some context-sensitive cases.
           (",foo"                       eclector.reader:comma-not-inside-backquote)
+          (",@foo"                      eclector.reader:comma-not-inside-backquote)
+          ("`(,)"                       eclector.reader:object-must-follow-comma)
+          ("`(,@)"                      eclector.reader:object-must-follow-comma)
 
           ;; Interaction between *READ-SUPPRESS* and reader macros.
           ("#+(or) #|skipme|# 1 2"      2)
