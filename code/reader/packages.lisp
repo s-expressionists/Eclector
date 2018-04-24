@@ -22,6 +22,9 @@
    #:stream-position-reader-error
    #:stream-position)
 
+  (:import-from #:eclector.readtable
+   #:unknown-macro-sub-character)
+
   (:export
    #:readtable
    #:*readtable*
@@ -59,8 +62,6 @@
    #:two-package-markers-must-not-be-first
    #:symbol-can-have-at-most-two-package-markers
 
-   #:sub-char-must-not-be-a-decimal-digit
-   #:char-must-be-a-dispatching-character
    #:unknown-macro-sub-character
    #:numeric-parameter-supplied-but-ignored
    #:numeric-parameter-not-supplied-but-required

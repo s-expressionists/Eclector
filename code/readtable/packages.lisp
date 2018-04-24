@@ -24,5 +24,9 @@
            #:set-syntax-from-char)
   ;; Other exported symbols
   (:export
+   #:sub-char-must-not-be-a-decimal-digit
+   #:char-must-be-a-dispatching-character
+   #:unknown-macro-sub-character
+
    #:syntax-type
    #:syntax-from-char)) ; SETF

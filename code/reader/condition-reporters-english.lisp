@@ -32,17 +32,6 @@
   (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
     (format stream "Unmatched close parenthesis."))
 
-  (define-reporter ((condition sub-char-must-not-be-a-decimal-digit) stream)
-    (format stream "~:c cannot be defined as a dispatch macro ~
-                    sub-character, as it is a decimal digit."
-            (sub-char condition)))
-
-  (define-reporter ((condition char-must-be-a-dispatching-character) stream)
-    (format stream "~:c cannot have a dispatch macro set for it, as it ~
-                    has not been defined as a dispatch macro~@
-                    (as by ~a)"
-            (disp-char condition) 'cl:make-dispatch-macro-character))
-
   (define-reporter ((condition symbol-does-not-exist) stream)
     (format stream "Symbol named ~s not found in the ~a package."
             (desired-symbol-name condition)
@@ -69,8 +58,6 @@
     (format stream "A symbol token must not contain more than two ~
                     package markers as in package:::symbol or ~
                     package::first:rest."))
-
-  ;; unknown macro sub character not used yet
 
   (define-reporter ((condition numeric-parameter-supplied-but-ignored) stream)
     (format stream "Dispatch reader macro ~a was supplied with a ~

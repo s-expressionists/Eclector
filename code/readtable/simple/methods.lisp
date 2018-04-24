@@ -53,20 +53,20 @@
   (setf sub-char (char-upcase sub-char))
   (let ((subtable (gethash disp-char (dispatch-macro-characters readtable))))
     (when (null subtable)
-      (error 'char-must-be-a-dispatching-character
+      (error 'eclector.readtable:char-must-be-a-dispatching-character
              :disp-char disp-char))
     (nth-value 0 (gethash sub-char subtable))))
 
 (defmethod eclector.readtable:set-dispatch-macro-character
     ((readtable readtable) disp-char sub-char function)
   (when (digit-char-p sub-char)
-    (error 'sub-char-must-not-be-a-decimal-digit
+    (error 'eclector.readtable:sub-char-must-not-be-a-decimal-digit
            :disp-char disp-char
            :sub-char sub-char))
   (setf sub-char (char-upcase sub-char))
   (let ((subtable (gethash disp-char (dispatch-macro-characters readtable))))
     (when (null subtable)
-      (error 'char-must-be-a-dispatching-character
+      (error 'eclector.readtable:char-must-be-a-dispatching-character
              :disp-char disp-char))
     (setf (gethash sub-char subtable) function)))
 

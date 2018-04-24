@@ -60,16 +60,6 @@
 
 ;;; Conditions related to reader macros
 
-(define-condition sub-char-must-not-be-a-decimal-digit (acclimation:condition error)
-  ((%disp-char :initarg :disp-char :reader disp-char)
-   (%sub-char :initarg :sub-char :reader sub-char)))
-
-(define-condition char-must-be-a-dispatching-character (acclimation:condition error)
-  ((%disp-char :initarg :disp-char :reader disp-char)))
-
-(define-condition unknown-macro-sub-character (stream-position-reader-error)
-  ((%sub-char :initarg :sub-char :reader sub-char)))
-
 (define-condition numeric-parameter-supplied-but-ignored (stream-position-reader-error)
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))

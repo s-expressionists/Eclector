@@ -20,6 +20,8 @@
                 :serial t
                 :components ((:file "packages")
                              (:file "variables")
+                             (:file "conditions")
+                             (:file "condition-reporters-english")
                              (:file "generic-functions")))
 
                (:module "simple-readtable"
