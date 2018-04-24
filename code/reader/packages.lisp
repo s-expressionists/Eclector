@@ -51,16 +51,20 @@
    #:consing-dot-most-be-followed-by-object
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis
-   #:sub-char-must-not-be-a-decimal-digit
-   #:char-must-be-a-dispatching-character
+
    #:symbol-name-must-not-end-with-package-marker
    #:symbol-does-not-exist
    #:symbol-is-not-external
    #:two-package-markers-must-be-adjacent
    #:two-package-markers-must-not-be-first
    #:symbol-can-have-at-most-two-package-markers
+
+   #:sub-char-must-not-be-a-decimal-digit
+   #:char-must-be-a-dispatching-character
+   #:unknown-macro-sub-character
    #:numeric-parameter-supplied-but-ignored
    #:numeric-parameter-not-supplied-but-required
+
    #:unknown-character-name
    #:digit-expected
    #:invalid-radix
@@ -73,5 +77,4 @@
    ;; Names of macros related to backquote.
    ;; We export them so that the pretty printer
    ;; can use them properly.
-   #:quasiquote #:unquote #:unquote-splicing
-   ))
+   #:quasiquote #:unquote #:unquote-splicing))

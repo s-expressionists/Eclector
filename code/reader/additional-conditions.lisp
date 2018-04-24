@@ -31,12 +31,7 @@
 (define-condition invalid-context-for-right-parenthesis (stream-position-reader-error)
   ())
 
-(define-condition sub-char-must-not-be-a-decimal-digit (acclimation:condition error)
-  ((%disp-char :initarg :disp-char :reader disp-char)
-   (%sub-char :initarg :sub-char :reader sub-char)))
-
-(define-condition char-must-be-a-dispatching-character (acclimation:condition error)
-  ((%disp-char :initarg :disp-char :reader disp-char)))
+;;; Symbol-related conditions
 
 (define-condition symbol-access-error (stream-position-reader-error)
   ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
@@ -62,6 +57,15 @@
 
 (define-condition symbol-can-have-at-most-two-package-markers (symbol-syntax-error)
   ())
+
+;;; Conditions related to reader macros
+
+(define-condition sub-char-must-not-be-a-decimal-digit (acclimation:condition error)
+  ((%disp-char :initarg :disp-char :reader disp-char)
+   (%sub-char :initarg :sub-char :reader sub-char)))
+
+(define-condition char-must-be-a-dispatching-character (acclimation:condition error)
+  ((%disp-char :initarg :disp-char :reader disp-char)))
 
 (define-condition unknown-macro-sub-character (stream-position-reader-error)
   ((%sub-char :initarg :sub-char :reader sub-char)))
