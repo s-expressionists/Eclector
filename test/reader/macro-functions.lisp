@@ -174,6 +174,8 @@
           ("))"     nil nil #()    1)
           ("1 1)"   nil nil #(1 1))
           ("1 1) "  nil nil #(1 1) 4)
+          (")"      0   nil #0())
+          ("1)"     1   nil #1(1))
           ("1)"     2   nil #2(1))
           ;; With *READ-SUPPRESS* bound to T
           (")"      nil t   nil)
@@ -325,6 +327,8 @@
           ("11"  nil nil #*11)
           ("11 " nil nil #*11)
           ("11)" nil nil #*11 2)
+          (""    0   nil #0*)
+          ("1"   1   nil #1*1)
           ("1"   2   nil #2*1)
           ("1 "  2   nil #2*1)
           ("1)"  2   nil #2*1 1)

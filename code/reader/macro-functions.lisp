@@ -304,19 +304,20 @@
                when (< index parameter)
                do (setf (aref result index) element)
                finally (cond
-                         ((zerop index)
+                         ((and (zerop index) (plusp parameter))
                           (%reader-error stream 'no-elements-found
                                          :array-type 'vector
                                          :expected-number parameter))
-                         ((>= index parameter)
+                         ((> index parameter)
                           (%reader-error stream 'too-many-elements
                                          :array-type 'vector
                                          :expected-number parameter
-                                         :number-found index))
-                         (t
-                          (return
-                            (fill result (aref result (1- index))
-                                  :start index))))))))))
+                                         :number-found index)))
+                       (return
+                         (if (< index parameter)
+                             (fill result (aref result (1- index))
+                                   :start index)
+                             result))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -550,19 +551,20 @@
                when (< index parameter)
                do (setf (sbit result index) value)
                finally (cond
-                         ((zerop index)
+                         ((and (zerop index) (plusp parameter))
                           (%reader-error stream 'no-elements-found
                                          :array-type 'bit-vector
                                          :expected-number parameter))
-                         ((>= index parameter)
+                         ((> index parameter)
                           (%reader-error stream 'too-many-elements
                                          :array-type 'bit-vector
                                          :expected-number parameter
-                                         :number-found index))
-                         (t
-                          (return
-                            (fill result (sbit result (1- index))
-                                  :start index))))))))))
+                                         :number-found index)))
+                       (return
+                         (if (< index parameter)
+                             (fill result (sbit result (1- index))
+                                   :start index)
+                             result))))))))
 
 (defun sharpsign-vertical-bar (stream char parameter)
   (declare (ignore char))
