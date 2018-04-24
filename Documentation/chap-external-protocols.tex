@@ -115,21 +115,21 @@ The parameter \textit{input-stream} is the input stream from which the
 characters were read.  It can be used by client code to specialize the
 behavior of this generic function.
 
-\Defgeneric {call-reader-macro} {function input-stream char}
+\Defgeneric {call-reader-macro} {client input-stream char readtable}
 
 This generic function is called when the reader has determined that
 some character is associated with a reader macro.  The parameter
-\textit{function} is the reader macro function that is associated with
-the macro character.  The parameter \textit{input-stream} is the input
-stream from which the reader macro function will read additional input
-to accomplish its task.  The parameter \textit{char} is the character
-that was read and was determined to be associated with the reader
-macro function.
+\textit{char} has to be used in conjunction with the
+\textit{readtable} parameter to obtain the macro function that is
+associated with the macro character.  The parameter
+\textit{input-stream} is the input stream from which the reader macro
+function will read additional input to accomplish its task.
 
-The default method on this generic function simply calls
-\textit{function}, passing it \textit{input-stream} and \textit{char}
-as arguments.  The default method therefore does the same thing that
-the standard \commonlisp{} function \texttt{funcall} does.
+The default method on this generic function simply obtain the reader
+macro function for \textit{char} from \textit{readtable} and calls it,
+passing \textit{input-stream} and \textit{char} as arguments.  The
+default method therefore does the same thing that the standard
+\commonlisp{} reader does.
 
 \section{CST reader features}
 \label{sec:cst-reader-features}

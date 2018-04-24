@@ -1,9 +1,8 @@
 (cl:in-package #:eclector.reader)
 
-(defmethod call-reader-macro (function input-stream char)
-  (funcall (eclector.readtable:get-macro-character *readtable* char)
-           input-stream
-           char))
+(defmethod call-reader-macro (client input-stream char readtable)
+  (let ((function (eclector.readtable:get-macro-character readtable char)))
+    (funcall function input-stream char)))
 
 (defmethod read-common :around (client input-stream eof-error-p eof-value)
   (let ((*backquote-allowed-p* *backquote-in-subforms-allowed-p*)
@@ -23,9 +22,7 @@
          ((:terminating-macro :non-terminating-macro)
           (let ((values (multiple-value-list
                          (call-reader-macro
-                          (eclector.readtable:get-macro-character *readtable* char)
-                          input-stream
-                          char))))
+                          client input-stream char *readtable*))))
             (cond
               ((null values)
                (note-skipped-input client input-stream

@@ -15,6 +15,6 @@
                               position-package-marker-2
                               input-stream))
 
-(defgeneric call-reader-macro (function input-stream char))
+(defgeneric call-reader-macro (client input-stream char readtable))
 
 (defgeneric fixup (object seen-objects mapping))
