@@ -73,8 +73,9 @@
   ((%macro-name :initarg :macro-name :reader macro-name)))
 
 (defun numeric-parameter-not-supplied (stream macro-name)
-  (%reader-error stream 'numeric-parameter-not-supplied-but-required
-                 :macro-name macro-name))
+  (unless *read-suppress*
+    (%reader-error stream 'numeric-parameter-not-supplied-but-required
+                   :macro-name macro-name)))
 
 (define-condition read-time-evaluation-inhibited (stream-position-reader-error)
   ())
