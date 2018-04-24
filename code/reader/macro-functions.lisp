@@ -303,12 +303,14 @@
                while elementp
                do (if (>= index parameter)
                       (%reader-error stream 'too-many-elements
+                                     :array-type 'vector
                                      :expected-number parameter
                                      :number-found index)
                       (setf (aref result index) element))
                finally (return
                          (if (zerop index)
                              (%reader-error stream 'no-elements-found
+                                            :array-type 'vector
                                             :expected-number parameter)
                              (fill result (aref result (1- index))
                                    :start index)))))))))
@@ -544,12 +546,14 @@
                while value
                do (if (>= index parameter)
                       (%reader-error stream 'too-many-elements
+                                     :array-type 'bit-vector
                                      :expected-number parameter
                                      :number-found index)
                       (setf (sbit result index) value))
                finally (return
                          (if (zerop index)
                              (%reader-error stream 'no-elements-found
+                                            :array-type 'bit-vector
                                             :expected-number parameter)
                              (fill result (sbit result (1- index))
                                    :start index)))))))))
@@ -607,6 +611,7 @@
                 :datum initial-contents))
         ((/= (length initial-contents) (car dimensions))
          (%reader-error stream 'incorrect-initialization-length
+                        :array-type 'array
                         :datum initial-contents
                         :expected-length (car dimensions)))
         (t

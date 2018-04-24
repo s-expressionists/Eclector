@@ -109,14 +109,17 @@
 (define-condition invalid-default-float-format (stream-position-reader-error)
   ((%float-format :initarg :float-format :reader float-format)))
 
-(define-condition too-many-elements (stream-position-reader-error)
+(define-condition array-initialization-error (stream-position-reader-error)
+  ((%array-type :initarg :array-type :reader array-type)))
+
+(define-condition too-many-elements (array-initialization-error)
   ((%expected-number :initarg :expected-number :reader expected-number)
    (%number-found :initarg :number-found :reader number-found)))
 
-(define-condition no-elements-found (stream-position-reader-error)
+(define-condition no-elements-found (array-initialization-error)
   ((%expected-number :initarg :expected-number :reader expected-number)))
 
-(define-condition incorrect-initialization-length (stream-position-reader-error)
+(define-condition incorrect-initialization-length (array-initialization-error)
   ((%expected-length :initarg :expected-length :reader expected-length )
    (%datum :initarg :datum :reader datum)))
 

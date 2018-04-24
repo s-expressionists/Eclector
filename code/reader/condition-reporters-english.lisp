@@ -100,19 +100,23 @@
             (float-format condition) 'cl:*read-default-float-format*))
 
   (define-reporter ((condition too-many-elements) stream)
-    (format stream "Bit vector was specified to have length ~d, but ~d ~
+    (format stream "~a was specified to have length ~d, but ~d ~
                     elements were found."
-            (expected-number condition) (number-found condition)))
+            (array-type condition)
+            (expected-number condition)
+            (number-found condition)))
 
   (define-reporter ((condition no-elements-found) stream)
-    (format stream "Bit vector was specified to have length ~d, but no ~
+    (format stream "~a was specified to have length ~d, but no ~
                     elements were found."
-            (expected-number condition)))
+            (array-type condition) (expected-number condition)))
 
   (define-reporter ((condition incorrect-initialization-length) stream)
-    (format stream "Array was specified to have length ~d, but ~
+    (format stream "~a was specified to have length ~d, but ~
                     provided initial-contents don't match:~%~a"
-            (expected-length condition) (datum condition)))
+            (array-type condition)
+            (expected-length condition)
+            (datum condition)))
 
   (define-reporter ((condition single-feature-expected) stream)
     (format stream "Bad feature expression- found multiple features ~
