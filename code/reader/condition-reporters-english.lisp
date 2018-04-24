@@ -99,10 +99,12 @@
             (array-type condition) (expected-number condition)))
 
   (define-reporter ((condition incorrect-initialization-length) stream)
-    (format stream "~a was specified to have length ~d, but ~
-                    provided initial-contents don't match:~%~a"
+    (format stream "~a was specified to have length ~d along the ~:R ~
+                    axis, but provided initial-contents don't ~
+                    match:~%~a"
             (array-type condition)
             (expected-length condition)
+            (1+ (axis condition))
             (datum condition)))
 
   (define-reporter ((condition single-feature-expected) stream)

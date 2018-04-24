@@ -104,7 +104,8 @@
   ((%expected-number :initarg :expected-number :reader expected-number)))
 
 (define-condition incorrect-initialization-length (array-initialization-error)
-  ((%expected-length :initarg :expected-length :reader expected-length )
+  ((%axis :initarg :axis :reader axis)
+   (%expected-length :initarg :expected-length :reader expected-length)
    (%datum :initarg :datum :reader datum)))
 
 (define-condition single-feature-expected (acclimation:condition error)
