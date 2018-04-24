@@ -627,10 +627,14 @@
 
 (defun sharpsign-a (stream char parameter)
   (declare (ignore char))
-  (let ((init (read stream t nil t)))
-    (let ((dimensions (determine-dimensions stream parameter init)))
-      (check-dimensions stream dimensions init)
-      (make-array dimensions :initial-contents init))))
+  (unless parameter
+    (numeric-parameter-not-supplied stream 'sharpsign-a))
+  (if *read-suppress*
+      (read stream t nil t)
+      (let* ((init (read stream t nil t))
+             (dimensions (determine-dimensions stream parameter init)))
+        (check-dimensions stream dimensions init)
+        (make-array dimensions :initial-contents init))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
