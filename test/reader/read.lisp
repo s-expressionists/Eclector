@@ -18,12 +18,16 @@
                 (eclector.reader:comma-not-inside-backquote
                  (signals eclector.reader:comma-not-inside-backquote
                    (do-it)))
+                (eclector.reader:unknown-macro-sub-character
+                 (signals eclector.reader:unknown-macro-sub-character
+                   (do-it)))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected       result))
                    (is (eql   (length input) position))))))))
 
         '(("(cons 1 2)"                 (cons 1 2))
+
           ("#+(or) `1 2"                2)
           ("#+(or) #.(error \"foo\") 2" 2)
 
@@ -33,4 +37,7 @@
           ;; Interaction between *READ-SUPPRESS* and reader macros.
           ("#+(or) #|skipme|# 1 2"      2)
           ("#+(or) ; skipme
-            1 2"                        2))))
+            1 2"                        2)
+
+          ;; Unknown macro sub character.
+          ("#!"                         eclector.reader:unknown-macro-sub-character))))
