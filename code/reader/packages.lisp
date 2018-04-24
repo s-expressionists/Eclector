@@ -72,6 +72,7 @@
    #:invalid-default-float-format
    #:too-many-elements
    #:no-elements-found
+   #:incorrect-initialization-length
    #:single-feature-expected
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-sharpsign-undefined-label
