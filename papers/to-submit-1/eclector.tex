@@ -68,6 +68,29 @@
 
 
 \begin{abstract}
+The \commonlisp{} \texttt{read} function is the standard parser for
+\commonlisp{} source code.  The \commonlisp{} file compiler invokes
+the reader to turn the program text in the form of a sequence of
+characters into a nested structure consisting of \texttt{cons} cells
+and atoms.  However, in order for the compiler to be able to generate
+good error messages, both for compile time and run time errors, the
+location of source code in the original file must be propagated to all
+compilation phases.
+
+Furthermore, the \commonlisp{} reader is the ideal parser for code in
+an editor buffer.  For such an application, the reader must also be
+able to parse source text that is ignored by a typical reader, such as
+comments.
+
+We present an implementation-independent reader that is able to
+accomplish such source tracking by wrapping the standard nested
+structure elements in standard instances that also contain information
+about source location.  Our reader returns such objects not only for
+expressions, but also for material that is otherwise ignored.
+
+The reader can function with custom reader macros, but we provide
+special versions of the standard reader macros that provide additional
+information about the nature of the code being parsed.
 \end{abstract}
 
  \begin{CCSXML}
