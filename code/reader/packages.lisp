@@ -15,6 +15,13 @@
   ;; Repository) document suggesting such an API.
   (:shadowing-import-from #:eclector.readtable
    #:*readtable*)
+
+  (:import-from #:eclector.base
+   #:%reader-error
+
+   #:stream-position-reader-error
+   #:stream-position)
+
   (:export
    #:readtable
    #:*readtable*

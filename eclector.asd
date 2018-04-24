@@ -9,8 +9,14 @@
                "closer-mop"
                "acclimation")
 
-  :components ((:module "readtable"
+  :components ((:module "base"
+                :pathname "code/base"
+                :components ((:file "package")
+                             (:file "conditions")))
+
+               (:module "readtable"
                 :pathname "code/readtable"
+                :depends-on ("base")
                 :serial t
                 :components ((:file "packages")
                              (:file "variables")
@@ -18,7 +24,8 @@
 
                (:module "simple-readtable"
                 :pathname "code/readtable/simple"
-                :depends-on ("readtable")
+                :depends-on ("base"
+                             "readtable")
                 :serial t
                 :components ((:file "packages")
                              (:file "readtable")
@@ -26,7 +33,8 @@
 
                (:module "reader"
                 :pathname "code/reader"
-                :depends-on ("readtable")
+                :depends-on ("base"
+                             "readtable")
                 :serial t
                 :components ((:file "packages")
                              (:file "generic-functions")
