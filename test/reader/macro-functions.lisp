@@ -379,6 +379,64 @@
           ("a| |#"    nil t   nil)
           ("a#|b|#|#" nil t   nil))))
 
+(test sharpsign-a/smoke
+  "Smoke test for the SHARPSIGN-A reader macro function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind
+              (input parameter read-suppress expected)
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress))
+                         (values
+                          (eclector.reader::sharpsign-a stream #\A parameter)
+                          (file-position stream))))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:incorrect-initialization-length
+                 (signals eclector.reader:incorrect-initialization-length
+                   (do-it)))
+                (type-error
+                 (signals type-error (do-it)))
+                (eclector.reader:numeric-parameter-not-supplied-but-required
+                 (signals eclector.reader:numeric-parameter-not-supplied-but-required
+                   (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equalp expected value))
+                   (is (equal (length input) position))))))))
+        '(;; Errors
+          (""          1   nil end-of-file)
+          ("(1)"       2   nil type-error)
+          ("(() (1))"  2   nil eclector.reader:incorrect-initialization-length)
+          ("1"         1   nil type-error)
+          ("(1)"       nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
+          ;; Valid
+          ("()"        0   nil #0A())
+          ("(1 2)"     0   nil #0A(1 2))
+          ("(((1)))"   0   nil #0A(((1))))
+          ("()"        1   nil #1A())
+          ("(0 0)"     1   nil #1A(0 0))
+          ("((1) (2))" 1   nil #1A((1) (2)))
+          ("(((1)))"   1   nil #1A(((1))))
+          ("((0) (0))" 2   nil #2A((0) (0)))
+          ;; With *READ-SUPPRESS* bound to T
+          (""          1   t  end-of-file)
+          ("(1)"       2   t  nil)
+          ("(() (1))"  2   t  nil)
+          ("1"         1   t  nil)
+          ("(1)"       nil t  nil)
+          ("()"        0   t  nil)
+          ("(1 2)"     0   t  nil)
+          ("(((1)))"   0   t  nil)
+          ("()"        1   t  nil)
+          ("(0 0)"     1   t  nil)
+          ("((1) (2))" 1   t  nil)
+          ("(((1)))"   1   t  nil)
+          ("((0) (0))" 2   t  nil))))
+
 (test sharpsign-c/smoke
   "Smoke test for the SHARPSIGN-C reader macro function."
 
