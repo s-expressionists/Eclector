@@ -51,7 +51,7 @@
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
    #:invalid-context-for-consing-dot
-   #:consing-dot-most-be-followed-by-object
+   #:object-must-follow-consing-dot
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis
 

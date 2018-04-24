@@ -72,8 +72,8 @@
               (case expected
                 (end-of-file
                  (signals end-of-file (do-it)))
-                (eclector.reader:consing-dot-most-be-followed-by-object
-                 (signals eclector.reader:consing-dot-most-be-followed-by-object
+                (eclector.reader:object-must-follow-consing-dot
+                 (signals eclector.reader:object-must-follow-consing-dot
                    (do-it)))
                 (eclector.reader:multiple-objects-following-consing-dot
                  (signals eclector.reader:multiple-objects-following-consing-dot
@@ -89,7 +89,7 @@
         '((""      end-of-file)
 
           ("."     end-of-file)
-          (". )"   eclector.reader:consing-dot-most-be-followed-by-object)
+          (". )"   eclector.reader:object-must-follow-consing-dot)
           (". 1 2" eclector.reader:multiple-objects-following-consing-dot)
           (". ."   eclector.reader:invalid-context-for-consing-dot)
 

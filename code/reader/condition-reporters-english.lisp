@@ -23,7 +23,7 @@
   (define-reporter ((condition invalid-context-for-consing-dot) stream)
     (format stream "A consing dot appeared in an illegal position."))
 
-  (define-reporter ((condition consing-dot-most-be-followed-by-object) stream)
+  (define-reporter ((condition object-must-follow-consing-dot) stream)
     (format stream "An object must follow a consing dot."))
 
   (define-reporter ((condition multiple-objects-following-consing-dot) stream)

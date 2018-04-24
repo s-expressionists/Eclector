@@ -241,7 +241,7 @@
                    (handler-case
                        (setf tail (read stream t nil t))
                      (end-of-list ()
-                       (%reader-error stream 'consing-dot-most-be-followed-by-object)))
+                       (%reader-error stream 'object-must-follow-consing-dot)))
                    ;; This call to read must not succeed.
                    (read stream t nil t)
                    (%reader-error stream 'multiple-objects-following-consing-dot)

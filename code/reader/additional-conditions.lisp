@@ -22,7 +22,7 @@
 (define-condition invalid-context-for-consing-dot (stream-position-reader-error)
   ())
 
-(define-condition consing-dot-most-be-followed-by-object (stream-position-reader-error)
+(define-condition object-must-follow-consing-dot (stream-position-reader-error)
   ())
 
 (define-condition multiple-objects-following-consing-dot (stream-position-reader-error)
