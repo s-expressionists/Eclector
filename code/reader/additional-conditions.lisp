@@ -116,7 +116,7 @@
 (define-condition no-elements-found (stream-position-reader-error)
   ((%expected-number :initarg :expected-number :reader expected-number)))
 
-(define-condition incorrect-initialization-length (acclimation:condition error)
+(define-condition incorrect-initialization-length (stream-position-reader-error)
   ((%expected-length :initarg :expected-length :reader expected-length )
    (%datum :initarg :datum :reader datum)))
 

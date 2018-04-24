@@ -578,7 +578,7 @@
 ;;;
 ;;; Reader macro for sharpsign A.
 
-(defun determine-dimensions (rank initial-contents)
+(defun determine-dimensions (stream rank initial-contents)
   (cond ((zerop rank)
          '())
         ((not (or (and (listp initial-contents)
@@ -592,35 +592,33 @@
            (if (zerop length)
                (make-list rank :initial-element 0)
                (cons length (determine-dimensions
-                             (1- rank) (elt initial-contents 0))))))))
+                             stream (1- rank) (elt initial-contents 0))))))))
 
-(defun check-dimensions (dimensions initial-contents)
+(defun check-dimensions (stream dimensions initial-contents)
   (cond ((null dimensions)
          t)
         ((zerop (car dimensions))
          (or (null initial-contents)
              (and (typep initial-contents 'sequence)
                   (zerop (length initial-contents)))))
-        ((not (or (and (listp initial-contents)
-                       (alexandria:proper-list-p initial-contents))
-                  (typep initial-contents 'sequence)))
+        ((not (typep initial-contents 'alexandria:proper-sequence))
          (error 'type-error
                 :expected-type 'sequence
                 :datum initial-contents))
         ((/= (length initial-contents) (car dimensions))
-         (error 'incorrect-initialization-length
-                :datum initial-contents
-                :expected-length (car dimensions)))
+         (%reader-error stream 'incorrect-initialization-length
+                        :datum initial-contents
+                        :expected-length (car dimensions)))
         (t
          (every (lambda (subseq)
-                  (check-dimensions (cdr dimensions) subseq))
+                  (check-dimensions stream (cdr dimensions) subseq))
                 initial-contents))))
 
 (defun sharpsign-a (stream char parameter)
   (declare (ignore char))
   (let ((init (read stream t nil t)))
-    (let ((dimensions (determine-dimensions parameter init)))
-      (check-dimensions dimensions init)
+    (let ((dimensions (determine-dimensions stream parameter init)))
+      (check-dimensions stream dimensions init)
       (make-array dimensions :initial-contents init))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
