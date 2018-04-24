@@ -101,7 +101,7 @@
 
   (define-reporter ((condition too-many-elements) stream)
     (format stream "~a was specified to have length ~d, but ~d ~
-                    elements were found."
+                    element~:P ~:*~[were~;was~:;were~] found."
             (array-type condition)
             (expected-number condition)
             (number-found condition)))

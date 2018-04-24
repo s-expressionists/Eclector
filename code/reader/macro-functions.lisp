@@ -301,19 +301,22 @@
                for (element elementp) = (multiple-value-list
                                          (next-element))
                while elementp
-               do (if (>= index parameter)
-                      (%reader-error stream 'too-many-elements
-                                     :array-type 'vector
-                                     :expected-number parameter
-                                     :number-found index)
-                      (setf (aref result index) element))
-               finally (return
-                         (if (zerop index)
-                             (%reader-error stream 'no-elements-found
-                                            :array-type 'vector
-                                            :expected-number parameter)
-                             (fill result (aref result (1- index))
-                                   :start index)))))))))
+               when (< index parameter)
+               do (setf (aref result index) element)
+               finally (cond
+                         ((zerop index)
+                          (%reader-error stream 'no-elements-found
+                                         :array-type 'vector
+                                         :expected-number parameter))
+                         ((>= index parameter)
+                          (%reader-error stream 'too-many-elements
+                                         :array-type 'vector
+                                         :expected-number parameter
+                                         :number-found index))
+                         (t
+                          (return
+                            (fill result (aref result (1- index))
+                                  :start index))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -544,19 +547,22 @@
                for index from 0
                for value = (next-bit)
                while value
-               do (if (>= index parameter)
-                      (%reader-error stream 'too-many-elements
-                                     :array-type 'bit-vector
-                                     :expected-number parameter
-                                     :number-found index)
-                      (setf (sbit result index) value))
-               finally (return
-                         (if (zerop index)
-                             (%reader-error stream 'no-elements-found
-                                            :array-type 'bit-vector
-                                            :expected-number parameter)
-                             (fill result (sbit result (1- index))
-                                   :start index)))))))))
+               when (< index parameter)
+               do (setf (sbit result index) value)
+               finally (cond
+                         ((zerop index)
+                          (%reader-error stream 'no-elements-found
+                                         :array-type 'bit-vector
+                                         :expected-number parameter))
+                         ((>= index parameter)
+                          (%reader-error stream 'too-many-elements
+                                         :array-type 'bit-vector
+                                         :expected-number parameter
+                                         :number-found index))
+                         (t
+                          (return
+                            (fill result (sbit result (1- index))
+                                  :start index))))))))))
 
 (defun sharpsign-vertical-bar (stream char parameter)
   (declare (ignore char))
