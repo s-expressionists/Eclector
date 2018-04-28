@@ -441,6 +441,53 @@
           ("(((1)))"   1   t  nil)
           ("((0) (0))" 2   t  nil))))
 
+(test sharpsign-colon/smoke
+  "Smoke test for the SHARPSIGN-COLON reader macro function."
+
+  (mapc (lambda (input-parameter-context-expected)
+          (destructuring-bind
+              (input parameter read-suppress preserve-whitespace expected
+               &optional (expected-position (length input)))
+              input-parameter-context-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress)
+                             (eclector.reader::*preserve-whitespace*
+                               preserve-whitespace))
+                         (values
+                          (eclector.reader::sharpsign-colon
+                           stream #\. parameter)
+                          (file-position stream))))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (string= (symbol-name expected) (symbol-name value)))
+                   (is (equal expected-position position))))))))
+        '(;; Errors
+          ("\\"      nil nil nil end-of-file)
+          ("|"       nil nil nil end-of-file)
+          ("|\\"     nil nil nil end-of-file)
+          ("a"       1   nil nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Valid
+          (""        nil nil nil #:||)
+          (" "       nil nil nil #:||)
+          ("("       nil nil nil #:|| 0)
+          ("\\a"     nil nil nil #:|a|)
+          ("|\\a|"   nil nil nil #:|a|)
+          ("|a|"     nil nil nil #:|a|)
+          ;; *PRESERVE-WHITESPACE*
+          ("a "      nil nil nil #:a)
+          ("a "      nil nil t   #:a 1)
+          ;; With *READ-SUPPRESS* bound to T
+          ("\\"      nil t   nil end-of-file)
+          ("|"       nil t   nil end-of-file)
+          ("a"       1   t   nil nil))))
+
 (test sharpsign-c/smoke
   "Smoke test for the SHARPSIGN-C reader macro function."
 
