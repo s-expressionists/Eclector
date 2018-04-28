@@ -11,6 +11,10 @@
              (language acclimation:english))
           ,@body)))
 
+  (define-reporter ((condition invalid-context-for-backquote) stream)
+    (format stream "Backquote has been used in a context that does not ~
+                    permit it (like #C(1 `,2))."))
+
   (define-reporter ((condition comma-not-inside-backquote) stream)
     (format stream "~:[Comma~;Splicing comma~] not inside backquote."
             (at-sign-p condition)))

@@ -15,6 +15,9 @@
                        (values (eclector.reader:read stream)
                                (file-position stream)))))
               (case expected
+                (eclector.reader:invalid-context-for-backquote
+                 (signals eclector.reader:invalid-context-for-backquote
+                   (do-it)))
                 (eclector.reader:comma-not-inside-backquote
                  (signals eclector.reader:comma-not-inside-backquote
                    (do-it)))
@@ -35,6 +38,8 @@
           ("#+(or) #.(error \"foo\") 2" 2)
 
           ;; Some context-sensitive cases.
+          ("#C(1 `,2)"                  eclector.reader:invalid-context-for-backquote)
+          ("#+`,common-lisp 1"          eclector.reader:invalid-context-for-backquote)
           (",foo"                       eclector.reader:comma-not-inside-backquote)
           (",@foo"                      eclector.reader:comma-not-inside-backquote)
           ("`(,)"                       eclector.reader:object-must-follow-comma)
