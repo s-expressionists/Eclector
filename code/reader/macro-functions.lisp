@@ -649,59 +649,59 @@
   (convert-according-to-readtable-case token token-escapes)
   (make-symbol (copy-seq token)))
 
-
 (defun sharpsign-colon (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-colon parameter))
-  (let ((token (make-array 10
+  (let ((readtable *readtable*)
+        (token (make-array 10
                            :element-type 'character
                            :adjustable t
                            :fill-pointer 0))
         (token-escapes (make-array 10
                                    :adjustable t
                                    :fill-pointer 0)))
-    (tagbody
-     even-escapes
-       (let ((char (read-char stream nil nil t)))
-         (if (null char)
-             (return-from sharpsign-colon
-               (symbol-from-token token token-escapes))
-             (ecase (eclector.readtable:syntax-type *readtable* char)
-               (:whitespace
-                (when *preserve-whitespace*
-                  (unread-char char stream))
-                (return-from sharpsign-colon
-                  (symbol-from-token token token-escapes)))
-               (:terminating-macro
-                (unread-char char stream)
-                (return-from sharpsign-colon
-                  (symbol-from-token token token-escapes)))
-               (:single-escape
-                (let ((char2 (read-char stream t nil t)))
-                  (vector-push-extend char2 token)
-                  (vector-push-extend t token-escapes))
-                (go even-escapes))
-               (:multiple-escape
-                (go odd-escapes))
-               ((:constituent :non-terminating-macro)
-                (vector-push-extend char token)
-                (vector-push-extend nil token-escapes)
-                (go even-escapes)))))
-     odd-escapes
-       (let ((char (read-char stream t nil t)))
-         (case (eclector.readtable:syntax-type *readtable* char)
-           (:single-escape
-            (let ((char2 (read-char stream t nil t)))
-              (vector-push-extend char2 token)
-              (vector-push-extend t token-escapes)
-              (go odd-escapes)))
-           (:multiple-escape
-            (go even-escapes))
-           (t
-            (vector-push-extend char token)
-            (vector-push-extend t token-escapes)
-            (go odd-escapes)))))))
+    (flet ((push-char (char escapesp)
+             (vector-push-extend char token)
+             (vector-push-extend escapesp token-escapes))
+           (read-char-handling-eof (eof-error-p)
+             (let ((char (read-char stream eof-error-p nil t)))
+               (when (null char)
+                 (return-from sharpsign-colon
+                   (symbol-from-token token token-escapes)))
+               (values char (eclector.readtable:syntax-type readtable char)))))
+      (tagbody
+       even-escapes
+         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
+           (ecase syntax-type
+             (:whitespace
+              (when *preserve-whitespace*
+                (unread-char char stream))
+              (return-from sharpsign-colon
+                (symbol-from-token token token-escapes)))
+             (:terminating-macro
+              (unread-char char stream)
+              (return-from sharpsign-colon
+                (symbol-from-token token token-escapes)))
+             (:single-escape
+              (push-char (read-char-handling-eof t) t)
+              (go even-escapes))
+             (:multiple-escape
+              (go odd-escapes))
+             ((:constituent :non-terminating-macro)
+              (push-char char nil)
+              (go even-escapes))))
+       odd-escapes
+         (multiple-value-bind (char syntax-type) (read-char-handling-eof t)
+           (case syntax-type
+             (:single-escape
+              (push-char (read-char-handling-eof t) t)
+              (go odd-escapes))
+             (:multiple-escape
+              (go even-escapes))
+             (t
+              (push-char char t)
+              (go odd-escapes))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
