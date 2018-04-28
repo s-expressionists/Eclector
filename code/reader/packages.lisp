@@ -62,6 +62,7 @@
    #:two-package-markers-must-be-adjacent
    #:two-package-markers-must-not-be-first
    #:symbol-can-have-at-most-two-package-markers
+   #:uninterned-symbol-must-not-contain-package-marker
 
    #:unknown-macro-sub-character
    #:numeric-parameter-supplied-but-ignored

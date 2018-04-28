@@ -643,9 +643,15 @@
 ;;;
 ;;; Reader macro for sharpsign colon.
 
-(defun symbol-from-token (token token-escapes)
+(defun symbol-from-token (stream token token-escapes package-marker)
   (when *read-suppress*
     (return-from symbol-from-token nil))
+  (when package-marker
+    (%reader-error stream 'uninterned-symbol-must-not-contain-package-marker
+                   :stream-position (if (eq package-marker t)
+                                        nil
+                                        package-marker)
+                   :token token))
   (convert-according-to-readtable-case token token-escapes)
   (make-symbol (copy-seq token)))
 
@@ -660,15 +666,21 @@
                            :fill-pointer 0))
         (token-escapes (make-array 10
                                    :adjustable t
-                                   :fill-pointer 0)))
+                                   :fill-pointer 0))
+        (package-marker nil))
     (flet ((push-char (char escapesp)
+             (when (and (not escapesp)
+                        (char= char #\:)
+                        (not package-marker))
+               (setf package-marker (or (ignore-errors (file-position stream))
+                                        t)))
              (vector-push-extend char token)
              (vector-push-extend escapesp token-escapes))
            (read-char-handling-eof (eof-error-p)
              (let ((char (read-char stream eof-error-p nil t)))
                (when (null char)
                  (return-from sharpsign-colon
-                   (symbol-from-token token token-escapes)))
+                   (symbol-from-token stream token token-escapes package-marker)))
                (values char (eclector.readtable:syntax-type readtable char)))))
       (tagbody
        even-escapes
@@ -678,11 +690,11 @@
               (when *preserve-whitespace*
                 (unread-char char stream))
               (return-from sharpsign-colon
-                (symbol-from-token token token-escapes)))
+                (symbol-from-token stream token token-escapes package-marker)))
              (:terminating-macro
               (unread-char char stream)
               (return-from sharpsign-colon
-                (symbol-from-token token token-escapes)))
+                (symbol-from-token stream token token-escapes package-marker)))
              (:single-escape
               (push-char (read-char-handling-eof t) t)
               (go even-escapes))

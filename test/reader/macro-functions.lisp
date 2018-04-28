@@ -461,6 +461,9 @@
               (case expected
                 (end-of-file
                  (signals end-of-file (do-it)))
+                (eclector.reader:uninterned-symbol-must-not-contain-package-marker
+                 (signals eclector.reader:uninterned-symbol-must-not-contain-package-marker
+                   (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it)))
@@ -472,14 +475,18 @@
           ("\\"      nil nil nil end-of-file)
           ("|"       nil nil nil end-of-file)
           ("|\\"     nil nil nil end-of-file)
+          ("a:b"     nil nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker)
+          ("a:b:c"   nil nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker)
           ("a"       1   nil nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           (""        nil nil nil #:||)
           (" "       nil nil nil #:||)
           ("("       nil nil nil #:|| 0)
           ("\\a"     nil nil nil #:|a|)
+          ("\\:"     nil nil nil #:|:|)
           ("|\\a|"   nil nil nil #:|a|)
           ("|a|"     nil nil nil #:|a|)
+          ("|a:|"    nil nil nil #:|a:|)
           ;; *PRESERVE-WHITESPACE*
           ("a "      nil nil nil #:a)
           ("a "      nil nil t   #:a 1)

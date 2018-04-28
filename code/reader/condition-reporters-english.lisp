@@ -64,6 +64,10 @@
                     package markers as in package:::symbol or ~
                     package::first:rest."))
 
+  (define-reporter ((condition uninterned-symbol-must-not-contain-package-marker) stream)
+    (format stream "A symbol token following #: must not contain a ~
+                    package marker."))
+
   (define-reporter ((condition numeric-parameter-supplied-but-ignored) stream)
     (format stream "Dispatch reader macro ~a was supplied with a ~
                     numeric parameter it does not accept."

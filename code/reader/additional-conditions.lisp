@@ -64,6 +64,9 @@
 (define-condition symbol-can-have-at-most-two-package-markers (symbol-syntax-error)
   ())
 
+(define-condition uninterned-symbol-must-not-contain-package-marker (symbol-syntax-error)
+  ())
+
 ;;; Conditions related to reader macros
 
 (define-condition numeric-parameter-supplied-but-ignored (stream-position-reader-error)
