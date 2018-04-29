@@ -58,6 +58,37 @@
           ("\\\""   end-of-file)
           ("\\\"\"" "\""))))
 
+(test backquote/smoke
+  "Smoke test for the BACKQUOTE reader macro function."
+
+  (mapc (lambda (input-backquote-allowed-expected)
+          (destructuring-bind (input backquote-allowed expected
+                               &optional (expected-position (length input)))
+              input-backquote-allowed-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (let ((eclector.reader::*backquote-allowed-p* backquote-allowed)
+                                     (eclector.reader::*backquote-depth* 0))
+                                 (eclector.reader::backquote stream #\`))
+                               (file-position stream)))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:invalid-context-for-backquote
+                 (signals eclector.reader:invalid-context-for-backquote
+                   (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (equal expected          result))
+                   (is (eql   expected-position position))))))))
+        '(;; Errors
+          (""   t   end-of-file)
+          ("1"  nil eclector.reader:invalid-context-for-backquote)
+          ;; Valid
+          ("1"  t   (eclector.reader:quasiquote 1))
+          (",1" t   (eclector.reader:quasiquote (eclector.reader:unquote 1))))))
+
+
 (test left-parenthesis/smoke
   "Smoke test for the LEFT-PARENTHESIS reader macro function."
 
