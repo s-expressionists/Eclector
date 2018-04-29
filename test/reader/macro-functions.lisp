@@ -392,10 +392,11 @@
       (""     nil nil end-of-file)
       ("2"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
+      ("1."   nil nil eclector.reader:digit-expected)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid binary rationals
       ("1"    nil nil 1)
-      ; ("1."   nil nil 1)
+
       ("-1"   nil nil -1)
       ("1/10" nil nil 1/2)))
 
@@ -404,10 +405,10 @@
       (""     nil nil end-of-file)
       ("8"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
+      ("1."   nil nil eclector.reader:digit-expected)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid octal rationals
       ("1"    nil nil 1)
-      ; ("1."   nil nil 1)
       ("-1"   nil nil -1)
       ("1/10" nil nil 1/8)))
 
@@ -416,10 +417,10 @@
       (""     nil nil end-of-file)
       ("g"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
+      ("1."   nil nil eclector.reader:digit-expected)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid hexadecimal rationals
       ("1"    nil nil 1)
-      ; ("1."   nil nil 1)
       ("-1"   nil nil -1)
       ("1/10" nil nil 1/16)))
 
@@ -428,11 +429,11 @@
       (""     17  nil end-of-file)
       ("h"    17  nil eclector.reader:digit-expected)
       ("x"    17  nil eclector.reader:digit-expected)
+      ("1."   17  nil eclector.reader:digit-expected)
       ("1"    nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
       ("1"    37  nil eclector.reader:invalid-radix)
       ;; Valid base-17 rationals
       ("1"    17 nil 1)
-      ; ("1."   17 nil 1)
       ("-1"   17 nil -1)
       ("1/10" 17 nil 1/17)
       ("g"    17 nil 16))))
