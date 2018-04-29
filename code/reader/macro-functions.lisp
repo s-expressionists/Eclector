@@ -358,71 +358,67 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
-  (let ((char1 (read-char stream nil nil t)))
-    (when (null char1)
-      (error 'end-of-file :stream stream))
-    (let ((char2 (read-char stream nil nil t)))
-      (cond ((null char2)
-             char1)
-            ((not (eq (eclector.readtable:syntax-type *readtable* char2) :constituent))
-             (unread-char char2 stream)
-             char1)
-            (t
-             (let ((token (make-array 10
-                                      :element-type 'character
-                                      :adjustable t
-                                      :fill-pointer 0)))
-               (vector-push-extend char1 token)
-               (vector-push-extend char2 token)
-               (tagbody
-                even-escapes
-                  (let ((char (read-char stream nil nil t)))
-                    (when (null char)
-                      (go terminate))
-                    (ecase (eclector.readtable:syntax-type *readtable* char)
-                      ((:constituent :non-terminating-macro)
-                       (vector-push-extend char token)
-                       (go even-escapes))
-                      (:single-escape
-                       (let ((char (read-char stream nil nil t)))
-                         (when (null char)
-                           (error 'end-of-file :stream stream))
-                         (vector-push-extend char token))
-                       (go even-escapes))
-                      (:multiple-escape
-                       (go odd-escapes))
-                      (:terminating-macro
-                       (unread-char char stream)
-                       (go terminate))
-                      (:whitespace
-                       (when *preserve-whitespace*
-                         (unread-char char stream))
-                       (go terminate))))
-                odd-escapes
-                  (let ((char (read-char stream nil nil t)))
-                    (when (null char)
-                      (error 'end-of-file :stream stream))
-                    (ecase (eclector.readtable:syntax-type *readtable* char)
-                      ((:constituent :terminating-macro
-                        :non-terminating-macro :whitespace)
-                       (vector-push-extend char token)
-                       (go odd-escapes))
-                      (:single-escape
-                       (let ((char (read-char stream nil nil t)))
-                         (when (null char)
-                           (error 'end-of-file :stream stream))
-                         (vector-push-extend char token))
-                       (go odd-escapes))
-                      (:multiple-escape
-                       (go even-escapes))))
-                terminate
-                  (let* ((upcase (string-upcase token))
-                         (char (gethash upcase *character-names*)))
-                    (if (null char)
-                        (error 'unknown-character-name
-                               :stream stream
-                               :name token)
-                        (return-from sharpsign-backslash char))))))))))
+  (let ((char1 (read-char stream t nil t))
+        (token nil))
+    (flet ((next-char (&optional eof-error-p)
+             (let* ((char (read-char stream eof-error-p nil t))
+                    (syntax-type (when char
+                                   (eclector.readtable:syntax-type
+                                    *readtable* char))))
+               (values char syntax-type)))
+           (collect-char (char)
+             (cond
+               (token (vector-push-extend char token))
+               (t (setf token (make-array 10
+                                          :element-type 'character
+                                          :adjustable t
+                                          :fill-pointer 2)
+                        (aref token 0) char1
+                        (aref token 1) char)))))
+      (tagbody
+       even-escapes
+         (multiple-value-bind (char syntax-type) (next-char)
+           (ecase syntax-type
+             ((nil)
+              (go terminate))
+             ((:constituent :non-terminating-macro)
+              (collect-char char)
+              (go even-escapes))
+             (:single-escape
+              (collect-char (read-char stream t nil t))
+              (go even-escapes))
+             (:multiple-escape
+              (go odd-escapes))
+             (:terminating-macro
+              (unread-char char stream)
+              (go terminate))
+             (:whitespace
+              (when *preserve-whitespace*
+                (unread-char char stream))
+              (go terminate))))
+       odd-escapes
+         (multiple-value-bind (char syntax-type) (next-char t)
+           (ecase syntax-type
+             ((:constituent :terminating-macro
+               :non-terminating-macro :whitespace)
+              (collect-char char)
+              (go odd-escapes))
+             (:single-escape
+              (collect-char (read-char stream t nil t))
+              (go odd-escapes))
+             (:multiple-escape
+              (go even-escapes))))
+       terminate
+         (return-from sharpsign-backslash
+           (cond
+             (*read-suppress* nil)
+             (token (let* ((upcase (string-upcase token))
+                           (char (gethash upcase *character-names*)))
+                      (if (null char)
+                          (%reader-error stream 'unknown-character-name
+                                         :name token)
+                          char)))
+             (t char1)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
