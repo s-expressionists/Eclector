@@ -349,6 +349,94 @@
           ("a"      36 nil 10)
           ("z"      36 nil 35))))
 
+(macrolet
+    ((define-rational-reader-macro-test (char &body cases)
+       (let* ((function-name (let ((*package* (find-package '#:eclector.reader)))
+                               (alexandria:symbolicate '#:sharpsign- char)))
+              (test-name (alexandria:symbolicate function-name '#:/smoke)))
+         `(test ,test-name
+            ,(format nil "Smoke test for the ~A function." function-name)
+
+            (mapc (lambda (input-parameter-read-suppress-expected)
+                    (destructuring-bind
+                        (input parameter read-suppress expected
+                         &optional (expected-position (length input)))
+                        input-parameter-read-suppress-expected
+                      (flet ((do-it ()
+                               (with-input-from-string (stream input)
+                                 (let ((*read-suppress* read-suppress))
+                                   (values
+                                    (,function-name stream ,char parameter)
+                                    (file-position stream))))))
+                        (case expected
+                          (end-of-file
+                           (signals end-of-file (do-it)))
+                          (eclector.reader:digit-expected
+                           (signals eclector.reader:digit-expected (do-it)))
+                          (eclector.reader:invalid-radix
+                           (signals eclector.reader:invalid-radix (do-it)))
+                          (eclector.reader:numeric-parameter-not-supplied-but-required
+                           (signals eclector.reader:numeric-parameter-not-supplied-but-required
+                             (do-it)))
+                          (eclector.reader:numeric-parameter-supplied-but-ignored
+                           (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                             (do-it)))
+                          (t
+                           (multiple-value-bind (value position) (do-it)
+                             (is (equalp expected value))
+                             (is (equal expected-position position))))))))
+                  ,@cases)))))
+
+  (define-rational-reader-macro-test #\B
+    '(;; Errors
+      (""     nil nil end-of-file)
+      ("2"    nil nil eclector.reader:digit-expected)
+      ("x"    nil nil eclector.reader:digit-expected)
+      ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+      ;; Valid binary rationals
+      ("1"    nil nil 1)
+      ; ("1."   nil nil 1)
+      ("-1"   nil nil -1)
+      ("1/10" nil nil 1/2)))
+
+  (define-rational-reader-macro-test #\O
+    '(;; Errors
+      (""     nil nil end-of-file)
+      ("8"    nil nil eclector.reader:digit-expected)
+      ("x"    nil nil eclector.reader:digit-expected)
+      ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+      ;; Valid octal rationals
+      ("1"    nil nil 1)
+      ; ("1."   nil nil 1)
+      ("-1"   nil nil -1)
+      ("1/10" nil nil 1/8)))
+
+  (define-rational-reader-macro-test #\X
+    '(;; Errors
+      (""     nil nil end-of-file)
+      ("g"    nil nil eclector.reader:digit-expected)
+      ("x"    nil nil eclector.reader:digit-expected)
+      ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+      ;; Valid hexadecimal rationals
+      ("1"    nil nil 1)
+      ; ("1."   nil nil 1)
+      ("-1"   nil nil -1)
+      ("1/10" nil nil 1/16)))
+
+  (define-rational-reader-macro-test #\R
+    '(;; Errors
+      (""     17  nil end-of-file)
+      ("h"    17  nil eclector.reader:digit-expected)
+      ("x"    17  nil eclector.reader:digit-expected)
+      ("1"    nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
+      ("1"    37  nil eclector.reader:invalid-radix)
+      ;; Valid base-17 rationals
+      ("1"    17 nil 1)
+      ; ("1."   17 nil 1)
+      ("-1"   17 nil -1)
+      ("1/10" 17 nil 1/17)
+      ("g"    17 nil 16))))
+
 (test sharpsign-asterisk/smoke
   "Smoke test for the SHARPSIGN-ASTERISK function."
 
