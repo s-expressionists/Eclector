@@ -854,6 +854,13 @@
                  (version> \"1\"))
             1"                     nil nil nil 1))))
 
+(test sharpsign-invalid/smoke
+  "Smoke test for the SHARPSIGN-INVALID function."
+
+  (signals eclector.reader:sharpsign-invalid
+    (with-input-from-string (stream "")
+      (eclector.reader::sharpsign-invalid stream #\< nil))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macros for sharpsign equals and sharpsign sharpsign.
