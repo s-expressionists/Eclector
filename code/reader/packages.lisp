@@ -76,6 +76,7 @@
    #:no-elements-found
    #:incorrect-initialization-length
    #:single-feature-expected
+   #:sharpsign-invalid
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-sharpsign-undefined-label
    ;; Names of macros related to backquote.
