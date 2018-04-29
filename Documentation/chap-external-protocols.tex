@@ -67,6 +67,12 @@ and an object indicating the reason for skipping the input.  The
 default method on this generic function does nothing.  Client code can
 supply a method that specializes to the client class of its choice.
 
+When this function is called, the stream is positioned immediately
+\emph{after} the skipped input.  Client code that wants to know both
+the beginning and the end of the skipped input must remember the
+stream position before the call to \texttt{read} was made as well as
+the stream position when the call to this function is made.
+
 \Defvar {*skip-reason*}
 
 This variable is used by the reader to determine why a range of input
