@@ -88,6 +88,36 @@
           ("1"  t   (eclector.reader:quasiquote 1))
           (",1" t   (eclector.reader:quasiquote (eclector.reader:unquote 1))))))
 
+(test comma/smoke
+  "Smoke test for the COMMA reader macro function."
+
+  (mapc (lambda (input-backquote-depth-expected)
+          (destructuring-bind (input backquote-depth expected
+                               &optional (expected-position (length input)))
+              input-backquote-depth-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (let ((eclector.reader::*backquote-depth*
+                                       backquote-depth))
+                                 (eclector.reader::comma stream #\,))
+                               (file-position stream)))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file (do-it)))
+                (eclector.reader:comma-not-inside-backquote
+                 (signals eclector.reader:comma-not-inside-backquote
+                   (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (equal expected          result))
+                   (is (eql   expected-position position))))))))
+        '(;; Errors
+          (""       1   end-of-file)
+          ("@"      1   end-of-file)
+          ("1"      0   eclector.reader:comma-not-inside-backquote)
+          ;; Valid
+          ("1"      1   (eclector.reader:unquote 1))
+          ("@1"     1   (eclector.reader:unquote-splicing 1)))))
 
 (test left-parenthesis/smoke
   "Smoke test for the LEFT-PARENTHESIS reader macro function."
