@@ -163,6 +163,13 @@
           ;; preserve whitespace.
           (") "    ()    1))))
 
+(test right-parenthesis/smoke
+  "Smoke test for the RIGHT-PARENTHESIS reader macro function."
+
+  (signals eclector.reader:invalid-context-for-right-parenthesis
+    (with-input-from-string (stream ")")
+      (eclector.reader::right-parenthesis stream #\)))))
+
 (test sharpsign-single-quote/smoke
   "Smoke test for the SHARPSIGN-SINGLE-QUOTE reader macro function."
 
