@@ -215,6 +215,66 @@
           ("(error \"foo\")" nil t   nil)
           ("1"               1   t   nil))))
 
+(test sharpsign-backslash/smoke
+  "Smoke test for the SHARPSIGN-BACKSLASH reader macro function."
+
+  (mapc (lambda (input-parameters-expected)
+          (destructuring-bind (input parameter read-suppress expected
+                               &optional (expected-position (length input)))
+              input-parameters-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (let ((*read-suppress* read-suppress))
+                                 (eclector.reader::sharpsign-backslash
+                                  stream #\\ parameter))
+                               (file-position stream)))))
+              (case expected
+                (end-of-file
+                 (signals end-of-file
+                   (do-it)))
+                (eclector.reader:unknown-character-name
+                 (signals eclector.reader:unknown-character-name
+                   (do-it)))
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it)))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (equal expected          result))
+                   (is (eql   expected-position position))))))))
+        '(;; Error cases
+          (""                  nil nil end-of-file)
+          ("x\\"               nil nil end-of-file)
+          ("x|"                nil nil end-of-file)
+          ("\\no-such-char"    nil nil eclector.reader:unknown-character-name)
+          ("|no-such-char"     nil nil eclector.reader:unknown-character-name)
+          ("no-such-char"      nil nil eclector.reader:unknown-character-name)
+          ("no-such:char"      nil nil eclector.reader:unknown-character-name)
+          ("no-such::char"     nil nil eclector.reader:unknown-character-name)
+          ("no-such:::char"    nil nil eclector.reader:unknown-character-name)
+          ("a"                 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ;; Single-character case
+          ("a"                 nil nil #\a)
+          ("A"                 nil nil #\A)
+          ("("                 nil nil #\()
+          ("\\"                nil nil #\\)
+          ("|"                 nil nil #\|)
+          ("a "                nil nil #\a)
+          ("a("                nil nil #\a 1)
+          ;; Multi-character case
+          ("space"             nil nil #\Space)
+          ("Space"             nil nil #\Space)
+          ("SPACE"             nil nil #\Space)
+          ("Ret\\urn"          nil nil #\Return)
+          ("Re|tur|n"          nil nil #\Return)
+          ("Re|t\\ur|n"        nil nil #\Return)
+          ;; With *READ-SUPPRESS* bound to T
+          (""                  nil t   end-of-file)
+          ("x\\"               nil t   end-of-file)
+          ("x|"                nil t   end-of-file)
+          ("no-such-char"      nil t   nil)
+          ("1"                 1   t   nil))))
+
 (test read-rational/smoke
   "Smoke test for the READ-RATIONAL reader macro function."
 
