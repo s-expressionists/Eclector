@@ -78,8 +78,14 @@ the stream position when the call to this function is made.
 This variable is used by the reader to determine why a range of input
 characters has been skipped.  To this end, internal functions of the
 reader as well as reader macros can set this variable to a suitable
-value before skipping over some input.  This information is relayed to
-the client using the
+value before skipping over some input.  Then, after the input has been
+skipped, the generic function \texttt{note-skipped-input} is called
+with the value of the variable as its \textit{reason} argument.
+
+As an example, the method on \texttt{note-skipped-input} specialized
+to\\
+\texttt{eclector.concrete-syntax-tree:cst-client} relays the reason
+and position information to the client by calling the\\
 \texttt{eclector.concrete-syntax-tree:record-skipped-input} generic
 function \seesec{sec:cst-reader-features}
 
