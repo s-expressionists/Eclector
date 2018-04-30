@@ -2,10 +2,11 @@
 \pagenumbering{arabic}
 
 \sysname{} is a portable, implementation-independent version of the
-\commonlisp{} function \texttt{read}.  As opposed to existing
+\commonlisp{} function \texttt{read}, a corresponding readtable and a
+quasiquotation facility.  As opposed to existing
 implementation-specific version of \texttt{read}, \sysname{} uses
-generic functions to allow implementations to customize the exact
-behavior, such as the interpretation of tokens.
+generic functions to allow clients to customize the exact behavior,
+such as the interpretation of tokens.
 
 Furthermore, \sysname{} can be used as a \texttt{source tracking}
 reader, which is accomplished through the use of \emph{concrete syntax
