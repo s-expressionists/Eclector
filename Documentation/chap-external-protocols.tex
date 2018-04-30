@@ -137,6 +137,18 @@ passing \textit{input-stream} and \textit{char} as arguments.  The
 default method therefore does the same thing that the standard
 \commonlisp{} reader does.
 
+\Defgeneric {evaluate-expression} {client expression}
+
+This generic function is called by the default \texttt{\#.}~reader
+macro function to perform read-time evaluation.  \textit{expression}
+is the expression that should be evaluated as it was returned by a
+recursive \texttt{read} call and potentially influenced by
+\textit{client}.  The function has to either return the result of
+evaluating \textit{expression} or signal an error.
+
+The default method on this generic function simply returns the result
+of \texttt{(cl:eval expression)}.
+
 \section{CST reader features}
 \label{sec:cst-reader-features}
 

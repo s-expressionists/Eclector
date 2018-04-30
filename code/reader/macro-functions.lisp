@@ -341,7 +341,7 @@
       (t
        (let ((expression (read stream t nil t)))
          (handler-case
-             (eval expression)
+             (evaluate-expression *client* expression)
            (error (condition)
              (%reader-error stream 'read-time-evaluation-error
                             :expression expression

@@ -17,4 +17,9 @@
 
 (defgeneric call-reader-macro (client input-stream char readtable))
 
+(defgeneric evaluate-expression (client expression)
+  (:method ((client t) (expression t))
+    (declare (ignore client))
+    (eval expression)))
+
 (defgeneric fixup (object seen-objects mapping))

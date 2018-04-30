@@ -83,7 +83,9 @@
                              (:file "macro-functions")
                              (:file "quasiquote-macro")
 
-                             (:file "readtable"))))
+                             (:file "readtable")
+
+                             (:file "client"))))
 
   :perform (test-op (operation component)
              (uiop:symbol-call '#:eclector.test '#:run-tests)))
