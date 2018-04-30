@@ -273,6 +273,9 @@
                 (eclector.reader:read-time-evaluation-inhibited
                  (signals eclector.reader:read-time-evaluation-inhibited
                    (do-it)))
+                (eclector.reader:read-time-evaluation-error
+                 (signals eclector.reader:read-time-evaluation-error
+                   (do-it)))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected       result))
@@ -280,6 +283,7 @@
         '(;; Error cases
           ("1"               1   nil t   eclector.reader:numeric-parameter-supplied-but-ignored)
           ("1"               nil nil nil eclector.reader:read-time-evaluation-inhibited)
+          ("(error \"foo\")" nil nil t   eclector.reader:read-time-evaluation-error)
           ;; Good inputs
           ("1"               nil nil t   1)
           ("(+ 1 2)"         nil nil t   3)

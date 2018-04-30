@@ -89,6 +89,10 @@
 (define-condition read-time-evaluation-inhibited (stream-position-reader-error)
   ())
 
+(define-condition read-time-evaluation-error (stream-position-reader-error)
+  ((%expression :initarg :expression :reader expression)
+   (%original-condition :initarg :original-condition :reader original-condition)))
+
 (define-condition unknown-character-name (stream-position-reader-error)
   ((%name :initarg :name :reader name)))
 

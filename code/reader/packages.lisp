@@ -69,6 +69,7 @@
    #:numeric-parameter-not-supplied-but-required
 
    #:read-time-evaluation-inhibited
+   #:read-time-evaluation-error
 
    #:unknown-character-name
    #:digit-expected

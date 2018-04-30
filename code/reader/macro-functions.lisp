@@ -339,7 +339,13 @@
       (*read-suppress*
        (read stream t nil t))
       (t
-       (eval (read stream t nil t))))))
+       (let ((expression (read stream t nil t)))
+         (handler-case
+             (eval expression)
+           (error (condition)
+             (%reader-error stream 'read-time-evaluation-error
+                            :expression expression
+                            :original-condition condition))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

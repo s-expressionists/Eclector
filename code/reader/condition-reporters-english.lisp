@@ -87,6 +87,13 @@
                     is false."
             '*read-eval*))
 
+  (define-reporter ((condition read-time-evaluation-error) stream)
+      (let ((expression (expression condition))
+            (original-condition (original-condition condition)))
+        (format stream "Read-time evaluation of expression ~s signaled ~
+                        ~s: ~a"
+                expression (type-of original-condition) original-condition)))
+
   (define-reporter ((condition unknown-character-name) stream)
     (format stream "Unrecognized character name: ~s" (name condition)))
 
