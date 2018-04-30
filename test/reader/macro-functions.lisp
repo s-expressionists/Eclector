@@ -256,11 +256,13 @@
   "Smoke test for the SHARPSIGN-DOT reader macro function."
 
   (mapc (lambda (input-parameters-expected)
-          (destructuring-bind (input parameter read-suppress expected)
+          (destructuring-bind
+              (input parameter read-suppress read-eval expected)
               input-parameters-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (values (let ((*read-suppress* read-suppress))
+                       (values (let ((*read-suppress* read-suppress)
+                                     (*read-eval* read-eval))
                                  (eclector.reader::sharpsign-dot
                                   stream #\. parameter))
                                (file-position stream)))))
@@ -268,20 +270,24 @@
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it)))
+                (eclector.reader:read-time-evaluation-inhibited
+                 (signals eclector.reader:read-time-evaluation-inhibited
+                   (do-it)))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected       result))
                    (is (eql   (length input) position))))))))
         '(;; Error cases
-          ("1"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ("1"               1   nil t   eclector.reader:numeric-parameter-supplied-but-ignored)
+          ("1"               nil nil nil eclector.reader:read-time-evaluation-inhibited)
           ;; Good inputs
-          ("1"               nil nil 1)
-          ("(+ 1 2)"         nil nil 3)
+          ("1"               nil nil t   1)
+          ("(+ 1 2)"         nil nil t   3)
 
-          ("`1"              nil nil 1)
+          ("`1"              nil nil t   1)
           ;; With *READ-SUPPRESS* bound to T
-          ("(error \"foo\")" nil t   nil)
-          ("1"               1   t   nil))))
+          ("(error \"foo\")" nil t   t   nil)
+          ("1"               1   t   t   nil))))
 
 (test sharpsign-backslash/smoke
   "Smoke test for the SHARPSIGN-BACKSLASH reader macro function."

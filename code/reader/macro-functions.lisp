@@ -333,9 +333,13 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-dot parameter))
   (with-preserved-backquote-context
-    (if *read-suppress*
-        (read stream t nil t)
-        (eval (read stream t nil t)))))
+    (cond
+      ((not *read-eval*)
+       (%reader-error stream 'read-time-evaluation-inhibited))
+      (*read-suppress*
+       (read stream t nil t))
+      (t
+       (eval (read stream t nil t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

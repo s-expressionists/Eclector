@@ -82,7 +82,10 @@
                     parameter, but none was supplied."
             (macro-name condition)))
 
-  ;; read time evaluation inhibited not used yet
+  (define-reporter ((condition read-time-evaluation-inhibited) stream)
+    (format stream "Cannot evaluate expression at read-time because ~s ~
+                    is false."
+            '*read-eval*))
 
   (define-reporter ((condition unknown-character-name) stream)
     (format stream "Unrecognized character name: ~s" (name condition)))

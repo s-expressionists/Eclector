@@ -68,6 +68,8 @@
    #:numeric-parameter-supplied-but-ignored
    #:numeric-parameter-not-supplied-but-required
 
+   #:read-time-evaluation-inhibited
+
    #:unknown-character-name
    #:digit-expected
    #:invalid-radix
