@@ -137,10 +137,11 @@
 (defclass custom-client (eclector.concrete-syntax-tree:cst-client)
   ())
 
-(defmethod eclector.concrete-syntax-tree:source-position ((stream t) (client custom-client))
+(defmethod eclector.parse-result:source-position
+    ((client custom-client) (stream t))
   (- (call-next-method)))
 
-(defmethod eclector.concrete-syntax-tree:make-source-range
+(defmethod eclector.parse-result:make-source-range
     ((client custom-client) (start t) (end t))
   (vector start end))
 
@@ -159,7 +160,7 @@
   ((skipped :accessor skipped
             :initform '())))
 
-(defmethod eclector.concrete-syntax-tree:record-skipped-input
+(defmethod eclector.parse-result:make-skipped-input-result
     ((client skipped-input-recording-client) (stream t) (kind t) (source t))
   (alexandria:appendf (skipped client) (list (list kind source))))
 
