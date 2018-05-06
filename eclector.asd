@@ -52,6 +52,15 @@
                              (:file "quasiquote-macro")
                              (:file "fixup")))
 
+               (:module "parse-result"
+                :pathname "code/parse-result"
+                :depends-on ("reader")
+                :serial t
+                :components ((:file "package")
+                             (:file "client")
+                             (:file "generic-functions")
+                             (:file "read")))
+
                (:static-file "README.md")
                (:static-file "LICENSE-BSD"))
 

@@ -8,7 +8,9 @@
     (if recursive-p
         (read-common *client* input-stream eof-error-p eof-value)
         (let* ((*labels* (make-hash-table))
-               (result (read-common *client* input-stream eof-error-p eof-value)))
+               (values (multiple-value-list
+                        (read-common *client* input-stream eof-error-p eof-value)))
+               (result (first values)))
           ;; *labels* maps labels to conses of the form
           ;; (TEMPORARY-OBJECT . FINAL-OBJECT). For the fixup step,
           ;; these conses into a hash-table mapping temporary objects to
@@ -19,7 +21,7 @@
                             (alexandria:hash-table-values *labels*)
                             :test #'eq)))
               (fixup result seen mapping)))
-          result))))
+          (values-list values)))))
 
 (defun read (&optional
                (input-stream *standard-input*)
