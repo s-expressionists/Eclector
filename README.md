@@ -5,6 +5,10 @@
 The `eclector` system provides a portable implementation of a reader
 following the Common Lisp specification.
 
+**``eclector`` is in an early phase of its development. Its ASDF
+system structure, package structure, exported symbols and protocols
+may all change at any time without prior notice.**
+
 ## Tutorial ##
 
 ### Basics ###
