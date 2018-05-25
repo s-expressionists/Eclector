@@ -240,7 +240,9 @@
         (*consing-dot-allowed-p* t))
     (with-preserved-backquote-context
       (handler-case
-          (loop for object = (read stream t nil t)
+          (loop for object = (let ((*consing-dot-allowed-p* nil))
+                               (read stream t nil t))
+                then (read stream t nil t)
                 if (eq object *consing-dot*)
                 do (setf *consing-dot-allowed-p* nil)
                    (handler-case

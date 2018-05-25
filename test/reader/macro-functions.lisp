@@ -147,16 +147,17 @@
 
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
-        '((""      end-of-file)
+        '((""        end-of-file)
 
-          ("."     end-of-file)
-          (". )"   eclector.reader:object-must-follow-consing-dot)
-          (". 1 2" eclector.reader:multiple-objects-following-consing-dot)
-          (". ."   eclector.reader:invalid-context-for-consing-dot)
+          ("."       eclector.reader:invalid-context-for-consing-dot)
+          ("1 ."     end-of-file)
+          ("1 . )"   eclector.reader:object-must-follow-consing-dot)
+          ("1 . 2 3" eclector.reader:multiple-objects-following-consing-dot)
+          ("1 . ."   eclector.reader:invalid-context-for-consing-dot)
 
-          (")"     ())
-          ("1)"    (1))
-          ("1 2)"  (1 2))
+          (")"       ())
+          ("1)"      (1))
+          ("1 2)"    (1 2))
 
           ;; Trailing whitespace. Not consuming it seems to be
           ;; permitted irregardless of whether we were asked to
