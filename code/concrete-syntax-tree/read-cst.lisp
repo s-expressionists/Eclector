@@ -33,7 +33,8 @@
       ((atom expression)
        (make-atom-cst expression source))
       ;; List structure with corresponding elements.
-      ((and (eql (list-length expression) (length children))
+      ((and (eql (ignore-errors (list-length expression))
+                 (length children))
             (every (lambda (sub-expression child)
                      (eql sub-expression (cst:raw child)))
                    expression children))
