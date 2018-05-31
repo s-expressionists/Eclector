@@ -765,20 +765,23 @@
 ;;;
 ;;; Reader macros for sharpsign + and sharpsign -.
 
+(deftype feature-expression-operator ()
+  '(member :not :or :and))
+
 (defun check-feature-expression (feature-expression)
   (unless (or (symbolp feature-expression)
-              (and (alexandria:proper-list-p feature-expression)
-                   (consp feature-expression)))
+              (alexandria:proper-list-p feature-expression))
     (error 'type-error
            :datum feature-expression
            :expected-type '(or symbol cons)))
   (when (consp feature-expression)
-    (unless (member (car feature-expression) '(:not :or :and))
-      (error 'type-error
-             :datum (car feature-expression)
-             :expected-type '(member :not :or :and)))
-    (when (eq (car feature-expression) :not)
-      (unless (null (cddr feature-expression))
+    (destructuring-bind (operator &rest operands) feature-expression
+      (unless (typep operator 'feature-expression-operator)
+        (error 'type-error
+               :datum operator
+               :expected-type 'feature-expression-operator))
+      (when (and (eq operator :not)
+                 (not (alexandria:length= 1 operands)))
         (error 'single-feature-expected
                :features (cdr feature-expression))))))
 
