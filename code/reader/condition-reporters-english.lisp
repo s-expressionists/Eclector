@@ -1,7 +1,5 @@
 (cl:in-package #:eclector.reader)
 
-;; TODO: invalid-context-for-backquote
-
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var)
                        &body body)
