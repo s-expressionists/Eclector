@@ -22,4 +22,16 @@
     (declare (ignore client))
     (eval expression)))
 
+(defgeneric check-feature-expression (client feature-expression)
+  (:method ((client t) (feature-expression t))
+    (declare (ignore client))
+    (check-standard-feature-expression feature-expression)))
+
+(defgeneric evaluate-feature-expression (client feature-expression)
+  (:method ((client t) (feature-expression t))
+    (evaluate-standard-feature-expression
+     feature-expression
+     :check (alexandria:curry #'check-feature-expression client)
+     :recurse (alexandria:curry #'evaluate-feature-expression client))))
+
 (defgeneric fixup (object seen-objects mapping))

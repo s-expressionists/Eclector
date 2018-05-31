@@ -768,7 +768,7 @@
 (deftype feature-expression-operator ()
   '(member :not :or :and))
 
-(defun check-feature-expression (feature-expression)
+(defun check-standard-feature-expression (feature-expression)
   (unless (or (symbolp feature-expression)
               (alexandria:proper-list-p feature-expression))
     (error 'type-error
@@ -785,17 +785,21 @@
         (error 'single-feature-expected
                :features (cdr feature-expression))))))
 
-(defun evaluate-feature-expression (feature-expression)
-  (check-feature-expression feature-expression)
+(defun evaluate-standard-feature-expression
+    (feature-expression
+     &key
+     (check 'check-standard-feature-expression)
+     (recurse 'evaluate-standard-feature-expression))
+  (funcall check feature-expression)
   (typecase feature-expression
     (symbol
      (member feature-expression *features* :test #'eq))
     ((cons (eql :not))
-     (not (evaluate-feature-expression (second feature-expression))))
+     (not (funcall recurse (second feature-expression))))
     ((cons (eql :or))
-     (some #'evaluate-feature-expression (rest feature-expression)))
+     (some recurse (rest feature-expression)))
     ((cons (eql :and))
-     (every #'evaluate-feature-expression (rest feature-expression)))))
+     (every recurse (rest feature-expression)))))
 
 (defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
@@ -806,7 +810,8 @@
                (*read-suppress* nil))
            (read stream t nil t))))
     (with-preserved-backquote-context
-      (if (alexandria:xor (evaluate-feature-expression feature-expression)
+      (if (alexandria:xor (evaluate-feature-expression
+                           *client* feature-expression)
                           invertp)
           (read stream t nil t)
           (let ((*read-suppress* t))

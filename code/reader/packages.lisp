@@ -40,6 +40,8 @@
    #:interpret-symbol
    #:call-reader-macro
    #:evaluate-expression
+   #:check-feature-expression
+   #:evaluate-feature-expression
    #:fixup
    ;; Backquote customization.
    #:wrap-in-quasiquote

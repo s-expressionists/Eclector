@@ -155,6 +155,45 @@ evaluating \textit{expression} or signal an error.
 The default method on this generic function simply returns the result
 of \texttt{(cl:eval expression)}.
 
+\Defgeneric {check-feature-expression} {client feature-expression}
+
+This generic function is called by the default \texttt{\#+}- and
+\texttt{\#-}-reader macro functions to check the well-formedness of
+\textit{feature-expression} which has been read from the input stream
+before evaluating it.  For compound expressions, only the outermost
+expression is checked regarding the atom in operator position and its
+shape -- child expressions are not checked.  The function returns an
+unspecified value if \textit{feature-expression} is well-formed and
+signals an error otherwise.
+
+The default method on this generic function accepts standard
+\commonlisp{} feature expression, i.e.\ expressions recursively
+composed of symbols, \texttt{:not}-expressions,
+\texttt{:and}-expressions and \texttt{:or}-expressions.
+
+\Defgeneric {evaluate-feature-expression} {client feature-expression}
+
+This generic function is called by the default \texttt{\#+}- and
+\texttt{\#-}-reader macro functions to evaluate
+\textit{feature-expression} which has been read from the input stream.
+The function returns either true or false if
+\textit{feature-expression} is well-formed and signals an error
+otherwise.
+
+For compound feature expressions, the well-formedness of child
+expressions is not checked immediately but lazily, just before the
+child expression in question is evaluated in a subsequent
+\texttt{evaluate-feature-expression} call.  This allows feature
+expression like \texttt{\#+(and my-cl-implementation (special-feature
+  a b))} to succeed when the \texttt{:my-cl-implementation} feature is
+absent.
+
+The default method on this generic function first calls
+\texttt{check-feature-expression} to check the well-formedness of
+\textit{feature-expression}.  It then evaluates
+\textit{feature-expression} according to standard \commonlisp{}
+semantics for feature expressions.
+
 \section{CST reader features}
 \label{sec:cst-reader-features}
 
