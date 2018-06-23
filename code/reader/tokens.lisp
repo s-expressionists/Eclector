@@ -1,46 +1,55 @@
 (cl:in-package #:eclector.reader)
 
-(defmethod interpret-symbol (client input-stream
-                             token
-                             position-package-marker-1
-                             position-package-marker-2)
-  (flet ((find-package-or-lose (name)
-           (or (find-package name)
-               (%reader-error input-stream 'package-does-not-exist
-                              :package-name name))))
+(defmethod interpret-symbol-token (client input-stream
+                                   token
+                                   position-package-marker-1
+                                   position-package-marker-2)
+  (alexandria:when-let ((package-markers-end (or position-package-marker-2
+                                                 position-package-marker-1)))
+    (when (= package-markers-end (1- (length token)))
+      (%reader-error input-stream
+                     'symbol-name-must-not-end-with-package-marker
+                     :token token)))
+  (flet ((interpret (package symbol count)
+           (interpret-symbol client input-stream package symbol count)))
     (cond ((null position-package-marker-1)
-           (intern token *package*))
-          ((null position-package-marker-2)
-           (cond ((= position-package-marker-1 (1- (length token)))
-                  (%reader-error input-stream
-                                 'symbol-name-must-not-end-with-package-marker
-                                 :token token))
-                 ((= position-package-marker-1 0)
-                  (intern (subseq token 1) '#:keyword))
-                 (t
-                  (let* ((package-name (subseq token 0 position-package-marker-1))
-                         (symbol-name (subseq token (1+ position-package-marker-1)))
-                         (package (find-package-or-lose package-name)))
-                    (multiple-value-bind (symbol status)
-                        (find-symbol symbol-name package)
-                      (cond ((null status)
-                             (%reader-error input-stream 'symbol-does-not-exist
-                                            :package (find-package package-name)
-                                            :symbol-name symbol-name))
-                            ((eq status :internal)
-                             (%reader-error input-stream 'symbol-is-not-external
-                                            :package (find-package package-name)
-                                            :symbol-name symbol-name))
-                            (t
-                             symbol)))))))
+           (interpret :current token t))
+          ((not (null position-package-marker-2))
+           (interpret (subseq token 0 position-package-marker-1)
+                      (subseq token (1+ position-package-marker-2))
+                      t))
+          ((zerop position-package-marker-1)
+           (interpret :keyword
+                      (subseq token (1+ position-package-marker-1))
+                      t))
           (t
-           (if (= position-package-marker-2 (1- (length token)))
-               (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
-                              :token token)
-               (let* ((package-name (subseq token 0 position-package-marker-1))
-                      (symbol-name (subseq token (1+ position-package-marker-2)))
-                      (package (find-package-or-lose package-name)))
-                 (intern symbol-name package)))))))
+           (interpret (subseq token 0 position-package-marker-1)
+                      (subseq token (1+ position-package-marker-1))
+                      nil)))))
+
+(defmethod interpret-symbol (client input-stream
+                             package-name symbol-name internp)
+  (let ((package (case package-name
+                   (:current *package*)
+                   (:keyword (find-package "KEYWORD"))
+                   (t        (or (find-package package-name)
+                                 (%reader-error
+                                  input-stream 'package-does-not-exist
+                                  :package-name package-name))))))
+    (if internp
+        (intern symbol-name package)
+        (multiple-value-bind (symbol status)
+            (find-symbol symbol-name package)
+          (cond ((null status)
+                 (%reader-error input-stream 'symbol-does-not-exist
+                                :package package
+                                :symbol-name symbol-name))
+                ((eq status :internal)
+                 (%reader-error input-stream 'symbol-is-not-external
+                                :package package
+                                :symbol-name symbol-name))
+                (t
+                 symbol))))))
 
 (declaim (inline exponent-marker-p))
 (defun exponent-marker-p (char)
@@ -112,10 +121,10 @@
                           ,@(when return-symbol-if-eoi
                               `(((null ,char-var)
                                  (return-from interpret-token
-                                   (interpret-symbol client input-stream
-                                                     token
-                                                     position-package-marker-1
-                                                     position-package-marker-2)))))
+                                   (interpret-symbol-token
+                                    client input-stream token
+                                    position-package-marker-1
+                                    position-package-marker-2)))))
                           (,escapep-var (go symbol))
                           ,@(when colon-go-symbol
                               `(((eql char #\:)

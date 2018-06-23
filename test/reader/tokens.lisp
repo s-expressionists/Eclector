@@ -55,8 +55,8 @@
           ("|\\|"  nil nil nil nil)
           ("|\\||" t   nil nil |\||))))
 
-(test interpet-symbol/smoke
-  "Smoke test for the default method on INTERPRET-SYMBOL."
+(test interpet-symbol-token/smoke
+  "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
 
   (mapc (lambda (arguments-package-expected)
           (destructuring-bind (token marker1 marker2 package expected)
@@ -64,7 +64,7 @@
             (let ((*package* (or package *package*)))
               (flet ((do-it ()
                        (with-input-from-string (stream "")
-                         (eclector.reader:interpret-symbol
+                         (eclector.reader:interpret-symbol-token
                           nil stream token marker1 marker2))))
                 (case expected
                   (eclector.reader:symbol-name-must-not-end-with-package-marker

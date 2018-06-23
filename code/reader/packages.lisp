@@ -37,6 +37,7 @@
    #:read-token
    #:note-skipped-input
    #:interpret-token
+   #:interpret-symbol-token
    #:interpret-symbol
    #:call-reader-macro
    #:evaluate-expression

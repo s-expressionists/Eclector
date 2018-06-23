@@ -10,10 +10,13 @@
 
 (defgeneric interpret-token (client input-stream token token-escapes))
 
+(defgeneric interpret-symbol-token (client input-stream
+                                    token
+                                    position-package-marker-1
+                                    position-package-marker-2))
+
 (defgeneric interpret-symbol (client input-stream
-                              token
-                              position-package-marker-1
-                              position-package-marker-2))
+                              package-name symbol-name internp))
 
 (defgeneric call-reader-macro (client input-stream char readtable))
 
