@@ -8,12 +8,12 @@
   (:method ((client t) (input-stream t) (reason t))
     (declare (ignore client input-stream reason))))
 
-(defgeneric interpret-token (token token-escapes input-stream))
+(defgeneric interpret-token (client input-stream token token-escapes))
 
-(defgeneric interpret-symbol (token
+(defgeneric interpret-symbol (client input-stream
+                              token
                               position-package-marker-1
-                              position-package-marker-2
-                              input-stream))
+                              position-package-marker-2))
 
 (defgeneric call-reader-macro (client input-stream char readtable))
 

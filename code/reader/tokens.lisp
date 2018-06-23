@@ -1,9 +1,9 @@
 (cl:in-package #:eclector.reader)
 
-(defmethod interpret-symbol (token
+(defmethod interpret-symbol (client input-stream
+                             token
                              position-package-marker-1
-                             position-package-marker-2
-                             input-stream)
+                             position-package-marker-2)
   (flet ((find-package-or-lose (name)
            (or (find-package name)
                (%reader-error input-stream 'package-does-not-exist
@@ -79,7 +79,7 @@
               t))
           value))))
 
-(defmethod interpret-token (token token-escapes input-stream)
+(defmethod interpret-token (client input-stream token token-escapes)
   (convert-according-to-readtable-case token token-escapes)
   (let ((length (length token))
         (sign 1)
@@ -112,10 +112,10 @@
                           ,@(when return-symbol-if-eoi
                               `(((null ,char-var)
                                  (return-from interpret-token
-                                   (interpret-symbol token
+                                   (interpret-symbol client input-stream
+                                                     token
                                                      position-package-marker-1
-                                                     position-package-marker-2
-                                                     input-stream)))))
+                                                     position-package-marker-2)))))
                           (,escapep-var (go symbol))
                           ,@(when colon-go-symbol
                               `(((eql char #\:)

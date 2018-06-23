@@ -111,4 +111,4 @@
                                   (or *skip-reason* '*read-suppress*))
               nil)
              (t
-              (interpret-token token token-escapes input-stream))))))))
+              (interpret-token client input-stream token token-escapes))))))))

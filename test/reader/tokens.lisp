@@ -65,7 +65,7 @@
               (flet ((do-it ()
                        (with-input-from-string (stream "")
                          (eclector.reader:interpret-symbol
-                          token marker1 marker2 stream))))
+                          nil stream token marker1 marker2))))
                 (case expected
                   (eclector.reader:symbol-name-must-not-end-with-package-marker
                    (signals eclector.reader:symbol-name-must-not-end-with-package-marker
@@ -112,7 +112,7 @@
               (flet ((do-it ()
                        (with-input-from-string (stream "")
                          (eclector.reader:interpret-token
-                          (copy-seq token) token-escapes stream))))
+                          nil stream (copy-seq token) token-escapes))))
                 (case expected
                   (eclector.reader:invalid-context-for-consing-dot
                    (signals eclector.reader:invalid-context-for-consing-dot
