@@ -39,6 +39,9 @@
 
 ;;; Symbol-related conditions
 
+(define-condition package-does-not-exist (stream-position-reader-error)
+  ((%package-name :initarg :package-name :reader desired-package-name)))
+
 (define-condition symbol-access-error (stream-position-reader-error)
   ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
    (%package :initarg :package :reader desired-symbol-package)))

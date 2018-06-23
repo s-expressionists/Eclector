@@ -39,6 +39,10 @@
   (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
     (format stream "Unmatched close parenthesis."))
 
+  (define-reporter ((condition package-does-not-exist) stream)
+    (format stream "Package named ~s does not exist."
+            (desired-package-name condition)))
+
   (define-reporter ((condition symbol-does-not-exist) stream)
     (format stream "Symbol named ~s not found in the ~a package."
             (desired-symbol-name condition)

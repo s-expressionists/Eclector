@@ -4,39 +4,43 @@
                              position-package-marker-1
                              position-package-marker-2
                              input-stream)
-  (cond ((null position-package-marker-1)
-         (intern token *package*))
-        ((null position-package-marker-2)
-         (cond ((= position-package-marker-1 (1- (length token)))
-                (%reader-error input-stream
-                               'symbol-name-must-not-end-with-package-marker
-                               :token token))
-               ((= position-package-marker-1 0)
-                (intern (subseq token 1) '#:keyword))
-               (t
-                (let ((package-name (subseq token 0 position-package-marker-1))
-                      (symbol-name (subseq token (1+ position-package-marker-1))))
-                  (multiple-value-bind (symbol status)
-                      ;; If the package doesn't exist FIND-SYMBOL will signal an error
-                      ;; (hopefully? Doesn't seem to be defined, but it's usual)
-                      ;; so the later FIND-PACKAGEs should be okay.
-                      (find-symbol symbol-name package-name)
-                    (cond ((null status)
-                           (%reader-error input-stream 'symbol-does-not-exist
-                                          :package (find-package package-name)
-                                          :symbol-name symbol-name))
-                          ((eq status :internal)
-                           (%reader-error input-stream 'symbol-is-not-external
-                                          :package (find-package package-name)
-                                          :symbol-name symbol-name))
-                          (t
-                           symbol)))))))
-        (t
-         (if (= position-package-marker-2 (1- (length token)))
-             (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
-                            :token token)
-             (intern (subseq token (1+ position-package-marker-2))
-                     (subseq token 0 position-package-marker-1))))))
+  (flet ((find-package-or-lose (name)
+           (or (find-package name)
+               (%reader-error input-stream 'package-does-not-exist
+                              :package-name name))))
+    (cond ((null position-package-marker-1)
+           (intern token *package*))
+          ((null position-package-marker-2)
+           (cond ((= position-package-marker-1 (1- (length token)))
+                  (%reader-error input-stream
+                                 'symbol-name-must-not-end-with-package-marker
+                                 :token token))
+                 ((= position-package-marker-1 0)
+                  (intern (subseq token 1) '#:keyword))
+                 (t
+                  (let* ((package-name (subseq token 0 position-package-marker-1))
+                         (symbol-name (subseq token (1+ position-package-marker-1)))
+                         (package (find-package-or-lose package-name)))
+                    (multiple-value-bind (symbol status)
+                        (find-symbol symbol-name package)
+                      (cond ((null status)
+                             (%reader-error input-stream 'symbol-does-not-exist
+                                            :package (find-package package-name)
+                                            :symbol-name symbol-name))
+                            ((eq status :internal)
+                             (%reader-error input-stream 'symbol-is-not-external
+                                            :package (find-package package-name)
+                                            :symbol-name symbol-name))
+                            (t
+                             symbol)))))))
+          (t
+           (if (= position-package-marker-2 (1- (length token)))
+               (%reader-error input-stream 'symbol-name-must-not-end-with-package-marker
+                              :token token)
+               (let* ((package-name (subseq token 0 position-package-marker-1))
+                      (symbol-name (subseq token (1+ position-package-marker-2)))
+                      (package (find-package-or-lose package-name)))
+                 (intern symbol-name package)))))))
 
 (declaim (inline exponent-marker-p))
 (defun exponent-marker-p (char)

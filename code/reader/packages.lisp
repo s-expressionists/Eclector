@@ -59,9 +59,11 @@
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis
 
-   #:symbol-name-must-not-end-with-package-marker
+   #:package-does-not-exist
    #:symbol-does-not-exist
    #:symbol-is-not-external
+
+   #:symbol-name-must-not-end-with-package-marker
    #:two-package-markers-must-be-adjacent
    #:two-package-markers-must-not-be-first
    #:symbol-can-have-at-most-two-package-markers
