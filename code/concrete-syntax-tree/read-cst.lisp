@@ -55,7 +55,7 @@
                         :source source))))))
 
 (flet ((skip-whitespace (stream eof-error-p)
-         (loop for char = (read-char stream eof-error-p)
+         (loop for char = (eclector.reader:read-char stream eof-error-p)
                when (null char)
                  do (return nil)
                while (eq (eclector.readtable:syntax-type

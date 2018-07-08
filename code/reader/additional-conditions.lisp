@@ -1,5 +1,12 @@
 (cl:in-package #:eclector.reader)
 
+;;; End of file
+
+;;; Adds a stream position to CL:END-OF-FILE.
+(define-condition end-of-file (stream-position-reader-error
+                               cl:end-of-file)
+  ())
+
 ;;; Conditions related to quasiquotation
 
 (define-condition backquote-condition (stream-position-reader-error)

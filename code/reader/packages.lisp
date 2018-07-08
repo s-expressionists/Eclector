@@ -5,8 +5,11 @@
   ;; clash with the corresponding symbols in the host package
   ;; COMMON-LISP.
   (:shadow
+   #:read-char
    #:read
-   #:read-preserving-whitespace)
+   #:read-preserving-whitespace
+
+   #:end-of-file)
   ;; Contrary to other variables affecting the reader, we cannot use
   ;; the host version of *READTABLE* because we do not necessarily
   ;; use the same representation of readtables as the host does, and
@@ -30,6 +33,7 @@
    #:*readtable*
    #:*client*
    #:*skip-reason*
+   #:read-char
    #:read
    #:read-preserving-whitespace
    #:*preserve-whitespace*
@@ -49,6 +53,7 @@
    #:wrap-in-unquote
    #:wrap-in-unquote-splicing
    ;; Names of additional conditions.
+   #:end-of-file
    #:backquote-condition
    #:invalid-context-for-backquote
    #:comma-not-inside-backquote

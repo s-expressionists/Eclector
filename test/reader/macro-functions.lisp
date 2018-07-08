@@ -39,23 +39,23 @@
                          (values (eclector.reader::double-quote stream #\")
                                  (file-position stream)))))
                 (case expected
-                  (end-of-file
-                   (signals end-of-file (do-it)))
+                  (eclector.reader:end-of-file
+                   (signals eclector.reader:end-of-file (do-it)))
                   (t
                    (multiple-value-bind (result position) (do-it)
                      (is (equal expected          result))
                      (is (eql   expected-position position)))))))))
-        '((""       end-of-file)
+        '((""       eclector.reader:end-of-file)
 
           ("\""     "")
 
-          ("a"      end-of-file)
+          ("a"      eclector.reader:end-of-file)
 
-          ("\\a"    end-of-file)
+          ("\\a"    eclector.reader:end-of-file)
           ("\\a\""  "a")
-          ("\\\\"   end-of-file)
+          ("\\\\"   eclector.reader:end-of-file)
           ("\\\\\"" "\\")
-          ("\\\""   end-of-file)
+          ("\\\""   eclector.reader:end-of-file)
           ("\\\"\"" "\""))))
 
 (test backquote/smoke
@@ -72,8 +72,8 @@
                                  (eclector.reader::backquote stream #\`))
                                (file-position stream)))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:invalid-context-for-backquote
                  (signals eclector.reader:invalid-context-for-backquote
                    (do-it)))
@@ -82,7 +82,7 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""   t   end-of-file)
+          (""   t   eclector.reader:end-of-file)
           ("1"  nil eclector.reader:invalid-context-for-backquote)
           ;; Valid
           ("1"  t   (eclector.reader:quasiquote 1))
@@ -102,8 +102,8 @@
                                  (eclector.reader::comma stream #\,))
                                (file-position stream)))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:comma-not-inside-backquote
                  (signals eclector.reader:comma-not-inside-backquote
                    (do-it)))
@@ -112,8 +112,8 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""       1   end-of-file)
-          ("@"      1   end-of-file)
+          (""       1   eclector.reader:end-of-file)
+          ("@"      1   eclector.reader:end-of-file)
           ("1"      0   eclector.reader:comma-not-inside-backquote)
           ;; Valid
           ("1"      1   (eclector.reader:unquote 1))
@@ -131,8 +131,8 @@
                        (values (eclector.reader::left-parenthesis stream #\()
                                (file-position stream)))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:object-must-follow-consing-dot
                  (signals eclector.reader:object-must-follow-consing-dot
                    (do-it)))
@@ -147,10 +147,10 @@
 
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
-        '((""        end-of-file)
+        '((""        eclector.reader:end-of-file)
 
           ("."       eclector.reader:invalid-context-for-consing-dot)
-          ("1 ."     end-of-file)
+          ("1 ."     eclector.reader:end-of-file)
           ("1 . )"   eclector.reader:object-must-follow-consing-dot)
           ("1 . 2 3" eclector.reader:multiple-objects-following-consing-dot)
           ("1 . ."   eclector.reader:invalid-context-for-consing-dot)
@@ -185,8 +185,8 @@
                                   stream #\' parameter)
                                  (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored (do-it)))
                 (t
@@ -195,7 +195,7 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""           nil nil end-of-file)
+          (""           nil nil eclector.reader:end-of-file)
           ("5"          nil nil (function 5))
           ("X"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
@@ -221,8 +221,8 @@
                                   stream #\( parameter)
                                  (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:no-elements-found
                  (signals eclector.reader:no-elements-found (do-it)))
                 (eclector.reader:too-many-elements
@@ -233,8 +233,8 @@
                    (is (equalp expected          result))
                    (is (eql    expected-position position))))))))
         '(;; Errors
-          (""       nil nil end-of-file)
-          ("1"      nil nil end-of-file)
+          (""       nil nil eclector.reader:end-of-file)
+          ("1"      nil nil eclector.reader:end-of-file)
           (")"      2   nil eclector.reader:no-elements-found)
           ("1 1 1)" 2   nil eclector.reader:too-many-elements)
           ;; Valid
@@ -308,8 +308,8 @@
                                   stream #\\ parameter))
                                (file-position stream)))))
               (case expected
-                (end-of-file
-                 (signals end-of-file
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file
                    (do-it)))
                 (eclector.reader:unknown-character-name
                  (signals eclector.reader:unknown-character-name
@@ -322,9 +322,9 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Error cases
-          (""                  nil nil end-of-file)
-          ("x\\"               nil nil end-of-file)
-          ("x|"                nil nil end-of-file)
+          (""                  nil nil eclector.reader:end-of-file)
+          ("x\\"               nil nil eclector.reader:end-of-file)
+          ("x|"                nil nil eclector.reader:end-of-file)
           ("\\no-such-char"    nil nil eclector.reader:unknown-character-name)
           ("|no-such-char"     nil nil eclector.reader:unknown-character-name)
           ("no-such-char"      nil nil eclector.reader:unknown-character-name)
@@ -348,9 +348,9 @@
           ("Re|tur|n"          nil nil #\Return)
           ("Re|t\\ur|n"        nil nil #\Return)
           ;; With *READ-SUPPRESS* bound to T
-          (""                  nil t   end-of-file)
-          ("x\\"               nil t   end-of-file)
-          ("x|"                nil t   end-of-file)
+          (""                  nil t   eclector.reader:end-of-file)
+          ("x\\"               nil t   eclector.reader:end-of-file)
+          ("x|"                nil t   eclector.reader:end-of-file)
           ("no-such-char"      nil t   nil)
           ("1"                 1   t   nil))))
 
@@ -365,8 +365,8 @@
                      (with-input-from-string (stream input)
                        (eclector.reader::read-rational stream base))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:digit-expected
                  (signals eclector.reader:digit-expected (do-it)))
                 (t
@@ -378,7 +378,7 @@
           ("-x"     10 nil eclector.reader:digit-expected)
           ("1x"     10 nil eclector.reader:digit-expected)
           ("1#"     10 t   eclector.reader:digit-expected)
-          ("1/"     10 nil end-of-file)
+          ("1/"     10 nil eclector.reader:end-of-file)
           ("1/ "    10 nil eclector.reader:digit-expected)
           ("1/x"    10 nil eclector.reader:digit-expected)
           ("1/1x"   10 nil eclector.reader:digit-expected)
@@ -448,8 +448,8 @@
                                     (,function-name stream ,char parameter)
                                     (file-position stream))))))
                         (case expected
-                          (end-of-file
-                           (signals end-of-file (do-it)))
+                          (eclector.reader:end-of-file
+                           (signals eclector.reader:end-of-file (do-it)))
                           (eclector.reader:digit-expected
                            (signals eclector.reader:digit-expected (do-it)))
                           (eclector.reader:invalid-radix
@@ -468,7 +468,7 @@
 
   (define-rational-reader-macro-test #\B
     '(;; Errors
-      (""     nil nil end-of-file)
+      (""     nil nil eclector.reader:end-of-file)
       ("2"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
@@ -481,7 +481,7 @@
 
   (define-rational-reader-macro-test #\O
     '(;; Errors
-      (""     nil nil end-of-file)
+      (""     nil nil eclector.reader:end-of-file)
       ("8"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
@@ -493,7 +493,7 @@
 
   (define-rational-reader-macro-test #\X
     '(;; Errors
-      (""     nil nil end-of-file)
+      (""     nil nil eclector.reader:end-of-file)
       ("g"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
@@ -505,7 +505,7 @@
 
   (define-rational-reader-macro-test #\R
     '(;; Errors
-      (""     17  nil end-of-file)
+      (""     17  nil eclector.reader:end-of-file)
       ("h"    17  nil eclector.reader:digit-expected)
       ("x"    17  nil eclector.reader:digit-expected)
       ("1."   17  nil eclector.reader:digit-expected)
@@ -586,8 +586,8 @@
                            stream #\| parameter)
                           (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored (do-it)))
                 (t
@@ -595,10 +595,10 @@
                    (is (equalp expected value))
                    (is (equal expected-position position))))))))
         '(;; Errors
-          (""         nil nil end-of-file)
-          ("a"        nil nil end-of-file)
-          ("a|"       nil nil end-of-file)
-          ("a#||#"    nil nil end-of-file)
+          (""         nil nil eclector.reader:end-of-file)
+          ("a"        nil nil eclector.reader:end-of-file)
+          ("a|"       nil nil eclector.reader:end-of-file)
+          ("a#||#"    nil nil eclector.reader:end-of-file)
           ("a|#"      1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("a|#"      nil nil nil)
@@ -625,8 +625,8 @@
                           (eclector.reader::sharpsign-a stream #\A parameter)
                           (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:incorrect-initialization-length
                  (signals eclector.reader:incorrect-initialization-length
                    (do-it)))
@@ -640,7 +640,7 @@
                    (is (equalp expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          (""          1   nil end-of-file)
+          (""          1   nil eclector.reader:end-of-file)
           ("(1)"       2   nil type-error)
           ("(() (1))"  2   nil eclector.reader:incorrect-initialization-length)
           ("1"         1   nil type-error)
@@ -655,7 +655,7 @@
           ("(((1)))"   1   nil #1A(((1))))
           ("((0) (0))" 2   nil #2A((0) (0)))
           ;; With *READ-SUPPRESS* bound to T
-          (""          1   t  end-of-file)
+          (""          1   t  eclector.reader:end-of-file)
           ("(1)"       2   t  nil)
           ("(() (1))"  2   t  nil)
           ("1"         1   t  nil)
@@ -687,8 +687,8 @@
                            stream #\. parameter)
                           (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (eclector.reader:uninterned-symbol-must-not-contain-package-marker
                  (signals eclector.reader:uninterned-symbol-must-not-contain-package-marker
                    (do-it)))
@@ -700,9 +700,9 @@
                    (is (string= (symbol-name expected) (symbol-name value)))
                    (is (equal expected-position position))))))))
         '(;; Errors
-          ("\\"      nil nil nil end-of-file)
-          ("|"       nil nil nil end-of-file)
-          ("|\\"     nil nil nil end-of-file)
+          ("\\"      nil nil nil eclector.reader:end-of-file)
+          ("|"       nil nil nil eclector.reader:end-of-file)
+          ("|\\"     nil nil nil eclector.reader:end-of-file)
           ("a:b"     nil nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker)
           ("a:b:c"   nil nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker)
           ("a"       1   nil nil eclector.reader:numeric-parameter-supplied-but-ignored)
@@ -719,8 +719,8 @@
           ("a "      nil nil nil #:a)
           ("a "      nil nil t   #:a 1)
           ;; With *READ-SUPPRESS* bound to T
-          ("\\"      nil t   nil end-of-file)
-          ("|"       nil t   nil end-of-file)
+          ("\\"      nil t   nil eclector.reader:end-of-file)
+          ("|"       nil t   nil eclector.reader:end-of-file)
           ("a"       1   t   nil nil))))
 
 (test sharpsign-c/smoke
@@ -737,8 +737,8 @@
                           (eclector.reader::sharpsign-c stream #\C parameter)
                           (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (type-error
                  (signals type-error (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
@@ -749,7 +749,7 @@
                    (is (equal expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          (""        nil nil end-of-file)
+          (""        nil nil eclector.reader:end-of-file)
           ("\"foo\"" nil nil type-error)
           ("(0)"     nil nil type-error)
           ("(0 0 0)" nil nil type-error)
@@ -783,8 +783,8 @@
                           (eclector.reader::sharpsign-p stream #\P parameter)
                           (file-position stream))))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (type-error
                  (signals type-error (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
@@ -795,7 +795,7 @@
                    (is (equal expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          (""        nil nil end-of-file)
+          (""        nil nil eclector.reader:end-of-file)
           ("1"       nil nil type-error)
           ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid

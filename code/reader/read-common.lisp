@@ -1,5 +1,19 @@
 (cl:in-package #:eclector.reader)
 
+(defun read-char (stream &optional eof-error-p eof-value recursive-p)
+  (if eof-error-p
+      (let ((result (cl:read-char stream nil '#1=#.(gensym "EOF") recursive-p)))
+        (if (eq result '#1#)
+            (%reader-error stream 'end-of-file)
+            result))
+      (cl:read-char stream nil eof-value recursive-p)))
+
+(define-compiler-macro read-char
+    (&whole whole stream &optional eof-error-p eof-value recursive-p)
+  (if (and (constantp eof-error-p) (not (eval eof-error-p)))
+      `(cl:read-char ,stream nil ,eof-value ,recursive-p)
+      whole))
+
 (defmethod call-reader-macro (client input-stream char readtable)
   (let ((function (eclector.readtable:get-macro-character readtable char)))
     (funcall function input-stream char)))

@@ -9,6 +9,9 @@
              (language acclimation:english))
           ,@body)))
 
+  (define-reporter ((condition end-of-file) stream)
+    (format stream "Unexpected end of file."))
+
   (define-reporter ((condition invalid-context-for-backquote) stream)
     (format stream "Backquote has been used in a context that does not ~
                     permit it (like #C(1 `,2))."))

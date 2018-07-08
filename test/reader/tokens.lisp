@@ -21,21 +21,21 @@
                                   t stream eof-error-p eof-value))
                                (file-position stream)))))
               (case expected
-                (end-of-file
-                 (signals end-of-file (do-it)))
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equalp expected          value))
                    (is (eql    expected-position position))))))))
         '(("a"     t   nil nil |A|)
-          ("\\"    t   nil nil end-of-file)
+          ("\\"    t   nil nil eclector.reader:end-of-file)
           ("\\"    nil nil nil nil)
           ("\\a"   t   nil nil |a|)
           ("|a|"   t   nil nil |a|)
 
           ("aa"    t   nil nil |AA|)
           ("a#"    t   nil nil |A#|)
-          ("a\\"   t   nil nil end-of-file)
+          ("a\\"   t   nil nil eclector.reader:end-of-file)
           ("a\\"   nil nil nil nil)
           ("a\\a"  t   nil nil |Aa|)
           ("a|a|"  t   nil nil |Aa|)
@@ -43,15 +43,15 @@
           ("a "    t   nil nil |A|)
           ("a "    t   nil t   |A|  1)
 
-          ("|"     t   nil nil end-of-file)
+          ("|"     t   nil nil eclector.reader:end-of-file)
           ("|"     nil nil nil nil)
           ("|a|"   t   nil nil |a|)
           ("|#|"   t   nil nil |#|)
           ("|,|"   t   nil nil |,|)
           ("| |"   t   nil nil | |)
-          ("|\\"   t   nil nil end-of-file)
+          ("|\\"   t   nil nil eclector.reader:end-of-file)
           ("|\\"   nil nil nil nil)
-          ("|\\|"  t   nil nil end-of-file)
+          ("|\\|"  t   nil nil eclector.reader:end-of-file)
           ("|\\|"  nil nil nil nil)
           ("|\\||" t   nil nil |\||))))
 
