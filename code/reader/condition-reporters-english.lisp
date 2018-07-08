@@ -135,6 +135,10 @@
             (1+ (axis condition))
             (datum condition)))
 
+  (define-reporter ((condition feature-expression-type-error) stream)
+    (format stream "Feature expression is not of type ~a:~%~a"
+            (type-error-expected-type condition) (type-error-datum condition)))
+
   (define-reporter ((condition single-feature-expected) stream)
     (format stream "Bad feature expression- found multiple features ~
                     when only one was expected:~%~a"

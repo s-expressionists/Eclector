@@ -131,8 +131,24 @@
    (%expected-length :initarg :expected-length :reader expected-length)
    (%datum :initarg :datum :reader datum)))
 
+;;; Feature expression conditions
+;;;
+;;; Can be evaluated without a stream context. Therefore each
+;;; condition has a stream- and a non-stream-variant.
+
+(define-condition feature-expression-type-error (acclimation:condition type-error)
+  ())
+
+(define-condition feature-expression-type-error/reader
+    (feature-expression-type-error stream-position-reader-error)
+  ())
+
 (define-condition single-feature-expected (acclimation:condition error)
   ((%features :initarg :features :reader features)))
+
+(define-condition single-feature-expected/reader
+    (single-feature-expected stream-position-reader-error)
+  ())
 
 (define-condition sharpsign-invalid (stream-position-reader-error)
   ((%character-found :initarg :character-found :reader character-found)))

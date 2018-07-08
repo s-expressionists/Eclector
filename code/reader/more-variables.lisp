@@ -1,5 +1,7 @@
 (cl:in-package #:eclector.reader)
 
+(defvar *input-stream*)
+
 (defparameter *backquote-allowed-p* t)
 
 (defparameter *backquote-in-subforms-allowed-p* t)

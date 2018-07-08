@@ -814,20 +814,25 @@
               input-parameter-context-expected
             (flet ((do-it (which)
                      (with-input-from-string (stream input)
-                       (values
-                        (ecase which
-                          (:plus  (eclector.reader::sharpsign-plus
-                                   stream #\+ parameter))
-                          (:minus (eclector.reader::sharpsign-minus
-                                   stream #\- parameter)))
-                        (file-position stream)))))
+                       (let ((eclector.reader::*input-stream* stream))
+                         (values
+                          (ecase which
+                            (:plus  (eclector.reader::sharpsign-plus
+                                     stream #\+ parameter))
+                            (:minus (eclector.reader::sharpsign-minus
+                                     stream #\- parameter)))
+                          (file-position stream))))))
               (case plus-expected
-                (type-error
-                 (signals type-error (do-it :plus))
-                 (signals type-error (do-it :minus)))
-                (eclector.reader:single-feature-expected
-                 (signals eclector.reader:single-feature-expected (do-it :plus))
-                 (signals eclector.reader:single-feature-expected (do-it :minus)))
+                (eclector.reader:feature-expression-type-error
+                 (signals eclector.reader:feature-expression-type-error
+                   (do-it :plus))
+                 (signals eclector.reader:feature-expression-type-error
+                   (do-it :minus)))
+                (eclector.reader::single-feature-expected
+                 (signals eclector.reader:single-feature-expected
+                   (do-it :plus))
+                 (signals eclector.reader:single-feature-expected
+                   (do-it :minus)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it :plus))
@@ -841,12 +846,12 @@
                    (is (equal minus-expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          ("1"                     nil nil type-error)
-          ("(1)"                   nil nil type-error)
+          ("1"                     nil nil eclector.reader:feature-expression-type-error)
+          ("(1)"                   nil nil eclector.reader:feature-expression-type-error)
           ("(not :foo :bar)"       nil nil eclector.reader:single-feature-expected)
-          ("(not 1)"               nil nil type-error)
-          ("(and 1)"               nil nil type-error)
-          ("(or 1)"                nil nil type-error)
+          ("(not 1)"               nil nil eclector.reader:feature-expression-type-error)
+          ("(and 1)"               nil nil eclector.reader:feature-expression-type-error)
+          ("(or 1)"                nil nil eclector.reader:feature-expression-type-error)
           ("(and) 1"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("common-lisp 1"         nil nil 1   nil)

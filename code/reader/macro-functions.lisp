@@ -769,21 +769,27 @@
   '(member :not :or :and))
 
 (defun check-standard-feature-expression (feature-expression)
-  (unless (or (symbolp feature-expression)
-              (alexandria:proper-list-p feature-expression))
-    (error 'type-error
-           :datum feature-expression
-           :expected-type '(or symbol cons)))
-  (when (consp feature-expression)
-    (destructuring-bind (operator &rest operands) feature-expression
-      (unless (typep operator 'feature-expression-operator)
-        (error 'type-error
-               :datum operator
-               :expected-type 'feature-expression-operator))
-      (when (and (eq operator :not)
-                 (not (alexandria:length= 1 operands)))
-        (error 'single-feature-expected
-               :features (cdr feature-expression))))))
+  (flet ((lose (stream-condition no-stream-condition &rest arguments)
+           (alexandria:if-let ((stream *input-stream*))
+             (apply #'%reader-error stream stream-condition arguments)
+             (apply #'error no-stream-condition arguments))))
+    (unless (or (symbolp feature-expression)
+                (alexandria:proper-list-p feature-expression))
+      (lose 'feature-expression-type-error/reader
+            'feature-expression-type-error
+            :datum feature-expression
+            :expected-type '(or symbol cons)))
+    (when (consp feature-expression)
+      (destructuring-bind (operator &rest operands) feature-expression
+        (unless (typep operator 'feature-expression-operator)
+          (lose 'feature-expression-type-error/reader
+                'feature-expression-type-error
+                :datum operator
+                :expected-type 'feature-expression-operator))
+        (when (and (eq operator :not)
+                   (not (alexandria:length= 1 operands)))
+          (lose 'single-feature-expected/reader 'single-feature-expected
+                :features (cdr feature-expression)))))))
 
 (defun evaluate-standard-feature-expression
     (feature-expression

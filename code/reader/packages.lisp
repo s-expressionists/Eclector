@@ -89,7 +89,10 @@
    #:too-many-elements
    #:no-elements-found
    #:incorrect-initialization-length
+
+   #:feature-expression-type-error
    #:single-feature-expected
+
    #:sharpsign-invalid
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-sharpsign-undefined-label
