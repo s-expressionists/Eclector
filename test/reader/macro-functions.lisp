@@ -828,7 +828,7 @@
                    (do-it :plus))
                  (signals eclector.reader:feature-expression-type-error
                    (do-it :minus)))
-                (eclector.reader::single-feature-expected
+                (eclector.reader:single-feature-expected
                  (signals eclector.reader:single-feature-expected
                    (do-it :plus))
                  (signals eclector.reader:single-feature-expected
