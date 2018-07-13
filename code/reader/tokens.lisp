@@ -162,10 +162,10 @@
          dot
            (next-cond (char)
              ((not char)
-                 (if *consing-dot-allowed-p*
-                     (return-from interpret-token
-                       *consing-dot*)
-                     (%reader-error input-stream 'invalid-context-for-consing-dot)))
+              (if *consing-dot-allowed-p*
+                  (return-from interpret-token
+                    *consing-dot*)
+                  (%reader-error input-stream 'invalid-context-for-consing-dot)))
              ((funcall fraction-numerator char)
               (setf fraction-denominator
                     (* fraction-denominator 10))
