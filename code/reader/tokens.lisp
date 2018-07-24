@@ -105,7 +105,7 @@
         (index -1))
     ;; The NEXT function and the NEXT-COND macro handle fetching the
     ;; next character and returning a symbol and going to tag SYMBOL
-    ;; in case of as escape and as the default successor state.
+    ;; in case of an escape and as the default successor state.
     (flet ((next ()
              (incf index)
              (if (= length index)
