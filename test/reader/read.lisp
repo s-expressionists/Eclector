@@ -45,6 +45,7 @@
           ("`(,)"                       eclector.reader:object-must-follow-comma)
           ("`(,@)"                      eclector.reader:object-must-follow-comma)
           ("`(,.)"                      eclector.reader:object-must-follow-comma)
+          ("#1=`(,2)"                   (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
 
           ;; Interaction between *READ-SUPPRESS* and reader macros.
           ("#+(or) #|skipme|# 1 2"      2)

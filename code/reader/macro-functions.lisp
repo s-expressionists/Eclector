@@ -857,14 +857,15 @@
          (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
                         :label parameter))
         (t
-         (let ((contents (cons (list nil) nil)))
-           (setf (gethash parameter *labels*) contents)
-           ;; Hmm, do we need to transmit EOF-ERROR-P through reader
-           ;; macros?
-           (let ((result (read stream t nil t)))
-             (setf (cdr contents) result)
-             (setf (caar contents) t)
-             result)))))
+         (with-preserved-backquote-context
+           (let ((contents (cons (list nil) nil)))
+             (setf (gethash parameter *labels*) contents)
+             ;; Hmm, do we need to transmit EOF-ERROR-P through reader
+             ;; macros?
+             (let ((result (read stream t nil t)))
+               (setf (cdr contents) result)
+               (setf (caar contents) t)
+               result))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
