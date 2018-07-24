@@ -299,8 +299,9 @@
              ((funcall exponent char)
               (go float-exponent)))
          symbol
-           ;; a sequence of symbols denoting a valid symbol name, except
-           ;; that the last character might be a package marker.
+           ;; a sequence of characters denoting a valid symbol name,
+           ;; except that the last character might be a package
+           ;; marker.
            (next-cond (char t nil)
              ((eq char #\:)
               (cond ((null position-package-marker-1)
