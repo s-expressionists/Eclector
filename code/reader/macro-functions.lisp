@@ -364,6 +364,9 @@
                                  ("LINEFEED"  . #.(code-char 10)))
                                :test 'equal))
 
+(defun find-standard-character (name)
+  (gethash name *character-names*))
+
 (defun sharpsign-backslash (stream char parameter)
   (declare (ignore char))
   (unless (null parameter)
@@ -422,12 +425,11 @@
          (return-from sharpsign-backslash
            (cond
              (*read-suppress* nil)
-             (token (let* ((upcase (string-upcase token))
-                           (char (gethash upcase *character-names*)))
-                      (if (null char)
-                          (%reader-error stream 'unknown-character-name
-                                         :name token)
-                          char)))
+             (token (alexandria:if-let ((char (find-standard-character
+                                               (string-upcase token))))
+                      char
+                      (%reader-error stream 'unknown-character-name
+                                     :name token)))
              (t char1)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
