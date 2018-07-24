@@ -425,8 +425,8 @@
          (return-from sharpsign-backslash
            (cond
              (*read-suppress* nil)
-             (token (alexandria:if-let ((char (find-standard-character
-                                               (string-upcase token))))
+             (token (alexandria:if-let ((char (find-character
+                                               *client* (string-upcase token))))
                       char
                       (%reader-error stream 'unknown-character-name
                                      :name token)))

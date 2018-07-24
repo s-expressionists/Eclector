@@ -18,7 +18,13 @@
 (defgeneric interpret-symbol (client input-stream
                               package-name symbol-name internp))
 
+;;; Calling reader macros and behavior of standard reader macros
+
 (defgeneric call-reader-macro (client input-stream char readtable))
+
+(defgeneric find-character (client name)
+  (:method ((client t) (name t))
+    (find-standard-character name)))
 
 (defgeneric evaluate-expression (client expression)
   (:method ((client t) (expression t))

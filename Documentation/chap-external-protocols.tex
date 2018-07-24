@@ -172,6 +172,14 @@ passing \textit{input-stream} and \textit{char} as arguments.  The
 default method therefore does the same thing that the standard
 \commonlisp{} reader does.
 
+\Defgeneric {find-character} {client name}
+
+This generic function is called by the default
+\texttt{\#\textbackslash}~reader macro function to find a character by
+name.  \textit{name} is the name that has been read converted to upper
+case.  The function has to either return the character designated by
+\textit{name} or \texttt{nil} if no such character exists.
+
 \Defgeneric {evaluate-expression} {client expression}
 
 This generic function is called by the default \texttt{\#.}~reader

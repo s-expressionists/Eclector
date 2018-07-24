@@ -2,6 +2,48 @@
 
 (in-suite :eclector.reader)
 
+;;; Test customizing FIND-CHARACTER
+
+(defclass find-character-client ()
+  ())
+
+(defmethod eclector.reader:find-character
+    ((client find-character-client) (name t))
+  (if (string= name "NO_SUCH_CHARACTER")
+      nil
+      #\a))
+
+(test find-character/customize
+  "Test customizing the behavior of FIND-CHARACTER."
+
+  (mapc (lambda (input-expected)
+          (destructuring-bind (input expected) input-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((eclector.reader:*client*
+                               (make-instance 'find-character-client)))
+                         (eclector.reader:read stream)))))
+              (case expected
+                (eclector.reader:unknown-character-name
+                 (signals eclector.reader:unknown-character-name
+                   (do-it)))
+                (t
+                 (is (equal expected (do-it))))))))
+        '(;; Errors
+          ("#\\no_such_character" eclector.reader:unknown-character-name)
+          ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name)
+
+          ;; Single character
+          ("#\\a"                 #\a)
+          ("#\\A"                 #\A)
+          ("#\\b"                 #\b)
+          ("#\\B"                 #\B)
+
+          ;; Multiple characters
+          ("#\\name"              #\a)
+          ("#\\Name"              #\a)
+          ("#\\NAME"              #\a))))
+
 ;;; Test customizing EVALUATE-EXPRESSION
 
 (defclass evaluate-expression-client ()

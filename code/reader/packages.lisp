@@ -37,17 +37,21 @@
    #:read
    #:read-preserving-whitespace
    #:*preserve-whitespace*
+
    #:read-common
    #:read-token
    #:note-skipped-input
    #:interpret-token
    #:interpret-symbol-token
    #:interpret-symbol
+
    #:call-reader-macro
+   #:find-character
    #:evaluate-expression
    #:check-feature-expression
    #:evaluate-feature-expression
    #:fixup
+
    ;; Backquote customization.
    #:wrap-in-quasiquote
    #:wrap-in-unquote
