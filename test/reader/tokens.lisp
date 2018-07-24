@@ -118,7 +118,8 @@
               (setf (eclector.readtable:readtable-case table) case)
               (flet ((do-it ()
                        (with-input-from-string (stream "")
-                         (let ((eclector.reader:*readtable* table))
+                         (let ((eclector.reader:*readtable* table)
+                               (*read-default-float-format* 'single-float))
                            (eclector.reader:interpret-token
                             nil stream (copy-seq token) token-escapes)))))
                 (case expected
@@ -143,7 +144,8 @@
                   (t
                    (unless (or token-escapes (zerop (length token)))
                      (assert (equal expected
-                                    (let ((*readtable* (copy-readtable)))
+                                    (let ((*readtable* (copy-readtable))
+                                          (*read-default-float-format* 'single-float))
                                       (setf (readtable-case *readtable*) case)
                                       (read-from-string token)))))
                    (is (equal expected (do-it)))))))))
@@ -262,23 +264,23 @@
           ("1/23"       ()                10 :upcase      1/23)
 
           ;; float-no-exponent
-          ("+.234"      ()                10 :upcase       .234)
-          ("-.234"      ()                10 :upcase      -.234)
-          (".234"       ()                10 :upcase       .234)
-          ("+1.234"     ()                10 :upcase      1.234)
-          ("-1.234"     ()                10 :upcase     -1.234)
-          ("1.234"      ()                10 :upcase      1.234)
+          ("+.234"      ()                10 :upcase       .234f0)
+          ("-.234"      ()                10 :upcase      -.234f0)
+          (".234"       ()                10 :upcase       .234f0)
+          ("+1.234"     ()                10 :upcase      1.234f0)
+          ("-1.234"     ()                10 :upcase     -1.234f0)
+          ("1.234"      ()                10 :upcase      1.234f0)
 
           ;; float-exponent
-          ("+1.0e2"     ()                10 :upcase    100.0)
-          ("+1.0e-2"    ()                10 :upcase      0.01)
-          ("-1.0e2"     ()                10 :upcase   -100.0)
-          ("-1.0e-2"    ()                10 :upcase     -0.01)
-          ("1.0e2"      ()                10 :upcase    100.0)
-          ("1.0e-2"     ()                10 :upcase      0.01)
-          ("1.e2"       ()                10 :upcase    100.0)
-          ("1e2"        ()                10 :upcase    100.0)
-          ("1e01"       ()                10 :upcase     10.0)
+          ("+1.0e2"     ()                10 :upcase    100.0f0)
+          ("+1.0e-2"    ()                10 :upcase      0.01f0)
+          ("-1.0e2"     ()                10 :upcase   -100.0f0)
+          ("-1.0e-2"    ()                10 :upcase     -0.01f0)
+          ("1.0e2"      ()                10 :upcase    100.0f0)
+          ("1.0e-2"     ()                10 :upcase      0.01f0)
+          ("1.e2"       ()                10 :upcase    100.0f0)
+          ("1e2"        ()                10 :upcase    100.0f0)
+          ("1e01"       ()                10 :upcase     10.0f0)
 
           ;; Nondefault *READ-BASE*
           ("a"          ( )               16 :upcase     10)
