@@ -354,17 +354,15 @@
 ;;; Reader macro for sharpsign backslash.
 
 (defparameter *character-names*
-  (let ((table (make-hash-table :test 'equal)))
-    (loop for (name . char) in '(("NEWLINE" .   #.(code-char 10))
-                                 ("SPACE" .     #.(code-char 32))
-                                 ("RUBOUT" .    #.(code-char 127))
-                                 ("PAGE" .      #.(code-char 12))
-                                 ("TAB" .       #.(code-char 9))
+  (alexandria:alist-hash-table '(("NEWLINE"   . #.(code-char 10))
+                                 ("SPACE"     . #.(code-char 32))
+                                 ("RUBOUT"    . #.(code-char 127))
+                                 ("PAGE"      . #.(code-char 12))
+                                 ("TAB"       . #.(code-char 9))
                                  ("BACKSPACE" . #.(code-char 8))
-                                 ("RETURN" .    #.(code-char 13))
-                                 ("LINEFEED" .  #.(code-char 10)))
-          do (setf (gethash name table) char))
-    table))
+                                 ("RETURN"    . #.(code-char 13))
+                                 ("LINEFEED"  . #.(code-char 10)))
+                               :test 'equal))
 
 (defun sharpsign-backslash (stream char parameter)
   (declare (ignore char))
