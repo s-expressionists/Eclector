@@ -88,21 +88,23 @@
               t))
           value))))
 
-(defmethod interpret-token (client input-stream token token-escapes)
-  (convert-according-to-readtable-case token token-escapes)
-  (let ((length (length token))
-        (sign 1)
-        (decimal-mantissa (make-integer-accumulator))
-        (mantissa/numerator (make-integer-accumulator :base *read-base*))
-        (denominator (make-integer-accumulator :base *read-base*))
-        (fraction-numerator (make-integer-accumulator))
-        (fraction-denominator 1)
-        (exponent-sign 1)
-        (exponent (make-integer-accumulator))
-        (exponent-marker nil)
-        (position-package-marker-1 nil)
-        (position-package-marker-2 nil)
-        (index -1))
+(defmethod interpret-token (client input-stream token escape-ranges)
+  (convert-according-to-readtable-case token escape-ranges)
+  (let* ((length (length token))
+         (remaining-escape-ranges escape-ranges)
+         (escape-range (first remaining-escape-ranges))
+         (sign 1)
+         (decimal-mantissa (make-integer-accumulator))
+         (mantissa/numerator (make-integer-accumulator :base *read-base*))
+         (denominator (make-integer-accumulator :base *read-base*))
+         (fraction-numerator (make-integer-accumulator))
+         (fraction-denominator 1)
+         (exponent-sign 1)
+         (exponent (make-integer-accumulator))
+         (exponent-marker nil)
+         (position-package-marker-1 nil)
+         (position-package-marker-2 nil)
+         (index -1))
     ;; The NEXT function and the NEXT-COND macro handle fetching the
     ;; next character and returning a symbol and going to tag SYMBOL
     ;; in case of an escape and as the default successor state.
@@ -110,7 +112,9 @@
              (incf index)
              (if (= length index)
                  nil
-                 (values (aref token index) (aref token-escapes index)))))
+                 (values (aref token index)
+                         (update-escape-ranges
+                          index escape-range remaining-escape-ranges)))))
       (macrolet ((next-cond ((char-var &optional
                                        return-symbol-if-eoi
                                        (colon-go-symbol t))

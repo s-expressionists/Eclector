@@ -8,7 +8,7 @@
   (:method ((client t) (input-stream t) (reason t))
     (declare (ignore client input-stream reason))))
 
-(defgeneric interpret-token (client input-stream token token-escapes))
+(defgeneric interpret-token (client input-stream token escape-ranges))
 
 (defgeneric interpret-symbol-token (client input-stream
                                     token

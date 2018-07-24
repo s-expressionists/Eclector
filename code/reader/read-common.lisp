@@ -61,13 +61,14 @@
                            :element-type 'character
                            :adjustable t
                            :fill-pointer 0))
-        (token-escapes (make-array 100
-                                   :adjustable t
-                                   :fill-pointer 0)))
-    (flet ((push-char (char escapesp)
+        (escape-ranges '()))
+    (flet ((push-char (char)
              (vector-push-extend char token)
-             (vector-push-extend escapesp token-escapes)
              char)
+           (start-escape ()
+             (push (cons (length token) nil) escape-ranges))
+           (end-escape ()
+             (setf (cdr (first escape-ranges)) (length token)))
            (read-char-handling-eof ()
              (let ((char (read-char input-stream eof-error-p)))
                (if (not (null char))
@@ -79,12 +80,15 @@
          (let ((char (read-char input-stream)))
            (ecase (eclector.readtable:syntax-type *readtable* char)
              (:single-escape
-              (push-char (read-char-handling-eof) t)
+              (start-escape)
+              (push-char (read-char-handling-eof))
+              (end-escape)
               (go step-8-even-escapes))
              (:multiple-escape
+              (start-escape)
               (go step-9-odd-escapes))
              (:constituent
-              (push-char char nil)
+              (push-char char)
               (go step-8-even-escapes))))
        step-8-even-escapes
          (let ((char (read-char input-stream nil nil)))
@@ -92,12 +96,15 @@
              (go step-10-terminate-token))
            (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :non-terminating-macro)
-              (push-char char nil)
+              (push-char char)
               (go step-8-even-escapes))
              (:single-escape
-              (push-char (read-char-handling-eof) t)
+              (start-escape)
+              (push-char (read-char-handling-eof))
+              (end-escape)
               (go step-8-even-escapes))
              (:multiple-escape
+              (start-escape)
               (go step-9-odd-escapes))
              (:terminating-macro
               (unread-char char input-stream)
@@ -111,12 +118,13 @@
            (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :terminating-macro
                :non-terminating-macro :whitespace)
-              (push-char char t)
+              (push-char char)
               (go step-9-odd-escapes))
              (:single-escape
-              (push-char (read-char-handling-eof) t)
+              (push-char (read-char-handling-eof))
               (go step-9-odd-escapes))
              (:multiple-escape
+              (end-escape)
               (go step-8-even-escapes))))
        step-10-terminate-token
          (return-from read-token
@@ -126,4 +134,6 @@
                                   (or *skip-reason* '*read-suppress*))
               nil)
              (t
-              (interpret-token client input-stream token token-escapes))))))))
+              (unless (null escape-ranges)
+                (setf escape-ranges (nreverse escape-ranges)))
+              (interpret-token client input-stream token escape-ranges))))))))

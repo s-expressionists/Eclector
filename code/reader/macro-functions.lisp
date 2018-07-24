@@ -675,24 +675,29 @@
                            :element-type 'character
                            :adjustable t
                            :fill-pointer 0))
-        (token-escapes (make-array 10
-                                   :adjustable t
-                                   :fill-pointer 0))
+        (escape-ranges '())
         (package-marker nil))
-    (flet ((push-char (char escapesp)
-             (when (and (not escapesp)
-                        (char= char #\:)
-                        (not package-marker))
-               (setf package-marker (or (ignore-errors (file-position stream))
-                                        t)))
-             (vector-push-extend char token)
-             (vector-push-extend escapesp token-escapes))
-           (read-char-handling-eof (eof-error-p)
-             (let ((char (read-char stream eof-error-p nil t)))
-               (when (null char)
-                 (return-from sharpsign-colon
-                   (symbol-from-token stream token token-escapes package-marker)))
-               (values char (eclector.readtable:syntax-type readtable char)))))
+    (labels ((push-char (char escapesp)
+               (when (and (not escapesp)
+                          (char= char #\:)
+                          (not package-marker))
+                 (setf package-marker (or (ignore-errors (file-position stream))
+                                          t)))
+               (vector-push-extend char token))
+             (start-escape ()
+               (push (cons (length token) nil) escape-ranges))
+             (end-escape ()
+               (setf (cdr (first escape-ranges)) (length token)))
+             (read-char-handling-eof (eof-error-p)
+               (let ((char (read-char stream eof-error-p nil t)))
+                 (when (null char)
+                   (return-symbol))
+                 (values char (eclector.readtable:syntax-type readtable char))))
+             (return-symbol ()
+               (when (not (null escape-ranges))
+                 (setf escape-ranges (nreverse escape-ranges)))
+               (return-from sharpsign-colon
+                 (symbol-from-token stream token escape-ranges package-marker))))
       (tagbody
        even-escapes
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
@@ -700,16 +705,17 @@
              (:whitespace
               (when *preserve-whitespace*
                 (unread-char char stream))
-              (return-from sharpsign-colon
-                (symbol-from-token stream token token-escapes package-marker)))
+              (return-symbol))
              (:terminating-macro
               (unread-char char stream)
-              (return-from sharpsign-colon
-                (symbol-from-token stream token token-escapes package-marker)))
+              (return-symbol))
              (:single-escape
+              (start-escape)
               (push-char (read-char-handling-eof t) t)
+              (end-escape)
               (go even-escapes))
              (:multiple-escape
+              (start-escape)
               (go odd-escapes))
              ((:constituent :non-terminating-macro)
               (push-char char nil)
@@ -721,6 +727,7 @@
               (push-char (read-char-handling-eof t) t)
               (go odd-escapes))
              (:multiple-escape
+              (end-escape)
               (go even-escapes))
              (t
               (push-char char t)
