@@ -32,6 +32,9 @@
 
 ;;; Conditions related to consing dot
 
+(define-condition too-many-dots (stream-position-reader-error)
+  ())
+
 (define-condition invalid-context-for-consing-dot (stream-position-reader-error)
   ())
 

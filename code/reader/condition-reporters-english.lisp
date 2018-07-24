@@ -30,6 +30,10 @@
   (define-reporter ((condition unquote-splicing-at-top) stream)
     (format stream "Splicing unquote as backquote form (like `,@foo)."))
 
+  (define-reporter ((condition too-many-dots) stream)
+    (format stream "A token consisting solely of multiple dots is ~
+                    illegal."))
+
   (define-reporter ((condition invalid-context-for-consing-dot) stream)
     (format stream "A consing dot appeared in an illegal position."))
 

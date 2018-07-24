@@ -60,6 +60,7 @@
    #:object-must-follow-comma
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
+   #:too-many-dots
    #:invalid-context-for-consing-dot
    #:object-must-follow-consing-dot
    #:multiple-objects-following-consing-dot

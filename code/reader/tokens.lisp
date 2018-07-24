@@ -170,10 +170,23 @@
                   (return-from interpret-token
                     *consing-dot*)
                   (%reader-error input-stream 'invalid-context-for-consing-dot)))
+             ((eql char #\.)
+              (if (null escape-ranges)
+                  (go maybe-too-many-dots)
+                  (go symbol)))
              ((funcall fraction-numerator char)
               (setf fraction-denominator
                     (* fraction-denominator 10))
               (go float-no-exponent)))
+         maybe-too-many-dots
+           ;; According to HyperSpec section 2.3.3 (The Consing Dot),
+           ;; a token consisting solely of multiple dots (more than
+           ;; one dot, no escapes) is illegal.
+           (next-cond (char)
+             ((not char)
+              (%reader-error input-stream 'too-many-dots))
+             ((eql char #\.)
+              (go maybe-too-many-dots)))
          sign-dot                       ; sign decimal-point
            ;; If all we have is a sign followed by a dot, it must be a
            ;; symbol in the current package.

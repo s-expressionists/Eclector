@@ -125,6 +125,9 @@
                   (eclector.reader:invalid-context-for-consing-dot
                    (signals eclector.reader:invalid-context-for-consing-dot
                      (do-it)))
+                  (eclector.reader:too-many-dots
+                   (signals eclector.reader:too-many-dots
+                     (do-it)))
                   (eclector.reader:symbol-name-must-not-end-with-package-marker
                    (signals eclector.reader:symbol-name-must-not-end-with-package-marker
                      (do-it)))
@@ -160,6 +163,9 @@
           ("."          ()                10 :upcase   eclector.reader:invalid-context-for-consing-dot)
           (".."         ((1 . 2))         10 :upcase   |..|) ; .\.
           (".."         ((1 . 1))         10 :upcase   |..|) ; .||.
+          ("..a"        ()                10 :upcase   |..A|)
+          (".."         ()                10 :upcase   eclector.reader:too-many-dots)
+          ("..."        ()                10 :upcase   eclector.reader:too-many-dots)
 
           ;; readtable case
           ("abc"        ()                10 :upcase   |ABC|)
