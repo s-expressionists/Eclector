@@ -28,15 +28,19 @@
                       (is (equal expected (eval (do-it))))))))))))
         '(("`,1"           1)
           ("`,@1"          eclector.reader:unquote-splicing-at-top)
+          ("`,.1"          eclector.reader:unquote-splicing-at-top)
 
           ("`(1 ,2)"       (1 2))
           ("`(1 ,@'(2))"   (1 2))
+          ("`(1 ,.'(2))"   (1 2))
 
           ("`(1 . ,2)"     (1 . 2))
           ("`(1 . ,@'(2))" eclector.reader:unquote-splicing-in-dotted-list)
+          ("`(1 . ,.'(2))" eclector.reader:unquote-splicing-in-dotted-list)
 
           ("`#(,1)"        #(1))
           ("`#(,@'(1))"    #(1))
+          ("`#(,.'(1))"    #(1))
 
           ("`\"foo\""      "foo"))))
 

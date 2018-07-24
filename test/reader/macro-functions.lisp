@@ -114,10 +114,12 @@
         '(;; Errors
           (""       1   eclector.reader:end-of-file)
           ("@"      1   eclector.reader:end-of-file)
+          ("."      1   eclector.reader:end-of-file)
           ("1"      0   eclector.reader:comma-not-inside-backquote)
           ;; Valid
           ("1"      1   (eclector.reader:unquote 1))
-          ("@1"     1   (eclector.reader:unquote-splicing 1)))))
+          ("@1"     1   (eclector.reader:unquote-splicing 1))
+          (".1"     1   (eclector.reader:unquote-splicing 1)))))
 
 (test left-parenthesis/smoke
   "Smoke test for the LEFT-PARENTHESIS reader macro function."

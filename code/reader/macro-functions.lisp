@@ -154,9 +154,9 @@
   (declare (ignore char))
   (let* ((inside-backquote-p (plusp *backquote-depth*))
          (char2 (read-char stream t nil t))
-         (at-sign-p (if (eql char2 #\@)
-                        t
-                        (progn (unread-char char2 stream) nil)))
+         (at-sign-p (case char2
+                      ((#\@ #\.) t)
+                      (t (unread-char char2 stream))))
          (*backquote-depth* (1- *backquote-depth*)))
     (unless inside-backquote-p
       (%reader-error stream 'comma-not-inside-backquote :at-sign-p at-sign-p))
