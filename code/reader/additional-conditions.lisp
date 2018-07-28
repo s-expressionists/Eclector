@@ -48,6 +48,8 @@
   ())
 
 ;;; Symbol-related conditions
+;;;
+;;; See HyperSpec section 2.3.5 (Valid Patterns for Tokens).
 
 (define-condition package-does-not-exist (stream-position-reader-error)
   ((%package-name :initarg :package-name :reader desired-package-name)))
