@@ -104,4 +104,11 @@
    ;; Names of macros related to backquote.
    ;; We export them so that the pretty printer
    ;; can use them properly.
-   #:quasiquote #:unquote #:unquote-splicing))
+   #:quasiquote #:unquote #:unquote-splicing)
+
+  ;; Readtable initialization
+  (:export
+   #:set-standard-syntax-types
+   #:set-standard-macro-characters
+   #:set-standard-dispatch-macro-characters
+   #:set-standard-syntax-and-macros))

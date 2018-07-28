@@ -231,6 +231,40 @@ The default method on this generic function first calls
 \textit{feature-expression} according to standard \commonlisp{}
 semantics for feature expressions.
 
+\subsubsection{Readtable Initialization}
+\label{sec:readtable-initialization}
+
+The standard syntax types and macro character associations used by the
+ordinary reader can be set up for any readtable object implementing
+the readtable protocol \seesec{sec:readtable-features}  The following
+functions are provided for this purpose:
+
+\Defun {set-standard-syntax-types} (readtable)
+
+This function sets the standard syntax types in \textit{readtable}
+(See HyperSpec section 2.1.4.)
+
+\Defun {set-standard-macro-characters} (readtable)
+
+This function sets the standard macro characters in \textit{readtable}
+(See HyperSpec section 2.4.)
+
+\Defun {set-standard-dispatch-macro-characters} (readtable)
+
+This function sets the standard dispatch macro characters, that is
+sharpsign and its sub-characters, in \textit{readtable} (See HyperSpec
+section 2.4.8.)
+
+\Defun {set-standard-syntax-and-macros} (readtable)
+
+This function sets the standard syntax types and macro characters in
+\textit{readtable} by calling the above three functions.
+
+\section{Readtable Features}
+\label{sec:readtable-features}
+
+TODO
+
 \section{CST reader features}
 \label{sec:cst-reader-features}
 
