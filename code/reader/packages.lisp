@@ -74,6 +74,7 @@
    #:symbol-does-not-exist
    #:symbol-is-not-external
 
+   #:symbol-name-must-not-be-only-package-markers
    #:symbol-name-must-not-end-with-package-marker
    #:two-package-markers-must-be-adjacent
    #:two-package-markers-must-not-be-first

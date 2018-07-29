@@ -67,6 +67,9 @@
 (define-condition symbol-syntax-error (stream-position-reader-error)
   ((%token :initarg :token :reader token)))
 
+(define-condition symbol-name-must-not-be-only-package-markers (symbol-syntax-error)
+  ())
+
 (define-condition symbol-name-must-not-end-with-package-marker (symbol-syntax-error)
   ())
 

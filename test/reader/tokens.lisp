@@ -129,6 +129,9 @@
                   (eclector.reader:too-many-dots
                    (signals eclector.reader:too-many-dots
                      (do-it)))
+                  (eclector.reader:symbol-name-must-not-be-only-package-markers
+                   (signals eclector.reader:symbol-name-must-not-be-only-package-markers
+                     (do-it)))
                   (eclector.reader:symbol-name-must-not-end-with-package-marker
                    (signals eclector.reader:symbol-name-must-not-end-with-package-marker
                      (do-it)))
@@ -242,6 +245,8 @@
           ("1ax"        ()                16 :upcase   1ax)
 
           ("aa"         ((1 . 2))         10 :upcase   |Aa|)
+          (":"          ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers)
+          ("::"         ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first)
           ("a:"         ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
           ("a::"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
           ("a:::"       ()                10 :upcase   eclector.reader:symbol-can-have-at-most-two-package-markers)

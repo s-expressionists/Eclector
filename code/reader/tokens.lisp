@@ -114,7 +114,19 @@
                  nil
                  (values (aref token index)
                          (update-escape-ranges
-                          index escape-range remaining-escape-ranges)))))
+                          index escape-range remaining-escape-ranges))))
+           (symbol ()
+             ;; This signals an error for ":" but accepts ":||". "::"
+             ;; is handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
+             (when (and (not escape-ranges)
+                        (and (eql position-package-marker-1 0)
+                             (= index 1)))
+               (%reader-error input-stream 'symbol-name-must-not-be-only-package-markers
+                              :token token))
+             (interpret-symbol-token
+              client input-stream token
+              position-package-marker-1
+              position-package-marker-2)))
       (macrolet ((next-cond ((char-var &optional
                                        return-symbol-if-eoi
                                        (colon-go-symbol t))
@@ -124,11 +136,7 @@
                         (cond
                           ,@(when return-symbol-if-eoi
                               `(((null ,char-var)
-                                 (return-from interpret-token
-                                   (interpret-symbol-token
-                                    client input-stream token
-                                    position-package-marker-1
-                                    position-package-marker-2)))))
+                                 (return-from interpret-token (symbol)))))
                           (,escapep-var (go symbol))
                           ,@(when colon-go-symbol
                               `(((eql char #\:)

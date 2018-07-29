@@ -60,6 +60,10 @@
             (desired-symbol-name condition)
             (package-name (desired-symbol-package condition))))
 
+  (define-reporter ((condition symbol-name-must-not-be-only-package-markers) stream)
+    (format stream "Symbol name without any escapes must not consist ~
+                    solely of package markers (: characters)."))
+
   (define-reporter ((condition symbol-name-must-not-end-with-package-marker) stream)
     (format stream "Symbol name must not end with a package ~
                     marker (the : character)."))
