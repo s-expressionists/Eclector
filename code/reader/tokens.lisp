@@ -6,10 +6,11 @@
                                    position-package-marker-2)
   (alexandria:when-let ((package-markers-end (or position-package-marker-2
                                                  position-package-marker-1)))
-    (when (= package-markers-end (1- (length token)))
-      (%reader-error input-stream
-                     'symbol-name-must-not-end-with-package-marker
-                     :token token)))
+    (let ((length (length token)))
+      (when (and (> length 1) (= package-markers-end (1- length)))
+        (%reader-error input-stream
+                       'symbol-name-must-not-end-with-package-marker
+                       :token token))))
   (flet ((interpret (package symbol count)
            (interpret-symbol client input-stream package symbol count)))
     (cond ((null position-package-marker-1)

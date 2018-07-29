@@ -90,8 +90,10 @@
           ("a"                              nil nil nil |a|)
           ("A"                              nil nil nil a)
           ("A:"                             1   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+          ("A::"                            2   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
 
-          (":"                              0   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+          (":"                              nil nil nil |:|)
+          (":"                              0   nil nil :||)
           (":a"                             0   nil nil :|a|)
           (":A"                             0   nil nil :a)
           ("NP:NIX"                         2   nil nil eclector.reader:package-does-not-exist)
@@ -246,8 +248,11 @@
 
           ("aa"         ((1 . 2))         10 :upcase   |Aa|)
           (":"          ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers)
+          (":"          ((1 . 1))         10 :upcase   :||)
+          (":"          ((0 . 1))         10 :upcase   |:|)
           ("::"         ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first)
           ("a:"         ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
+          ("a:"         ((1 . 2))         10 :upcase   |A:|)
           ("a::"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
           ("a:::"       ()                10 :upcase   eclector.reader:symbol-can-have-at-most-two-package-markers)
           ("a:a:"       ()                10 :upcase   eclector.reader:two-package-markers-must-be-adjacent)
