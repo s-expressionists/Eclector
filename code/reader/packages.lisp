@@ -101,6 +101,7 @@
 
    #:sharpsign-invalid
    #:sharpsign-equals-label-defined-more-than-once
+   #:sharpsign-equals-only-refers-to-self
    #:sharpsign-sharpsign-undefined-label
    ;; Names of macros related to backquote.
    ;; We export them so that the pretty printer

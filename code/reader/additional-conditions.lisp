@@ -169,5 +169,8 @@
 (define-condition sharpsign-equals-label-defined-more-than-once (reference-error)
   ())
 
+(define-condition sharpsign-equals-only-refers-to-self (reference-error)
+  ())
+
 (define-condition sharpsign-sharpsign-undefined-label (reference-error)
   ())

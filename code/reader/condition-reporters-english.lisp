@@ -160,6 +160,10 @@
     (format stream "Label ~d defined more than once."
             (label condition)))
 
+  (define-reporter ((condition sharpsign-equals-only-refers-to-self) stream)
+    (format stream "Label ~d is defined as a reference to itself."
+            (label condition)))
+
   (define-reporter ((condition sharpsign-sharpsign-undefined-label) stream)
     (format stream "Reference to undefined label #~d#." (label condition)))
 

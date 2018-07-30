@@ -863,8 +863,11 @@
              ;; Hmm, do we need to transmit EOF-ERROR-P through reader
              ;; macros?
              (let ((result (read stream t nil t)))
-               (setf (cdr contents) result)
-               (setf (caar contents) t)
+               (when (eq result (car contents))
+                 (%reader-error stream 'sharpsign-equals-only-refers-to-self
+                                :label parameter))
+               (setf (cdr contents) result
+                     (caar contents) t)
                result))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

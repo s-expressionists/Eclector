@@ -898,6 +898,9 @@
                 (eclector.reader:sharpsign-equals-label-defined-more-than-once
                  (signals eclector.reader:sharpsign-equals-label-defined-more-than-once
                    (do-it)))
+                (eclector.reader:sharpsign-equals-only-refers-to-self
+                 (signals eclector.reader:sharpsign-equals-only-refers-to-self
+                   (do-it)))
                 (eclector.reader:sharpsign-sharpsign-undefined-label
                  (signals eclector.reader:sharpsign-sharpsign-undefined-label
                    (do-it)))
@@ -910,6 +913,7 @@
         '(;; sharpsign equals errors
           ("#="             eclector.reader:numeric-parameter-not-supplied-but-required)
           ("(#1=1 #1=2)"    eclector.reader:sharpsign-equals-label-defined-more-than-once)
+          ("#1=#1#"         eclector.reader:sharpsign-equals-only-refers-to-self)
           ;; sharpsign sharpsign errors
           ("##"             eclector.reader:numeric-parameter-not-supplied-but-required)
           ("#1#"            eclector.reader:sharpsign-sharpsign-undefined-label)
