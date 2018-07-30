@@ -157,7 +157,7 @@
             (character-found condition)))
 
   (define-reporter ((condition sharpsign-equals-label-defined-more-than-once) stream)
-    (format stream "Sharpsign reader macro label ~d defined more than once."
+    (format stream "Label ~d defined more than once."
             (label condition)))
 
   (define-reporter ((condition sharpsign-sharpsign-undefined-label) stream)
