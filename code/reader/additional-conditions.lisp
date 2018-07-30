@@ -161,8 +161,13 @@
 (define-condition sharpsign-invalid (stream-position-reader-error)
   ((%character-found :initarg :character-found :reader character-found)))
 
-(define-condition sharpsign-equals-label-defined-more-than-once (stream-position-reader-error)
+;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
+
+(define-condition reference-error (stream-position-reader-error)
   ((%label :initarg :label :reader label)))
 
-(define-condition sharpsign-sharpsign-undefined-label (stream-position-reader-error)
-  ((%label :initarg :label :reader label)))
+(define-condition sharpsign-equals-label-defined-more-than-once (reference-error)
+  ())
+
+(define-condition sharpsign-sharpsign-undefined-label (reference-error)
+  ())
