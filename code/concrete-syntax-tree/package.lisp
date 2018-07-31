@@ -1,6 +1,6 @@
 (cl:defpackage #:eclector.concrete-syntax-tree
   (:use
-   #:cl)
+   #:common-lisp)
 
   ;; Result and source location protocol
   (:export
