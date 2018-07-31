@@ -3,6 +3,7 @@
 \section{Packages}
 
 \subsection{Package for ordinary reader features}
+\label{sec:package-ordinary-reader-features}
 
 The package for ordinary reader features is named
 \texttt{eclector.reader}.  To use features of this package, we
@@ -12,6 +13,7 @@ package shadows and exports names that are also exported from the
 cause conflicts with the \texttt{common-lisp} package otherwise.
 
 \subsection{Package for readtable features}
+\label{sec:package-readtable-features}
 
 The package for readtable-related features is named
 \texttt{eclector.readtable}.  To use features of this package, we
@@ -21,6 +23,7 @@ package shadows and exports names that are also exported from the
 cause conflicts with the \texttt{common-lisp} package otherwise.
 
 \subsection{Package for CST features}
+\label{sec:package-cst-features}
 
 The package for features related to the creation of concrete syntax
 trees is named \texttt{eclector.concrete-syntax-tree}.  Although this
@@ -29,6 +32,10 @@ package, we still recommend the use of explicit package prefixes to
 refer to symbols in this package.
 
 \section{Ordinary reader features}
+
+In this section, symbols written without package marker are in the
+\texttt{eclector.reader} package
+\seesec{sec:package-ordinary-reader-features}
 
 \Defun {read} {\optional (input-stream \texttt{*standard-input*})\\
   (eof-error-p \texttt{t})
@@ -263,10 +270,18 @@ This function sets the standard syntax types and macro characters in
 \section{Readtable Features}
 \label{sec:readtable-features}
 
+In this section, symbols written without package marker are in the
+\texttt{eclector.readtable} package
+\seesec{sec:package-readtable-features}
+
 TODO
 
 \section{CST reader features}
 \label{sec:cst-reader-features}
+
+In this section, symbols written without package marker are in the
+\texttt{eclector.concrete-syntax-tree} package
+\seesec{sec:package-cst-features}
 
 \Defun {cst-read} {\optional (input-stream \texttt{*standard-input*})\\
   (eof-error-p \texttt{t})
