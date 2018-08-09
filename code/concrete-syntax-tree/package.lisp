@@ -2,12 +2,6 @@
   (:use
    #:common-lisp)
 
-  ;; Result and source location protocol
-  (:export
-   #:source-position
-   #:make-source-range
-   #:record-skipped-input)
-
   ;; Read protocol
   (:export
    #:cst-read)
