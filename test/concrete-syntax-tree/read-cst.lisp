@@ -41,8 +41,8 @@
                                   stream eof-error :eof)
                                  (file-position stream)))))
                 (case expected-raw
-                  (end-of-file
-                   (signals end-of-file (do-it)))
+                  (eclector.reader:end-of-file
+                   (signals eclector.reader:end-of-file (do-it)))
                   (:eof
                    (is (eq :eof (do-it))))
                   (t
@@ -58,9 +58,9 @@
                      (is (eql (length input) position)))))))))
 
         '(;; End of file
-          (""              t   end-of-file)
+          (""              t   eclector.reader:end-of-file)
           (""              nil :eof)
-          ("; comment"     t   end-of-file)
+          ("; comment"     t   eclector.reader:end-of-file)
           ("; comment"     nil :eof)
           ;; Actually reading something
           ("(cons 1 2)"    t   (cons 1 2) ( 0 . 10))
