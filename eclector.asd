@@ -52,6 +52,15 @@
                              (:file "quasiquote-macro")
                              (:file "fixup")))
 
+               (:module "parse-result"
+                :pathname "code/parse-result"
+                :depends-on ("reader")
+                :serial t
+                :components ((:file "package")
+                             (:file "client")
+                             (:file "generic-functions")
+                             (:file "read")))
+
                (:static-file "README.md")
                (:static-file "LICENSE-BSD"))
 
@@ -85,7 +94,14 @@
 
                              (:file "readtable")
 
-                             (:file "client"))))
+                             (:file "client")))
+
+               (:module "parse-result"
+                :pathname "test/parse-result"
+                :depends-on ("test")
+                :serial t
+                :components ((:file "package")
+                             (:file "read"))))
 
   :perform (test-op (operation component)
              (uiop:symbol-call '#:eclector.test '#:run-tests)))
