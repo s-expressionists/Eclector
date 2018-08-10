@@ -1,5 +1,7 @@
 (cl:defpackage #:eclector.reader
-  (:use #:common-lisp)
+  (:use
+   #:common-lisp)
+
   ;; When the reader is compiled for the purpose of cross compilation,
   ;; we must shadow a certain number of symbols that would otherwise
   ;; clash with the corresponding symbols in the host package
@@ -10,6 +12,7 @@
    #:read-preserving-whitespace
 
    #:end-of-file)
+
   ;; Contrary to other variables affecting the reader, we cannot use
   ;; the host version of *READTABLE* because we do not necessarily
   ;; use the same representation of readtables as the host does, and
@@ -29,15 +32,17 @@
    #:unknown-macro-sub-character)
 
   (:export
-   #:readtable
    #:*readtable*
+
    #:*client*
    #:*skip-reason*
-   #:read-char
-   #:read
-   #:read-preserving-whitespace
    #:*preserve-whitespace*
 
+   #:read-char
+   #:read
+   #:read-preserving-whitespace)
+
+  (:export
    #:read-common
    #:read-token
    #:note-skipped-input
@@ -47,23 +52,30 @@
 
    #:call-reader-macro
    #:find-character
+
    #:evaluate-expression
    #:check-feature-expression
    #:evaluate-feature-expression
-   #:fixup
 
-   ;; Backquote customization.
+   #:fixup)
+
+  ;; Backquote customization.
+  (:export
    #:wrap-in-quasiquote
    #:wrap-in-unquote
-   #:wrap-in-unquote-splicing
-   ;; Names of additional conditions.
+   #:wrap-in-unquote-splicing)
+
+  ;; Names of additional conditions.
+  (:export
    #:end-of-file
+
    #:backquote-condition
    #:invalid-context-for-backquote
    #:comma-not-inside-backquote
    #:object-must-follow-comma
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
+
    #:too-many-dots
    #:invalid-context-for-consing-dot
    #:object-must-follow-consing-dot
@@ -102,11 +114,14 @@
    #:sharpsign-invalid
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-equals-only-refers-to-self
-   #:sharpsign-sharpsign-undefined-label
-   ;; Names of macros related to backquote.
-   ;; We export them so that the pretty printer
-   ;; can use them properly.
-   #:quasiquote #:unquote #:unquote-splicing)
+   #:sharpsign-sharpsign-undefined-label)
+
+  ;; Names of macros related to backquote.  We export them so that the
+  ;; pretty printer can use them properly.
+  (:export
+   #:quasiquote
+   #:unquote
+   #:unquote-splicing)
 
   ;; Readtable initialization
   (:export

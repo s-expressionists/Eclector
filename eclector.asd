@@ -18,7 +18,7 @@
                 :pathname "code/readtable"
                 :depends-on ("base")
                 :serial t
-                :components ((:file "packages")
+                :components ((:file "package")
                              (:file "variables")
                              (:file "conditions")
                              (:file "condition-reporters-english")
@@ -29,7 +29,7 @@
                 :depends-on ("base"
                              "readtable")
                 :serial t
-                :components ((:file "packages")
+                :components ((:file "package")
                              (:file "readtable")
                              (:file "methods")))
 
@@ -38,7 +38,7 @@
                 :depends-on ("base"
                              "readtable")
                 :serial t
-                :components ((:file "packages")
+                :components ((:file "package")
                              (:file "generic-functions")
                              (:file "more-variables")
                              (:file "additional-conditions")
@@ -71,19 +71,19 @@
                (:version "fiveam" "1.4"))
 
   :components ((:module "test"
-                :components ((:file "packages")))
+                :components ((:file "package")))
 
                (:module "readtable"
                 :pathname "test/readtable"
                 :depends-on ("test")
                 :serial t
-                :components ((:file "packages")))
+                :components ((:file "package")))
 
                (:module "reader"
                 :pathname "test/reader"
                 :depends-on ("test")
                 :serial t
-                :components ((:file "packages")
+                :components ((:file "package")
 
                              (:file "gen-quasiquote")
 
