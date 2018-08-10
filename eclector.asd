@@ -62,7 +62,7 @@
                              (:file "read")))
 
                (:static-file "README.md")
-               (:static-file "LICENSE-BSD"))
+               (:static-file "LICENSE"))
 
   :in-order-to ((test-op (test-op "eclector/test"))))
 
