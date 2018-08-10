@@ -7,6 +7,12 @@
                                cl:end-of-file)
   ())
 
+;;; Type error
+
+(define-condition read-object-type-error (stream-position-reader-error
+                                          type-error)
+  ())
+
 ;;; Conditions related to quasiquotation
 
 (define-condition backquote-condition (stream-position-reader-error)

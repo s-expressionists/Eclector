@@ -607,14 +607,13 @@
 ;;; Reader macro for sharpsign A.
 
 (defun determine-dimensions (stream rank initial-contents)
-  (declare (ignore stream))
   (labels ((rec (rank initial-contents)
              (cond ((zerop rank)
                     '())
                    ((not (typep initial-contents 'alexandria:proper-sequence))
-                    (error 'type-error
-                           :expected-type 'sequence
-                           :datum initial-contents))
+                    (%reader-error stream 'read-object-type-error
+                                   :expected-type 'sequence
+                                   :datum initial-contents))
                    (t
                     (let ((length (length initial-contents)))
                       (if (zerop length)
@@ -748,9 +747,9 @@
       ((typep parts '(cons real (cons real null)))
        (complex (first parts) (second parts)))
       (t
-       (error 'type-error
-              :datum parts
-              :expected-type '(cons real (cons real null)))))))
+       (%reader-error stream 'read-object-type-error
+                      :datum parts
+                      :expected-type '(cons real (cons real null)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -763,9 +762,9 @@
   (let ((expression (read stream t nil t)))
     (unless *read-suppress*
       (unless (stringp expression)
-        (error 'type-error
-               :expected-type 'string
-               :datum expression))
+        (%reader-error stream 'read-object-type-error
+                       :expected-type 'string
+                       :datum expression))
       (parse-namestring expression))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -69,6 +69,8 @@
   (:export
    #:end-of-file
 
+   #:read-object-type-error
+
    #:backquote-condition
    #:invalid-context-for-backquote
    #:comma-not-inside-backquote

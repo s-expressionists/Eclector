@@ -632,8 +632,8 @@
                 (eclector.reader:incorrect-initialization-length
                  (signals eclector.reader:incorrect-initialization-length
                    (do-it)))
-                (type-error
-                 (signals type-error (do-it)))
+                (eclector.reader:read-object-type-error
+                 (signals eclector.reader:read-object-type-error (do-it)))
                 (eclector.reader:numeric-parameter-not-supplied-but-required
                  (signals eclector.reader:numeric-parameter-not-supplied-but-required
                    (do-it)))
@@ -643,9 +643,9 @@
                    (is (equal (length input) position))))))))
         '(;; Errors
           (""          1   nil eclector.reader:end-of-file)
-          ("(1)"       2   nil type-error)
+          ("(1)"       2   nil eclector.reader:read-object-type-error)
           ("(() (1))"  2   nil eclector.reader:incorrect-initialization-length)
-          ("1"         1   nil type-error)
+          ("1"         1   nil eclector.reader:read-object-type-error)
           ("(1)"       nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
           ;; Valid
           ("()"        0   nil #0A())
@@ -741,8 +741,8 @@
               (case expected
                 (eclector.reader:end-of-file
                  (signals eclector.reader:end-of-file (do-it)))
-                (type-error
-                 (signals type-error (do-it)))
+                (eclector.reader:read-object-type-error
+                 (signals eclector.reader:read-object-type-error (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it)))
@@ -752,12 +752,12 @@
                    (is (equal (length input) position))))))))
         '(;; Errors
           (""        nil nil eclector.reader:end-of-file)
-          ("\"foo\"" nil nil type-error)
-          ("(0)"     nil nil type-error)
-          ("(0 0 0)" nil nil type-error)
-          ("#(0 0)"  nil nil type-error)
-          ("(:a 0)"  nil nil type-error)
-          ("(0 :a)"  nil nil type-error)
+          ("\"foo\"" nil nil eclector.reader:read-object-type-error)
+          ("(0)"     nil nil eclector.reader:read-object-type-error)
+          ("(0 0 0)" nil nil eclector.reader:read-object-type-error)
+          ("#(0 0)"  nil nil eclector.reader:read-object-type-error)
+          ("(:a 0)"  nil nil eclector.reader:read-object-type-error)
+          ("(0 :a)"  nil nil eclector.reader:read-object-type-error)
           ("(0 0)"   1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("(0 0)"   nil nil #C(0 0))
@@ -787,8 +787,8 @@
               (case expected
                 (eclector.reader:end-of-file
                  (signals eclector.reader:end-of-file (do-it)))
-                (type-error
-                 (signals type-error (do-it)))
+                (eclector.reader:read-object-type-error
+                 (signals eclector.reader:read-object-type-error (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it)))
@@ -798,7 +798,7 @@
                    (is (equal (length input) position))))))))
         '(;; Errors
           (""        nil nil eclector.reader:end-of-file)
-          ("1"       nil nil type-error)
+          ("1"       nil nil eclector.reader:read-object-type-error)
           ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("\"foo\"" nil nil #P"foo")
