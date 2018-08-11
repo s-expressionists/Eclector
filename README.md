@@ -44,9 +44,8 @@ input (due to e.g. comments and reader conditionals):
     ((client my-client) (stream t) (reason t) (source t))
   (list :reason reason :source source))
 
-(let ((eclector.reader:*client* (make-instance 'my-client)))
-  (with-input-from-string (stream "(1 #|comment|# \"string\")")
-    (eclector.parse-result:read stream)))
+(with-input-from-string (stream "(1 #|comment|# \"string\")")
+  (eclector.parse-result:read (make-instance 'my-client) stream))
 ```
 
 ### Concrete Syntax Trees ###

@@ -54,14 +54,11 @@
         (push parse-result (second *stack*))
         (values result parse-result)))))
 
-(defun read (&rest arguments)
-  (when (null eclector.reader:*client*)
-    (error "~S must be bound to a client instance."
-           'eclector.reader:*client*))
-
+(defun read (client &rest arguments)
   (destructuring-bind (&optional eof-error-p eof-value) (rest arguments)
     (multiple-value-bind (result parse-result orphan-results)
-        (let ((*stack* (list '())))
+        (let ((eclector.reader:*client* client)
+              (*stack* (list '())))
           (multiple-value-call #'values
             (apply #'eclector.reader:read arguments)
             (reverse (rest (first *stack*)))))

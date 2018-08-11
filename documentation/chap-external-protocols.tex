@@ -307,7 +307,7 @@ are applicable.  Suitable client classes can be constructed by using
 \texttt{parse-result-client} as a superclass and at least defining a
 method on the generic function \texttt{make-expression-result}.
 
-\Defun {read} {\optional (input-stream \texttt{*standard-input*})\\
+\Defun {read} {client \optional (input-stream \texttt{*standard-input*})\\
   (eof-error-p \texttt{t})
   (eof-value \texttt{nil})}
 
@@ -316,6 +316,7 @@ It is in many ways similar to the standard \commonlisp{} function
 \texttt{read}.  The differences are:
 
 \begin{itemize}
+\item A client instance must be supplied as the first argument.
 \item The first return value, unless \textit{eof-value} is returned,
   is an arbitrary parse result object created by the client, not
   generally the read object.

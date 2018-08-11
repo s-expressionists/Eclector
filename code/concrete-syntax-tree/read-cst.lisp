@@ -48,5 +48,5 @@
                         :source source))))))
 
 (defun cst-read (&rest arguments)
-  (let ((eclector.reader:*client* (or eclector.reader:*client* *cst-client*)))
-    (apply #'eclector.parse-result:read arguments)))
+  (apply #'eclector.parse-result:read
+         (or eclector.reader:*client* *cst-client*) arguments))

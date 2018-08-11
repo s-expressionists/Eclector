@@ -2,15 +2,6 @@
 
 (in-suite :eclector.parse-result)
 
-;;; Test for *CLIENT* check
-
-(test read/*client*
-  "Test error signaled when calling READ with *CLIENT* NIL."
-
-  (signals-printable error
-    (eclector.parse-result:read
-     (make-string-input-stream "doesn't matter"))))
-
 ;;; The {PARSE,ATOM,CONS}-RESULT classes and the RESULTIFY function
 ;;; simulate what a client might do to represent parse results.
 
@@ -87,10 +78,9 @@
             (let ((input (format nil input)))
               (flet ((do-it ()
                        (with-input-from-string (stream input)
-                         (values (let ((eclector.reader:*client*
-                                         (make-instance 'simple-result-client)))
-                                   (eclector.parse-result:read
-                                    stream eof-error :eof))
+                         (values (eclector.parse-result:read
+                                  (make-instance 'simple-result-client) stream
+                                  eof-error :eof)
                                  (file-position stream)))))
                 (case expected-raw
                   (eclector.reader:end-of-file
@@ -144,9 +134,8 @@
   (mapc (lambda (input-expected)
           (destructuring-bind (input expected) input-expected
             (let ((result (with-input-from-string (stream input)
-                            (let ((eclector.reader:*client*
-                                    (make-instance 'simple-result-client)))
-                              (eclector.parse-result:read stream)))))
+                            (eclector.parse-result:read
+                             (make-instance 'simple-result-client) stream))))
               (check-source-locations result expected))))
         (macrolet ((scons ((&optional start end) &optional car cdr)
                      `(cons ,(if start `(cons ,start ,end) 'nil)
@@ -205,9 +194,8 @@
   "Test using a custom client with READ."
 
   (let ((result (with-input-from-string (stream "#||# 1")
-                  (let ((eclector.reader:*client*
-                          (make-instance 'custom-source-position-client)))
-                    (eclector.parse-result:read stream)))))
+                  (eclector.parse-result:read
+                   (make-instance 'custom-source-position-client) stream))))
     (is (equalp #(-5 -6) (source result)))))
 
 ;;; Skipped input
@@ -236,13 +224,11 @@
          input-expected
        (let ((input (format nil input)))
          (flet ((do-it ()
-                  (let ((client
-                          (make-instance 'skipped-input-recording-client)))
-                    (with-input-from-string (stream input)
-                      (multiple-value-call #'values
-                       (let ((eclector.reader:*client* client))
-                         (eclector.parse-result:read stream))
-                       (file-position stream))))))
+                  (with-input-from-string (stream input)
+                    (multiple-value-call #'values
+                      (eclector.parse-result:read
+                       (make-instance 'skipped-input-recording-client) stream)
+                      (file-position stream)))))
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (equal expected-result result))
              (is (equal expected-orphan-results orphan-results))
