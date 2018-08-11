@@ -9,6 +9,10 @@ following the Common Lisp specification.
 system structure, package structure, exported symbols and protocols
 may all change at any time without prior notice.**
 
+This document only gives a very brief overview and highlights some
+features. Proper documentation can be found in the `documentation`
+directory.
+
 ## Tutorial ##
 
 ### Basics ###
