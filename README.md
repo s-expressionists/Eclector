@@ -21,6 +21,30 @@ Lisp reader:
   (eclector.reader:read stream))
 ```
 
+### Custom Parse Results ###
+
+Using features provided in the `eclector.parse-result` package,
+the reader can produce parse results controlled by the client,
+optionally including source tracking and representation of skipped
+input (due to e.g. comments and reader conditionals):
+
+```lisp
+(defclass my-client (eclector.parse-result:parse-result-client)
+  ())
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client my-client) (result t) (children t) (source t))
+  (list :result result :source source :children children))
+
+(defmethod eclector.parse-result:make-skipped-input-result
+    ((client my-client) (stream t) (reason t) (source t))
+  (list :reason reason :source source))
+
+(let ((eclector.reader:*client* (make-instance 'my-client)))
+  (with-input-from-string (stream "(1 #|comment|# \"string\")")
+    (eclector.parse-result:read stream)))
+```
+
 ### Concrete Syntax Trees ###
 
 The `eclector.concrete-syntax-tree` system provides a variant of the
