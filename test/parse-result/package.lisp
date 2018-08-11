@@ -3,6 +3,9 @@
    #:common-lisp
    #:fiveam)
 
+  (:import-from #:eclector.test
+   #:signals-printable)
+
   (:export
    #:run-tests))
 

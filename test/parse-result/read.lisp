@@ -7,7 +7,7 @@
 (test read/*client*
   "Test error signaled when calling READ with *CLIENT* NIL."
 
-  (signals error
+  (signals-printable error
     (eclector.parse-result:read
      (make-string-input-stream "doesn't matter"))))
 
@@ -94,7 +94,7 @@
                                  (file-position stream)))))
                 (case expected-raw
                   (eclector.reader:end-of-file
-                   (signals eclector.reader:end-of-file (do-it)))
+                   (signals-printable eclector.reader:end-of-file (do-it)))
                   (:eof
                    (is (eq :eof (do-it))))
                   (t

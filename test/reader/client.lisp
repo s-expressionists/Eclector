@@ -25,7 +25,7 @@
                          (eclector.reader:read stream)))))
               (case expected
                 (eclector.reader:unknown-character-name
-                 (signals eclector.reader:unknown-character-name
+                 (signals-printable eclector.reader:unknown-character-name
                    (do-it)))
                 (t
                  (is (equal expected (do-it))))))))
@@ -69,7 +69,7 @@
                          (eclector.reader:read stream)))))
               (case expected
                 (eclector.reader:read-time-evaluation-error
-                 (signals eclector.reader:read-time-evaluation-error
+                 (signals-printable eclector.reader:read-time-evaluation-error
                    (do-it)))
                 (t
                  (is (equal expected (do-it))))))))
@@ -122,10 +122,10 @@
                          (eclector.reader:read stream)))))
               (case expected
                 (eclector.reader:single-feature-expected
-                 (signals eclector.reader:single-feature-expected
+                 (signals-printable eclector.reader:single-feature-expected
                    (do-it)))
                 (eclector.reader:feature-expression-type-error
-                 (signals eclector.reader:feature-expression-type-error
+                 (signals-printable eclector.reader:feature-expression-type-error
                    (do-it)))
                 (t
                  (is (eq expected (do-it))))))))

@@ -16,16 +16,16 @@
                                (file-position stream)))))
               (case expected
                 (eclector.reader:invalid-context-for-backquote
-                 (signals eclector.reader:invalid-context-for-backquote
+                 (signals-printable eclector.reader:invalid-context-for-backquote
                    (do-it)))
                 (eclector.reader:comma-not-inside-backquote
-                 (signals eclector.reader:comma-not-inside-backquote
+                 (signals-printable eclector.reader:comma-not-inside-backquote
                    (do-it)))
                 (eclector.reader:object-must-follow-comma
-                 (signals eclector.reader:object-must-follow-comma
+                 (signals-printable eclector.reader:object-must-follow-comma
                    (do-it)))
                 (eclector.reader:unknown-macro-sub-character
-                 (signals eclector.reader:unknown-macro-sub-character
+                 (signals-printable eclector.reader:unknown-macro-sub-character
                    (do-it)))
                 (t
                  (multiple-value-bind (result position) (do-it)

@@ -15,10 +15,10 @@
                        (macroexpand-1 form)))
                 (case expected
                   (eclector.reader:unquote-splicing-at-top
-                   (signals eclector.reader:unquote-splicing-at-top
+                   (signals-printable eclector.reader:unquote-splicing-at-top
                      (do-it)))
                   (eclector.reader:unquote-splicing-in-dotted-list
-                   (signals eclector.reader:unquote-splicing-in-dotted-list
+                   (signals-printable eclector.reader:unquote-splicing-in-dotted-list
                      (do-it)))
                   (t
                    (typecase expected

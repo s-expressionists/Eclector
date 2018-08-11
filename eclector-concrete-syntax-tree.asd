@@ -20,6 +20,7 @@
 
 (defsystem "eclector-concrete-syntax-tree/test"
   :depends-on ("eclector-concrete-syntax-tree"
+               "eclector/test"
                (:version "fiveam" "1.4"))
 
   :components ((:module "concrete-syntax-tree"

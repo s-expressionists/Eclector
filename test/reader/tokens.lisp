@@ -22,7 +22,7 @@
                                (file-position stream)))))
               (case expected
                 (eclector.reader:end-of-file
-                 (signals eclector.reader:end-of-file (do-it)))
+                 (signals-printable end-of-file (do-it)))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equalp expected          value))
@@ -76,14 +76,14 @@
                           nil stream token marker1 marker2))))
                 (case expected
                   (eclector.reader:symbol-name-must-not-end-with-package-marker
-                   (signals eclector.reader:symbol-name-must-not-end-with-package-marker
+                   (signals-printable eclector.reader:symbol-name-must-not-end-with-package-marker
                      (do-it)))
                   (eclector.reader:package-does-not-exist
-                   (signals eclector.reader:package-does-not-exist (do-it)))
+                   (signals-printable eclector.reader:package-does-not-exist (do-it)))
                   (eclector.reader:symbol-does-not-exist
-                   (signals eclector.reader:symbol-does-not-exist (do-it)))
+                   (signals-printable eclector.reader:symbol-does-not-exist (do-it)))
                   (eclector.reader:symbol-is-not-external
-                   (signals eclector.reader:symbol-is-not-external (do-it)))
+                   (signals-printable eclector.reader:symbol-is-not-external (do-it)))
                   (t
                    (is (equal expected (do-it)))))))))
         '((""                               nil nil nil ||)
@@ -126,25 +126,25 @@
                             nil stream (copy-seq token) token-escapes)))))
                 (case expected
                   (eclector.reader:invalid-context-for-consing-dot
-                   (signals eclector.reader:invalid-context-for-consing-dot
+                   (signals-printable eclector.reader:invalid-context-for-consing-dot
                      (do-it)))
                   (eclector.reader:too-many-dots
-                   (signals eclector.reader:too-many-dots
+                   (signals-printable eclector.reader:too-many-dots
                      (do-it)))
                   (eclector.reader:symbol-name-must-not-be-only-package-markers
-                   (signals eclector.reader:symbol-name-must-not-be-only-package-markers
+                   (signals-printable eclector.reader:symbol-name-must-not-be-only-package-markers
                      (do-it)))
                   (eclector.reader:symbol-name-must-not-end-with-package-marker
-                   (signals eclector.reader:symbol-name-must-not-end-with-package-marker
+                   (signals-printable eclector.reader:symbol-name-must-not-end-with-package-marker
                      (do-it)))
                   (eclector.reader:symbol-can-have-at-most-two-package-markers
-                   (signals eclector.reader:symbol-can-have-at-most-two-package-markers
+                   (signals-printable eclector.reader:symbol-can-have-at-most-two-package-markers
                      (do-it)))
                   (eclector.reader:two-package-markers-must-be-adjacent
-                   (signals eclector.reader:two-package-markers-must-be-adjacent
+                   (signals-printable eclector.reader:two-package-markers-must-be-adjacent
                      (do-it)))
                   (eclector.reader:two-package-markers-must-not-be-first
-                   (signals eclector.reader:two-package-markers-must-not-be-first
+                   (signals-printable eclector.reader:two-package-markers-must-not-be-first
                      (do-it)))
                   (t
                    (unless (or token-escapes (zerop (length token)))

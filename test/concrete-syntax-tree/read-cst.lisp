@@ -42,7 +42,7 @@
                                  (file-position stream)))))
                 (case expected-raw
                   (eclector.reader:end-of-file
-                   (signals eclector.reader:end-of-file (do-it)))
+                   (signals-printable eclector.reader:end-of-file (do-it)))
                   (:eof
                    (is (eq :eof (do-it))))
                   (t
