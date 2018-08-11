@@ -122,15 +122,17 @@
                          (eclector.reader:read stream)))))
               (case expected
                 (eclector.reader:single-feature-expected
-                 (signals eclector.reader:single-feature-expected (do-it)))
-                (type-error
-                 (signals type-error (do-it)))
+                 (signals eclector.reader:single-feature-expected
+                   (do-it)))
+                (eclector.reader:feature-expression-type-error
+                 (signals eclector.reader:feature-expression-type-error
+                   (do-it)))
                 (t
                  (is (eq expected (do-it))))))))
         '(;; Errors
           ("#+(not a b)                1 2" eclector.reader:single-feature-expected)
-          ("#+(version-at-least)       1 2" type-error)
-          ("#+(version-at-least 1)     1 2" type-error)
+          ("#+(version-at-least)       1 2" eclector.reader:feature-expression-type-error)
+          ("#+(version-at-least 1)     1 2" eclector.reader:feature-expression-type-error)
           ;; No errors
           ("#+common-lisp              1 2" 1)
           ("#+(not common-lisp)        1 2" 1)
