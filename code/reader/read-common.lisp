@@ -1,6 +1,13 @@
 (cl:in-package #:eclector.reader)
 
-(defun read-char (stream &optional eof-error-p eof-value recursive-p)
+;;; We have our own READ-CHAR function so we can signal our own
+;;; END-OF-FILE condition which stores the position in the input
+;;; stream in a portable way.  Since READ-CHAR is relatively critical
+;;; for performance, we use a compiler macro to transform our
+;;; READ-CHAR to CL:READ-CHAR when we can statically determine that
+;;; END-OF-FILE will not be signaled.
+
+(defun read-char (stream &optional (eof-error-p t) eof-value recursive-p)
   (if eof-error-p
       (let ((result (cl:read-char stream nil '#1=#.(gensym "EOF") recursive-p)))
         (if (eq result '#1#)
@@ -9,8 +16,12 @@
       (cl:read-char stream nil eof-value recursive-p)))
 
 (define-compiler-macro read-char
-    (&whole whole stream &optional eof-error-p eof-value recursive-p)
-  (if (and (constantp eof-error-p) (not (eval eof-error-p)))
+    (&whole whole stream
+            &optional
+            (eof-error-p nil eof-error-p-supplied-p)
+            eof-value recursive-p)
+  (if (and eof-error-p-supplied-p
+           (constantp eof-error-p) (not (eval eof-error-p)))
       `(cl:read-char ,stream nil ,eof-value ,recursive-p)
       whole))
 

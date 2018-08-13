@@ -2,6 +2,26 @@
 
 (in-suite :eclector.reader)
 
+(test read-char/smoke
+  "Smoke test for the READ-CHAR function."
+
+  (mapc (lambda (input-args-expected)
+          (destructuring-bind (input args expected) input-args-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (apply #'eclector.reader:read-char stream args))))
+              (case expected
+                (eclector.reader:end-of-file
+                 (signals-printable eclector.reader:end-of-file (do-it)))
+                (t
+                 (is (equal expected (do-it))))))))
+
+        '((""  ()         eclector.reader:end-of-file)
+          (""  (nil)      nil)
+          (""  (nil :eof) :eof)
+
+          ("a" ()         #\a))))
+
 (test read/smoke
   "Smoke test for the READ function."
 
