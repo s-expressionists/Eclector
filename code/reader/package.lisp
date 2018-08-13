@@ -8,6 +8,7 @@
   ;; COMMON-LISP.
   (:shadow
    #:read-char
+   #:peek-char
    #:read
    #:read-preserving-whitespace
 
@@ -39,6 +40,7 @@
    #:*preserve-whitespace*
 
    #:read-char
+   #:peek-char
    #:read
    #:read-preserving-whitespace)
 

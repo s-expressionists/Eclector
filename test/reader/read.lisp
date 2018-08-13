@@ -22,6 +22,66 @@
 
           ("a" ()         #\a))))
 
+(test peek-char/smoke
+  "Smoke test for the PEEK-CHAR function."
+
+  (mapc (lambda (input-args-expected)
+          (destructuring-bind (input (peek-type &rest args) expected)
+              input-args-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (apply #'eclector.reader:peek-char peek-type stream
+                              args)))
+                   (do-it/host ()
+                     (with-input-from-string (stream input)
+                       (apply #'cl:peek-char peek-type stream args))))
+              (case expected
+                (eclector.reader:end-of-file
+                 (signals-printable eclector.reader:end-of-file (do-it))
+                 (signals-printable end-of-file (do-it/host)))
+                (t
+                 (is (equal expected (do-it)))
+                 (is (equal expected (do-it/host))))))))
+
+        '(;; Peek type T
+          (""   (t)            eclector.reader:end-of-file)
+          (""   (t nil)        nil)
+          (""   (t nil :eof)   :eof)
+
+          (" "  (t)            eclector.reader:end-of-file)
+          (" "  (t nil)        nil)
+          (" "  (t nil :eof)   :eof)
+
+          (" a" (t)            #\a)
+          (" a" (t nil)        #\a)
+          (" a" (t nil :eof)   #\a)
+
+          ;; Peek type NIL
+          (""   (nil)          eclector.reader:end-of-file)
+          (""   (nil nil)      nil)
+          (""   (nil nil :eof) :eof)
+
+          (" "  (nil)          #\Space)
+          (" "  (nil nil)      #\Space)
+          (" "  (nil nil :eof) #\Space)
+
+          (" a" (nil)          #\Space)
+          (" a" (nil nil)      #\Space)
+          (" a" (nil nil :eof) #\Space)
+
+          ;; Peek type CHAR
+          (""   (#\a)          eclector.reader:end-of-file)
+          (""   (#\a nil)      nil)
+          (""   (#\a nil :eof) :eof)
+
+          (" "  (#\a)          eclector.reader:end-of-file)
+          (" "  (#\a nil)      nil)
+          (" "  (#\a nil :eof) :eof)
+
+          (" a" (#\a)          #\a)
+          (" a" (#\a nil)      #\a)
+          (" a" (#\a nil :eof) #\a))))
+
 (test read/smoke
   "Smoke test for the READ function."
 
