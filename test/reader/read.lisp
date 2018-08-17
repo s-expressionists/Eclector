@@ -134,3 +134,27 @@
 
           ;; Unknown macro sub character.
           ("#!"                         eclector.reader:unknown-macro-sub-character))))
+
+(test read-from-string/smoke
+  "Smoke test for the READ-FROM-STRING function."
+
+  (mapc (lambda (input-args-expected)
+          (destructuring-bind
+              (input args expected-value &optional expected-position)
+              input-args-expected
+            (flet ((do-it ()
+                     (apply #'eclector.reader:read-from-string input args)))
+              (case expected-value
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equal expected-value    value))
+                   (is (eql   expected-position position))))))))
+        '((""         ()                             eclector.reader:end-of-file)
+          (""         (nil :eof)                     :eof                         0)
+
+          (":foo 1 2" ()                             :foo                         5)
+          (":foo 1 2" (t nil :preserve-whitespace t) :foo                         4)
+          (":foo 1 2" (t nil :start 4)               1                            7)
+          (":foo 1 2" (t nil :end 3)                 :fo                          3))))

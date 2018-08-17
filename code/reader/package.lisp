@@ -11,6 +11,7 @@
    #:peek-char
    #:read
    #:read-preserving-whitespace
+   #:read-from-string
 
    #:end-of-file)
 
@@ -42,7 +43,8 @@
    #:read-char
    #:peek-char
    #:read
-   #:read-preserving-whitespace)
+   #:read-preserving-whitespace
+   #:read-from-string)
 
   (:export
    #:read-common
