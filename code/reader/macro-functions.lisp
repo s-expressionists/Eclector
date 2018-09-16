@@ -176,9 +176,9 @@
 ;;;
 ;;; The HyperSpec says that right-parenthesis is a macro character.
 ;;; In the reader macro for left-parenthesis, we can not just read
-;;; until we find a righ parenthesis, because it is possible that some
-;;; other character has been assigned the same meaning, and we need to
-;;; handle that situation too.
+;;; until we find a right parenthesis, because it is possible that
+;;; some other character has been assigned the same meaning, and we
+;;; need to handle that situation too.
 ;;;
 ;;; Another problem we need to solve is that of the CONSING-DOT.  The
 ;;; HyperSpec says that it is a token.  For that reason, we can not
