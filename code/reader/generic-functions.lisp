@@ -26,6 +26,8 @@
   (:method ((client t) (name t))
     (find-standard-character name)))
 
+(defgeneric make-structure-instance (client name initargs))
+
 (defgeneric evaluate-expression (client expression)
   (:method ((client t) (expression t))
     (declare (ignore client))

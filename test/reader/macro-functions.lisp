@@ -772,6 +772,81 @@
           ("(0 :a)"  nil t   nil)
           ("(0 0)"   nil t   nil))))
 
+(defclass sharpsign-s-client () ())
+
+(defmethod eclector.reader:make-structure-instance
+    ((client sharpsign-s-client) (name t) (initargs t))
+  (list* name initargs))
+
+(test sharpsign-s/smoke
+  "Smoke test for the SHARPSIGN-S reader macro function."
+
+  (mapc (lambda (input-parameter-read-suppress-expected)
+          (destructuring-bind
+              (input parameter read-suppress expected)
+              input-parameter-read-suppress-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (let ((*read-suppress* read-suppress)
+                             (eclector.reader::*client*
+                               (make-instance 'sharpsign-s-client)))
+                         (values
+                          (eclector.reader::sharpsign-s stream #\S parameter)
+                          (file-position stream))))))
+              (case expected
+                (eclector.reader:numeric-parameter-supplied-but-ignored
+                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
+                   (do-it)))
+
+                (eclector.reader:end-of-file
+                 (signals-printable eclector.reader:end-of-file (do-it)))
+                (eclector.reader:non-list-following-sharpsign-s
+                 (signals-printable eclector.reader:non-list-following-sharpsign-s
+                   (do-it)))
+                (eclector.reader:invalid-context-for-consing-dot
+                 (signals-printable eclector.reader:invalid-context-for-consing-dot
+                   (do-it)))
+
+                (eclector.reader:no-structure-type-name-found
+                 (signals-printable eclector.reader:no-structure-type-name-found
+                   (do-it)))
+                (eclector.reader:structure-type-name-is-not-a-symbol
+                 (signals-printable eclector.reader:structure-type-name-is-not-a-symbol
+                   (do-it)))
+
+                (eclector.reader:slot-name-is-not-a-symbol
+                 (signals-printable eclector.reader:slot-name-is-not-a-symbol
+                   (do-it)))
+                (eclector.reader:no-slot-value-found
+                 (signals-printable eclector.reader:no-slot-value-found
+                   (do-it)))
+
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equal expected value))
+                   (is (equal (length input) position))))))))
+        '(;; Errors
+          ("(foo)"        1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+
+          (""             nil nil eclector.reader:end-of-file)
+          ("1"            nil nil eclector.reader:non-list-following-sharpsign-s)
+          (" (foo)"       nil nil eclector.reader:non-list-following-sharpsign-s)
+          ("(foo . 1)"    nil nil eclector.reader:invalid-context-for-consing-dot)
+
+          ("()"           nil nil eclector.reader:no-structure-type-name-found)
+          ("(1)"          nil nil eclector.reader:structure-type-name-is-not-a-symbol)
+
+          ("(foo 1 2)"    nil nil eclector.reader:slot-name-is-not-a-symbol)
+          ("(foo :bar)"   nil nil eclector.reader:no-slot-value-found)
+          ;; Valid
+          ("(foo)"        nil nil (foo))
+          ("(foo :bar 1)" nil nil (foo :bar 1))
+          ;; With *READ-SUPPRESS* bound to T
+          ("(foo)"        nil t   nil)
+          ("(foo 1 2)"    nil t   nil)
+          ("(foo :bar)"   nil t   nil)
+          ("(foo)"        1   t   nil))))
+
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
 

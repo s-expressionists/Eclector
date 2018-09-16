@@ -196,6 +196,19 @@ name.  \textit{name} is the name that has been read converted to upper
 case.  The function has to either return the character designated by
 \textit{name} or \texttt{nil} if no such character exists.
 
+\Defgeneric {make-structure-instance} {client name initargs}
+
+This generic function is called by the default \texttt{\#S}~reader
+macro function to construct structure instances.  \textit{name} is a
+symbol naming the structure type of which an instance should be
+constructed.  \textit{initargs} is a list the elements of which
+alternate between symbols naming structure slots and values for those
+slots.
+
+There is no default method on this generic function since there is no
+portable way to construct structure instances given only the name of
+the structure type.
+
 \Defgeneric {evaluate-expression} {client expression}
 
 This generic function is called by the default \texttt{\#.}~reader

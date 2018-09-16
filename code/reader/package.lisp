@@ -56,6 +56,7 @@
 
    #:call-reader-macro
    #:find-character
+   #:make-structure-instance
 
    #:evaluate-expression
    #:check-feature-expression
@@ -113,6 +114,12 @@
    #:too-many-elements
    #:no-elements-found
    #:incorrect-initialization-length
+
+   #:non-list-following-sharpsign-s
+   #:no-structure-type-name-found
+   #:structure-type-name-is-not-a-symbol
+   #:slot-name-is-not-a-symbol
+   #:no-slot-value-found
 
    #:feature-expression-type-error
    #:single-feature-expected

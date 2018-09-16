@@ -753,6 +753,57 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Reader macro for sharpsign S.
+
+(defun sharpsign-s (stream char parameter)
+  (declare (ignore char))
+  (unless (null parameter)
+    (numeric-parameter-ignored stream 'sharpsign-s parameter))
+  (when *read-suppress*
+    (read stream t nil t)
+    (return-from sharpsign-s nil))
+  (let ((char (read-char stream t nil t)))
+    (unless (char= char #\()
+      (%reader-error stream 'non-list-following-sharpsign-s)))
+  (with-preserved-backquote-context
+    (labels ((read* ()
+               (handler-case
+                   (read stream t nil t)
+                 (end-of-list (condition)
+                   condition)))
+             (read-type ()
+               (let ((type (read*)))
+                 (cond ((symbolp type)
+                        type)
+                       ((eq type *end-of-list*)
+                        (%reader-error stream 'no-structure-type-name-found))
+                       (t
+                        (%reader-error stream 'structure-type-name-is-not-a-symbol
+                                       :datum type)))))
+             (read-slot-name ()
+               (let ((name (read*)))
+                 (cond ((symbolp name)
+                        name)
+                       ((eq name *end-of-list*)
+                        nil)
+                       (t
+                        (%reader-error stream 'slot-name-is-not-a-symbol
+                                       :datum name)))))
+             (read-slot-value (slot-name)
+               (let ((value (read*)))
+                 (if (eq value *end-of-list*)
+                     (%reader-error stream 'no-slot-value-found
+                                    :slot-name slot-name)
+                     value))))
+      (make-structure-instance
+       *client* (read-type) (loop for slot-name = (read-slot-name)
+                                  for slot-value = (when slot-name
+                                                     (read-slot-value slot-name))
+                                  while slot-name
+                                  collect slot-name
+                                  collect slot-value)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Reader macro for sharpsign P.
 
 (defun sharpsign-p (stream char parameter)

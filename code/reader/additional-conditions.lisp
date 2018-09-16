@@ -145,6 +145,30 @@
    (%expected-length :initarg :expected-length :reader expected-length)
    (%datum :initarg :datum :reader datum)))
 
+;;; Sharpsign S conditions
+
+(define-condition non-list-following-sharpsign-s (stream-position-reader-error)
+  ())
+
+(define-condition no-structure-type-name-found (stream-position-reader-error)
+  ())
+
+(define-condition structure-type-name-is-not-a-symbol (read-object-type-error)
+  ()
+  (:default-initargs
+   :expected-type 'symbol))
+
+(define-condition slot-name-is-not-a-symbol (read-object-type-error)
+  ()
+  (:default-initargs
+   :expected-type 'symbol))
+
+(define-condition no-slot-value-found (stream-position-reader-error)
+  ((%slot-name :initarg :slot-name
+               :reader slot-name)))
+
+
+
 ;;; Feature expression conditions
 ;;;
 ;;; Can be evaluated without a stream context. Therefore each

@@ -148,6 +148,29 @@
             (1+ (axis condition))
             (datum condition)))
 
+;;; Sharpsign S conditions
+
+  (define-reporter ((condition non-list-following-sharpsign-s) stream)
+    (format stream "A proper list must immediately follow #S."))
+
+  (define-reporter ((condition no-structure-type-name-found) stream)
+    (format stream "A symbol naming a structure type must be the first ~
+                    element of the list following #S."))
+
+  (define-reporter ((condition structure-type-name-is-not-a-symbol) stream)
+    (format stream "~S should designate a structure type but is not a ~
+                    symbol."
+            (type-error-datum condition)))
+
+  (define-reporter ((condition slot-name-is-not-a-symbol) stream)
+    (format stream "~S should designate a structure slot but is not ~
+                    a symbol."
+            (type-error-datum condition)))
+
+  (define-reporter ((condition no-slot-value-found) stream)
+    (format stream "A slot value form must follow the slot name ~S."
+            (slot-name condition)))
+
   (define-reporter ((condition feature-expression-type-error) stream)
     (format stream "Feature expression is not of type ~a:~%~a"
             (type-error-expected-type condition) (type-error-datum condition)))

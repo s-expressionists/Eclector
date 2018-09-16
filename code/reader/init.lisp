@@ -40,6 +40,7 @@
                                                        (#\# #\a sharpsign-a)
                                                        (#\# #\: sharpsign-colon)
                                                        (#\# #\c sharpsign-c)
+                                                       (#\# #\s sharpsign-s)
                                                        (#\# #\p sharpsign-p)
                                                        (#\# #\+ sharpsign-plus)
                                                        (#\# #\- sharpsign-minus)
