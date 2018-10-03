@@ -29,14 +29,18 @@
                       nil)))))
 
 (defmethod interpret-symbol (client input-stream
-                             package-name symbol-name internp)
-  (let ((package (case package-name
+                             (package-indicator null) symbol-name internp)
+  (make-symbol symbol-name))
+
+(defmethod interpret-symbol (client input-stream
+                             package-indicator symbol-name internp)
+  (let ((package (case package-indicator
                    (:current *package*)
                    (:keyword (find-package "KEYWORD"))
-                   (t        (or (find-package package-name)
+                   (t        (or (find-package package-indicator)
                                  (%reader-error
                                   input-stream 'package-does-not-exist
-                                  :package-name package-name))))))
+                                  :package-name package-indicator))))))
     (if internp
         (intern symbol-name package)
         (multiple-value-bind (symbol status)

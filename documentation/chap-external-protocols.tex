@@ -150,27 +150,38 @@ token contains no package markers or only a single package marker.
 
 The default method on this generic function calls
 \texttt{interpret-symbol} (see below) with a symbol name string and a
-package name string.
+package indicator.
 
-\Defgeneric {interpret-symbol} {client input-stream package-name \\
+\Defgeneric {interpret-symbol} {client input-stream package-indicator \\
   symbol-name internp}
 
 This generic function is called by the default method on
-\texttt{interpret-symbol-token} to resolve a symbol name string and a
-package name string to a representation of the designated symbol.  The
+\texttt{interpret-symbol-token} as well as the default
+\texttt{\#:}~reader macro function to resolve a symbol name string and
+a package indicator to a representation of the designated symbol.  The
 parameter \textit{input-stream} is the input stream from which
-\textit{package-name} and \textit{symbol-name} were read.  The
-parameter \textit{package-name} is a either a string designating the
-package of that name, the keyword \texttt{:current} designating the
-current package or the keyword \texttt{:keyword} designating the
-keyword package.  The \textit{symbol-name} is the name of the desired
-symbol.
+\textit{package-indicator} and \textit{symbol-name} were read.  The
+parameter \textit{package-indicator} is a either
+
+\begin{itemize}
+\item a string designating the package of that name
+\item the keyword \texttt{:current} designating the current package
+\item the keyword \texttt{:keyword} designating the keyword package
+\item \texttt{nil} to indicate that an uninterned symbol should be
+  created
+\end{itemize}
+
+The \textit{symbol-name} is the name of the desired symbol.
 
 The default method uses \texttt{cl:find-package} (or
-\texttt{cl:*package*} when \textit{package-name} is \texttt{:current})
-to resolve \textit{package-name} followed by \texttt{cl:find-symbol}
-or \texttt{cl:intern}, depending on \textit{internp}, to resolve
-\textit{symbol-name}.
+\texttt{cl:*package*} when \textit{package-indicator} is
+\texttt{:current}) to resolve \textit{package-indicator} followed by
+\texttt{cl:find-symbol} or \texttt{cl:intern}, depending on
+\textit{internp}, to resolve \textit{symbol-name}.
+
+A second method which is specialized on \textit{package-indicator}
+being \texttt{nil} uses \texttt{cl:make-symbol} to create uninterned
+symbols.
 
 \Defgeneric {call-reader-macro} {client input-stream char readtable}
 

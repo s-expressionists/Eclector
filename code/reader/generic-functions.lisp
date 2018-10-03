@@ -16,7 +16,7 @@
                                     position-package-marker-2))
 
 (defgeneric interpret-symbol (client input-stream
-                              package-name symbol-name internp))
+                              package-indicator symbol-name internp))
 
 ;;; Calling reader macros and behavior of standard reader macros
 

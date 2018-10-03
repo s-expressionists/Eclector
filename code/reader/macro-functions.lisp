@@ -663,7 +663,7 @@
                                         package-marker)
                    :token token))
   (convert-according-to-readtable-case token token-escapes)
-  (make-symbol (copy-seq token)))
+  (interpret-symbol *client* stream nil (copy-seq token) nil))
 
 (defun sharpsign-colon (stream char parameter)
   (declare (ignore char))

@@ -2,6 +2,113 @@
 
 (in-suite :eclector.reader)
 
+;;; Test customizing INTERPRET-SYMBOL
+
+(defvar *mock-packages*)
+
+(defclass mock-package ()
+  ((%name :initarg :name :reader name)
+   (%symbols :initarg :symbols :reader %symbols
+             :initform (make-hash-table :test #'equal))))
+
+(defclass mock-symbol ()
+  ((%name :initarg :name :reader name)
+   (%package :initarg :package :reader %package)))
+
+(defun %make-symbol (name package)
+  (make-instance 'mock-symbol :name name :package package))
+
+(defun make-mock-packages ()
+  (alexandria:alist-hash-table
+   `((#1="CL" . ,(let ((package (make-instance 'mock-package :name #1#)))
+                   (setf (gethash #2="NIL" (%symbols package))
+                         (%make-symbol #2# package)
+                         (gethash #3="LIST" (%symbols package))
+                         (%make-symbol #3# package))
+                   package))
+     (#4="KEYWORD" . ,(make-instance 'mock-package :name #4#))
+     (#5="BAR" . ,(let ((package (make-instance 'mock-package :name #5#)))
+                    (setf (gethash #6="BAZ" (%symbols package))
+                          (%make-symbol #6# package))
+                    package)))
+   :test #'equal))
+
+(defclass mock-symbol-client ()
+  ())
+
+(defmethod eclector.reader:interpret-symbol
+    ((client mock-symbol-client) input-stream
+     (package-indicator null) symbol-name internp)
+  (%make-symbol symbol-name nil))
+
+(defmethod eclector.reader:interpret-symbol
+    ((client mock-symbol-client) input-stream
+     package-indicator symbol-name internp)
+  (let ((package (case package-indicator
+                   (:current (error "not implemented"))
+                   (:keyword (gethash "KEYWORD" *mock-packages*))
+                   (t (or (gethash package-indicator *mock-packages*)
+                          (eclector.reader::%reader-error
+                           input-stream 'eclector.reader:package-does-not-exist
+                           :package-name package-indicator))))))
+    (if internp
+        (alexandria:ensure-gethash
+         symbol-name (%symbols package)
+         (%make-symbol symbol-name package))
+        (or (gethash symbol-name (%symbols package))
+            (eclector.reader::%reader-error
+             input-stream 'eclector.reader:symbol-does-not-exist
+             :package package
+             :symbol-name symbol-name)))))
+
+(test interpret-symbol/customize
+  "Test customizing the behavior of INTERPRET-SYMBOL."
+
+  (let ((*mock-packages* (make-mock-packages)))
+    (mapc (lambda (input-expected)
+            (destructuring-bind
+                (input expected-package &optional expected-symbol)
+                input-expected
+              (flet ((do-it ()
+                       (with-input-from-string (stream input)
+                         (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
+                           (eclector.reader:read stream)))))
+                (case expected-package
+                  (eclector.reader:package-does-not-exist
+                   (signals eclector.reader:package-does-not-exist (do-it)))
+                  (eclector.reader:symbol-does-not-exist
+                   (signals eclector.reader:symbol-does-not-exist (do-it)))
+                  ((nil)
+                   (let ((result (do-it)))
+                     (is (null (%package result)))
+                     (is (equal expected-symbol (name result)))))
+                  (t
+                   (let* ((result (do-it))
+                          (expected-package (gethash expected-package
+                                                     *mock-packages*))
+                          (expected-symbol (gethash expected-symbol
+                                                    (%symbols expected-package))))
+                     (is (eq expected-symbol result))
+                     (is (eq expected-package (%package result)))))))))
+
+          '(;; Uninterned
+            ("#:foo"    nil       "FOO")
+
+            ;; Non-existent package
+            ("baz:baz"  eclector.reader:package-does-not-exist)
+
+            ;; Keyword
+            (":foo"     "KEYWORD" "FOO")
+
+            ;; COMMON-LISP package
+            ("cl:nil"   "CL"      "NIL")
+            ("cl:list"  "CL"      "LIST")
+
+            ;; User package
+            ("bar:baz"  "BAR"     "BAZ")
+            ("bar:fez"  eclector.reader:symbol-does-not-exist)
+            ("bar::fez" "BAR"     "FEZ")))))
+
 ;;; Test customizing FIND-CHARACTER
 
 (defclass find-character-client ()
