@@ -49,17 +49,17 @@
 
 ;;; Creating s-expressions
 
-(defgeneric wrap-in-quasiquote (form client)
-  (:method (form client)
+(defgeneric wrap-in-quasiquote (client form)
+  (:method (client form)
     (declare (ignore client))
     (list 'quasiquote form)))
 
-(defgeneric wrap-in-unquote (form client)
-  (:method (form client)
+(defgeneric wrap-in-unquote (client form)
+  (:method (client form)
     (declare (ignore client))
     (list 'unquote form)))
 
-(defgeneric wrap-in-unquote-splicing (form client)
-  (:method (form client)
+(defgeneric wrap-in-unquote-splicing (client form)
+  (:method (client form)
     (declare (ignore client))
     (list 'unquote-splicing form)))

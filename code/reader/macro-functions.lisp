@@ -133,7 +133,7 @@
     (%reader-error stream 'invalid-context-for-backquote))
   (let ((*backquote-depth* (1+ *backquote-depth*)))
     (with-preserved-backquote-context
-      (wrap-in-quasiquote (read stream t nil t) *client*))))
+      (wrap-in-quasiquote *client* (read stream t nil t)))))
 
 (defun comma (stream char)
   (declare (ignore char))
@@ -152,8 +152,8 @@
                       (%reader-error stream 'object-must-follow-comma
                                      :at-sign-p at-sign-p)))))
         (if at-sign-p
-            (wrap-in-unquote-splicing form *client*)
-            (wrap-in-unquote form *client*))))))
+            (wrap-in-unquote-splicing *client* form)
+            (wrap-in-unquote *client* form))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
