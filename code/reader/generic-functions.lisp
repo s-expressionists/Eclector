@@ -45,4 +45,4 @@
      :check (alexandria:curry #'check-feature-expression client)
      :recurse (alexandria:curry #'evaluate-feature-expression client))))
 
-(defgeneric fixup (object seen-objects mapping))
+(defgeneric fixup (client object seen-objects mapping))

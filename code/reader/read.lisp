@@ -4,12 +4,13 @@
 
 (defun read-aux
     (input-stream eof-error-p eof-value recursive-p preserve-whitespace-p)
-  (let ((*preserve-whitespace* preserve-whitespace-p))
+  (let ((client *client*)
+        (*preserve-whitespace* preserve-whitespace-p))
     (if recursive-p
-        (read-common *client* input-stream eof-error-p eof-value)
+        (read-common client input-stream eof-error-p eof-value)
         (let* ((*labels* (make-hash-table))
                (values (multiple-value-list
-                        (read-common *client* input-stream eof-error-p eof-value)))
+                        (read-common client input-stream eof-error-p eof-value)))
                (result (first values)))
           ;; *labels* maps labels to conses of the form
           ;; (TEMPORARY-OBJECT . FINAL-OBJECT). For the fixup step,
@@ -20,7 +21,7 @@
                   (mapping (alexandria:alist-hash-table
                             (alexandria:hash-table-values *labels*)
                             :test #'eq)))
-              (fixup result seen mapping)))
+              (fixup client result seen mapping)))
           (values-list values)))))
 
 (defun read (&optional
