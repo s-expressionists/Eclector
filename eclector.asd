@@ -91,6 +91,7 @@
                              (:file "read")
                              (:file "macro-functions")
                              (:file "quasiquote-macro")
+                             (:file "fixup")
 
                              (:file "readtable")
 
