@@ -271,6 +271,30 @@ The default method on this generic function first calls
 \textit{feature-expression} according to standard \commonlisp{}
 semantics for feature expressions.
 
+\Defgeneric {fixup} {client object seen-objects mapping}
+
+This generic function is potentially called to apply
+circularity-related changes to the object constructed by the reader
+before it is returned to the caller.  \textit{object} is the object
+that should be modified.  \textit{seen-objects} is a \texttt{eq}-hash
+table used to track already processed objects (see below).
+\textit{mapping} is a hash table of substitutions, mapping marker
+objects to replacement objects.  A method specialized on a class,
+instances of which consists of parts, should modify \textit{object} by
+scanning its parts for marker objects, replacing found markers with
+replacement object and recursively calling \texttt{fixup} for all
+parts.  \texttt{fixup} is called for side effects -- its return value
+is ignored.
+
+Default methods specializing on the \textit{object} parameter for
+\texttt{cons}, \texttt{array}, \texttt{standard-object} and
+\texttt{hash-table} process instances of those classes in the obvious
+way.
+
+An unspecialized \texttt{:around} method queries and updates
+\textit{seen-objects} to ensure that each object is processed exactly
+once.
+
 \subsubsection{Readtable Initialization}
 \label{sec:readtable-initialization}
 
