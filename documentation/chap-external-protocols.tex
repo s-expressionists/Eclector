@@ -295,6 +295,33 @@ An unspecialized \texttt{:around} method queries and updates
 \textit{seen-objects} to ensure that each object is processed exactly
 once.
 
+\Defgeneric {wrap-in-quasiquote} {client form}
+
+This generic function is called by the default \texttt{`}-reader macro
+function to construct a quasiquotation form in which \textit{form} is
+the quasiquoted material.
+
+The default method on this generic function returns a result
+equivalent to \texttt{(list 'eclector.reader:quasiquote form)}.
+
+\Defgeneric {wrap-in-unquote} {client form}
+
+This generic function is called by the default \texttt{,}-reader macro
+function to construct an unquote form in which \textit{form} is the
+unquoted material.
+
+The default method on this generic function returns a result
+equivalent to \texttt{(list 'eclector.reader:unquote form)}.
+
+\Defgeneric {wrap-in-unquote-splicing} {client form}
+
+This generic function is called by the default \texttt{,@}-reader
+macro function to construct a splicing unquote form in which
+\textit{form} is the unquoted material.
+
+The default method on this generic function returns a result
+equivalent to \texttt{(list 'eclector.reader:unquote-splicing form)}.
+
 \subsubsection{Readtable Initialization}
 \label{sec:readtable-initialization}
 
