@@ -10,11 +10,12 @@
   nil)
 
 (macrolet ((fixup-place (place)
-             `(multiple-value-bind (value found-p)
-                  (gethash ,place mapping)
-                (if found-p
-                    (setf ,place value)
-                    (fixup client ,place seen-objects mapping)))))
+             `(let ((current-value ,place))
+                (multiple-value-bind (value found-p)
+                    (gethash current-value mapping)
+                  (if found-p
+                      (setf ,place value)
+                      (fixup client current-value seen-objects mapping))))))
 
   (defmethod fixup (client (object cons) seen-objects mapping)
     (fixup-place (car object))
