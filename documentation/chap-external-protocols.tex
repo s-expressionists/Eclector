@@ -295,6 +295,15 @@ An unspecialized \texttt{:around} method queries and updates
 \textit{seen-objects} to ensure that each object is processed exactly
 once.
 
+\Defgeneric {wrap-in-quote} {client material}
+
+This generic function is called by the default \texttt{'}-reader macro
+function to construct a quotation form in which \textit{material} is
+the quoted material.
+
+The default method on this generic function returns a result
+equivalent to \texttt{(list 'common-lisp:quote material)}.
+
 \Defgeneric {wrap-in-quasiquote} {client form}
 
 This generic function is called by the default \texttt{`}-reader macro

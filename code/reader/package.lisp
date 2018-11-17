@@ -64,8 +64,10 @@
 
    #:fixup)
 
-  ;; Backquote customization.
+  ;; Quote and backquote customization.
   (:export
+   #:wrap-in-quote
+
    #:wrap-in-quasiquote
    #:wrap-in-unquote
    #:wrap-in-unquote-splicing)

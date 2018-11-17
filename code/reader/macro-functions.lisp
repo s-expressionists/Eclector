@@ -46,8 +46,9 @@
 
 (defun single-quote (stream char)
   (declare (ignore char))
-  (with-preserved-backquote-context
-    (list 'quote (read stream t nil t))))
+  (let ((material (with-preserved-backquote-context
+                      (read stream t nil t))))
+    (wrap-in-quote *client* material)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -787,6 +788,7 @@
                                   while slot-name
                                   collect slot-name
                                   collect slot-value)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macro for sharpsign P.

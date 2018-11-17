@@ -49,6 +49,10 @@
 
 ;;; Creating s-expressions
 
+(defgeneric wrap-in-quote (client material)
+  (:method (client material)
+    (list 'quote material)))
+
 (defgeneric wrap-in-quasiquote (client form)
   (:method (client form)
     (declare (ignore client))
