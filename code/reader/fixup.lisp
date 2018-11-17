@@ -22,12 +22,12 @@
 
   (defmethod fixup ((object array) seen-objects mapping)
     (loop for i from 0 below (array-total-size object)
-       do (fixup-place (row-major-aref object i))))
+          do (fixup-place (row-major-aref object i))))
 
   (defmethod fixup ((object standard-object) seen-objects mapping)
     (loop for slot-definition in (closer-mop:class-slots (class-of object))
-       for name = (closer-mop:slot-definition-name slot-definition)
-       do (fixup-place (slot-value object name))))
+          for name = (closer-mop:slot-definition-name slot-definition)
+          do (fixup-place (slot-value object name))))
 
   (defmethod fixup ((object hash-table) seen-objects mapping)
     (maphash (lambda (key val)
