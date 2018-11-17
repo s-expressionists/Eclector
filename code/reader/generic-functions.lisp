@@ -46,3 +46,20 @@
      :recurse (alexandria:curry #'evaluate-feature-expression client))))
 
 (defgeneric fixup (client object seen-objects mapping))
+
+;;; Creating s-expressions
+
+(defgeneric wrap-in-quasiquote (form client)
+  (:method (form client)
+    (declare (ignore client))
+    (list 'quasiquote form)))
+
+(defgeneric wrap-in-unquote (form client)
+  (:method (form client)
+    (declare (ignore client))
+    (list 'unquote form)))
+
+(defgeneric wrap-in-unquote-splicing (form client)
+  (:method (form client)
+    (declare (ignore client))
+    (list 'unquote-splicing form)))

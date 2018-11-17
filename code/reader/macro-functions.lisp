@@ -127,21 +127,6 @@
 ;;; macro that expands to a CL form that will build the final data
 ;;; structure.
 
-(defgeneric wrap-in-quasiquote (form client)
-  (:method (form client)
-    (declare (ignore client))
-    (list 'quasiquote form)))
-
-(defgeneric wrap-in-unquote (form client)
-  (:method (form client)
-    (declare (ignore client))
-    (list 'unquote form)))
-
-(defgeneric wrap-in-unquote-splicing (form client)
-  (:method (form client)
-    (declare (ignore client))
-    (list 'unquote-splicing form)))
-
 (defun backquote (stream char)
   (declare (ignore char))
   (unless *backquote-allowed-p*
@@ -898,6 +883,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macros for sharpsign equals.
+
+(declaim (inline make-fixup-marker fixup-marker-temporary fixup-marker-final) )
+
+(defun make-fixup-marker ()
+  (let ((unique (list nil)))
+    (cons unique nil)))
+
+(defun fixup-marker-temporary (marker)
+  (caar marker))
+
+(defun fixup-marker-final (marker)
+  (cdr marker))
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
