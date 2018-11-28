@@ -7,31 +7,35 @@
   (loop :for (operator string) :in '((eclector.reader:quasiquote       "`")
                                      (eclector.reader:unquote          ",")
                                      (eclector.reader:unquote-splicing ",@"))
-        :do (set-pprint-dispatch `vector
-                                 (lambda (stream object)
-                                   (pprint-logical-block (stream (list object) :prefix "#(" :suffix ")")
-                                     (loop :for element :across object
-                                           :do (princ element stream)
-                                               (write-string " " stream))))
-                                 1 dispatch)
-        :do (set-pprint-dispatch `string
-                                 (lambda (stream object)
-                                   (let ((*print-pretty* nil))
-                                     (prin1 object stream)))
-                                 2 dispatch)
-        :do (set-pprint-dispatch `(cons (eql ,operator))
-                                 (let ((string string))
-                                   (lambda (stream object)
-                                     (write-string string stream)
-                                     (princ (second object) stream)))
-                                 2 dispatch)
-        :do (set-pprint-dispatch `cons
-                                 (lambda (stream object)
-                                   (pprint-logical-block (stream object :prefix "(" :suffix ")")
-                                     (princ (car object) stream)
-                                     (write-string " . " stream)
-                                     (princ (cdr object) stream)))
-                                 1 dispatch))
+        :do (set-pprint-dispatch
+             `vector
+             (lambda (stream object)
+               (pprint-logical-block (stream (list object) :prefix "#(" :suffix ")")
+                 (loop :for element :across object
+                       :do (princ element stream)
+                           (write-string " " stream))))
+             1 dispatch)
+        :do (set-pprint-dispatch
+             `string
+             (lambda (stream object)
+               (let ((*print-pretty* nil))
+                 (prin1 object stream)))
+             2 dispatch)
+        :do (set-pprint-dispatch
+             `(cons (eql ,operator))
+             (let ((string string))
+               (lambda (stream object)
+                 (write-string string stream)
+                 (princ (second object) stream)))
+             2 dispatch)
+        :do (set-pprint-dispatch
+             `cons
+             (lambda (stream object)
+               (pprint-logical-block (stream object :prefix "(" :suffix ")")
+                 (princ (car object) stream)
+                 (write-string " . " stream)
+                 (princ (cdr object) stream)))
+             1 dispatch))
   dispatch)
 
 (defun hostify (expression)
@@ -110,34 +114,49 @@
 (defun gen-quasiquote-expression (&key (atom (gen-atom))
                                        (depth (gen-integer :min 0 :max 7)))
   (labels ((allowed-generators (max-depth &rest args
-                                          &key (qq-allowed t) (qq-depth 0) splicing-allowed list-needed in-vector-p
-                                          &allow-other-keys)
+                                &key (qq-allowed t) (qq-depth 0)
+                                     splicing-allowed list-needed in-vector-p
+                                &allow-other-keys)
              (flet ((make-gen (generator &rest gen-inner-args)
                       (funcall generator
                                (lambda ()
-                                 (apply #'gen-inner max-depth (append gen-inner-args args))))))
+                                 (apply #'gen-inner max-depth
+                                        (append gen-inner-args args))))))
                (append (when (and (plusp qq-depth) splicing-allowed)
-                         (list (make-gen #'gen-unquote-splicing :qq-depth (1- qq-depth) :list-needed t :splicing-allowed nil)))
+                         (list (make-gen #'gen-unquote-splicing
+                                         :qq-depth (1- qq-depth)
+                                         :list-needed t
+                                         :splicing-allowed nil)))
                        (when (plusp qq-depth)
-                         (list (make-gen #'gen-unquote :qq-depth (1- qq-depth) :splicing-allowed nil)))
-                       (unless (or (not qq-allowed) (plusp qq-depth) in-vector-p)
-                         (list (make-gen #'gen-quasiquote :qq-depth (1+ qq-depth) :splicing-allowed nil)))
+                         (list (make-gen #'gen-unquote
+                                         :qq-depth (1- qq-depth)
+                                         :splicing-allowed nil)))
+                       (unless (or (not qq-allowed) (plusp qq-depth)
+                                   in-vector-p)
+                         (list (make-gen #'gen-quasiquote
+                                         :qq-depth (1+ qq-depth)
+                                         :splicing-allowed nil)))
                        (when (plusp qq-depth)
                          (list (gen-cons (make-gen #'identity)
-                                         (make-gen #'identity :splicing-allowed nil))))
+                                         (make-gen #'identity
+                                                   :splicing-allowed nil))))
                        (unless list-needed
-                         (list (make-gen #'gen-vector :splicing-allowed t :in-vector-p t)))
+                         (list (make-gen #'gen-vector :splicing-allowed t
+                                                      :in-vector-p t)))
                        (list (make-gen #'gen-quoted-form :qq-allowed nil))
-                       (list (make-gen #'gen-compound-form :list-needed nil :splicing-allowed t)))))
-           (gen-inner (max-depth &rest args &key depth-reached list-needed &allow-other-keys)
+                       (list (make-gen #'gen-compound-form
+                                       :list-needed nil
+                                       :splicing-allowed t)))))
+           (gen-inner (max-depth &rest args
+                       &key depth-reached list-needed &allow-other-keys)
              (when (zerop max-depth)
                (incf (car depth-reached)))
              (cond
                ;; If we haven't yet reached the desired depth,
                ;; randomly decide whether to recursively generate a
-               ;; (potentially compound) expression. The probably of
-               ;; doing this decreases each time an expression reaches
-               ;; the desired depth.
+               ;; (potentially compound) expression. The probability
+               ;; of doing this decreases each time an expression
+               ;; reaches the desired depth.
                ((and (plusp max-depth)
                      (zerop (random (1+ (floor (car depth-reached) 4)))))
                 (funcall (alexandria:random-elt
