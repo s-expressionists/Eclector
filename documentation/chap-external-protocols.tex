@@ -239,6 +239,21 @@ There is no default method on this generic function since there is no
 portable way to construct structure instances given only the name of
 the structure type.
 
+\Defgeneric {call-with-current-package} {client thunk \\
+  package-designator}
+
+This generic function is called by the reader when input has to be
+read with a particular current package.  This is currently only the
+case in the \texttt{\#+} and \texttt{\#-}~reader macro functions which
+read feature expressions in the keyword package.  \textit{thunk} is a
+function that should be called without arguments.
+\textit{package-designator} designates the package that should be the
+current package around the call to \textit{thunk}.
+
+The default method on this generic function simply binds
+\texttt{cl:*package*} to the result of \texttt{(cl:find-package
+  package-designator)} around calling \textit{thunk}.
+
 \Defgeneric {evaluate-expression} {client expression}
 
 This generic function is called by the default \texttt{\#.}~reader

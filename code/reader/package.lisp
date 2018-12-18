@@ -58,6 +58,8 @@
    #:find-character
    #:make-structure-instance
 
+   #:call-with-current-package
+
    #:evaluate-expression
    #:check-feature-expression
    #:evaluate-feature-expression

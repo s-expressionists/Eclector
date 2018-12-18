@@ -28,6 +28,11 @@
 
 (defgeneric make-structure-instance (client name initargs))
 
+(defgeneric call-with-current-package (client thunk package-designator)
+  (:method ((client t) (thunk t) (package-designator t))
+    (let ((*package* (find-package package-designator)))
+      (funcall thunk))))
+
 (defgeneric evaluate-expression (client expression)
   (:method ((client t) (expression t))
     (declare (ignore client))

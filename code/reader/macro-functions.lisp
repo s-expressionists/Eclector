@@ -871,13 +871,16 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-plus-minus parameter))
-  (let ((feature-expression
-          (let ((*package* (find-package '#:keyword))
-                (*read-suppress* nil))
-            (read stream t nil t))))
+  (let* ((client *client*)
+         (feature-expression
+           (call-with-current-package
+            client (lambda ()
+                     (let ((*read-suppress* nil))
+                       (read stream t nil t)))
+            '#:keyword)))
     (with-preserved-backquote-context
       (if (alexandria:xor (evaluate-feature-expression
-                           *client* feature-expression)
+                           client feature-expression)
                           invertp)
           (read stream t nil t)
           (let ((reason (if invertp
