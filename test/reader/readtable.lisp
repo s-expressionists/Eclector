@@ -34,7 +34,7 @@
          readtable)
       "123456789" 123456 6))))
 
-(test read-char/readtable-interaction
+(test peek-char/readtable-interaction
   "Test for the interaction between PEEK-CHAR and the readtable."
 
   (mapc
