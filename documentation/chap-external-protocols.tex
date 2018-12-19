@@ -100,10 +100,10 @@ with the value of the variable as its \textit{reason} argument.
 
 As an example, the method on \texttt{note-skipped-input} specialized
 to\\
-\texttt{eclector.concrete-syntax-tree:cst-client} relays the reason
+\texttt{eclector.parse-result:parse-result-client} relays the reason
 and position information to the client by calling the\\
-\texttt{eclector.concrete-syntax-tree:record-skipped-input} generic
-function \seesec{sec:cst-reader-features}
+\texttt{eclector.parse-result:make-skipped-input-result} generic
+function~\seesec{sec:parse-result-construction-features}
 
 \Defgeneric {read-token} {client input-stream eof-error-p eof-value}
 

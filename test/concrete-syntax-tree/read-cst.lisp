@@ -165,8 +165,8 @@
     ((client skipped-input-recording-client) (stream t) (kind t) (source t))
   (alexandria:appendf (skipped client) (list (list kind source))))
 
-(test record-skipped-input/smoke
-  "Smoke test for the RECORD-SKIPPED-INPUT function."
+(test make-skipped-input-result/smoke
+  "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
 
   (mapc
    (lambda (input-expected)
