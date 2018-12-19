@@ -12,10 +12,14 @@
                (values (multiple-value-list
                         (read-common client input-stream eof-error-p eof-value)))
                (result (first values)))
-          ;; *labels* maps labels to conses of the form
-          ;; (TEMPORARY-OBJECT . FINAL-OBJECT). For the fixup step,
-          ;; these conses into a hash-table mapping temporary objects to
-          ;; final objects.
+          ;; *LABELS* maps labels to conses of the form
+          ;;
+          ;;   (TEMPORARY-OBJECT . FINAL-OBJECT)
+          ;;
+          ;; where TEMPORARY-OBJECT is EQ-comparable and its
+          ;; sub-structure does not matter here. For the fixup step,
+          ;; convert these conses into a hash-table mapping temporary
+          ;; objects to final objects.
           (unless (zerop (hash-table-count *labels*))
             (let ((seen (make-hash-table :test #'eq))
                   (mapping (alexandria:alist-hash-table

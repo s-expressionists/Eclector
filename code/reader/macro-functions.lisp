@@ -885,39 +885,71 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macros for sharpsign equals.
+;;;
+;;; When the SHARPSIGN-EQUALS reader macro encounters #N=EXPRESSION,
+;;; it associates a marker object with N in the hash-table bound to
+;;; *LABELS*. The marker object is of the form
+;;;
+;;;   ((FINALP) . FINAL-OBJECT)
+;;;
+;;; where FINALP and FINAL-OBJECT are initially NIL. The cons cell
+;;; (FINALP) is called the temporary object of the marker object.
+;;;
+;;; If #N# is encountered, the marker for N is looked up in *LABELS*
+;;; and FINALP is examined. If FINALP is true, FINAL-OBJECT can be
+;;; returned as the result of reading #N#. However, if FINALP is false
+;;; (this can happen while READing EXPRESSION if #N=EXPRESSION is
+;;; circular), the temporary object is returned as the result of
+;;; reading #N# and a deferred fixup step will be necessary. This
+;;; fixup happens in READ-AUX.
+;;;
+;;; After reading EXPRESSION, the resulting object is stored in the
+;;; cdr as FINAL-OBJECT and FINALP within the temporary object is set
+;;; to true. Subsequent #N# encounters can directly return
+;;; FINAL-OBJECT as described above.
 
-(declaim (inline make-fixup-marker fixup-marker-temporary fixup-marker-final) )
+(declaim (inline make-fixup-marker
+                 fixup-marker-temporary
+                 fixup-marker-final-p (setf fixup-marker-final-p)
+                 fixup-marker-final (setf fixup-marker-final)))
 
 (defun make-fixup-marker ()
-  (let ((unique (list nil)))
-    (cons unique nil)))
+  (let ((temporary (list nil)))
+    (cons temporary nil)))
 
 (defun fixup-marker-temporary (marker)
-  (caar marker))
+  (car marker))
+
+(defun fixup-marker-final-p (marker)
+  (car (fixup-marker-temporary marker)))
+
+(defun (setf fixup-marker-final-p) (new-value marker)
+  (setf (car (fixup-marker-temporary marker)) new-value))
 
 (defun fixup-marker-final (marker)
   (cdr marker))
+
+(defun (setf fixup-marker-final) (new-value marker)
+  (setf (cdr marker) new-value))
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
-  (cond ((nth-value 1 (gethash parameter *labels*))
-         (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
-                        :label parameter))
-        (t
-         (with-preserved-backquote-context
-           (let ((contents (cons (list nil) nil)))
-             (setf (gethash parameter *labels*) contents)
-             ;; Hmm, do we need to transmit EOF-ERROR-P through reader
-             ;; macros?
-             (let ((result (read stream t nil t)))
-               (when (eq result (car contents))
-                 (%reader-error stream 'sharpsign-equals-only-refers-to-self
-                                :label parameter))
-               (setf (cdr contents) result
-                     (caar contents) t)
-               result))))))
+  (when (nth-value 1 (gethash parameter *labels*))
+    (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
+                   :label parameter))
+  (with-preserved-backquote-context
+    (let ((marker (make-fixup-marker)))
+      (setf (gethash parameter *labels*) marker)
+      ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
+      (let ((result (read stream t nil t)))
+        (when (eq result (fixup-marker-temporary marker))
+          (%reader-error stream 'sharpsign-equals-only-refers-to-self
+                         :label parameter))
+        (setf (fixup-marker-final marker) result
+              (fixup-marker-final-p marker) t)
+        result))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -927,15 +959,14 @@
   (declare (ignore char))
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
-  (cond ((not (nth-value 1 (gethash parameter *labels*)))
-         (%reader-error stream 'sharpsign-sharpsign-undefined-label
-                        :label parameter))
-        (t
-         (let ((contents (gethash parameter *labels*)))
-           (if (caar contents)
-               ;; Then the object in the CDR is the final one, so use
-               ;; it.
-               (cdr contents)
-               ;; Else, the CAR is a temporary object that we must
-               ;; use.
-               (car contents))))))
+  (multiple-value-bind (marker definedp) (gethash parameter *labels*)
+    (cond ((not definedp)
+           (%reader-error stream 'sharpsign-sharpsign-undefined-label
+                          :label parameter))
+          ;; If the final object has already been supplied, use it.
+          ((fixup-marker-final-p marker)
+           (fixup-marker-final marker))
+          ;; Else, we must use the temporary object and it will be
+          ;; fixed up later.
+          (t
+           (fixup-marker-temporary marker)))))
