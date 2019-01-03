@@ -856,16 +856,20 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-p parameter))
   (let ((feature-expression
-         (let ((*package* (find-package '#:keyword))
-               (*read-suppress* nil))
-           (read stream t nil t))))
+          (let ((*package* (find-package '#:keyword))
+                (*read-suppress* nil))
+            (read stream t nil t))))
     (with-preserved-backquote-context
       (if (alexandria:xor (evaluate-feature-expression
                            *client* feature-expression)
                           invertp)
           (read stream t nil t)
-          (let ((*read-suppress* t))
-            (read stream t nil t)
+          (let ((reason (if invertp
+                            :sharpsign-minus
+                            :sharpsign-plus)))
+            (setf *skip-reason* (cons reason feature-expression))
+            (let ((*read-suppress* t))
+              (read stream t nil t))
             (values))))))
 
 (defun sharpsign-plus (stream char parameter)

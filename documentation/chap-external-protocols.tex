@@ -471,9 +471,10 @@ aforementioned reasons are reflected by the value of the
   Comment starting with \texttt{;;}              & \texttt{(:line-comment~.~2)}\\
   Comment starting with $n$ \texttt{;}           & \texttt{(:line-comment~.~$n$)}\\
   Comment delimited by \texttt{\#|} \texttt{|\#} & \texttt{:block-comment}\\
-  \texttt{\#+\textit{false-feature-expression}}  & \texttt{:reader-macro}\\
-  \texttt{\#-\textit{true-feature-expression}}   & \texttt{:reader-macro}\\
-  \texttt{*read-suppress*} is true               & \texttt{*read-suppress*}
+  \texttt{\#+\textit{false-expression}}          & \texttt{(:sharpsign-plus~.~\textit{false-expression})}\\
+  \texttt{\#-\textit{true-expression}}           & \texttt{(:sharpsign-minus~.~\textit{true-expression})}\\
+  \texttt{*read-suppress*} is true               & \texttt{*read-suppress*}\\
+  A reader macro returns no values               & \texttt{:reader-macro}
 \end{tabular}
 
 The default method returns \texttt{nil}, that is the skipped input is

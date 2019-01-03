@@ -195,4 +195,4 @@
      (";;; test~% 1" (((:line-comment . 3) (0 . 8))))
      ;; Reader conditionals
      ("#+(or) 1 2"   ((*read-suppress* (7 . 8))
-                      (:reader-macro (0 . 9)))))))
+                      ((:sharpsign-plus . (:or)) (0 . 9)))))))
