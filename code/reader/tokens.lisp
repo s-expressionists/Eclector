@@ -137,14 +137,14 @@
                                        (colon-go-symbol t))
                              &body clauses)
                    (alexandria:with-unique-names (escapep-var)
-                     `(multiple-value-bind (char ,escapep-var) (next)
+                     `(multiple-value-bind (,char-var ,escapep-var) (next)
                         (cond
                           ,@(when return-symbol-if-eoi
                               `(((null ,char-var)
                                  (return-from interpret-token (symbol)))))
                           (,escapep-var (go symbol))
                           ,@(when colon-go-symbol
-                              `(((eql char #\:)
+                              `(((eql ,char-var #\:)
                                  (setf position-package-marker-1 index)
                                  (go symbol))))
                           ,@clauses
