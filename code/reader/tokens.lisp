@@ -221,6 +221,11 @@
                           ,@(when return-symbol-if-eoi
                               `(((null ,char-var)
                                  (return-from interpret-token (symbol)))))
+                          ((and ,char-var
+                                (not ,escapep-var)
+                                (char-invalid-p ,char-var))
+                           (%reader-error input-stream 'invalid-constituent-character
+                                          :token (string ,char-var)))
                           (,escapep-var (go symbol))
                           ,@(when colon-go-symbol
                               `(((eql ,char-var #\:)

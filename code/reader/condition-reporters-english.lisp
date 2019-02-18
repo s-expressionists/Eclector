@@ -65,6 +65,13 @@
             (desired-symbol-name condition)
             (package-name (desired-symbol-package condition))))
 
+  (define-reporter ((condition invalid-constituent-character) stream)
+    (let ((char (aref (token condition) 0)))
+       (format stream "The character ~:[named ~A~*~;~*~C~] must not ~
+                       occur in a symbol as it is an invalid ~
+                       constituent."
+               (graphic-char-p char) (char-name char) char)))
+
   (define-reporter ((condition symbol-name-must-not-be-only-package-markers) stream)
     (format stream "Symbol name without any escapes must not consist ~
                     solely of package markers (: characters)."))

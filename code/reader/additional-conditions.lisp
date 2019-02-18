@@ -73,6 +73,9 @@
 (define-condition symbol-syntax-error (stream-position-reader-error)
   ((%token :initarg :token :reader token)))
 
+(define-condition invalid-constituent-character (symbol-syntax-error)
+  ())
+
 (define-condition symbol-name-must-not-be-only-package-markers (symbol-syntax-error)
   ())
 
@@ -166,8 +169,6 @@
 (define-condition no-slot-value-found (stream-position-reader-error)
   ((%slot-name :initarg :slot-name
                :reader slot-name)))
-
-
 
 ;;; Feature expression conditions
 ;;;

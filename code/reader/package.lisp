@@ -95,6 +95,7 @@
    #:symbol-does-not-exist
    #:symbol-is-not-external
 
+   #:invalid-constituent-character
    #:symbol-name-must-not-be-only-package-markers
    #:symbol-name-must-not-end-with-package-marker
    #:two-package-markers-must-be-adjacent
