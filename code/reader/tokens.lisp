@@ -1,5 +1,88 @@
 (cl:in-package #:eclector.reader)
 
+;;; Constituent traits
+;;;
+;;; Based on Table 2-8 in 2.1.4.2 Constituent Traits
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun trait->index (trait)
+    (ecase trait
+      (:invalid                 #b00000001)
+      (:alphabetic              #b00000010)
+      (:alphadigit              #b00000100)
+      ((:plus-sign :minus-sign) #b00001000)
+      ((:dot :decimal-point)    #b00010000)
+      (:package-marker          #b00100000)
+      (:ratio-marker            #b01000000)
+      ((:short-float-exponent-marker :single-float-exponent-marker
+        :double-float-exponent-marker :long-float-exponent-marker
+        :float-exponent-marker)
+       #b10000000)))
+
+  (declaim (type (simple-array (unsigned-byte 8) 1) +constituent-traits+))
+  (defvar +constituent-traits+
+    (let* ((raw '((#\Backspace . :invalid)
+                  (#\Tab       . :invalid)
+                  (#\Newline   . :invalid)    (#\+          . (:alphabetic :plus-sign))
+                  (#\Linefeed  . :invalid)    (#\-          . (:alphabetic :minus-sign))
+                  (#\Page      . :invalid)    (#\.          . (:alphabetic :dot :decimal-point))
+                  (#\Return    . :invalid)    (#\/          . (:alphabetic :ratio-marker))
+                  (#\Space     . :invalid)    (#\:          . :package-marker)
+                  (#\Rubout    . :invalid)    ("0123456789" . :alphadigit)
+                  (#\!         . :alphabetic) ("Aa"         . :alphadigit)
+                  (#\"         . :alphabetic) ("Bb"         . :alphadigit)
+                  (#\#         . :alphabetic) ("Cc"         . :alphadigit)
+                  (#\$         . :alphabetic) ("Dd"         . (:alphadigit :double-float-exponent-marker))
+                  (#\%         . :alphabetic) ("Ee"         . (:alphadigit :float-exponent-marker))
+                  (#\&         . :alphabetic) ("Ff"         . (:alphadigit :single-float-exponent-marker))
+                  (#\'         . :alphabetic) ("Gg"         . :alphadigit)
+                  (#\(         . :alphabetic) ("Hh"         . :alphadigit)
+                  (#\)         . :alphabetic) ("Ii"         . :alphadigit)
+                  (#\*         . :alphabetic) ("Jj"         . :alphadigit)
+                  (#\,         . :alphabetic) ("Kk"         . :alphadigit)
+                  (#\;         . :alphabetic) ("Ll"         . (:alphadigit :long-float-exponent-marker))
+                  (#\<         . :alphabetic) ("Mm"         . :alphadigit)
+                  (#\=         . :alphabetic) ("Nn"         . :alphadigit)
+                  (#\>         . :alphabetic) ("Oo"         . :alphadigit)
+                  (#\?         . :alphabetic) ("Pp"         . :alphadigit)
+                  (#\@         . :alphabetic) ("Qq"         . :alphadigit)
+                  (#\[         . :alphabetic) ("Rr"         . :alphadigit)
+                  (#\\         . :alphabetic) ("Ss"         . (:alphadigit :short-float-exponent-marker))
+                  (#\]         . :alphabetic) ("Tt"         . :alphadigit)
+                  (#\^         . :alphabetic) ("Uu"         . :alphadigit)
+                  (#\_         . :alphabetic) ("Vv"         . :alphadigit)
+                  (#\`         . :alphabetic) ("Ww"         . :alphadigit)
+                  (#\|         . :alphabetic) ("Xx"         . :alphadigit)
+                  (#\~         . :alphabetic) ("Yy"         . :alphadigit)
+                  ("{}"        . :alphabetic) ("Zz"         . :alphadigit)))
+           (table (make-array 0 :adjustable t)))
+      (loop for (characters . traits) in raw
+            do (loop for character in (typecase characters
+                                        (character (list characters))
+                                        (string (coerce characters 'list)))
+                     for code = (char-code character)
+                     for pattern = (reduce #'logior (alexandria:ensure-list traits)
+                                           :key #'trait->index)
+                     do (adjust-array table (max (length table) (1+ code))
+                                      :initial-element 0)
+                        (setf (aref table code) pattern)))
+      (make-array (length table) :element-type '(unsigned-byte 8)
+                                 :adjustable nil
+                                 :initial-contents table))))
+
+(macrolet ((define-trait-predicate (trait)
+             (let ((name (alexandria:symbolicate '#:char- trait '#:-p)))
+               `(progn
+                  (declaim (inline ,name))
+                  (defun ,name (char)
+                    (let ((code (char-code char)))
+                      (when (< code ,(length +constituent-traits+))
+                        (logtest ,(trait->index trait) (aref +constituent-traits+ code)))))))))
+  (define-trait-predicate :invalid)
+  (define-trait-predicate :float-exponent-marker))
+
+;;; Token interpretation
+
 (defmethod interpret-symbol-token (client input-stream
                                    token
                                    position-package-marker-1
@@ -55,10 +138,6 @@
                                 :symbol-name symbol-name))
                 (t
                  symbol))))))
-
-(declaim (inline exponent-marker-p))
-(defun exponent-marker-p (char)
-  (member char '(#\e #\E #\f #\F #\s #\S #\d #\D #\l #\L) :test #'char=))
 
 (declaim (inline reader-float-format))
 (defun reader-float-format (&optional (exponent-marker #\E))
@@ -222,7 +301,7 @@
               (go integer))
              ((eql char #\/)
               (go ratio-start))
-             ((exponent-marker-p char)
+             ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
               (go float-exponent-start)))
          decimal-integer-final   ; [sign] decimal-digit+ decimal-point
@@ -234,7 +313,7 @@
               (setf fraction-denominator
                     (* fraction-denominator 10))
               (go float-no-exponent))
-             ((exponent-marker-p char)
+             ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
               (go float-exponent-start)))
          integer                 ; [sign] digit+
@@ -273,7 +352,7 @@
               (setf fraction-denominator
                     (* fraction-denominator 10))
               (go float-no-exponent))
-             ((exponent-marker-p char)
+             ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
               (go float-exponent-start)))
          float-exponent-start
