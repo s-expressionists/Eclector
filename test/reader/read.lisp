@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.reader.test)
 
-(in-suite* :eclector.reader.read
+(def-suite* :eclector.reader.read
   :in :eclector.reader)
 
 (test read-char/smoke

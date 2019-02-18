@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.reader.test)
 
-(in-suite* :eclector.readtable-interaction
+(def-suite* :eclector.readtable-interaction
   :in :eclector)
 
 (test read/readtable-interaction
