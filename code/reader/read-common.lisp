@@ -7,7 +7,10 @@
 ;;; READ-CHAR to CL:READ-CHAR when we can statically determine that
 ;;; END-OF-FILE will not be signaled.
 
-(defun read-char (input-stream &optional (eof-error-p t) eof-value recursive-p)
+(defun read-char (&optional (input-stream *standard-input*)
+                            (eof-error-p t)
+                            eof-value
+                            recursive-p)
   (if eof-error-p
       (let ((result (cl:read-char input-stream
                                   nil '#1=#.(gensym "EOF") recursive-p)))
@@ -17,8 +20,7 @@
       (cl:read-char input-stream nil eof-value recursive-p)))
 
 (define-compiler-macro read-char
-    (&whole whole input-stream
-            &optional
+    (&whole whole &optional (input-stream '*standard-input*)
             (eof-error-p nil eof-error-p-supplied-p)
             eof-value recursive-p)
   (if (and eof-error-p-supplied-p
@@ -26,7 +28,11 @@
       `(cl:read-char ,input-stream nil ,eof-value ,recursive-p)
       whole))
 
-(defun peek-char (&optional peek-type input-stream (eof-error-p t) eof-value recursive-p)
+(defun peek-char (&optional peek-type
+                            (input-stream *standard-input*)
+                            (eof-error-p t)
+                            eof-value
+                            recursive-p)
   (flet ((done (value)
            (cond ((not (eq value '#1=#.(gensym "EOF")))
                   (return-from peek-char value))
