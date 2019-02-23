@@ -309,7 +309,29 @@
           ("1e01"       ()                10 :upcase     10.0f0)
 
           ;; Nondefault *READ-BASE*
-          ("a"          ( )               16 :upcase     10)
-          ("-a"         ( )               16 :upcase    -10)
-          ("1a"         ( )               16 :upcase     26)
-          ("1aa"        ( )               16 :upcase    426))))
+          ("a"          ()                16 :upcase     10)
+          ("-a"         ()                16 :upcase    -10)
+          ("1a"         ()                16 :upcase     26)
+          ("1aa"        ()                16 :upcase    426)
+
+          ("10."        ()                16 :upcase    10)
+
+          ("1111.1111"  ()                4  :upcase    1111.1111f0)
+          ("1111.1234"  ()                4  :upcase    1111.1234f0)
+          ("1111.4444"  ()                4  :upcase    1111.4444f0)
+          ("1234.1111"  ()                4  :upcase    1234.1111f0)
+          ("1234.1234"  ()                4  :upcase    1234.1234f0)
+          ("1234.4444"  ()                4  :upcase    1234.4444f0)
+          ("4444.1111"  ()                4  :upcase    4444.1111f0)
+          ;; TODO CCL's FLOAT is different:
+          ;;
+          ;;   (float (/ (+ 44440000 1234) 10000) 1.0f0) => 4444.123 (not 4444.1235)
+          ;;
+          ;; Maybe implement a different algorithm (SCALE-FLOAT?) for
+          ;; building float results.
+          ;;
+          ;; Note that CCL's reader produces the "right" result
+          ;; (i.e. 4444.1235) so there has to be a trick to do it in
+          ;; CCL.
+          #-ccl ("4444.1234"  ()                4  :upcase    4444.1234f0)
+          ("4444.4444"  ()                4  :upcase    4444.4444f0))))
