@@ -479,7 +479,7 @@
                        (go rest))))))))
     (multiple-value-bind (sign numerator) (maybe-sign)
       (multiple-value-bind (numerator slashp) (integer (= sign 1) t numerator)
-        (let ((denominator (integer (not slashp))))
+        (let ((denominator (when slashp (integer nil))))
           (* sign (if denominator
                       (/ numerator denominator)
                       numerator)))))))
