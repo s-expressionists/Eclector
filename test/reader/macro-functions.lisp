@@ -541,7 +541,11 @@
       ;; With *READ-SUPPRESS* bound to T
       ("h"    17  t   nil)
       ("x"    17  t   nil)
-      ("1."   17  t   nil))))
+      ("1."   17  t   nil)
+      ("1"    nil t   nil)
+      ("1"    0   t   nil)
+      ("1"    1   t   nil)
+      ("1"    37  t   nil))))
 
 (test sharpsign-asterisk/smoke
   "Smoke test for the SHARPSIGN-ASTERISK function."

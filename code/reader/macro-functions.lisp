@@ -510,12 +510,17 @@
 
 (defun sharpsign-r (stream char parameter)
   (declare (ignore char))
-  (cond
-    ((not parameter)
-     (numeric-parameter-not-supplied stream 'sharpsign-r))
-    ((not (<= 2 parameter 36))
-     (%reader-error stream 'invalid-radix :radix parameter)))
-  (read-rational stream parameter))
+  (let ((radix (cond ((not parameter)
+                      (numeric-parameter-not-supplied stream 'sharpsign-r)
+                      36)
+                     ((not (<= 2 parameter 36))
+                      (if *read-suppress*
+                          36
+                          (%reader-error
+                           stream 'invalid-radix :radix parameter)))
+                     (t
+                      parameter))))
+    (read-rational stream radix)))
 
 (defun sharpsign-asterisk (stream char parameter)
   (declare (ignore char))
