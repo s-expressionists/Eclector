@@ -282,14 +282,22 @@
           ("1/23"       ()                10 :upcase      1/23)
 
           ;; float-no-exponent
+          ("-.0"        ()                10 :upcase      -.0f0)
+          ("+.0"        ()                10 :upcase      +.0f0)
           ("+.234"      ()                10 :upcase       .234f0)
           ("-.234"      ()                10 :upcase      -.234f0)
           (".234"       ()                10 :upcase       .234f0)
+          ("-0.0"       ()                10 :upcase      -.0f0)
+          ("+0.0"       ()                10 :upcase      +.0f0)
           ("+1.234"     ()                10 :upcase      1.234f0)
           ("-1.234"     ()                10 :upcase     -1.234f0)
           ("1.234"      ()                10 :upcase      1.234f0)
 
           ;; float-exponent
+          ("-.0e1"      ()                10 :upcase      -.0f0)
+          ("+.0e1"      ()                10 :upcase      +.0f0)
+          ("-0.0e1"     ()                10 :upcase      -.0f0)
+          ("+0.0e1"     ()                10 :upcase      +.0f0)
           ("+1.0e2"     ()                10 :upcase    100.0f0)
           ("+1.0e-2"    ()                10 :upcase      0.01f0)
           ("-1.0e2"     ()                10 :upcase   -100.0f0)

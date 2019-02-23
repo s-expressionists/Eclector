@@ -140,9 +140,9 @@
                  symbol))))))
 
 (declaim (inline reader-float-format))
-(defun reader-float-format (&optional (exponent-marker #\E))
+(defun reader-float-format (&optional exponent-marker)
   (ecase exponent-marker
-    ((#\e #\E)
+    ((nil #\e #\E)
      (case *read-default-float-format*
        (single-float 'single-float)
        (short-float 'short-float)
@@ -210,7 +210,17 @@
              (interpret-symbol-token
               client input-stream token
               position-package-marker-1
-              position-package-marker-2)))
+              position-package-marker-2))
+           (return-float (&optional exponentp)
+             (let ((magnitude (* (+ (funcall mantissa/numerator)
+                                    (/ (funcall fraction-numerator)
+                                       fraction-denominator))
+                                 (if exponentp
+                                     (expt 10 (* exponent-sign (funcall exponent)))
+                                     1)))
+                   (type (reader-float-format exponent-marker)))
+               (return-from interpret-token
+                 (* sign (coerce magnitude type))))))
       (macrolet ((next-cond ((char-var &optional
                                        return-symbol-if-eoi
                                        (colon-go-symbol t))
@@ -347,12 +357,7 @@
            ;; [sign] decimal-digit* decimal-point decimal-digit+
            (next-cond (char)
              ((not char)
-              (return-from interpret-token
-                (coerce (* sign
-                           (+ (funcall mantissa/numerator)
-                              (/ (funcall fraction-numerator)
-                                 fraction-denominator)))
-                        (reader-float-format))))
+              (return-float))
              ((funcall fraction-numerator char)
               (setf fraction-denominator
                     (* fraction-denominator 10))
@@ -386,13 +391,7 @@
            ;; exponent-marker [sign] digit+
            (next-cond (char)
              ((not char)
-              (return-from interpret-token
-                (coerce (* sign
-                           (+ (funcall mantissa/numerator)
-                              (/ (funcall fraction-numerator)
-                                 fraction-denominator))
-                           (expt 10 (* exponent-sign (funcall exponent))))
-                        (reader-float-format exponent-marker))))
+              (return-float t))
              ((funcall exponent char)
               (go float-exponent)))
          symbol
