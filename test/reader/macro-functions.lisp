@@ -483,9 +483,12 @@
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid binary rationals
       ("1"    nil nil 1)
-
       ("-1"   nil nil -1)
-      ("1/10" nil nil 1/2)))
+      ("1/10" nil nil 1/2)
+      ;; With *READ-SUPPRESS* bound to T
+      ("1"    1   t   nil)
+      ("2"    nil t   nil)
+      ("1."   nil t   nil)))
 
   (define-rational-reader-macro-test #\O
     '(;; Errors
@@ -497,7 +500,11 @@
       ;; Valid octal rationals
       ("1"    nil nil 1)
       ("-1"   nil nil -1)
-      ("1/10" nil nil 1/8)))
+      ("1/10" nil nil 1/8)
+      ;; With *READ-SUPPRESS* bound to T
+      ("1"    1   t   nil)
+      ("8"    nil t   nil)
+      ("1."   nil t   nil)))
 
   (define-rational-reader-macro-test #\X
     '(;; Errors
@@ -509,7 +516,11 @@
       ;; Valid hexadecimal rationals
       ("1"    nil nil 1)
       ("-1"   nil nil -1)
-      ("1/10" nil nil 1/16)))
+      ("1/10" nil nil 1/16)
+      ;; With *READ-SUPPRESS* bound to T
+      ("1"    1   t   nil)
+      ("g"    nil t   nil)
+      ("1."   nil t   nil)))
 
   (define-rational-reader-macro-test #\R
     '(;; Errors
@@ -518,12 +529,19 @@
       ("x"    17  nil eclector.reader:digit-expected)
       ("1."   17  nil eclector.reader:digit-expected)
       ("1"    nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
+      ("1"    0   nil eclector.reader:invalid-radix)
+      ("1"    1   nil eclector.reader:invalid-radix)
       ("1"    37  nil eclector.reader:invalid-radix)
       ;; Valid base-17 rationals
-      ("1"    17 nil 1)
-      ("-1"   17 nil -1)
-      ("1/10" 17 nil 1/17)
-      ("g"    17 nil 16))))
+      ("1"    17  nil 1)
+      ("-1"   17  nil -1)
+      ("1/10" 17  nil 1/17)
+      ("g"    17  nil 16)
+      ("1 2"  16  nil 1 2)
+      ;; With *READ-SUPPRESS* bound to T
+      ("h"    17  t   nil)
+      ("x"    17  t   nil)
+      ("1."   17  t   nil))))
 
 (test sharpsign-asterisk/smoke
   "Smoke test for the SHARPSIGN-ASTERISK function."

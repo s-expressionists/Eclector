@@ -420,69 +420,75 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Reader macro for sharpsign B, X, and O.
+;;; Reader macro for sharpsign B, X, O and R.
 
 (defun read-rational (stream base)
-  (labels ((next-char (eof-error-p)
-             (alexandria:if-let ((char (read-char stream eof-error-p nil t)))
-               (values char (eclector.readtable:syntax-type *readtable* char))
-               (values nil nil)))
-           (digit-expected (char)
-             (%reader-error stream 'digit-expected
-                            :character-found char :base base))
-           (ensure-digit (char)
-             (alexandria:if-let ((value (digit-char-p char base)))
-               value
-               (digit-expected char)))
-           (maybe-sign ()
-             (multiple-value-bind (char type) (next-char t)
-               (ecase type
-                 ((:whitespace :terminating-macro
-                   :non-terminating-macro :single-escape :multiple-escape)
-                  (digit-expected char))
-                 (:constituent
-                  (if (char= char #\-)
-                      (values -1 0)
-                      (values 1 (ensure-digit char)))))))
-           (integer (empty-allowed &optional /-allowed initial-value)
-             (let ((value initial-value))
-               (tagbody
-                  (when empty-allowed (go rest))
-                  (multiple-value-bind (char type) (next-char t)
-                    (ecase type
-                      ((:whitespace
-                        :terminating-macro :non-terminating-macro
-                        :single-escape :multiple-escape)
-                       (digit-expected char))
-                      (:constituent
-                       (setf value (ensure-digit char)))))
-                rest
-                  (multiple-value-bind (char type) (next-char nil)
-                    (ecase type
-                      ((nil)
-                       (return-from integer value))
-                      (:whitespace
-                       (when *preserve-whitespace*
-                         (unread-char char stream))
-                       (return-from integer value))
-                      (:terminating-macro
-                       (unread-char char stream)
-                       (return-from integer value))
-                      ((:non-terminating-macro
-                        :single-escape :multiple-escape)
-                       (digit-expected char))
-                      (:constituent
-                       (if (and /-allowed (eql char #\/))
-                           (return-from integer (values value t))
-                           (setf value (+ (* base (or value 0))
-                                          (ensure-digit char))))
-                       (go rest))))))))
-    (multiple-value-bind (sign numerator) (maybe-sign)
-      (multiple-value-bind (numerator slashp) (integer (= sign 1) t numerator)
-        (let ((denominator (when slashp (integer nil))))
-          (* sign (if denominator
-                      (/ numerator denominator)
-                      numerator)))))))
+  (let ((readtable *readtable*)
+        (read-suppress *read-suppress*))
+    (labels ((next-char (eof-error-p)
+               (alexandria:if-let ((char (read-char stream eof-error-p nil t)))
+                 (values char (eclector.readtable:syntax-type readtable char))
+                 (values nil nil)))
+             (digit-expected (char)
+               (%reader-error stream 'digit-expected
+                              :character-found char :base base))
+             (ensure-digit (char)
+               (let ((value (digit-char-p char base)))
+                 (cond (value)
+                       (read-suppress
+                        1)
+                       (t
+                        (digit-expected char)))))
+             (maybe-sign ()
+               (multiple-value-bind (char type) (next-char t)
+                 (ecase type
+                   ((:whitespace :terminating-macro
+                     :non-terminating-macro :single-escape :multiple-escape)
+                    (digit-expected char))
+                   (:constituent
+                    (if (char= char #\-)
+                        (values -1 0)
+                        (values 1 (ensure-digit char)))))))
+             (integer (empty-allowed &optional /-allowed initial-value)
+               (let ((value initial-value))
+                 (tagbody
+                    (when empty-allowed (go rest))
+                    (multiple-value-bind (char type) (next-char t)
+                      (ecase type
+                        ((:whitespace
+                          :terminating-macro :non-terminating-macro
+                          :single-escape :multiple-escape)
+                         (digit-expected char))
+                        (:constituent
+                         (setf value (ensure-digit char)))))
+                  rest
+                    (multiple-value-bind (char type) (next-char nil)
+                      (ecase type
+                        ((nil)
+                         (return-from integer value))
+                        (:whitespace
+                         (when *preserve-whitespace*
+                           (unread-char char stream))
+                         (return-from integer value))
+                        (:terminating-macro
+                         (unread-char char stream)
+                         (return-from integer value))
+                        ((:non-terminating-macro
+                          :single-escape :multiple-escape)
+                         (digit-expected char))
+                        (:constituent
+                         (if (and /-allowed (eql char #\/))
+                             (return-from integer (values value t))
+                             (setf value (+ (* base (or value 0))
+                                            (ensure-digit char))))
+                         (go rest))))))))
+      (multiple-value-bind (sign numerator) (maybe-sign)
+        (multiple-value-bind (numerator slashp) (integer (= sign 1) t numerator)
+          (let ((denominator (when slashp (integer nil))))
+            (unless read-suppress
+              (* sign (if denominator
+                          (/ numerator denominator)
+                          numerator)))))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
