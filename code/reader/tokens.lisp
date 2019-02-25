@@ -273,10 +273,13 @@
          dot
            (next-cond (char)
              ((not char)
-              (if *consing-dot-allowed-p*
-                  (return-from interpret-token
-                    *consing-dot*)
-                  (%reader-error input-stream 'invalid-context-for-consing-dot)))
+              (cond ((not (null escape-ranges))
+                     (return-from interpret-token (symbol)))
+                    (*consing-dot-allowed-p*
+                     (return-from interpret-token
+                       *consing-dot*))
+                    (t
+                     (%reader-error input-stream 'invalid-context-for-consing-dot))))
              ((eql char #\.)
               (if (null escape-ranges)
                   (go maybe-too-many-dots)

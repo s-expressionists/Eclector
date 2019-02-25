@@ -135,6 +135,11 @@
           ("`(,.)"                      eclector.reader:object-must-follow-comma)
           ("#1=`(,2)"                   (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
 
+          ;; Consing dot
+          ("(1 . 2)"                    (1 . 2))
+          ("(1 .||)"                    (1 |.|))
+          ("(1 .|| 2)"                  (1 |.| 2))
+
           ;; Interaction between *READ-SUPPRESS* and reader macros.
           ("#+(or) #|skipme|# 1 2"      2)
           ("#+(or) ; skipme

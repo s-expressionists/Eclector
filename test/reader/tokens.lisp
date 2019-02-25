@@ -66,6 +66,7 @@
 
           (".\\."                           t   nil nil |..|)
           (".||."                           t   nil nil |..|)
+          (".||"                            t   nil nil |.|)
           ("..a"                            t   nil nil |..A|)
 
           ("\\a||"                          t   nil nil |a|)
@@ -178,6 +179,7 @@
           ("."          ()                10 :upcase   eclector.reader:invalid-context-for-consing-dot)
           (".."         ((1 . 2))         10 :upcase   |..|) ; .\.
           (".."         ((1 . 1))         10 :upcase   |..|) ; .||.
+          ("."          ((1 . 1))         10 :upcase   |.|)  ; .||
           ("..a"        ()                10 :upcase   |..A|)
           (".."         ()                10 :upcase   eclector.reader:too-many-dots)
           ("..."        ()                10 :upcase   eclector.reader:too-many-dots)
