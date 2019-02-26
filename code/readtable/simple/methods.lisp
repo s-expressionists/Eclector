@@ -17,6 +17,23 @@
       (let ((macro-function
              (eclector.readtable:get-dispatch-macro-character
               readtable disp-char sub-char)))
+        ;; If there is no macro function for SUB-CHAR, signal an error
+        ;; irregardless of *READ-SUPPRESS* since the Hyperspec entry
+        ;; for variable *READ-SUPPRESS* says
+        ;;
+        ;;   Dispatching macro characters (including sharpsign)
+        ;;
+        ;;   Dispatching macro characters continue to parse an infix
+        ;;   numerical argument, and invoke the dispatch function. The
+        ;;   standardized sharpsign reader macros do not enforce any
+        ;;   constraints on either the presence of or the value of the
+        ;;   numerical argument.
+        ;;
+        ;; We take this to mean that the dispatch function is invoked
+        ;; and either calls a user-supplied function if the user has
+        ;; installed one in the readtable or calls a standard macro
+        ;; function or signals an error according to the table in
+        ;; 2.4.8 Sharpsign.
         (when (null macro-function)
           (eclector.base:%reader-error
            stream 'eclector.readtable:unknown-macro-sub-character

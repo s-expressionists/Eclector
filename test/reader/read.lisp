@@ -97,10 +97,11 @@
   ;; reader since the individual parts in isolation are handled by
   ;; more specific tests.
   (mapc (lambda (input-and-expected)
-          (destructuring-bind (input expected) input-and-expected
+          (destructuring-bind (input read-suppress expected) input-and-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (values (eclector.reader:read stream)
+                       (values (let ((*read-suppress* read-suppress))
+                                 (eclector.reader:read stream))
                                (file-position stream)))))
               (case expected
                 (eclector.reader:invalid-context-for-backquote
@@ -120,33 +121,34 @@
                    (is (equal expected       result))
                    (is (eql   (length input) position))))))))
 
-        '(("(cons 1 2)"                 (cons 1 2))
+        '(("(cons 1 2)"                 nil (cons 1 2))
 
-          ("#+(or) `1 2"                2)
-          ("#+(or) #.(error \"foo\") 2" 2)
+          ("#+(or) `1 2"                nil 2)
+          ("#+(or) #.(error \"foo\") 2" nil 2)
 
           ;; Some context-sensitive cases.
-          ("#C(1 `,2)"                  eclector.reader:invalid-context-for-backquote)
-          ("#+`,common-lisp 1"          eclector.reader:invalid-context-for-backquote)
-          (",foo"                       eclector.reader:comma-not-inside-backquote)
-          (",@foo"                      eclector.reader:comma-not-inside-backquote)
-          ("`(,)"                       eclector.reader:object-must-follow-comma)
-          ("`(,@)"                      eclector.reader:object-must-follow-comma)
-          ("`(,.)"                      eclector.reader:object-must-follow-comma)
-          ("#1=`(,2)"                   (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
+          ("#C(1 `,2)"                  nil eclector.reader:invalid-context-for-backquote)
+          ("#+`,common-lisp 1"          nil eclector.reader:invalid-context-for-backquote)
+          (",foo"                       nil eclector.reader:comma-not-inside-backquote)
+          (",@foo"                      nil eclector.reader:comma-not-inside-backquote)
+          ("`(,)"                       nil eclector.reader:object-must-follow-comma)
+          ("`(,@)"                      nil eclector.reader:object-must-follow-comma)
+          ("`(,.)"                      nil eclector.reader:object-must-follow-comma)
+          ("#1=`(,2)"                   nil (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
 
           ;; Consing dot
-          ("(1 . 2)"                    (1 . 2))
-          ("(1 .||)"                    (1 |.|))
-          ("(1 .|| 2)"                  (1 |.| 2))
+          ("(1 . 2)"                    nil (1 . 2))
+          ("(1 .||)"                    nil (1 |.|))
+          ("(1 .|| 2)"                  nil (1 |.| 2))
 
           ;; Interaction between *READ-SUPPRESS* and reader macros.
-          ("#+(or) #|skipme|# 1 2"      2)
+          ("#+(or) #|skipme|# 1 2"      nil 2)
           ("#+(or) ; skipme
-            1 2"                        2)
+            1 2"                        nil 2)
 
           ;; Unknown macro sub character.
-          ("#!"                         eclector.reader:unknown-macro-sub-character))))
+          ("#!"                         nil eclector.reader:unknown-macro-sub-character)
+          ("#!"                         t   eclector.reader:unknown-macro-sub-character))))
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
