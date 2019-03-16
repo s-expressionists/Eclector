@@ -102,18 +102,18 @@
 ;;;
 ;;; So we need a way for readers for lists and vectors to explicitly
 ;;; allow for backquote and comma, whereas BY DEFAULT, they should not
-;;; be allowed.  We solve this by introducting two variables:
+;;; be allowed.  We solve this by introducing two variables:
 ;;; *BACKQUOTE-ALLOWED-P* and *BACKQUOTE-IN-SUBFORMS-ALLOWED-P*.
 ;;; Initially the two are TRUE.  Whenever READ is called, it binds the
 ;;; variable *BACKQUOTE-ALLOWED-P* to the value of
 ;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P*, and it binds
 ;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P* to FALSE.  If no special action
-;;; is taken, wheen READ is called recursively from a reader macro,
+;;; is taken, when READ is called recursively from a reader macro,
 ;;; the value of *BACKQUOTE-ALLOWED-P* will be FALSE.  When one of the
 ;;; reader macros left-parenthesis, sharpsign-left-parenthesis,
 ;;; backquote, or comma is called, before the recursive call to READ,
 ;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P* is bound to the value of
-;;; *BACKQUOTE-ALLOWED-P*.  Consequenctly, if the list or the vector
+;;; *BACKQUOTE-ALLOWED-P*.  Consequently, if the list or the vector
 ;;; is read in a context where backquote is not allowed, then it will
 ;;; not be allowed in subforms either, for instance if the list or the
 ;;; vector is inside an array.  But if the list or the vector is read
