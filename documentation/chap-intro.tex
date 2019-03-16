@@ -4,14 +4,14 @@
 \sysname{} is a portable, implementation-independent version of the
 \commonlisp{} function \texttt{read}, a corresponding readtable and a
 quasiquotation facility.  As opposed to existing
-implementation-specific version of \texttt{read}, \sysname{} uses
+implementation-specific versions of \texttt{read}, \sysname{} uses
 generic functions to allow clients to customize the exact behavior,
 such as the interpretation of tokens.
 
 Furthermore, \sysname{} can be used as a \texttt{source tracking}
-reader, which is accomplished through the use of \emph{concrete syntax
-  trees}%
+reader, which is accomplished through a mode of operation that
+produces \emph{parse results} which wrap the \commonlisp{} expressions
+in objects that can also contain information about the positions in
+the source code of those expressions.  One example of such parse
+results are \emph{concrete syntax trees}.%
 \footnote{See: https://github.com/robert-strandh/Concrete-Syntax-Tree}
-which wrap the \commonlisp{} expressions in standard instances that
-can also contain information about the positions in the source code of
-those expressions.
