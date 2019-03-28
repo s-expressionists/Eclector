@@ -196,3 +196,24 @@
      ;; Reader conditionals
      ("#+(or) 1 2"   ((*read-suppress* (7 . 8))
                       ((:sharpsign-plus . (:or)) (0 . 9)))))))
+
+;;; Regressions and other tests
+
+(test make-expression-result/long-list
+  "The method on MAKE-EXPRESSION-RESULT used to blow the stack for
+   long lists."
+
+  (let* ((length 200000)
+         (input (format nil "(~{~A~^ ~})" (alexandria:iota length)))
+         (result (with-input-from-string (stream input)
+                   (eclector.concrete-syntax-tree:cst-read stream)))
+         (actual-length (loop for i from 0
+                              for cst = result then (cst:rest cst)
+                              while (cst:consp cst)
+                              do (let ((raw (cst:raw (cst:first cst))))
+                                   (unless (eql i raw)
+                                     (fail "~@<Mismatch at index ~:D: ~
+                                            ~S is not ~S to ~S~@:>"
+                                           i raw 'eql i)))
+                              count 1)))
+    (is (= length actual-length))))

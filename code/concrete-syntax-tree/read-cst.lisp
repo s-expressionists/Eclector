@@ -11,17 +11,18 @@
              (make-instance 'cst:atom-cst
                             :raw expression
                             :source source))
-           (make-cons-cst (expression children &optional source)
-             (destructuring-bind (car . cdr) expression
-               (declare (ignore car))
-               (destructuring-bind (car-children . cdr-children) children
-                 (make-instance 'cst:cons-cst
-                                :raw expression
-                                :first car-children
-                                :rest (if (atom cdr)
-                                          (make-atom-cst cdr)
-                                          (make-cons-cst cdr cdr-children))
-                                :source source)))))
+
+           (make-list-cst (expression children source)
+             (loop for expression in (loop with reversed = '()
+                                           for sub-expression on expression
+                                           do (push sub-expression reversed)
+                                           finally (return reversed))
+                   for child in (reverse children)
+                   for previous = (make-instance 'cst:atom-cst :raw nil) then node
+                   for node = (make-instance 'cst:cons-cst :raw expression
+                                                           :first child
+                                                           :rest previous)
+                   finally (return (reinitialize-instance node :source source)))))
     (cond
       ((atom expression)
        (make-atom-cst expression source))
@@ -31,7 +32,7 @@
             (every (lambda (sub-expression child)
                      (eql sub-expression (cst:raw child)))
                    expression children))
-       (make-cons-cst expression children source))
+       (make-list-cst expression children source))
       ;; Structure mismatch, try heuristic reconstruction.
       (t
        ;; We don't use
