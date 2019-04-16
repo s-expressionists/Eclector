@@ -673,6 +673,8 @@
         '(;; Errors
           (""          1   nil eclector.reader:end-of-file)
           ("(1)"       2   nil eclector.reader:read-object-type-error)
+          ("(1 (1))"   2   nil eclector.reader:read-object-type-error)
+          ("((1) 1)"   2   nil eclector.reader:read-object-type-error)
           ("(() (1))"  2   nil eclector.reader:incorrect-initialization-length)
           ("1"         1   nil eclector.reader:read-object-type-error)
           ("(1)"       nil nil eclector.reader:numeric-parameter-not-supplied-but-required)

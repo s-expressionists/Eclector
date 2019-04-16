@@ -603,37 +603,42 @@
 ;;;
 ;;; Reader macro for sharpsign A.
 
-(defun determine-dimensions (stream rank initial-contents)
-  (labels ((rec (rank initial-contents)
-             (cond ((zerop rank)
-                    '())
-                   ((not (typep initial-contents 'alexandria:proper-sequence))
-                    (%reader-error stream 'read-object-type-error
-                                   :expected-type 'sequence
-                                   :datum initial-contents))
-                   (t
-                    (let ((length (length initial-contents)))
-                      (if (zerop length)
-                          (make-list rank :initial-element 0)
-                          (list* length
-                                 (rec (1- rank) (elt initial-contents 0)))))))))
-    (rec rank initial-contents)))
+(labels ((check-sequence (stream object)
+           (when (not (typep object 'alexandria:proper-sequence))
+             (%reader-error stream 'read-object-type-error
+                            :expected-type 'sequence
+                            :datum object))
+           nil))
 
-(defun check-dimensions (stream dimensions initial-contents)
-  (labels ((rec (first rest axis initial-contents)
-             (cond
-               ((not first))
-               ((not (eql (length initial-contents) (or first 0)))
-                (%reader-error stream 'incorrect-initialization-length
-                               :array-type 'array
-                               :axis axis
-                               :expected-length first
-                               :datum initial-contents))
-               (t
-                (every (lambda (subseq)
-                         (rec (first rest) (rest rest) (1+ axis) subseq))
-                       initial-contents)))))
-    (rec (first dimensions) (rest dimensions) 0 initial-contents)))
+  (defun determine-dimensions (stream rank initial-contents)
+    (labels ((rec (rank initial-contents)
+               (cond ((zerop rank)
+                      '())
+                     ((check-sequence stream initial-contents))
+                     (t
+                      (let ((length (length initial-contents)))
+                        (if (zerop length)
+                            (make-list rank :initial-element 0)
+                            (list* length
+                                   (rec (1- rank) (elt initial-contents 0)))))))))
+      (rec rank initial-contents)))
+
+  (defun check-dimensions (stream dimensions initial-contents)
+    (labels ((rec (first rest axis initial-contents)
+               (cond
+                 ((not first))
+                 ((check-sequence stream initial-contents))
+                 ((not (eql (length initial-contents) (or first 0)))
+                  (%reader-error stream 'incorrect-initialization-length
+                                 :array-type 'array
+                                 :axis axis
+                                 :expected-length first
+                                 :datum initial-contents))
+                 (t
+                  (every (lambda (subseq)
+                           (rec (first rest) (rest rest) (1+ axis) subseq))
+                         initial-contents)))))
+      (rec (first dimensions) (rest dimensions) 0 initial-contents))))
 
 (defun sharpsign-a (stream char parameter)
   (declare (ignore char))
