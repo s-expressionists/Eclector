@@ -21,15 +21,13 @@
            (if wrap-in-list
                `(list ,thing)
                thing)))
-   (if (consp form)
-       (case (car form)
-         (unquote
-          (maybe-wrap (cadr form)))
-         (unquote-splicing
-          (cadr form))
-         (t
-          (maybe-wrap (transform-quasiquote-argument form))))
-       (maybe-wrap (transform-quasiquote-argument form)))))
+    (typecase form
+      ((cons (eql unquote))
+       (maybe-wrap (second form)))
+      ((cons (eql unquote-splicing))
+       (second form))
+      (t
+       (maybe-wrap (transform-quasiquote-argument form))))))
 
 (defun transform-compound (compound)
   (labels ((rec (object)
