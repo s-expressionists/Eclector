@@ -105,6 +105,9 @@
           ("; comment"     t   eclector.reader:end-of-file)
           ("; comment"     nil :eof)
           ;; Actually reading something
+          ("1"             t   1          ( 0 .  1))
+          (" 1"            t   1          ( 1 .  2))
+          ("1 "            t   1          ( 0 .  1))
           ("(cons 1 2)"    t   (cons 1 2) ( 0 . 10))
           ("#+(or) `1 2"   t   2          (10 . 11))
           ("#|comment|# 1" t   1          (12 . 13))
@@ -233,8 +236,10 @@
              (is (equal expected-result result))
              (is (equal expected-orphan-results orphan-results))
              (is (eql (length input) position)))))))
-   '(;; No skipping
-     ("1"                1 ())
+   '(;; Whitespace is not skipped input.
+     ("1"                1)
+     (" 1"               1)
+     ("1 "               1)
 
      ;; Toplevel Comments
      ("#||# 1"           1 ((:block-comment (0 . 4))))
