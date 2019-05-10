@@ -30,8 +30,8 @@
         (push parse-result (second *stack*)))
       ;; Try to advance to the next non-whitespace input character,
       ;; then update *START*. This way, the source location for an
-      ;; object subsequently read INPUT-STREAM will not include the
-      ;; whitespace.
+      ;; object subsequently read from INPUT-STREAM will not include
+      ;; the whitespace.
       (skip-whitespace input-stream nil)
       (setf *start* (source-position client input-stream))))
 
