@@ -73,9 +73,11 @@
 
   (mapc (lambda (input-and-expected)
           (destructuring-bind
-              (input eof-error expected-raw &optional expected-location)
+              (input eof-error expected-raw
+               &optional expected-location expected-position)
               input-and-expected
-            (let ((input (format nil input)))
+            (let* ((input (format nil input))
+                   (expected-position (or expected-position (length input))))
               (flet ((do-it ()
                        (with-input-from-string (stream input)
                          (values (eclector.parse-result:read
@@ -97,7 +99,7 @@
                      ;; Expected source location.
                      (is (equal expected-location (source result)))
                      ;; Consumed all input.
-                     (is (eql (length input) position)))))))))
+                     (is (eql expected-position position)))))))))
 
         '(;; End of file
           (""              t   eclector.reader:end-of-file)
@@ -108,6 +110,7 @@
           ("1"             t   1          ( 0 .  1))
           (" 1"            t   1          ( 1 .  2))
           ("1 "            t   1          ( 0 .  1))
+          ("1 2"           t   1          ( 0 .  1) 2)
           ("(cons 1 2)"    t   (cons 1 2) ( 0 . 10))
           ("#+(or) `1 2"   t   2          (10 . 11))
           ("#|comment|# 1" t   1          (12 . 13))
@@ -223,9 +226,12 @@
   (mapc
    (lambda (input-expected)
      (destructuring-bind (input expected-result
-                          &optional expected-orphan-results)
+                          &optional
+                          (expected-orphan-results '())
+                          expected-position)
          input-expected
-       (let ((input (format nil input)))
+       (let* ((input (format nil input))
+              (expected-position (or expected-position (length input))))
          (flet ((do-it ()
                   (with-input-from-string (stream input)
                     (multiple-value-call #'values
@@ -235,11 +241,12 @@
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (equal expected-result result))
              (is (equal expected-orphan-results orphan-results))
-             (is (eql (length input) position)))))))
+             (is (eql expected-position position)))))))
    '(;; Whitespace is not skipped input.
      ("1"                1)
      (" 1"               1)
      ("1 "               1)
+     ("1 2"              1 () 2)
 
      ;; Toplevel Comments
      ("#||# 1"           1 ((:block-comment (0 . 4))))
