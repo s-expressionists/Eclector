@@ -55,6 +55,25 @@ This function is the main entry point for the ordinary reader.  It is
 entirely compatible with the standard \commonlisp{} function with the
 same name.
 
+\Defun {read-preserving-whitespace} {\optional (input-stream \texttt{*standard-input*})\\
+  (eof-error-p \texttt{t})
+  (eof-value \texttt{nil})
+  (recursive-p \texttt{nil})}
+
+This function is entirely compatible with the standard \commonlisp{}
+function with the same name.
+
+\Defun {read-from-string} {string \optional
+  (eof-error-p \texttt{t})
+  (eof-value \texttt{nil})\\
+  \key
+  (start \texttt{0})
+  (end \texttt{nil})
+  (preserve-whitespace \texttt{nil})}
+
+This function is entirely compatible with the standard \commonlisp{}
+function with the same name.
+
 \Defvar {*client*}
 
 This variable is used by several generic functions called by
