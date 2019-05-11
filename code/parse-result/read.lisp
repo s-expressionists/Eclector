@@ -54,26 +54,27 @@
         (push parse-result (second *stack*))
         (values result parse-result))))
 
-  (defun read (client &rest arguments)
-    (destructuring-bind (input-stream &optional eof-error-p eof-value)
-        arguments
-      (multiple-value-bind (result parse-result orphan-results)
-          (let ((eclector.reader:*client* client)
-                (*stack* (list '())))
-            (multiple-value-call #'values
-              ;; Preserve whitespace here to exclude it from the
-              ;; source range constructed in the READ-COMMON :AROUND
-              ;; method above.
-              (apply #'eclector.reader:read-preserving-whitespace arguments)
-              (reverse (rest (first *stack*)))))
-        ;; If we come here, that means that either the call to READ
-        ;; succeeded without encountering end-of-file, or that
-        ;; EOF-ERROR-P is false, end-of-file was encountered, and
-        ;; EOF-VALUE was returned.  In the latter case, we want READ
-        ;; to return EOF-VALUE.
-        (cond ((and (null eof-error-p) (eq eof-value result))
-               eof-value)
-              (t
-               ;; Now skip any trailing whitespace.
-               (skip-whitespace input-stream nil)
-               (values parse-result orphan-results)))))))
+  (defun read (client &optional (input-stream *standard-input*)
+                                (eof-error-p t)
+                                (eof-value nil))
+    (multiple-value-bind (result parse-result orphan-results)
+        (let ((eclector.reader:*client* client)
+              (*stack* (list '())))
+          (multiple-value-call #'values
+            ;; Preserve whitespace here to exclude it from the source
+            ;; range constructed in the READ-COMMON :AROUND method
+            ;; above.
+            (eclector.reader::read-aux
+             input-stream eof-error-p eof-value nil t)
+            (reverse (rest (first *stack*)))))
+      ;; If we come here, that means that either the call to READ
+      ;; succeeded without encountering end-of-file, or that
+      ;; EOF-ERROR-P is false, end-of-file was encountered, and
+      ;; EOF-VALUE was returned.  In the latter case, we want READ to
+      ;; return EOF-VALUE.
+      (cond ((and (null eof-error-p) (eq eof-value result))
+             eof-value)
+            (t
+             ;; Now skip any trailing whitespace.
+             (skip-whitespace input-stream nil)
+             (values parse-result orphan-results))))))
