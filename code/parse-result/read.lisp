@@ -61,9 +61,9 @@
           (let ((eclector.reader:*client* client)
                 (*stack* (list '())))
             (multiple-value-call #'values
-              ;; Preserve whitespace here exclude it from the source
-              ;; range constructed in the READ-COMMON :AROUND method
-              ;; above.
+              ;; Preserve whitespace here to exclude it from the
+              ;; source range constructed in the READ-COMMON :AROUND
+              ;; method above.
               (apply #'eclector.reader:read-preserving-whitespace arguments)
               (reverse (rest (first *stack*)))))
         ;; If we come here, that means that either the call to READ
