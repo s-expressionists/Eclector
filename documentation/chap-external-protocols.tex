@@ -384,10 +384,9 @@ the client chooses, represent comments and other kind of input that
 \texttt{cl:read} would discard.  Furthermore, clients can associate
 source location information with parse results.
 
-Clients using this package must bind the special variable
-\texttt{eclector.reader:*client*} around calls to \texttt{read} to an
-instance for which methods on the generic functions described below
-are applicable.  Suitable client classes can be constructed by using
+Clients using this package pass an instance for which methods on the
+generic functions described below are applicable to \texttt{read}.
+Suitable client classes can be constructed by using
 \texttt{parse-result-client} as a superclass and at least defining a
 method on the generic function \texttt{make-expression-result}.
 
