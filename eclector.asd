@@ -98,7 +98,9 @@
 
                               (:file "readtable")
 
-                              (:file "client")))
+                              (:file "client")
+
+                              (:file "recover")))
 
                 (:module "parse-result"
                  :pathname "test/parse-result"

@@ -15,10 +15,13 @@
   (:shadowing-import-from #:eclector.base
    #:end-of-file
 
-   #:read-char)
+   #:read-char
+
+   #:recover) ; Restart name
 
   (:import-from #:eclector.base
    #:%reader-error
+   #:%recoverable-reader-error
 
    #:stream-position-reader-error
    #:stream-position
@@ -50,8 +53,11 @@
    #:peek-char
    #:read
    #:read-preserving-whitespace
-   #:read-from-string)
+   #:read-from-string
 
+   #:recover) ; Restart name
+
+  ;; Client protocol
   (:export
    #:read-common
    #:read-token

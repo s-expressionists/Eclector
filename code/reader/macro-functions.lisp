@@ -81,9 +81,12 @@
               do (vector-push-extend char2 result)
               finally (return (copy-seq result)))
       (end-of-file (condition)
-        (%reader-error stream 'unterminated-string
-                       :stream-position (stream-position condition)
-                       :delimiter char)))))
+        (%recoverable-reader-error
+         stream 'unterminated-string
+         :stream-position (stream-position condition)
+         :delimiter char
+         :report "Return a string of the already read characters.")
+        (copy-seq result)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -234,23 +237,30 @@
                   then (read stream t nil t)
                 if (eq object *consing-dot*)
                   do (setf *consing-dot-allowed-p* nil)
-                     (handler-case
-                         (setf tail (read stream t nil t))
-                       (end-of-list ()
-                         (%reader-error stream 'object-must-follow-consing-dot)))
-                     ;; This call to read must not succeed.
+                     (setf tail
+                           (handler-case
+                               (read stream t nil t)
+                             (end-of-list ()
+                               (%recoverable-reader-error
+                                stream 'object-must-follow-consing-dot
+                                :report "Use NIL in place of the missing object"))))
+                     ;; This call to read must not return (it has to
+                     ;; signal END-OF-LIST).
                      (read stream t nil t)
-                     (%reader-error
-                      stream 'multiple-objects-following-consing-dot)
+                     (%recoverable-reader-error
+                      stream 'multiple-objects-following-consing-dot
+                      :report "Ignore the object")
                 else
                   do (push object reversed-result))
-        (end-of-list ()
-          (return-from left-parenthesis
-            (nreconc reversed-result tail)))
+        (end-of-list ())
         ((and end-of-file (not missing-delimiter)) (condition)
-          (%reader-error stream 'unterminated-list
-                         :stream-position (stream-position condition)
-                         :delimiter char)))
+          (%recoverable-reader-error
+           stream 'unterminated-list
+           :stream-position (stream-position condition)
+           :delimiter (case char     ; not great, but we can't know
+                        (#\( #\))    ; the missing char generally
+                        (t   char))
+           :report "Return a list of the already read elements.")))
       (nreconc reversed-result tail))))
 
 (defun right-parenthesis (stream char)
@@ -259,7 +269,8 @@
   ;; condition, which means that the right parenthesis was found in a
   ;; context where it is not allowed.
   (signal *end-of-list*)
-  (%reader-error stream 'invalid-context-for-right-parenthesis))
+  (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
+                             :report "Ignore the trailing right parenthesis"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -287,11 +298,13 @@
                  (values (read stream t nil t) t)
                (end-of-list ()
                  (values nil nil))
-               (end-of-file (condition)
-                 (%reader-error
+               ((and end-of-file (not missing-delimiter)) (condition)
+                 (%recoverable-reader-error
                   stream 'unterminated-vector
                   :stream-position (stream-position condition)
-                  :delimiter #\))))))
+                  :delimiter #\)
+                  :report "Return a vector of the already read elements.")
+                 (values nil nil)))))
       (cond
         (*read-suppress*
          (loop for elementp = (nth-value 1 (next-element))
@@ -613,9 +626,10 @@
                      (t
                       nil)))
     ((and end-of-file (not missing-delimiter)) (condition)
-      (%reader-error stream 'unterminated-block-comment
-                     :stream-position (stream-position condition)
-                     :delimiter sub-char))))
+      (%recoverable-reader-error stream 'unterminated-block-comment
+                                 :stream-position (stream-position condition)
+                                 :delimiter sub-char
+                                 :report "Ignore the missing closing "))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

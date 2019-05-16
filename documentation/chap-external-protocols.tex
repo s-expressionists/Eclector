@@ -586,3 +586,37 @@ as described above for \texttt{read} compared to \texttt{cl:read}.
 This function similar to the standard \commonlisp{} function
 \texttt{cl:read-from-string}.  The differences are the same as
 described above for \texttt{read} compared to \texttt{cl:read}.
+
+\section{Recovering from errors}
+\label{sec:recovering-from-errors}
+
+\sysname{} offers limited support for recovering from syntax errors
+and continue reading from the input stream.  To this end, a restart
+named \texttt{eclector.reader:recover} is established when recoverable
+errors are signaled.  Recoverable syntax errors include:
+
+\begin{itemize}
+\item No object or multiple objects following the consing dot when
+  reading a list
+\item Missing \texttt{)} when reading a list
+\item Missing \texttt{)} when reading a vector
+\item Missing closing \texttt{"} when reading a string
+\item Missing closing \texttt{|\#} when reading a block comment
+\item Missing sub-character after reading a dispatching macro
+  character
+\end{itemize}
+
+Note that attempting to recover from syntax errors such as the above
+may lead to apparent success in the sense that the \texttt{read} call
+returns an object, but this object may not be what the caller
+wanted. For example, recovering from the missing closing \texttt{"} in
+the following example
+
+\begin{Verbatim}[frame=single]
+(defun foo (x y)
+  "My documentation string
+  (+ x y))
+\end{Verbatim}
+
+results in \verb!(DEFUN FOO (X Y) "My documentation string<newline>  (+ x y)")!,
+not \verb!(DEFUN FOO (X Y) "My documentation string" (+ x y))!.

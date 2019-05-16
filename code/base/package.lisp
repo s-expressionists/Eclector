@@ -20,6 +20,11 @@
    #:missing-delimiter
    #:delimiter)
 
+  ;; Restart name
+  (:export
+   #:recover)
+
   ;; Exported for eclector.reader, not public use.
   (:export
-   #:%reader-error))
+   #:%reader-error
+   #:%recoverable-reader-error))

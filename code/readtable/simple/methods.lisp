@@ -16,10 +16,11 @@
         (handler-case
             (parse-parameter-and-sub-char stream)
           (end-of-file (condition)
-            (eclector.base:%reader-error
+            (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unterminated-dispatch-macro
              :stream-position (eclector.base:stream-position condition)
-             :disp-char disp-char)
+             :disp-char disp-char
+             :report "Ignore the TODO")
             (return-from dispatcher)))
       (let ((macro-function
               (eclector.readtable:get-dispatch-macro-character
@@ -41,12 +42,18 @@
         ;; installed one in the readtable or calls a standard macro
         ;; function or signals an error according to the table in
         ;; 2.4.8 Sharpsign.
-        (when (null macro-function)
-          (eclector.base:%reader-error
-           stream 'eclector.readtable:unknown-macro-sub-character
-           :disp-char disp-char
-           :sub-char sub-char))
-        (funcall macro-function stream sub-char parameter)))))
+        ;;
+        ;; If we signal an error and the client invokes the recovery
+        ;; restart, we just return. This means that characters
+        ;; following the sub-char will be read outside the context of
+        ;; the reader macro..
+        (if (null macro-function)
+            (eclector.base:%recoverable-reader-error
+             stream 'eclector.readtable:unknown-macro-sub-character
+             :disp-char disp-char
+             :sub-char sub-char
+             :report "Try to ignore the entire macro")
+            (funcall macro-function stream sub-char parameter))))))
 
 (defmethod eclector.readtable:make-dispatch-macro-character
     ((readtable readtable) char &optional non-terminating-p)
