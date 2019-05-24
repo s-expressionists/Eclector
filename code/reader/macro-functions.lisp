@@ -870,7 +870,7 @@
 (defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
   (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-p parameter))
+    (numeric-parameter-ignored stream 'sharpsign-plus-minus parameter))
   (let ((feature-expression
           (let ((*package* (find-package '#:keyword))
                 (*read-suppress* nil))
