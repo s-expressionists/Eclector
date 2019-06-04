@@ -1,6 +1,7 @@
 NAME=eclector
 
 TEXFILES=$(NAME).tex $(shell ./tex-dependencies $(NAME).tex)
+FIGFILES=$(shell ls figures/*.pdf) # TODO glob
 BIBFILES=$(NAME).bib
 PDF_T=$(shell ./strip-dependence inputfig $(TEXFILES))
 VERBATIM=$(shell ./strip-dependence verbatimtabinput $(TEXFILES))
@@ -18,7 +19,7 @@ all : $(NAME).pdf
 %.code: %.lisp
 	./codify $<
 
-$(NAME).pdf: $(TEXFILES) $(PDF) $(PDF_T) $(VERBATIM) $(CODEFILES) $(BIBFILES)
+$(NAME).pdf: $(TEXFILES) $(PDF) $(PDF_T) $(VERBATIM) $(FIGFILES) $(CODEFILES) $(BIBFILES)
 	pdflatex $<
 	makeindex $(NAME)
 #	bibtex $(NAME)
