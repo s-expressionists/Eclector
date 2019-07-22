@@ -3,8 +3,6 @@
 (defclass cst-client (eclector.parse-result:parse-result-client)
   ())
 
-(defvar *cst-client* (make-instance 'cst-client))
-
 (defmethod eclector.parse-result:make-expression-result
     ((client cst-client) expression children source)
   (labels ((make-atom-cst (expression &optional source)
@@ -48,6 +46,36 @@
                         :rest (cst:reconstruct cdr children client)
                         :source source))))))
 
+(defvar *cst-client* (make-instance 'cst-client))
+
+(defun read (&optional (input-stream *standard-input*)
+                       (eof-error-p t)
+                       (eof-value nil))
+  (eclector.parse-result:read
+   (or eclector.reader:*client* *cst-client*)
+   input-stream eof-error-p eof-value))
+
+(defun read-preserving-whitespace (&optional (input-stream *standard-input*)
+                                             (eof-error-p t)
+                                             (eof-value nil))
+  (eclector.parse-result:read-preserving-whitespace
+   (or eclector.reader:*client* *cst-client*)
+   input-stream eof-error-p eof-value))
+
+(defun read-from-string (string &optional
+                                (eof-error-p t)
+                                (eof-value nil)
+                                &key
+                                (start 0)
+                                (end nil)
+                                (preserve-whitespace nil))
+  (eclector.parse-result:read-from-string
+   (or eclector.reader:*client* *cst-client*)
+   string eof-error-p eof-value :start start :end end
+   :preserve-whitespace preserve-whitespace))
+
 (defun cst-read (&rest arguments)
   (apply #'eclector.parse-result:read
          (or eclector.reader:*client* *cst-client*) arguments))
+#+sbcl (declaim (sb-ext:deprecated :early ("Eclector" "0.5")
+                                   (function cst-read :replacement read)))

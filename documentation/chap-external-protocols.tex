@@ -551,13 +551,13 @@ In this section, symbols written without package marker are in the
 \texttt{eclector.concrete-syntax-tree} package
 \seesec{sec:package-cst-features}
 
-\Defun {cst-read} {\optional (input-stream \texttt{*standard-input*})\\
+\Defun {read} {\optional (input-stream \texttt{*standard-input*})\\
   (eof-error-p \texttt{t})
   (eof-value \texttt{nil})}
 
 This function is the main entry point for the CST reader.  It is
 mostly compatible with the standard \commonlisp{} function
-\texttt{read}.  The differences are:
+\texttt{cl:read}.  The differences are:
 
 \begin{itemize}
 \item The return value, unless \textit{eof-value} is returned, is an
@@ -566,3 +566,23 @@ mostly compatible with the standard \commonlisp{} function
   since it sets up a dynamic environment in which calls to
   \texttt{eclector.reader:read} behave suitably.
 \end{itemize}
+
+\Defun {read-preserving-whitespace} {\optional (input-stream \texttt{*standard-input*})
+  (eof-error-p \texttt{t})\\
+  (eof-value \texttt{nil})}
+
+This function similar to the standard \commonlisp{} function
+\texttt{cl:read-preserving-whitespace}.  The differences are the same
+as described above for \texttt{read} compared to \texttt{cl:read}.
+
+\Defun {read-from-string} {string \optional
+  (eof-error-p \texttt{t})
+  (eof-value \texttt{nil})\\
+  \key
+  (start \texttt{0})
+  (end \texttt{nil})
+  (preserve-whitespace \texttt{nil})}
+
+This function similar to the standard \commonlisp{} function
+\texttt{cl:read-from-string}.  The differences are the same as
+described above for \texttt{read} compared to \texttt{cl:read}.

@@ -27,8 +27,8 @@
                        (rec cst-cdr)))))))
       (rec cst))))
 
-(test read-cst/smoke
-  "Smoke test for the CST-READ function."
+(test read/smoke
+  "Smoke test for the READ function."
 
   (mapc (lambda (input-and-expected)
           (destructuring-bind
@@ -37,7 +37,7 @@
             (let ((input (format nil input)))
               (flet ((do-it ()
                        (with-input-from-string (stream input)
-                         (values (eclector.concrete-syntax-tree:cst-read
+                         (values (eclector.concrete-syntax-tree:read
                                   stream eof-error :eof)
                                  (file-position stream)))))
                 (case expected-raw
@@ -69,6 +69,84 @@
           ("; comment~%1"  t   1          (10 . 11))
           ("(a . 2)"       t   (a . 2)    ( 0 .  7)))))
 
+(test read-preserving-whitespace/smoke
+  "Smoke test for the READ-PRESERVING-WHITESPACE function."
+
+  (mapc (lambda (input-and-expected)
+          (destructuring-bind (input eof-error-p eof-value
+                               expected-result &optional expected-position)
+              input-and-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (eclector.concrete-syntax-tree:read-preserving-whitespace
+                                stream eof-error-p eof-value)
+                               (file-position stream)))))
+              (case expected-result
+                (eclector.reader:end-of-file
+                 (signals-printable eclector.reader:end-of-file
+                   (do-it)))
+                (:eof
+                 (multiple-value-bind (result position) (do-it)
+                   (is (eq :eof result))
+                   (is (eql expected-position position))))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (typep result 'cst:cst))
+                   (let ((raw (cst:raw result)))
+                     (is (equal expected-result raw)))
+                   (is (eql expected-position position))))))))
+
+        '((""        t   nil  eclector.reader:end-of-file)
+          (""        nil :eof :eof                        0)
+
+          (":foo"    t   nil  :foo                        4)
+          (":foo "   t   nil  :foo                        4)
+          (":foo  "  t   nil  :foo                        4)
+          (":foo  1" t   nil  :foo                        4))))
+
+(test read-from-string/smoke
+  "Smoke test for the READ-FROM-STRING function."
+
+  (mapc (lambda (input-args-expected)
+          (destructuring-bind
+              (input args expected-value &optional expected-position)
+              input-args-expected
+            (flet ((do-it ()
+                     (apply #'eclector.concrete-syntax-tree:read-from-string
+                            input args)))
+              (case expected-value
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
+                (:eof
+                 (multiple-value-bind (result position) (do-it)
+                   (is (eq :eof result))
+                   (is (eql expected-position position))))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (typep result 'cst:cst))
+                   (let ((raw (cst:raw result)))
+                     (is (equal expected-value raw)))
+                   (is (eql expected-position position))))))))
+        '((""         ()                               eclector.reader:end-of-file)
+          (""         (nil :eof)                       :eof                         0)
+
+          (":foo 1 2" ()                               :foo                         5)
+
+          ;; Start and end
+          (":foo 1 2" (t nil :start 4)                 1                            7)
+          (":foo 1 2" (t nil :end 3)                   :fo                          3)
+
+          ;; Preserving whitespace
+          (":foo 1"   (t nil :preserve-whitespace nil) :foo                         5)
+          (":foo 1 "  (t nil :preserve-whitespace nil) :foo                         5)
+          (":foo 1  " (t nil :preserve-whitespace nil) :foo                         5)
+          (":foo 1 2" (t nil :preserve-whitespace nil) :foo                         5)
+
+          (":foo 1"   (t nil :preserve-whitespace t)   :foo                         4)
+          (":foo 1 "  (t nil :preserve-whitespace t)   :foo                         4)
+          (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
+          (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
+
 ;;; Source locations
 
 (defun check-source-locations (cst expected-source-locations)
@@ -85,13 +163,13 @@
                   (check (cst:rest cst) (rest children)))))))
     (check cst expected-source-locations)))
 
-(test read-cst/source-locations
-  "Test source locations assigned by CST-READ."
+(test read/source-locations
+  "Test source locations assigned by READ."
 
   (mapc (lambda (input-expected)
           (destructuring-bind (input expected) input-expected
             (let ((result (with-input-from-string (stream input)
-                            (eclector.concrete-syntax-tree:cst-read stream))))
+                            (eclector.concrete-syntax-tree:read stream))))
               (check-source-locations result expected))))
         (macrolet ((scons ((&optional start end) &optional car cdr)
                      `(cons ,(if start `(cons ,start ,end) 'nil)
@@ -147,11 +225,11 @@
   (vector start end))
 
 (test read-cst/custom-client
-  "Test using a custom client with CST-READ."
+  "Test using a custom client with READ."
 
   (let ((result (with-input-from-string (stream "#||# 1")
                   (let ((eclector.reader:*client* (make-instance 'custom-client)))
-                    (eclector.concrete-syntax-tree:cst-read stream)))))
+                    (eclector.concrete-syntax-tree:read stream)))))
     (is (equalp #(-5 -6) (cst:source result)))))
 
 ;;; Skipped input
@@ -178,8 +256,7 @@
                     (with-input-from-string (stream input)
                       (values
                        (let ((eclector.reader:*client* client))
-                         (eclector.concrete-syntax-tree:cst-read
-                          stream))
+                         (eclector.concrete-syntax-tree:read stream))
                        (file-position stream)
                        (skipped client))))))
            (multiple-value-bind (result position skipped) (do-it)
@@ -206,7 +283,7 @@
   (let* ((length 200000)
          (input (format nil "(~{~A~^ ~})" (alexandria:iota length)))
          (result (with-input-from-string (stream input)
-                   (eclector.concrete-syntax-tree:cst-read stream)))
+                   (eclector.concrete-syntax-tree:read stream)))
          (actual-length (loop for i from 0
                               for cst = result then (cst:rest cst)
                               while (cst:consp cst)
