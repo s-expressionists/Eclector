@@ -117,6 +117,78 @@
           ("; comment~%1"  t   1          (10 . 11))
           ("(a . 2)"       t   (a . 2)    ( 0 .  7)))))
 
+(test read-preserving-whitespace/smoke
+  "Smoke test for the READ-PRESERVING-WHITESPACE function."
+
+  (mapc (lambda (input-and-expected)
+          (destructuring-bind (input eof-error-p eof-value
+                               expected-raw &optional expected-position)
+              input-and-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (eclector.parse-result:read-preserving-whitespace
+                                (make-instance 'simple-result-client)
+                                stream eof-error-p eof-value)
+                               (file-position stream)))))
+              (case expected-raw
+                (eclector.reader:end-of-file
+                 (signals-printable eclector.reader:end-of-file
+                   (do-it)))
+                (:eof
+                 (multiple-value-bind (result position) (do-it)
+                   (is (eq :eof result))
+                   (is (eql expected-position position))))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (typep result 'parse-result))
+                   (is (equal expected-raw (raw result)))
+                   (is (eql expected-position position))))))))
+
+        '((""        t   nil  eclector.reader:end-of-file)
+          (""        nil :eof :eof                        0)
+
+          (":foo"    t   nil  :foo                        4)
+          (":foo "   t   nil  :foo                        4)
+          (":foo  "  t   nil  :foo                        4)
+          (":foo  1" t   nil  :foo                        4))))
+
+(test read-from-string/smoke
+  "Smoke test for the READ-FROM-STRING function."
+
+  (mapc (lambda (input-args-expected)
+          (destructuring-bind
+              (input args expected-value &optional expected-position)
+              input-args-expected
+            (flet ((do-it ()
+                     (apply #'eclector.parse-result:read-from-string
+                            (make-instance 'simple-result-client) input args)))
+              (case expected-value
+                (eclector.reader:end-of-file
+                 (signals eclector.reader:end-of-file (do-it)))
+                (t
+                 (multiple-value-bind (value position) (do-it)
+                   (is (equal expected-value    (if (typep value 'parse-result)
+                                                    (raw value)
+                                                    value)))
+                   (is (eql   expected-position position))))))))
+        '((""         ()                               eclector.reader:end-of-file)
+          (""         (nil :eof)                       :eof                         0)
+
+          (":foo 1 2" ()                               :foo                         5)
+
+          ;; Start and end
+          (":foo 1 2" (t nil :start 4)                 1                            7)
+          (":foo 1 2" (t nil :end 3)                   :fo                          3)
+
+          ;; Preserving whitespace
+          (":foo 1"   (t nil :preserve-whitespace nil) :foo                         5)
+          (":foo 1  " (t nil :preserve-whitespace nil) :foo                         5)
+          (":foo 1 2" (t nil :preserve-whitespace nil) :foo                         5)
+
+          (":foo 1"   (t nil :preserve-whitespace t)   :foo                         4)
+          (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
+          (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
+
 ;;; Source locations
 
 (defun check-source-locations (result expected-source-locations)

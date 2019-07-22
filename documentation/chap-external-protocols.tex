@@ -449,6 +449,35 @@ It is in many ways similar to the standard \commonlisp{} function
   \texttt{eclector.reader:read} behave suitably.
 \end{itemize}
 
+\Defun {read-preserving-whitespace} {client \\
+  \optional (input-stream \texttt{*standard-input*})
+  (eof-error-p \texttt{t})\\
+  (eof-value \texttt{nil})}
+
+This function similar to the standard \commonlisp{} function
+\texttt{cl:read-preserving-whitespace}.  The differences are the same
+as described above for \texttt{read} compared to \texttt{cl:read}.
+
+\Defun {read-from-string} {client string \optional
+  (eof-error-p \texttt{t})
+  (eof-value \texttt{nil})\\
+  \key
+  (start \texttt{0})
+  (end \texttt{nil})
+  (preserve-whitespace \texttt{nil})}
+
+This function similar to the standard \commonlisp{} function
+\texttt{cl:read-from-string}.  The differences are:
+
+\begin{itemize}
+\item A client instance must be supplied as the first argument.
+\item The first return value, unless \textit{eof-value} is returned,
+  is an arbitrary parse result object created by the client, not
+  generally the read object.
+\item The \emph{third} return value, unless \textit{eof-value} is
+  returned, is a list of ``orphan'' results (Described above).
+\end{itemize}
+
 \Defclass {parse-result-client}
 
 This class should generally be used as a superclass for client classes

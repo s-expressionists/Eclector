@@ -4,7 +4,9 @@
    #:alexandria)
 
   (:shadow
-   #:read)
+   #:read
+   #:read-preserving-whitespace
+   #:read-from-string)
 
   ;; Source location protocol
   (:export
@@ -18,7 +20,9 @@
 
   ;; Read protocol
   (:export
-   #:read)
+   #:read
+   #:read-preserving-whitespace
+   #:read-from-string)
 
   ;; Client protocol class (can be used as a superclass)
   (:export

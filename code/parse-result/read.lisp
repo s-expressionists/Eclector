@@ -8,13 +8,15 @@
 
 (defvar *start*)
 
-(flet ((skip-whitespace (stream eof-error-p)
+(flet ((skip-whitespace (stream eof-error-p skip-all-p)
          (loop with readtable = eclector.reader:*readtable*
+               for i from 0
                for char = (eclector.reader:read-char stream eof-error-p)
                when (null char)
                  do (return nil)
-               while (eq (eclector.readtable:syntax-type readtable char)
-                         :whitespace)
+               while (and (eq (eclector.readtable:syntax-type readtable char)
+                              :whitespace)
+                          (or skip-all-p (zerop i)))
                finally (progn
                          (unread-char char stream)
                          (return t)))))
@@ -32,13 +34,13 @@
       ;; then update *START*. This way, the source location for an
       ;; object subsequently read from INPUT-STREAM will not include
       ;; the whitespace.
-      (skip-whitespace input-stream nil)
+      (skip-whitespace input-stream nil t)
       (setf *start* (source-position client input-stream))))
 
   (defmethod eclector.reader:read-common :around
       ((client parse-result-client) input-stream eof-error-p eof-value)
     (let ((*stack* (cons '() *stack*)))
-      (unless (skip-whitespace input-stream eof-error-p)
+      (unless (skip-whitespace input-stream eof-error-p t)
         (return-from eclector.reader:read-common eof-value))
       (let* (;; *START* is used and potentially modified in
              ;; NOTE-SKIPPED-INPUT to reflect skipped input
@@ -54,9 +56,7 @@
         (push parse-result (second *stack*))
         (values result parse-result))))
 
-  (defun read (client &optional (input-stream *standard-input*)
-                                (eof-error-p t)
-                                (eof-value nil))
+  (defun read-aux (client input-stream eof-error-p eof-value preserve-whitespace-p)
     (multiple-value-bind (result parse-result orphan-results)
         (let ((eclector.reader:*client* client)
               (*stack* (list '())))
@@ -67,14 +67,46 @@
             (eclector.reader::read-aux
              input-stream eof-error-p eof-value nil t)
             (reverse (rest (first *stack*)))))
-      ;; If we come here, that means that either the call to READ
+      ;; If we come here, that means that either the call to READ-AUX
       ;; succeeded without encountering end-of-file, or that
       ;; EOF-ERROR-P is false, end-of-file was encountered, and
       ;; EOF-VALUE was returned.  In the latter case, we want READ to
       ;; return EOF-VALUE.
       (cond ((and (null eof-error-p) (eq eof-value result))
              eof-value)
+            (preserve-whitespace-p
+             (values parse-result orphan-results))
             (t
-             ;; Now skip any trailing whitespace.
-             (skip-whitespace input-stream nil)
+             ;; We are not supposed to preserve whitespace but had to
+             ;; call READ-AUX with PRESERVE-WHITESPACE-P true to get
+             ;; good source information.  To emulate the result of
+             ;; calling READ-AUX with PRESERVE-WHITESPACE-P false, we
+             ;; skip zero or one characters of trailing whitespace
+             ;; here.
+             (skip-whitespace input-stream nil nil)
              (values parse-result orphan-results))))))
+
+(defun read (client &optional (input-stream *standard-input*)
+                              (eof-error-p t)
+                              (eof-value nil))
+  (read-aux client input-stream eof-error-p eof-value nil))
+
+(defun read-preserving-whitespace (client &optional
+                                          (input-stream *standard-input*)
+                                          (eof-error-p t)
+                                          (eof-value nil))
+  (read-aux client input-stream eof-error-p eof-value t))
+
+(defun read-from-string (client string &optional
+                                       (eof-error-p t)
+                                       (eof-value nil)
+                                       &key
+                                       (start 0)
+                                       (end nil)
+                                       (preserve-whitespace nil))
+  (let ((index))
+    (multiple-value-bind (result orphan-results)
+        (with-input-from-string (stream string :start start :end end
+                                               :index index)
+          (read-aux client stream eof-error-p eof-value preserve-whitespace))
+      (values result index orphan-results))))
