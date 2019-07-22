@@ -150,6 +150,34 @@
           ("#!"                         nil eclector.reader:unknown-macro-sub-character)
           ("#!"                         t   eclector.reader:unknown-macro-sub-character))))
 
+(test read-preserving-whitespace/smoke
+  "Smoke test for the READ-PRESERVING-WHITESPACE function."
+
+  (mapc (lambda (input-and-expected)
+          (destructuring-bind (input eof-error-p eof-value
+                               expected-result &optional expected-position)
+              input-and-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (eclector.reader:read-preserving-whitespace
+                                stream eof-error-p eof-value)
+                               (file-position stream)))))
+              (case expected-result
+                (eclector.reader:end-of-file
+                 (signals-printable eclector.reader:end-of-file
+                   (do-it)))
+                (t
+                 (is (equal (values expected-result expected-position)
+                            (do-it))))))))
+
+        '((""        t   nil  eclector.reader:end-of-file)
+          (""        nil :eof :eof                        0)
+
+          (":foo"    t   nil  :foo                        4)
+          (":foo "   t   nil  :foo                        4)
+          (":foo  "  t   nil  :foo                        4)
+          (":foo  1" t   nil  :foo                        4))))
+
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
 
