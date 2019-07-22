@@ -414,15 +414,17 @@ This package provides clients with a reader that behaves similarly to
 \texttt{cl:read} but returns custom parse result objects controlled by
 the client.  Some parse results correspond to things like symbols,
 numbers and lists that \texttt{cl:read} would return, while others, if
-the client chooses, represent comments and other kind of input that
+the client chooses, represent comments and other kinds of input that
 \texttt{cl:read} would discard.  Furthermore, clients can associate
 source location information with parse results.
 
-Clients using this package pass an instance for which methods on the
-generic functions described below are applicable to \texttt{read}.
-Suitable client classes can be constructed by using
-\texttt{parse-result-client} as a superclass and at least defining a
-method on the generic function \texttt{make-expression-result}.
+Clients using this package pass a ``client'' instance for which
+methods on the generic functions described below are applicable to
+\texttt{read}, \texttt{read-preserving-whitespace} or
+\texttt{read-from-string}.  Suitable client classes can be constructed
+by using \texttt{parse-result-client} as a superclass and at least
+defining a method on the generic function
+\texttt{make-expression-result}.
 
 \Defun {read} {client \optional (input-stream \texttt{*standard-input*})\\
   (eof-error-p \texttt{t})
@@ -430,7 +432,7 @@ method on the generic function \texttt{make-expression-result}.
 
 This function is the main entry point for this variant of the reader.
 It is in many ways similar to the standard \commonlisp{} function
-\texttt{read}.  The differences are:
+\texttt{cl:read}.  The differences are:
 
 \begin{itemize}
 \item A client instance must be supplied as the first argument.
