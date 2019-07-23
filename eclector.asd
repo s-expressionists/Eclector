@@ -13,7 +13,9 @@
   :components  ((:module "base"
                  :pathname "code/base"
                  :components ((:file "package")
-                              (:file "conditions")))
+                              (:file "conditions")
+                              (:file "condition-reporters-english")
+                              (:file "read-char")))
 
                 (:module "readtable"
                  :pathname "code/readtable"

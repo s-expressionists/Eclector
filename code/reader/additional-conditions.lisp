@@ -1,12 +1,5 @@
 (cl:in-package #:eclector.reader)
 
-;;; End of file
-
-;;; Adds a stream position to CL:END-OF-FILE.
-(define-condition end-of-file (stream-position-reader-error
-                               cl:end-of-file)
-  ())
-
 ;;; Type error
 
 (define-condition read-object-type-error (stream-position-reader-error

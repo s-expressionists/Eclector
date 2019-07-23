@@ -9,9 +9,6 @@
              (language acclimation:english))
           ,@body)))
 
-  (define-reporter ((condition end-of-file) stream)
-    (format stream "Unexpected end of file."))
-
   (define-reporter ((condition read-object-type-error) stream)
     (format stream "The read object ~s is not of the required type ~s."
             (type-error-datum condition)

@@ -3,7 +3,7 @@
 (defun parse-parameter-and-sub-char (stream)
   (loop for parameter = 0 then (+ (* 10 parameter) value)
         for parameter-given = nil then t
-        for char2 = (read-char stream t nil t)
+        for char2 = (eclector.base:read-char stream t nil t)
         for value = (digit-char-p char2)
         until (null value)
         finally (return (values (if parameter-given parameter nil)

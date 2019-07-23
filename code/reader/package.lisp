@@ -7,13 +7,21 @@
   ;; clash with the corresponding symbols in the host package
   ;; COMMON-LISP.
   (:shadow
-   #:read-char
    #:peek-char
    #:read
    #:read-preserving-whitespace
-   #:read-from-string
+   #:read-from-string)
 
-   #:end-of-file)
+  (:shadowing-import-from #:eclector.base
+   #:end-of-file
+
+   #:read-char)
+
+  (:import-from #:eclector.base
+   #:%reader-error
+
+   #:stream-position-reader-error
+   #:stream-position)
 
   ;; Contrary to other variables affecting the reader, we cannot use
   ;; the host version of *READTABLE* because we do not necessarily
@@ -23,12 +31,6 @@
   ;; Repository) document suggesting such an API.
   (:shadowing-import-from #:eclector.readtable
    #:*readtable*)
-
-  (:import-from #:eclector.base
-   #:%reader-error
-
-   #:stream-position-reader-error
-   #:stream-position)
 
   (:import-from #:eclector.readtable
    #:unknown-macro-sub-character)

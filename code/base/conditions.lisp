@@ -11,3 +11,7 @@
 (define-condition stream-position-reader-error (acclimation:condition reader-error)
   ((%stream-position :initarg :stream-position
                      :reader stream-position)))
+
+;;; Adds a stream position to CL:END-OF-FILE.
+(define-condition end-of-file (stream-position-reader-error cl:end-of-file)
+  ())
