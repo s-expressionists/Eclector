@@ -291,14 +291,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="311.05043"
-     inkscape:cy="188.17065"
+     inkscape:cx="210.03518"
+     inkscape:cy="182.10973"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1136"
-     inkscape:window-x="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      showguides="true"
@@ -326,7 +326,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1051,6 +1051,51 @@
            x="7.0266929"
            y="-51.135509"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332px">cl:*read-base*</tspan></text>
+    </g>
+    <g
+       id="g1200"
+       transform="translate(-38.608075,19.474056)"
+       style="fill:#ff0000;fill-opacity:1">
+      <rect
+         y="59.063984"
+         x="50.45982"
+         height="4.7247005"
+         width="21.733629"
+         id="rect1194"
+         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:0.30000001;stroke-miterlimit:4;stroke-dasharray:1.80000011, 0.30000001;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text1198"
+         y="62.478466"
+         x="51.592567"
+         style="font-style:normal;font-weight:normal;font-size:3.52777767px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           id="tspan1196"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke-width:0.26458332px"
+           y="62.478466"
+           x="51.592567"
+           sodipodi:role="line">find-character</tspan></text>
+    </g>
+    <g
+       transform="translate(-38.608075,27.625777)"
+       id="g1208">
+      <rect
+         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:0.30000001;stroke-miterlimit:4;stroke-dasharray:1.80000011, 0.30000001;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect1202"
+         width="21.733629"
+         height="4.7247005"
+         x="50.45982"
+         y="59.063984" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:3.52777767px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="51.592567"
+         y="62.478466"
+         id="text1206"><tspan
+           sodipodi:role="line"
+           x="51.592567"
+           y="62.478466"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332px"
+           id="tspan1204">make-structure-instance</tspan></text>
     </g>
   </g>
 </svg>
