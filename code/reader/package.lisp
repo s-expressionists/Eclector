@@ -21,7 +21,10 @@
    #:%reader-error
 
    #:stream-position-reader-error
-   #:stream-position)
+   #:stream-position
+
+   #:missing-delimiter
+   #:delimiter)
 
   ;; Contrary to other variables affecting the reader, we cannot use
   ;; the host version of *READTABLE* because we do not necessarily
@@ -33,6 +36,7 @@
    #:*readtable*)
 
   (:import-from #:eclector.readtable
+   #:unterminated-dispatch-macro
    #:unknown-macro-sub-character)
 
   (:export
@@ -80,6 +84,14 @@
   (:export
    #:end-of-file
 
+   #:missing-delimiter
+   #:delimiter
+
+   #:unterminated-list
+   #:unterminated-vector
+   #:unterminated-string
+   #:unterminated-block-comment
+
    #:read-object-type-error
 
    #:backquote-condition
@@ -107,6 +119,7 @@
    #:symbol-can-have-at-most-two-package-markers
    #:uninterned-symbol-must-not-contain-package-marker
 
+   #:unterminated-dispatch-macro
    #:unknown-macro-sub-character
    #:numeric-parameter-supplied-but-ignored
    #:numeric-parameter-not-supplied-but-required

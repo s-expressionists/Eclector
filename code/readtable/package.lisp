@@ -22,6 +22,7 @@
   (:export
    #:copy-readtable-into
 
+   #:unterminated-dispatch-macro
    #:sub-char-must-not-be-a-decimal-digit
    #:char-must-be-a-dispatching-character
    #:unknown-macro-sub-character

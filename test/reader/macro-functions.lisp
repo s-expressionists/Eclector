@@ -39,23 +39,23 @@
                          (values (eclector.reader::double-quote stream #\")
                                  (file-position stream)))))
                 (case expected
-                  (eclector.reader:end-of-file
-                   (signals-printable eclector.reader:end-of-file (do-it)))
+                  (eclector.reader:unterminated-string
+                   (signals-printable eclector.reader:unterminated-string (do-it)))
                   (t
                    (multiple-value-bind (result position) (do-it)
                      (is (equal expected          result))
                      (is (eql   expected-position position)))))))))
-        '((""       eclector.reader:end-of-file)
+        '((""       eclector.reader:unterminated-string)
 
           ("\""     "")
 
-          ("a"      eclector.reader:end-of-file)
+          ("a"      eclector.reader:unterminated-string)
 
-          ("\\a"    eclector.reader:end-of-file)
+          ("\\a"    eclector.reader:unterminated-string)
           ("\\a\""  "a")
-          ("\\\\"   eclector.reader:end-of-file)
+          ("\\\\"   eclector.reader:unterminated-string)
           ("\\\\\"" "\\")
-          ("\\\""   eclector.reader:end-of-file)
+          ("\\\""   eclector.reader:unterminated-string)
           ("\\\"\"" "\""))))
 
 (test backquote/smoke
@@ -133,8 +133,8 @@
                        (values (eclector.reader::left-parenthesis stream #\()
                                (file-position stream)))))
               (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
+                (eclector.reader:unterminated-list
+                 (signals-printable eclector.reader:unterminated-list (do-it)))
                 (eclector.reader:object-must-follow-consing-dot
                  (signals-printable eclector.reader:object-must-follow-consing-dot
                    (do-it)))
@@ -149,10 +149,10 @@
 
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
-        '((""        eclector.reader:end-of-file)
+        '((""        eclector.reader:unterminated-list)
 
           ("."       eclector.reader:invalid-context-for-consing-dot)
-          ("1 ."     eclector.reader:end-of-file)
+          ("1 ."     eclector.reader:unterminated-list)
           ("1 . )"   eclector.reader:object-must-follow-consing-dot)
           ("1 . 2 3" eclector.reader:multiple-objects-following-consing-dot)
           ("1 . ."   eclector.reader:invalid-context-for-consing-dot)
@@ -223,8 +223,8 @@
                                   stream #\( parameter)
                                  (file-position stream))))))
               (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
+                (eclector.reader:unterminated-vector
+                 (signals-printable eclector.reader:unterminated-vector (do-it)))
                 (eclector.reader:no-elements-found
                  (signals-printable eclector.reader:no-elements-found (do-it)))
                 (eclector.reader:too-many-elements
@@ -235,8 +235,8 @@
                    (is (equalp expected          result))
                    (is (eql    expected-position position))))))))
         '(;; Errors
-          (""       nil nil eclector.reader:end-of-file)
-          ("1"      nil nil eclector.reader:end-of-file)
+          (""       nil nil eclector.reader:unterminated-vector)
+          ("1"      nil nil eclector.reader:unterminated-vector)
           (")"      2   nil eclector.reader:no-elements-found)
           ("1 1 1)" 2   nil eclector.reader:too-many-elements)
           ;; Valid
@@ -616,8 +616,9 @@
                            stream #\| parameter)
                           (file-position stream))))))
               (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
+                (eclector.reader:unterminated-block-comment
+                 (signals-printable eclector.reader:unterminated-block-comment
+                   (do-it)))
                 (eclector.reader:numeric-parameter-supplied-but-ignored
                  (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it)))
@@ -626,10 +627,10 @@
                    (is (equalp expected value))
                    (is (equal expected-position position))))))))
         '(;; Errors
-          (""         nil nil eclector.reader:end-of-file)
-          ("a"        nil nil eclector.reader:end-of-file)
-          ("a|"       nil nil eclector.reader:end-of-file)
-          ("a#||#"    nil nil eclector.reader:end-of-file)
+          (""         nil nil eclector.reader:unterminated-block-comment)
+          ("a"        nil nil eclector.reader:unterminated-block-comment)
+          ("a|"       nil nil eclector.reader:unterminated-block-comment)
+          ("a#||#"    nil nil eclector.reader:unterminated-block-comment)
           ("a|#"      1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           ;; Valid
           ("a|#"      nil nil nil)

@@ -15,7 +15,10 @@
    #:stream-position-reader-error
    #:stream-position
 
-   #:end-of-file)
+   #:end-of-file
+
+   #:missing-delimiter
+   #:delimiter)
 
   ;; Exported for eclector.reader, not public use.
   (:export

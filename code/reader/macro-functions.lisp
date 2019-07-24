@@ -69,17 +69,21 @@
 ;;; return a simple vector.
 
 (defun double-quote (stream char)
-  (loop with result = (make-array 100
-                                  :element-type 'character
-                                  :adjustable t
-                                  :fill-pointer 0)
-        with readtable = *readtable*
-        for char2 = (read-char stream t nil t)
-        until (eql char2 char)
-        when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
-        do (setf char2 (read-char stream t nil t))
-        do (vector-push-extend char2 result)
-        finally (return (copy-seq result))))
+  (let ((result (make-array 100 :element-type 'character
+                                :adjustable t
+                                :fill-pointer 0)))
+    (handler-case
+        (loop with readtable = *readtable*
+              for char2 = (read-char stream t nil t)
+              until (eql char2 char)
+              when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
+                do (setf char2 (read-char stream t nil t))
+              do (vector-push-extend char2 result)
+              finally (return (copy-seq result)))
+      (end-of-file (condition)
+        (%reader-error stream 'unterminated-string
+                       :stream-position (stream-position condition)
+                       :delimiter char)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -220,7 +224,6 @@
 ;;; we signal an ERROR.
 
 (defun left-parenthesis (stream char)
-  (declare (ignore char))
   (let ((reversed-result '())
         (tail nil)
         (*consing-dot-allowed-p* t))
@@ -228,21 +231,27 @@
       (handler-case
           (loop for object = (let ((*consing-dot-allowed-p* nil))
                                (read stream t nil t))
-                then (read stream t nil t)
+                  then (read stream t nil t)
                 if (eq object *consing-dot*)
-                do (setf *consing-dot-allowed-p* nil)
-                   (handler-case
-                       (setf tail (read stream t nil t))
-                     (end-of-list ()
-                       (%reader-error stream 'object-must-follow-consing-dot)))
-                   ;; This call to read must not succeed.
-                   (read stream t nil t)
-                   (%reader-error stream 'multiple-objects-following-consing-dot)
+                  do (setf *consing-dot-allowed-p* nil)
+                     (handler-case
+                         (setf tail (read stream t nil t))
+                       (end-of-list ()
+                         (%reader-error stream 'object-must-follow-consing-dot)))
+                     ;; This call to read must not succeed.
+                     (read stream t nil t)
+                     (%reader-error
+                      stream 'multiple-objects-following-consing-dot)
                 else
-                do (push object reversed-result))
+                  do (push object reversed-result))
         (end-of-list ()
           (return-from left-parenthesis
-            (nreconc reversed-result tail)))))))
+            (nreconc reversed-result tail)))
+        ((and end-of-file (not missing-delimiter)) (condition)
+          (%reader-error stream 'unterminated-list
+                         :stream-position (stream-position condition)
+                         :delimiter char)))
+      (nreconc reversed-result tail))))
 
 (defun right-parenthesis (stream char)
   (declare (ignore char))
@@ -277,7 +286,12 @@
              (handler-case
                  (values (read stream t nil t) t)
                (end-of-list ()
-                 (values nil nil)))))
+                 (values nil nil))
+               (end-of-file (condition)
+                 (%reader-error
+                  stream 'unterminated-vector
+                  :stream-position (stream-position condition)
+                  :delimiter #\))))))
       (cond
         (*read-suppress*
          (loop for elementp = (nth-value 1 (next-element))
@@ -579,25 +593,29 @@
                                    :start index)
                              result))))))))
 
-(defun sharpsign-vertical-bar (stream char parameter)
-  (declare (ignore char))
+(defun sharpsign-vertical-bar (stream sub-char parameter)
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-vertical-bar parameter))
-  (loop for char = (read-char stream t nil t)
-        do (cond ((eql char #\#)
-                  (let ((char2 (read-char stream t nil t)))
-                    (if (eql char2 #\|)
-                        (sharpsign-vertical-bar stream #\| nil)
-                        (unread-char char2 stream))))
-                 ((eql char #\|)
-                  (let ((char2 (read-char stream t nil t)))
-                    (if (eql char2 #\#)
-                        (progn
-                          (setf *skip-reason* :block-comment)
-                          (return-from sharpsign-vertical-bar (values)))
-                        (unread-char char2 stream))))
-                 (t
-                  nil))))
+  (handler-case
+      (loop for char = (read-char stream t nil t)
+            do (cond ((eql char #\#)
+                      (let ((char2 (read-char stream t nil t)))
+                        (if (eql char2 sub-char)
+                            (sharpsign-vertical-bar stream sub-char nil)
+                            (unread-char char2 stream))))
+                     ((eql char sub-char)
+                      (let ((char2 (read-char stream t nil t)))
+                        (if (eql char2 #\#)
+                            (progn
+                              (setf *skip-reason* :block-comment)
+                              (return-from sharpsign-vertical-bar (values)))
+                            (unread-char char2 stream))))
+                     (t
+                      nil)))
+    ((and end-of-file (not missing-delimiter)) (condition)
+      (%reader-error stream 'unterminated-block-comment
+                     :stream-position (stream-position condition)
+                     :delimiter sub-char))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

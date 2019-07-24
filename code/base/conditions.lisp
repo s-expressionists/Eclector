@@ -15,3 +15,6 @@
 ;;; Adds a stream position to CL:END-OF-FILE.
 (define-condition end-of-file (stream-position-reader-error cl:end-of-file)
   ())
+
+(define-condition missing-delimiter (end-of-file)
+  ((%delimiter :initarg :delimiter :reader delimiter)))

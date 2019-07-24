@@ -116,8 +116,8 @@
                 (eclector.reader:unknown-macro-sub-character
                  (signals-printable eclector.reader:unknown-macro-sub-character
                    (do-it)))
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file
+                (eclector.reader:unterminated-dispatch-macro
+                 (signals-printable eclector.reader:unterminated-dispatch-macro
                    (do-it)))
                 (t
                  (multiple-value-bind (result position) (do-it)
@@ -153,8 +153,8 @@
           ("#!"                         nil eclector.reader:unknown-macro-sub-character)
           ("#!"                         t   eclector.reader:unknown-macro-sub-character)
           ;; End of input while trying to read macro sub character.
-          ("#"                          nil eclector.reader:end-of-file)
-          ("#"                          t   eclector.reader:end-of-file))))
+          ("#"                          nil eclector.reader:unterminated-dispatch-macro)
+          ("#"                          t   eclector.reader:unterminated-dispatch-macro))))
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."

@@ -10,13 +10,20 @@
                                 char2))))
 
 (defun make-dispatch-invoker (readtable disp-char)
-  (lambda (stream char)
+  (alexandria:named-lambda dispatcher (stream char)
     (declare (ignore char))
     (multiple-value-bind (parameter sub-char)
-        (parse-parameter-and-sub-char stream)
+        (handler-case
+            (parse-parameter-and-sub-char stream)
+          (end-of-file (condition)
+            (eclector.base:%reader-error
+             stream 'eclector.readtable:unterminated-dispatch-macro
+             :stream-position (eclector.base:stream-position condition)
+             :disp-char disp-char)
+            (return-from dispatcher)))
       (let ((macro-function
-             (eclector.readtable:get-dispatch-macro-character
-              readtable disp-char sub-char)))
+              (eclector.readtable:get-dispatch-macro-character
+               readtable disp-char sub-char)))
         ;; If there is no macro function for SUB-CHAR, signal an error
         ;; irregardless of *READ-SUPPRESS* since the Hyperspec entry
         ;; for variable *READ-SUPPRESS* says

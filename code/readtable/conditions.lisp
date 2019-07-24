@@ -3,6 +3,12 @@
 (define-condition dispatch-macro-character-error (acclimation:condition error)
   ((%disp-char :initarg :disp-char :reader disp-char)))
 
+;;; Signaled when end of input is encountered while reading the sub
+;;; character of a dispatching macro character.
+(define-condition unterminated-dispatch-macro (dispatch-macro-character-error
+                                               eclector.base:missing-delimiter)
+  ())
+
 ;;; Signaled when an attempt is made to set up a digit character as a
 ;;; sub character of a dispatching macro character.
 (define-condition sub-char-must-not-be-a-decimal-digit (dispatch-macro-character-error)

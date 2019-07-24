@@ -1,5 +1,19 @@
 (cl:in-package #:eclector.reader)
 
+;;; Specialized end of input conditions
+
+(define-condition unterminated-list (missing-delimiter)
+  ())
+
+(define-condition unterminated-vector (missing-delimiter)
+  ())
+
+(define-condition unterminated-string (missing-delimiter)
+  ())
+
+(define-condition unterminated-block-comment (missing-delimiter)
+  ())
+
 ;;; Type error
 
 (define-condition read-object-type-error (stream-position-reader-error

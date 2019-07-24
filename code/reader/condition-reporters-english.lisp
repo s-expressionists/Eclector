@@ -9,6 +9,33 @@
              (language acclimation:english))
           ,@body)))
 
+  ;; For the following reporters, we use the DELIMITER slot instead of
+  ;; a fixed character in the report since the reader macros may have
+  ;; been installed on non-default (sub-) characters.
+  (define-reporter ((condition unterminated-list) stream)
+    (let ((delimiter (delimiter condition)))
+      (format stream "While reading list, expected ~:c when input ~
+                      ended."
+              delimiter)))
+
+  (define-reporter ((condition unterminated-vector) stream)
+    (let ((delimiter (delimiter condition)))
+      (format stream "While reading vector, expected ~:c when input ~
+                      ended."
+                delimiter)))
+
+  (define-reporter ((condition unterminated-string) stream)
+    (let ((delimiter (delimiter condition)))
+      (format stream "While reading string, expected ~:c when input ~
+                      ended."
+              delimiter)))
+
+  (define-reporter ((condition unterminated-block-comment) stream)
+    (let ((delimiter (delimiter condition)))
+      (format stream "While reading block comment, expected ~:c ~:c ~
+                      when input ended."
+              delimiter #\#)))
+
   (define-reporter ((condition read-object-type-error) stream)
     (format stream "The read object ~s is not of the required type ~s."
             (type-error-datum condition)
