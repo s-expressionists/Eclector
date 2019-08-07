@@ -100,10 +100,14 @@
 
    #:read-object-type-error
 
-   #:backquote-condition
-   #:invalid-context-for-backquote
-   #:comma-not-inside-backquote
-   #:object-must-follow-comma
+   #:backquote-error
+   #:backquote-context-error
+   #:backquote-in-invalid-context
+   #:unquote-error
+   #:invalid-context-for-unquote
+   #:unquote-not-inside-backquote
+   #:unquote-in-invalid-context
+   #:object-must-follow-unquote
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
 

@@ -6,6 +6,10 @@
 
 (defparameter *backquote-in-subforms-allowed-p* t)
 
+(defparameter *backquote-forbidden* nil)
+
+(defparameter *unquote-forbidden* nil)
+
 (defparameter *backquote-depth* 0)
 
 (defvar *consing-dot* '#:|.|)

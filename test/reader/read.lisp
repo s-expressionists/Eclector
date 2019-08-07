@@ -115,13 +115,15 @@
           ("#+(or) #.(error \"foo\") 2" nil 2)
 
           ;; Some context-sensitive cases.
-          ("#C(1 `,2)"                  nil eclector.reader:invalid-context-for-backquote)
-          ("#+`,common-lisp 1"          nil eclector.reader:invalid-context-for-backquote)
-          (",foo"                       nil eclector.reader:comma-not-inside-backquote)
-          (",@foo"                      nil eclector.reader:comma-not-inside-backquote)
-          ("`(,)"                       nil eclector.reader:object-must-follow-comma)
-          ("`(,@)"                      nil eclector.reader:object-must-follow-comma)
-          ("`(,.)"                      nil eclector.reader:object-must-follow-comma)
+          ("#C(1 `,2)"                  nil eclector.reader:backquote-in-invalid-context)
+          ("#C(#.`,(+ 1 2) 2)"          nil #C(3 2))
+          ("#+`,common-lisp 1"          nil eclector.reader:backquote-in-invalid-context)
+          ("#+#.`,:common-lisp 1"       nil 1)
+          (",foo"                       nil eclector.reader:unquote-not-inside-backquote)
+          (",@foo"                      nil eclector.reader:unquote-not-inside-backquote)
+          ("`(,)"                       nil eclector.reader:object-must-follow-unquote)
+          ("`(,@)"                      nil eclector.reader:object-must-follow-unquote)
+          ("`(,.)"                      nil eclector.reader:object-must-follow-unquote)
           ("#1=`(,2)"                   nil (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
 
           ;; Consing dot

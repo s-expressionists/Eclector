@@ -28,7 +28,8 @@
                     (when (typep condition condition-type)
                       (when (typep condition
                                    `(and reader-error
-                                         (not eclector.reader:backquote-condition)))
+                                         (not (or eclector.reader:unquote-splicing-in-dotted-list
+                                                  eclector.reader:unquote-splicing-at-top))))
                         (is (not (null (stream-error-stream condition)))))
                       (is (not (string= "" (princ-to-string condition))))
                       (return-from %signals-printable)))))

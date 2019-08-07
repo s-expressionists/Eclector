@@ -60,13 +60,19 @@
 (test backquote/smoke
   "Smoke test for the BACKQUOTE reader macro function."
 
-  (mapc (lambda (input-backquote-allowed-expected)
-          (destructuring-bind (input backquote-allowed expected
+  (mapc (lambda (input-forbidden-expected)
+          (destructuring-bind (input backquote-forbidden unquote-forbidden
+                               expected
                                &optional (expected-position (length input)))
-              input-backquote-allowed-expected
+              input-forbidden-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (values (let ((eclector.reader::*backquote-allowed-p* backquote-allowed)
+                       (values (let ((eclector.reader::*backquote-forbidden*
+                                       (if backquote-forbidden
+                                           'eclector.reader::sharpsign-a
+                                           nil))
+                                     (eclector.reader::*unquote-forbidden*
+                                       'eclector.reader::sharpsign-a)
                                      (eclector.reader::*backquote-depth* 0))
                                  (eclector.reader::backquote stream #\`))
                                (file-position stream)))))
@@ -77,22 +83,27 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""   t   eclector.reader:end-of-file)
-          ("1"  nil eclector.reader:invalid-context-for-backquote)
+          (""   nil nil eclector.reader:end-of-file)
+          ("1"  t   nil eclector.reader:backquote-in-invalid-context)
           ;; Valid
-          ("1"  t   (eclector.reader:quasiquote 1))
-          (",1" t   (eclector.reader:quasiquote (eclector.reader:unquote 1))))))
+          ("1"  nil nil (eclector.reader:quasiquote 1))
+          (",1" nil nil (eclector.reader:quasiquote (eclector.reader:unquote 1))))))
 
 (test comma/smoke
   "Smoke test for the COMMA reader macro function."
 
-  (mapc (lambda (input-backquote-depth-expected)
-          (destructuring-bind (input backquote-depth expected
+  (mapc (lambda (input-backquote-context-expected)
+          (destructuring-bind (input unquote-forbidden backquote-depth
+                               expected
                                &optional (expected-position (length input)))
-              input-backquote-depth-expected
+              input-backquote-context-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (values (let ((eclector.reader::*backquote-depth*
+                       (values (let ((eclector.reader::*unquote-forbidden*
+                                       (if unquote-forbidden
+                                           'eclector.reader::sharpsign-a
+                                           nil))
+                                     (eclector.reader::*backquote-depth*
                                        backquote-depth))
                                  (eclector.reader::comma stream #\,))
                                (file-position stream)))))
@@ -103,14 +114,15 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""       1   eclector.reader:end-of-file)
-          ("@"      1   eclector.reader:end-of-file)
-          ("."      1   eclector.reader:end-of-file)
-          ("1"      0   eclector.reader:comma-not-inside-backquote)
+          (""       nil 1 eclector.reader:end-of-file)
+          ("@"      nil 1 eclector.reader:end-of-file)
+          ("."      nil 1 eclector.reader:end-of-file)
+          ("1"      nil 0 eclector.reader:unquote-not-inside-backquote)
+          ("1"      t   1 eclector.reader:unquote-in-invalid-context)
           ;; Valid
-          ("1"      1   (eclector.reader:unquote 1))
-          ("@1"     1   (eclector.reader:unquote-splicing 1))
-          (".1"     1   (eclector.reader:unquote-splicing 1)))))
+          ("1"      nil 1 (eclector.reader:unquote 1))
+          ("@1"     nil 1 (eclector.reader:unquote-splicing 1))
+          (".1"     nil 1 (eclector.reader:unquote-splicing 1)))))
 
 (test left-parenthesis/smoke
   "Smoke test for the LEFT-PARENTHESIS reader macro function."
@@ -585,7 +597,8 @@
               input-parameter-read-suppress-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (let ((*read-suppress* read-suppress))
+                       (let ((eclector.reader::*backquote-depth* 1)
+                             (*read-suppress* read-suppress))
                          (values
                           (eclector.reader::sharpsign-a stream #\A parameter)
                           (file-position stream))))))
@@ -597,6 +610,7 @@
                    (is (equal (length input) position))))))))
         '(;; Errors
           (""          1   nil eclector.reader:end-of-file)
+          ("(,1)"      1   nil eclector.reader:unquote-in-invalid-context)
           ("(1)"       2   nil eclector.reader:read-object-type-error)
           ("(1 (1))"   2   nil eclector.reader:read-object-type-error)
           ("((1) 1)"   2   nil eclector.reader:read-object-type-error)
@@ -605,6 +619,8 @@
           ("(1)"       nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
           ;; Valid
           ("()"        0   nil #0A())
+          ("(`,1)"     0   nil #0A((eclector.reader:quasiquote
+                                    (eclector.reader:unquote 1))))
           ("(1 2)"     0   nil #0A(1 2))
           ("(((1)))"   0   nil #0A(((1))))
           ("()"        1   nil #1A())
@@ -683,7 +699,8 @@
               input-parameter-read-suppress-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (let ((*read-suppress* read-suppress))
+                       (let ((*read-suppress* read-suppress)
+                             (eclector.reader::*backquote-depth* 1))
                          (values
                           (eclector.reader::sharpsign-c stream #\C parameter)
                           (file-position stream))))))
@@ -702,6 +719,8 @@
           ("(:a 0)"  nil nil eclector.reader:read-object-type-error)
           ("(0 :a)"  nil nil eclector.reader:read-object-type-error)
           ("(0 0)"   1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ("(`,0 0)" nil nil eclector.reader:backquote-in-invalid-context)
+          ("(,0 0)"  nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid
           ("(0 0)"   nil nil #C(0 0))
           ("(-1 0)"  nil nil #C(-1 0))
@@ -730,6 +749,7 @@
             (flet ((do-it ()
                      (with-input-from-string (stream input)
                        (let ((*read-suppress* read-suppress)
+                             (eclector.reader::*backquote-depth* 1)
                              (eclector.reader::*client*
                                (make-instance 'sharpsign-s-client)))
                          (values
@@ -742,26 +762,34 @@
                    (is (equal expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          ("(foo)"        1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          ("(foo)"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
 
-          (""             nil nil eclector.reader:end-of-file)
-          ("1"            nil nil eclector.reader:non-list-following-sharpsign-s)
-          (" (foo)"       nil nil eclector.reader:non-list-following-sharpsign-s)
-          ("(foo . 1)"    nil nil eclector.reader:invalid-context-for-consing-dot)
+          (""               nil nil eclector.reader:end-of-file)
+          ("1"              nil nil eclector.reader:non-list-following-sharpsign-s)
+          (" (foo)"         nil nil eclector.reader:non-list-following-sharpsign-s)
+          ("(foo . 1)"      nil nil eclector.reader:invalid-context-for-consing-dot)
 
-          ("()"           nil nil eclector.reader:no-structure-type-name-found)
-          ("(1)"          nil nil eclector.reader:structure-type-name-is-not-a-symbol)
+          ("()"             nil nil eclector.reader:no-structure-type-name-found)
+          ("(1)"            nil nil eclector.reader:structure-type-name-is-not-a-symbol)
 
-          ("(foo 1 2)"    nil nil eclector.reader:slot-name-is-not-a-symbol)
-          ("(foo :bar)"   nil nil eclector.reader:no-slot-value-found)
+          ("(foo 1 2)"      nil nil eclector.reader:slot-name-is-not-a-symbol)
+          ("(foo :bar)"     nil nil eclector.reader:no-slot-value-found)
+
+          ("(`,foo :bar 1)" nil nil eclector.reader:backquote-in-invalid-context)
+          ("(,foo :bar 1)"  nil nil eclector.reader:unquote-in-invalid-context)
+          ("(foo `,:bar 1)" nil nil eclector.reader:backquote-in-invalid-context)
+          ("(foo ,:bar 1)"  nil nil eclector.reader:unquote-in-invalid-context)
+          ("(foo :bar ,1)"  nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid
-          ("(foo)"        nil nil (foo))
-          ("(foo :bar 1)" nil nil (foo :bar 1))
+          ("(foo)"          nil nil (foo))
+          ("(foo :bar 1)"   nil nil (foo :bar 1))
+          ("(foo :bar `,1)" nil nil (foo :bar (eclector.reader:quasiquote
+                                               (eclector.reader:unquote 1))))
           ;; With *READ-SUPPRESS* bound to T
-          ("(foo)"        nil t   nil)
-          ("(foo 1 2)"    nil t   nil)
-          ("(foo :bar)"   nil t   nil)
-          ("(foo)"        1   t   nil))))
+          ("(foo)"          nil t   nil)
+          ("(foo 1 2)"      nil t   nil)
+          ("(foo :bar)"     nil t   nil)
+          ("(foo)"          1   t   nil))))
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
@@ -772,7 +800,8 @@
               input-parameter-read-suppress-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (let ((*read-suppress* read-suppress))
+                       (let ((*read-suppress* read-suppress)
+                             (eclector.reader::*backquote-depth* 1))
                          (values
                           (eclector.reader::sharpsign-p stream #\P parameter)
                           (file-position stream))))))
@@ -783,14 +812,19 @@
                    (is (equal expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          (""        nil nil eclector.reader:end-of-file)
-          ("1"       nil nil eclector.reader:read-object-type-error)
-          ("\"foo\"" 1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+          (""          nil nil eclector.reader:end-of-file)
+
+          ("1"         nil nil eclector.reader:read-object-type-error)
+
+          ("\"foo\""   1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+
+          ("`,\"foo\"" nil nil eclector.reader:backquote-in-invalid-context)
+          (",\"foo\""  nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid
-          ("\"foo\"" nil nil #P"foo")
+          ("\"foo\""   nil nil #P"foo")
           ;; With *READ-SUPPRESS* bound to T
-          ("\"foo\"" nil t   nil)
-          ("\"foo\"" 1   t   nil))))
+          ("\"foo\""   nil t   nil)
+          ("\"foo\""   1   t   nil))))
 
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
@@ -802,7 +836,8 @@
               input-parameter-context-expected
             (flet ((do-it (which)
                      (with-input-from-string (stream input)
-                       (let ((eclector.reader::*input-stream* stream))
+                       (let ((eclector.reader::*input-stream* stream)
+                             (eclector.reader::*backquote-depth* 1))
                          (values
                           (ecase which
                             (:plus  (eclector.reader::sharpsign-plus
@@ -826,6 +861,16 @@
                    (do-it :plus))
                  (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it :minus)))
+                (eclector.reader::backquote-in-invalid-context
+                 (signals-printable eclector.reader::backquote-in-invalid-context
+                   (do-it :plus))
+                 (signals-printable eclector.reader::backquote-in-invalid-context
+                   (do-it :minus)))
+                (eclector.reader::unquote-in-invalid-context
+                 (signals-printable eclector.reader::unquote-in-invalid-context
+                   (do-it :plus))
+                 (signals-printable eclector.reader::unquote-in-invalid-context
+                   (do-it :minus)))
                 (t
                  (multiple-value-bind (value position) (do-it :plus)
                    (is (equal plus-expected value))
@@ -840,7 +885,11 @@
           ("(not 1)"               nil nil eclector.reader:feature-expression-type-error)
           ("(and 1)"               nil nil eclector.reader:feature-expression-type-error)
           ("(or 1)"                nil nil eclector.reader:feature-expression-type-error)
+
           ("(and) 1"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+
+          ("`,(and)"               nil nil eclector.reader:backquote-in-invalid-context)
+          (",(and)"                nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid
           ("common-lisp 1"         nil nil 1   nil)
           ("(not common-lisp) 1"   nil nil nil 1)
