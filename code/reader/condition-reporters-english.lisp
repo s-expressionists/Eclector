@@ -79,15 +79,22 @@
     (format stream "Package named ~s does not exist."
             (desired-package-name condition)))
 
-  (define-reporter ((condition symbol-does-not-exist) stream)
-    (format stream "Symbol named ~s not found in the ~a package."
-            (desired-symbol-name condition)
-            (package-name (desired-symbol-package condition))))
+  (flet ((package-name* (package)
+           ;; PACKAGE may be a `cl:package' but could also be a
+           ;; client-defined representation of a package.
+           (typecase package
+             (package (package-name package))
+             (t package))))
 
-  (define-reporter ((condition symbol-is-not-external) stream)
-    (format stream "Symbol named ~s is not external in the ~a package."
-            (desired-symbol-name condition)
-            (package-name (desired-symbol-package condition))))
+    (define-reporter ((condition symbol-does-not-exist) stream)
+      (format stream "Symbol named ~s not found in the ~a package."
+              (desired-symbol-name condition)
+              (package-name* (desired-symbol-package condition))))
+
+    (define-reporter ((condition symbol-is-not-external) stream)
+      (format stream "Symbol named ~s is not external in the ~a package."
+              (desired-symbol-name condition)
+              (package-name* (desired-symbol-package condition)))))
 
   (define-reporter ((condition invalid-constituent-character) stream)
     (let ((char (aref (token condition) 0)))
