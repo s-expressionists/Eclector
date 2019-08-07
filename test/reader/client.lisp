@@ -73,11 +73,8 @@
                        (with-input-from-string (stream input)
                          (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
                            (eclector.reader:read stream)))))
-                (case expected-package
-                  (eclector.reader:package-does-not-exist
-                   (signals eclector.reader:package-does-not-exist (do-it)))
-                  (eclector.reader:symbol-does-not-exist
-                   (signals eclector.reader:symbol-does-not-exist (do-it)))
+                (error-case expected-package
+                  (error (do-it))
                   ((nil)
                    (let ((result (do-it)))
                      (is (null (%package result)))
@@ -130,10 +127,8 @@
                        (let ((eclector.reader:*client*
                                (make-instance 'find-character-client)))
                          (eclector.reader:read stream)))))
-              (case expected
-                (eclector.reader:unknown-character-name
-                 (signals-printable eclector.reader:unknown-character-name
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (is (equal expected (do-it))))))))
         '(;; Errors
@@ -174,10 +169,8 @@
                        (let ((eclector.reader:*client*
                                (make-instance 'evaluate-expression-client)))
                          (eclector.reader:read stream)))))
-              (case expected
-                (eclector.reader:read-time-evaluation-error
-                 (signals-printable eclector.reader:read-time-evaluation-error
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (is (equal expected (do-it))))))))
         '(;; Errors
@@ -227,13 +220,8 @@
                        (let ((eclector.reader:*client*
                                (make-instance 'feature-expression-client)))
                          (eclector.reader:read stream)))))
-              (case expected
-                (eclector.reader:single-feature-expected
-                 (signals-printable eclector.reader:single-feature-expected
-                   (do-it)))
-                (eclector.reader:feature-expression-type-error
-                 (signals-printable eclector.reader:feature-expression-type-error
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (is (eq expected (do-it))))))))
         '(;; Errors

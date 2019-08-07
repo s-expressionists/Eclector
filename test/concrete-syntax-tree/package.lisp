@@ -4,7 +4,7 @@
    #:fiveam)
 
   (:import-from #:eclector.test
-   #:signals-printable)
+   #:error-case)
 
   (:export
    #:run-tests))

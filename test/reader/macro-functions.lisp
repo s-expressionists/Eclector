@@ -38,9 +38,8 @@
                        (with-input-from-string (stream input)
                          (values (eclector.reader::double-quote stream #\")
                                  (file-position stream)))))
-                (case expected
-                  (eclector.reader:unterminated-string
-                   (signals-printable eclector.reader:unterminated-string (do-it)))
+                (error-case expected
+                  (error (do-it))
                   (t
                    (multiple-value-bind (result position) (do-it)
                      (is (equal expected          result))
@@ -71,12 +70,8 @@
                                      (eclector.reader::*backquote-depth* 0))
                                  (eclector.reader::backquote stream #\`))
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:invalid-context-for-backquote
-                 (signals-printable eclector.reader:invalid-context-for-backquote
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected          result))
@@ -101,12 +96,8 @@
                                        backquote-depth))
                                  (eclector.reader::comma stream #\,))
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:comma-not-inside-backquote
-                 (signals-printable eclector.reader:comma-not-inside-backquote
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected          result))
@@ -132,18 +123,8 @@
                      (with-input-from-string (stream input)
                        (values (eclector.reader::left-parenthesis stream #\()
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:unterminated-list
-                 (signals-printable eclector.reader:unterminated-list (do-it)))
-                (eclector.reader:object-must-follow-consing-dot
-                 (signals-printable eclector.reader:object-must-follow-consing-dot
-                   (do-it)))
-                (eclector.reader:multiple-objects-following-consing-dot
-                 (signals-printable eclector.reader:multiple-objects-following-consing-dot
-                   (do-it)))
-                (eclector.reader:invalid-context-for-consing-dot
-                 (signals-printable eclector.reader:invalid-context-for-consing-dot
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
 
@@ -186,11 +167,8 @@
                          (values (eclector.reader::sharpsign-single-quote
                                   stream #\' parameter)
                                  (file-position stream))))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
 
@@ -222,13 +200,8 @@
                          (values (eclector.reader::sharpsign-left-parenthesis
                                   stream #\( parameter)
                                  (file-position stream))))))
-              (case expected
-                (eclector.reader:unterminated-vector
-                 (signals-printable eclector.reader:unterminated-vector (do-it)))
-                (eclector.reader:no-elements-found
-                 (signals-printable eclector.reader:no-elements-found (do-it)))
-                (eclector.reader:too-many-elements
-                 (signals-printable eclector.reader:too-many-elements (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
 
@@ -269,16 +242,8 @@
                                  (eclector.reader::sharpsign-dot
                                   stream #\. parameter))
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
-                (eclector.reader:read-time-evaluation-inhibited
-                 (signals-printable eclector.reader:read-time-evaluation-inhibited
-                   (do-it)))
-                (eclector.reader:read-time-evaluation-error
-                 (signals-printable eclector.reader:read-time-evaluation-error
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected       result))
@@ -309,16 +274,8 @@
                                  (eclector.reader::sharpsign-backslash
                                   stream #\\ parameter))
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file
-                   (do-it)))
-                (eclector.reader:unknown-character-name
-                 (signals-printable eclector.reader:unknown-character-name
-                   (do-it)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected          result))
@@ -368,11 +325,8 @@
                      (with-input-from-string (stream input)
                        (values (eclector.reader::read-rational stream base)
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:digit-expected
-                 (signals-printable eclector.reader:digit-expected (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (eql expected          value))
@@ -455,19 +409,8 @@
                                    (values
                                     (,function-name stream ,char parameter)
                                     (file-position stream))))))
-                        (case expected
-                          (eclector.reader:end-of-file
-                           (signals-printable eclector.reader:end-of-file (do-it)))
-                          (eclector.reader:digit-expected
-                           (signals-printable eclector.reader:digit-expected (do-it)))
-                          (eclector.reader:invalid-radix
-                           (signals-printable eclector.reader:invalid-radix (do-it)))
-                          (eclector.reader:numeric-parameter-not-supplied-but-required
-                           (signals-printable eclector.reader:numeric-parameter-not-supplied-but-required
-                             (do-it)))
-                          (eclector.reader:numeric-parameter-supplied-but-ignored
-                           (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                             (do-it)))
+                        (error-case expected
+                          (error (do-it))
                           (t
                            (multiple-value-bind (value position) (do-it)
                              (is (equalp expected value))
@@ -561,13 +504,8 @@
                          (values
                           (eclector.reader::sharpsign-asterisk stream #\* parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:digit-expected
-                 (signals-printable eclector.reader:digit-expected (do-it)))
-                (eclector.reader:no-elements-found
-                 (signals-printable eclector.reader:no-elements-found (do-it)))
-                (eclector.reader:too-many-elements
-                 (signals-printable eclector.reader:too-many-elements (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equalp expected value))
@@ -615,13 +553,8 @@
                           (eclector.reader::sharpsign-vertical-bar
                            stream #\| parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:unterminated-block-comment
-                 (signals-printable eclector.reader:unterminated-block-comment
-                   (do-it)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equalp expected value))
@@ -656,17 +589,8 @@
                          (values
                           (eclector.reader::sharpsign-a stream #\A parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:incorrect-initialization-length
-                 (signals-printable eclector.reader:incorrect-initialization-length
-                   (do-it)))
-                (eclector.reader:read-object-type-error
-                 (signals-printable eclector.reader:read-object-type-error (do-it)))
-                (eclector.reader:numeric-parameter-not-supplied-but-required
-                 (signals-printable eclector.reader:numeric-parameter-not-supplied-but-required
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equalp expected value))
@@ -720,15 +644,8 @@
                           (eclector.reader::sharpsign-colon
                            stream #\. parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:uninterned-symbol-must-not-contain-package-marker
-                 (signals-printable eclector.reader:uninterned-symbol-must-not-contain-package-marker
-                   (do-it)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (string= (symbol-name expected) (symbol-name value)))
@@ -770,14 +687,8 @@
                          (values
                           (eclector.reader::sharpsign-c stream #\C parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:read-object-type-error
-                 (signals-printable eclector.reader:read-object-type-error (do-it)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equal expected value))
@@ -824,34 +735,8 @@
                          (values
                           (eclector.reader::sharpsign-s stream #\S parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
-
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:non-list-following-sharpsign-s
-                 (signals-printable eclector.reader:non-list-following-sharpsign-s
-                   (do-it)))
-                (eclector.reader:invalid-context-for-consing-dot
-                 (signals-printable eclector.reader:invalid-context-for-consing-dot
-                   (do-it)))
-
-                (eclector.reader:no-structure-type-name-found
-                 (signals-printable eclector.reader:no-structure-type-name-found
-                   (do-it)))
-                (eclector.reader:structure-type-name-is-not-a-symbol
-                 (signals-printable eclector.reader:structure-type-name-is-not-a-symbol
-                   (do-it)))
-
-                (eclector.reader:slot-name-is-not-a-symbol
-                 (signals-printable eclector.reader:slot-name-is-not-a-symbol
-                   (do-it)))
-                (eclector.reader:no-slot-value-found
-                 (signals-printable eclector.reader:no-slot-value-found
-                   (do-it)))
-
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equal expected value))
@@ -891,14 +776,8 @@
                          (values
                           (eclector.reader::sharpsign-p stream #\P parameter)
                           (file-position stream))))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
-                (eclector.reader:read-object-type-error
-                 (signals-printable eclector.reader:read-object-type-error (do-it)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equal expected value))
@@ -998,19 +877,8 @@
             (flet ((do-it ()
                      (with-input-from-string (stream input)
                        (eclector.reader:read stream))))
-              (case expected
-                (eclector.reader:numeric-parameter-not-supplied-but-required
-                 (signals-printable eclector.reader:numeric-parameter-not-supplied-but-required
-                   (do-it)))
-                (eclector.reader:sharpsign-equals-label-defined-more-than-once
-                 (signals-printable eclector.reader:sharpsign-equals-label-defined-more-than-once
-                   (do-it)))
-                (eclector.reader:sharpsign-equals-only-refers-to-self
-                 (signals-printable eclector.reader:sharpsign-equals-only-refers-to-self
-                   (do-it)))
-                (eclector.reader:sharpsign-sharpsign-undefined-label
-                 (signals-printable eclector.reader:sharpsign-sharpsign-undefined-label
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (recursive-cons
                  (let ((result (do-it)))
                    (is-true (consp result))

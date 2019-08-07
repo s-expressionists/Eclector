@@ -70,7 +70,8 @@
   :in-order-to ((test-op (test-op "eclector/test"))))
 
 (defsystem "eclector/test"
-  :depends-on  ("eclector"
+  :depends-on  ("alexandria"
+                "eclector"
                 (:version "fiveam" "1.4"))
 
   :components  ((:module "test"

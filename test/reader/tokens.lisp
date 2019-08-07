@@ -20,11 +20,8 @@
                                  (eclector.reader:read-token
                                   t stream eof-error-p eof-value))
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:invalid-constituent-character
-                 (signals-printable eclector.reader:invalid-constituent-character (do-it)))
-                (eclector.reader:end-of-file
-                 (signals-printable end-of-file (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equalp expected          value))
@@ -83,16 +80,8 @@
                        (with-input-from-string (stream "")
                          (eclector.reader:interpret-symbol-token
                           nil stream token marker1 marker2))))
-                (case expected
-                  (eclector.reader:symbol-name-must-not-end-with-package-marker
-                   (signals-printable eclector.reader:symbol-name-must-not-end-with-package-marker
-                     (do-it)))
-                  (eclector.reader:package-does-not-exist
-                   (signals-printable eclector.reader:package-does-not-exist (do-it)))
-                  (eclector.reader:symbol-does-not-exist
-                   (signals-printable eclector.reader:symbol-does-not-exist (do-it)))
-                  (eclector.reader:symbol-is-not-external
-                   (signals-printable eclector.reader:symbol-is-not-external (do-it)))
+                (error-case expected
+                  (error (do-it))
                   (t
                    (is (equal expected (do-it)))))))))
         '((""                               nil nil nil ||)
@@ -133,28 +122,8 @@
                                (*read-default-float-format* 'single-float))
                            (eclector.reader:interpret-token
                             nil stream (copy-seq token) token-escapes)))))
-                (case expected
-                  (eclector.reader:invalid-context-for-consing-dot
-                   (signals-printable eclector.reader:invalid-context-for-consing-dot
-                     (do-it)))
-                  (eclector.reader:too-many-dots
-                   (signals-printable eclector.reader:too-many-dots
-                     (do-it)))
-                  (eclector.reader:symbol-name-must-not-be-only-package-markers
-                   (signals-printable eclector.reader:symbol-name-must-not-be-only-package-markers
-                     (do-it)))
-                  (eclector.reader:symbol-name-must-not-end-with-package-marker
-                   (signals-printable eclector.reader:symbol-name-must-not-end-with-package-marker
-                     (do-it)))
-                  (eclector.reader:symbol-can-have-at-most-two-package-markers
-                   (signals-printable eclector.reader:symbol-can-have-at-most-two-package-markers
-                     (do-it)))
-                  (eclector.reader:two-package-markers-must-be-adjacent
-                   (signals-printable eclector.reader:two-package-markers-must-be-adjacent
-                     (do-it)))
-                  (eclector.reader:two-package-markers-must-not-be-first
-                   (signals-printable eclector.reader:two-package-markers-must-not-be-first
-                     (do-it)))
+                (error-case expected
+                  (error (do-it))
                   (t
                    (unless (or token-escapes (zerop (length token)))
                      (assert (equal expected

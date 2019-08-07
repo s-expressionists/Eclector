@@ -13,13 +13,8 @@
                           (eclector.reader:read stream))))
               (flet ((do-it ()
                        (macroexpand-1 form)))
-                (case expected
-                  (eclector.reader:unquote-splicing-at-top
-                   (signals-printable eclector.reader:unquote-splicing-at-top
-                     (do-it)))
-                  (eclector.reader:unquote-splicing-in-dotted-list
-                   (signals-printable eclector.reader:unquote-splicing-in-dotted-list
-                     (do-it)))
+                (error-case expected
+                  (error (do-it))
                   (t
                    (typecase expected
                      ((and vector (not string))

@@ -18,10 +18,8 @@
                   (with-input-from-string (stream input)
                     (values (eclector.reader:read stream)
                             (file-position stream))))))
-         (case expected
-           (eclector.reader:invalid-constituent-character
-            (signals-printable eclector.reader:invalid-constituent-character
-              (do-it)))
+         (error-case expected
+           (error (do-it))
            (t
             (multiple-value-bind (result position) (do-it)
               (is (equal expected          result))

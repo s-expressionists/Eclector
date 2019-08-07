@@ -13,9 +13,8 @@
                        (let ((*standard-input* stream))
                          (apply #'eclector.reader:read-char
                                 (substitute stream :stream args))))))
-              (case expected
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (is (equal expected (do-it))))))))
 
@@ -103,22 +102,8 @@
                        (values (let ((*read-suppress* read-suppress))
                                  (eclector.reader:read stream))
                                (file-position stream)))))
-              (case expected
-                (eclector.reader:invalid-context-for-backquote
-                 (signals-printable eclector.reader:invalid-context-for-backquote
-                   (do-it)))
-                (eclector.reader:comma-not-inside-backquote
-                 (signals-printable eclector.reader:comma-not-inside-backquote
-                   (do-it)))
-                (eclector.reader:object-must-follow-comma
-                 (signals-printable eclector.reader:object-must-follow-comma
-                   (do-it)))
-                (eclector.reader:unknown-macro-sub-character
-                 (signals-printable eclector.reader:unknown-macro-sub-character
-                   (do-it)))
-                (eclector.reader:unterminated-dispatch-macro
-                 (signals-printable eclector.reader:unterminated-dispatch-macro
-                   (do-it)))
+              (error-case expected
+                (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
                    (is (equal expected       result))
@@ -168,10 +153,8 @@
                        (values (eclector.reader:read-preserving-whitespace
                                 stream eof-error-p eof-value)
                                (file-position stream)))))
-              (case expected-result
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file
-                   (do-it)))
+              (error-case expected-result
+                (error (do-it))
                 (t
                  (is (equal (values expected-result expected-position)
                             (do-it))))))))
@@ -193,9 +176,8 @@
               input-args-expected
             (flet ((do-it ()
                      (apply #'eclector.reader:read-from-string input args)))
-              (case expected-value
-                (eclector.reader:end-of-file
-                 (signals eclector.reader:end-of-file (do-it)))
+              (error-case expected-value
+                (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
                    (is (equal expected-value    value))

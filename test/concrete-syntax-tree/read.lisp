@@ -40,9 +40,8 @@
                          (values (eclector.concrete-syntax-tree:read
                                   stream eof-error :eof)
                                  (file-position stream)))))
-                (case expected-raw
-                  (eclector.reader:end-of-file
-                   (signals-printable eclector.reader:end-of-file (do-it)))
+                (error-case expected-raw
+                  (error (do-it))
                   (:eof
                    (is (eq :eof (do-it))))
                   (t
@@ -81,10 +80,8 @@
                        (values (eclector.concrete-syntax-tree:read-preserving-whitespace
                                 stream eof-error-p eof-value)
                                (file-position stream)))))
-              (case expected-result
-                (eclector.reader:end-of-file
-                 (signals-printable eclector.reader:end-of-file
-                   (do-it)))
+              (error-case expected-result
+                (error (do-it))
                 (:eof
                  (multiple-value-bind (result position) (do-it)
                    (is (eq :eof result))
@@ -114,9 +111,8 @@
             (flet ((do-it ()
                      (apply #'eclector.concrete-syntax-tree:read-from-string
                             input args)))
-              (case expected-value
-                (eclector.reader:end-of-file
-                 (signals eclector.reader:end-of-file (do-it)))
+              (error-case expected-value
+                (error (do-it))
                 (:eof
                  (multiple-value-bind (result position) (do-it)
                    (is (eq :eof result))
