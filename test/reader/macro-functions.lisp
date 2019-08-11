@@ -193,6 +193,8 @@
           ;; Valid
           ("X"          nil nil (function X))
           ("CL-USER::X" nil nil (function cl-user::x))
+          ("(lambda ())" nil nil (function (lambda ())))
+          ("(lambda (,foo))" nil nil (function (lambda ())))
           ("X "         nil nil (function X)          1)
           ;; With *READ-SUPPRESS* bound to T
           ("X"          nil t   nil)
