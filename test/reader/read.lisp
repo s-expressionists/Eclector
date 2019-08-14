@@ -223,6 +223,11 @@
           (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
           (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
 
+(test read-maybe-nothing/smoke
+  "Smoke test for the READ-MAYBE-NOTHING function."
+
+  )
+
 (test read-delimited-list/smoke
   "Smoke test for the READ-DELIMITED-LIST function."
 

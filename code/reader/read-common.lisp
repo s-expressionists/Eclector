@@ -55,39 +55,51 @@
     (values-list values)))
 
 (defmethod read-common (client input-stream eof-error-p eof-value)
-  (let ((readtable *readtable*))
-    (tagbody
-     step-1-start
-       (let ((char (read-char input-stream eof-error-p)))
-         (when (null char)
-           (return-from read-common eof-value))
-         (case (eclector.readtable:syntax-type readtable char)
-           (:whitespace
-            (go step-1-start))
-           ((:terminating-macro :non-terminating-macro)
-            ;; There is no need to consider the value of EOF-ERROR-P
-            ;; in reader macros since: "read signals an error of type
-            ;; end-of-file, regardless of eof-error-p, if the file
-            ;; ends in the middle of an object representation."
-            ;; (HyperSpec entry for READ)
-            (let* ((*skip-reason* nil)
-                   (values (multiple-value-list
-                            (call-reader-macro
-                             client input-stream char readtable))))
-              (cond ((null values)
-                     (note-skipped-input client input-stream
-                                         (or *skip-reason* :reader-macro))
-                     (go step-1-start))
-                    ;; This case takes care of reader macro not
-                    ;; returning nil when *READ-SUPPRESS* is true.
-                    (*read-suppress*
-                     (note-skipped-input client input-stream
-                                         (or *skip-reason* '*read-suppress*))
-                     (return-from read-common nil))
-                    (t
-                     (return-from read-common (first values))))))
-           (t
-            (unread-char char input-stream)
-            (return-from read-common
-              (let ((*skip-reason* nil))
-                (read-token client input-stream eof-error-p eof-value)))))))))
+  (tagbody
+   :start
+     (let ((values (multiple-value-list
+                    (read-maybe-nothing
+                     client input-stream eof-error-p eof-value))))
+       (destructuring-bind (value what &rest rest) values
+         (ecase what
+           ((:eof :suppress :object)
+            (return-from read-common (apply #'values value rest)))
+           ((:whitespace :skip)
+            (go :start)))))))
+
+(defmethod read-maybe-nothing (client input-stream eof-error-p eof-value)
+  (let ((char (read-char input-stream eof-error-p)))
+    (when (null char)
+      (return-from read-maybe-nothing (values eof-value :eof)))
+    (let ((readtable *readtable*))
+      (case (eclector.readtable:syntax-type readtable char)
+        (:whitespace
+         (skip-whitespace* input-stream)
+         (values nil :whitespace))
+        ((:terminating-macro :non-terminating-macro)
+         ;; There is no need to consider the value of EOF-ERROR-P in
+         ;; reader macros since: "read signals an error of type
+         ;; end-of-file, regardless of eof-error-p, if the file ends
+         ;; in the middle of an object representation."  (HyperSpec
+         ;; entry for READ)
+         (let* ((*skip-reason* nil)
+                (values (multiple-value-list
+                         (call-reader-macro
+                          client input-stream char readtable))))
+           (cond ((null values)
+                  (note-skipped-input client input-stream
+                                      (or *skip-reason* :reader-macro))
+                  (values nil :skip))
+                 ;; This case takes care of reader macro not returning
+                 ;; nil when *READ-SUPPRESS* is true.
+                 (*read-suppress*
+                  (note-skipped-input client input-stream
+                                      (or *skip-reason* '*read-suppress*))
+                  (values nil :suppress))
+                 (t
+                  (values (first values) :object)))))
+        (t
+         (unread-char char input-stream)
+         (let* ((*skip-reason* nil)
+                (object (read-token client input-stream eof-error-p eof-value)))
+           (values object :object)))))))

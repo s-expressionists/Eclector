@@ -21,7 +21,6 @@
     ;; then update *START*. This way, the source location for an
     ;; object subsequently read from INPUT-STREAM will not include
     ;; the whitespace.
-    (eclector.reader::skip-whitespace* input-stream)
     (setf *start* (source-position client input-stream))))
 
 ;;; Establishing context
@@ -29,33 +28,52 @@
 (defmethod eclector.reader:call-as-top-level-read :around
     ((client parse-result-client) thunk input-stream
      eof-error-p eof-value preserve-whitespace-p)
-  (let ((stack (list '())))
-    (multiple-value-bind (result parse-result)
-        (let ((eclector.reader:*client* client)
-              (*stack* stack))
-          (call-next-method))
-      (values result parse-result (reverse (rest (first stack)))))))
+  (let ((eclector.reader:*client* client)
+        (*stack* (list '())))
+    (call-next-method)))
 
 (defmethod eclector.reader:read-common :around
     ((client parse-result-client) input-stream eof-error-p eof-value)
-  (let ((*stack* (list* '() *stack*)))
-    (unless (eclector.reader::skip-whitespace* input-stream)
-      (when eof-error-p
-        (eclector.base:%reader-error input-stream 'eclector.reader:end-of-file))
-      (return-from eclector.reader:read-common eof-value))
-    (let* (;; *START* is used and potentially modified in
-           ;; NOTE-SKIPPED-INPUT to reflect skipped input
-           ;; (comments, reader macros, *READ-SUPPRESS*) before
-           ;; actually reading something.
-           (*start* (source-position client input-stream))
-           (result (call-next-method))
-           (children (reverse (first *stack*)))
-           (end (source-position client input-stream))
-           (source (make-source-range client *start* end))
-           (parse-result (make-expression-result
-                          client result children source)))
-      (push parse-result (second *stack*))
-      (values result parse-result))))
+  (let ((orphan-results '()))
+    (tagbody
+     :start
+       (multiple-value-bind (value what parse-result)
+           (eclector.reader:read-maybe-nothing
+            client input-stream eof-error-p eof-value)
+         (ecase what
+           ((:eof :suppress :object)
+            (return-from eclector.reader:read-common
+              (values value parse-result (nreverse orphan-results))))
+           (:whitespace
+            (go :start))
+           (:skip
+            (push parse-result orphan-results)
+            (go :start)))))))
+
+(defmethod eclector.reader:read-maybe-nothing
+    ((client parse-result-client) input-stream eof-error-p eof-value)
+  (let ((stack (list* '() *stack*))
+        ;; *START* is used and potentially modified in
+        ;; NOTE-SKIPPED-INPUT to reflect skipped input (comments,
+        ;; reader macros, *READ-SUPPRESS*) before actually reading
+        ;; something.
+        (*start* (source-position client input-stream)))
+    (multiple-value-bind (value what)
+        (let ((*stack* stack))
+          (call-next-method))
+      (case what
+        (:object
+         (let* ((children (reverse (first stack))) ; TODO nreverse
+                (end (source-position client input-stream))
+                (source (make-source-range client *start* end))
+                (parse-result (make-expression-result
+                               client value children source)))
+           (push parse-result (second stack))
+           (values value what parse-result)))
+        (:whitespace
+         (values value what))
+        (t
+         (values value what (first (second stack))))))))
 
 ;;; Entry points
 

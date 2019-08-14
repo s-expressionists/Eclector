@@ -7,6 +7,8 @@
 
 (defgeneric read-common (client input-stream eof-error-p eof-value))
 
+(defgeneric read-maybe-nothing (client input-stream eof-error-p eof-value))
+
 ;;; Reading tokens
 
 (defgeneric read-token (client input-stream eof-error-p eof-value))
