@@ -31,38 +31,47 @@
   (let ((function (eclector.readtable:get-macro-character readtable char)))
     (funcall function input-stream char)))
 
-(defmethod read-common :around (client input-stream eof-error-p eof-value)
-  (let ((*input-stream* input-stream))
-    (call-next-method)))
+(defmethod read-maybe-nothing (client input-stream eof-error-p eof-value)
+  (let ((*skip-reason* nil)
+        (char (read-char input-stream eof-error-p)))
+    (if (null char)
+        (values eof-value :eof)
+        (case (eclector.readtable:syntax-type *readtable* char)
+          (:whitespace
+           (values nil :whitespace))
+          ((:terminating-macro :non-terminating-macro)
+           (let ((values (multiple-value-list
+                          (call-reader-macro
+                           client input-stream char *readtable*))))
+             (cond
+               ((null values)
+                (note-skipped-input client input-stream
+                                    (or *skip-reason* :reader-macro))
+                (values nil :skip))
+               ;; This case takes care of reader macro not returning
+               ;; nil when *READ-SUPPRESS* is true.
+               (*read-suppress*
+                (note-skipped-input client input-stream
+                                    (or *skip-reason* '*read-suppress*))
+                (values nil :suppress))
+               (t
+                (values (car values) :value)))))
+          (t
+           (unread-char char input-stream)
+           (values (read-token client input-stream eof-error-p eof-value)
+                   :value))))))
 
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
-   step-1-start
-     (let ((*skip-reason* nil)
-           (char (read-char input-stream eof-error-p)))
-       (when (null char)
-         (return-from read-common eof-value))
-       (case (eclector.readtable:syntax-type *readtable* char)
-         (:whitespace
-          (go step-1-start))
-         ((:terminating-macro :non-terminating-macro)
-          (let ((values (multiple-value-list
-                         (call-reader-macro
-                          client input-stream char *readtable*))))
-            (cond
-              ((null values)
-               (note-skipped-input client input-stream
-                                   (or *skip-reason* :reader-macro))
-               (go step-1-start))
-              ;; This case takes care of reader macro not returning
-              ;; nil when *READ-SUPPRESS* is true.
-              (*read-suppress*
-               (note-skipped-input client input-stream
-                                   (or *skip-reason* '*read-suppress*))
-               (return-from read-common nil))
-              (t
-               (return-from read-common (car values))))))
-         (t
-          (unread-char char input-stream)
-          (return-from read-common
-            (read-token client input-stream eof-error-p eof-value)))))))
+   :start
+     (multiple-value-bind (value what)
+         (read-maybe-nothing client input-stream eof-error-p eof-value)
+       (ecase what
+         ((:eof :suppress :value)
+          (return-from read-common value))
+         ((:whitespace :skip)
+          (go :start))))))
+
+(defmethod read-common :around (client input-stream eof-error-p eof-value)
+  (let ((*input-stream* input-stream))
+    (call-next-method)))

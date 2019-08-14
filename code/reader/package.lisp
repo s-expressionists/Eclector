@@ -57,6 +57,8 @@
    #:read-preserving-whitespace
    #:read-from-string
 
+   #:read-maybe-nothing
+
    #:recover) ; Restart name
 
   ;; Client protocol
