@@ -8,6 +8,8 @@
   (apply #'error datum :stream stream :stream-position stream-position
          (alexandria:remove-from-plist arguments :stream-position)))
 
+(defgeneric recovery-description (strategy language))
+
 (defun %recoverable-reader-error (stream datum &rest arguments
                                                &key report &allow-other-keys)
   (restart-case
@@ -15,9 +17,15 @@
              (alexandria:remove-from-plist arguments :report))
     (recover ()
       :report (lambda (stream)
-                (etypecase report
-                  (string (format stream report))
-                  (function (funcall report stream))))
+                (labels ((resolve (report)
+                           (etypecase report
+                             (symbol (let ((language (acclimation:language
+                                                      acclimation:*locale*)))
+                                       (resolve (recovery-description
+                                                 report language))))
+                             (string (format stream report))
+                             (function (funcall report stream)))))
+                  (resolve report)))
       (values))))
 
 (define-condition stream-position-reader-error (acclimation:condition reader-error)

@@ -21,7 +21,9 @@
 
   (:import-from #:eclector.base
    #:%reader-error
+
    #:%recoverable-reader-error
+   #:recovery-description
 
    #:stream-position-reader-error
    #:stream-position

@@ -36,7 +36,9 @@
                  :serial t
                  :components ((:file "package")
                               (:file "readtable")
-                              (:file "methods")))
+                              (:file "methods")
+                              ;; Translatable messages
+                              (:file "messages-english")))
 
                 (:module "reader"
                  :pathname "code/reader"

@@ -19,8 +19,7 @@
             (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unterminated-dispatch-macro
              :stream-position (eclector.base:stream-position condition)
-             :disp-char disp-char
-             :report "Ignore the TODO")
+             :disp-char disp-char :report 'ignore-partial-dispatch-macro)
             (return-from dispatcher)))
       (let ((macro-function
               (eclector.readtable:get-dispatch-macro-character
@@ -50,9 +49,8 @@
         (if (null macro-function)
             (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unknown-macro-sub-character
-             :disp-char disp-char
-             :sub-char sub-char
-             :report "Try to ignore the entire macro")
+             :disp-char disp-char :sub-char sub-char
+             :report 'ignore-partial-macro)
             (funcall macro-function stream sub-char parameter))))))
 
 (defmethod eclector.readtable:make-dispatch-macro-character

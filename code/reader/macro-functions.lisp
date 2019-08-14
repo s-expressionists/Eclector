@@ -84,8 +84,7 @@
         (%recoverable-reader-error
          stream 'unterminated-string
          :stream-position (stream-position condition)
-         :delimiter char
-         :report "Return a string of the already read characters.")
+         :delimiter char :report 'use-partial-string)
         (copy-seq result)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -243,13 +242,13 @@
                              (end-of-list ()
                                (%recoverable-reader-error
                                 stream 'object-must-follow-consing-dot
-                                :report "Use NIL in place of the missing object"))))
+                                :report 'inject-nil))))
                      ;; This call to read must not return (it has to
                      ;; signal END-OF-LIST).
                      (read stream t nil t)
                      (%recoverable-reader-error
                       stream 'multiple-objects-following-consing-dot
-                      :report "Ignore the object")
+                      :report 'ignore-object)
                 else
                   do (push object reversed-result))
         (end-of-list ())
@@ -260,7 +259,7 @@
            :delimiter (case char     ; not great, but we can't know
                         (#\( #\))    ; the missing char generally
                         (t   char))
-           :report "Return a list of the already read elements.")))
+           :report 'use-partial-list)))
       (nreconc reversed-result tail))))
 
 (defun right-parenthesis (stream char)
@@ -270,7 +269,7 @@
   ;; context where it is not allowed.
   (signal *end-of-list*)
   (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
-                             :report "Ignore the trailing right parenthesis"))
+                             :report 'ignore-trailing-right-paren))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -302,8 +301,7 @@
                  (%recoverable-reader-error
                   stream 'unterminated-vector
                   :stream-position (stream-position condition)
-                  :delimiter #\)
-                  :report "Return a vector of the already read elements.")
+                :delimiter #\) :report 'use-partial-vector)
                  (values nil nil)))))
       (cond
         (*read-suppress*
@@ -626,10 +624,10 @@
                      (t
                       nil)))
     ((and end-of-file (not missing-delimiter)) (condition)
-      (%recoverable-reader-error stream 'unterminated-block-comment
-                                 :stream-position (stream-position condition)
-                                 :delimiter sub-char
-                                 :report "Ignore the missing closing "))))
+      (%recoverable-reader-error
+       stream 'unterminated-block-comment
+       :stream-position (stream-position condition)
+       :delimiter sub-char :report 'ignore-missing-delimiter))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

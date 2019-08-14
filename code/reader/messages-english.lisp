@@ -1,5 +1,17 @@
 (cl:in-package #:eclector.reader)
 
+(macrolet ((define-description (strategy description)
+             `(defmethod recovery-description ((strategy (eql ',strategy))
+                                               (language acclimation:english))
+                ,description)))
+  (define-description ignore-missing-delimiter    "Ignore the missing closing ")
+  (define-description use-partial-string          "Return a string of the already read characters.")
+  (define-description inject-nil                  "Use NIL in place of the missing object.")
+  (define-description ignore-object               "Ignore the object.")
+  (define-description use-partial-list            "Return a list of the already read elements.")
+  (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
+  (define-description use-partial-vector          "Return a vector of the already read elements."))
+
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var)
                        &body body)
