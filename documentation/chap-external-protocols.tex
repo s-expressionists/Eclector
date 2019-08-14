@@ -329,6 +329,12 @@ An unspecialized \texttt{:around} method queries and updates
 \textit{seen-objects} to ensure that each object is processed exactly
 once.
 
+\subsection{Quotation and quasiquotation}
+\label{sec:quotation-and-quasiquotation}
+
+The following generic functions allow clients to construct
+representations of quoted and quasiquoted forms.
+
 \Defgeneric {wrap-in-quote} {client material}
 
 This generic function is called by the default \texttt{'}-reader macro
