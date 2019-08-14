@@ -9,9 +9,9 @@
                 ,@body)))
 
   (define-reporter ((condition unterminated-dispatch-macro) stream)
-      (format stream "While reading dispatching macro character ~:c, ~
-                      expected a sub-character when input ended."
-              (disp-char condition)))
+    (format stream "While reading dispatching macro character ~:c, ~
+                    expected a sub-character when input ended."
+            (disp-char condition)))
 
   (define-reporter ((condition sub-char-must-not-be-a-decimal-digit) stream)
     (format stream "~:c cannot be defined as a dispatch macro ~

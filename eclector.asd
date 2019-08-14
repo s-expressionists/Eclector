@@ -14,8 +14,9 @@
                  :pathname "code/base"
                  :components ((:file "package")
                               (:file "conditions")
-                              (:file "condition-reporters-english")
-                              (:file "read-char")))
+                              (:file "read-char")
+                              ;; Translatable messages
+                              (:file "messages-english")))
 
                 (:module "readtable"
                  :pathname "code/readtable"
@@ -24,8 +25,9 @@
                  :components ((:file "package")
                               (:file "variables")
                               (:file "conditions")
-                              (:file "condition-reporters-english")
-                              (:file "generic-functions")))
+                              (:file "generic-functions")
+                              ;; Translatable messages
+                              (:file "messages-english")))
 
                 (:module "simple-readtable"
                  :pathname "code/readtable/simple"
@@ -45,7 +47,6 @@
                               (:file "generic-functions")
                               (:file "more-variables")
                               (:file "additional-conditions")
-                              (:file "condition-reporters-english")
                               (:file "utilities")
                               (:file "tokens")
                               (:file "read-common")
@@ -53,7 +54,9 @@
                               (:file "macro-functions")
                               (:file "init")
                               (:file "quasiquote-macro")
-                              (:file "fixup")))
+                              (:file "fixup")
+                              ;; Translatable messages
+                              (:file "messages-english")))
 
                 (:module "parse-result"
                  :pathname "code/parse-result"
