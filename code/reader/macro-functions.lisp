@@ -225,6 +225,12 @@
 ;;; there was a second subform after the consing dot in the list, so
 ;;; we signal an ERROR.
 
+(defun opposite-delimiter (char)
+  ;; Not great, but we can't know the missing char generally.
+  (case char
+    (#\( #\))
+    (t   char)))
+
 (defun left-parenthesis (stream char)
   (let ((reversed-result '())
         (tail nil)
@@ -242,7 +248,10 @@
                              (end-of-list ()
                                (%recoverable-reader-error
                                 stream 'object-must-follow-consing-dot
-                                :report 'inject-nil))))
+                                :report 'inject-nil)
+                               (unread-char
+                                (opposite-delimiter char) stream)
+                               nil)))
                      ;; This call to read must not return (it has to
                      ;; signal END-OF-LIST).
                      (read stream t nil t)
@@ -256,9 +265,7 @@
           (%recoverable-reader-error
            stream 'unterminated-list
            :stream-position (stream-position condition)
-           :delimiter (case char     ; not great, but we can't know
-                        (#\( #\))    ; the missing char generally
-                        (t   char))
+           :delimiter (opposite-delimiter char)
            :report 'use-partial-list)))
       (nreconc reversed-result tail))))
 
