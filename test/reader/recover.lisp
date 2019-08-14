@@ -6,7 +6,9 @@
   "Test recovering from various syntax errors."
 
   (mapc (lambda (input-and-expected)
-          (destructuring-bind (input expected-value expected-recover-count)
+          (destructuring-bind (input expected-recover-count
+                               expected-value
+                               &optional (expected-position (length input)))
               input-and-expected
             (let ((recover-count 0))
               (flet ((do-it ()
@@ -20,26 +22,30 @@
                                   (incf recover-count)
                                   (invoke-restart restart)))))
                          (with-input-from-string (stream input)
-                           (eclector.reader:read stream nil)))))
-                (is (equalp expected-value (do-it)))
+                           (values (eclector.reader:read stream nil)
+                                   (file-position stream))))))
+                (multiple-value-bind (value position) (do-it)
+                  (is (equalp expected-value value))
+                  (is (equalp expected-position position)))
                 (is (eql expected-recover-count recover-count))))))
 
-        '(("("         ()      1)
-          ("(1 2"      (1 2)   1)
-          ("(1 ."      (1)     1)
-          ("(1 . 2 3)" (1 . 2)     1)
+        '(("("         1 ())
+          ("(1 2"      1 (1 2))
+          ("(1 ."      1 (1))
+          ("(1 . 2 3)" 1 (1 . 2))
+          (")(1)"      1 (1))
 
-          ("#("        #()     1)
-          ("#(1 2"     #(1 2)  1)
+          ("#("        1 #())
+          ("#(1 2"     1 #(1 2))
 
-          ("\""        ""      1)
-          ("\"ab"      "ab"    1)
+          ("\""        1 "")
+          ("\"ab"      1 "ab")
 
-          ("#|"        nil     1)
-          ("#|foo"     nil     1)
+          ("#|"        1 nil)
+          ("#|foo"     1 nil)
 
-          ("#"         nil     1)
+          ("#"         1 nil)
 
           ;; Multiple subsequent recoveries needed.
-          ("(1 (2"     (1 (2)) 2)
-          ("(1 \"a"    (1 "a") 2))))
+          ("(1 (2"     2 (1 (2)))
+          ("(1 \"a"    2 (1 "a")))))
