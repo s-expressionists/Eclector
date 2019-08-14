@@ -371,6 +371,30 @@ macro function to construct a splicing unquote form in which
 The default method on this generic function returns a result
 equivalent to \texttt{(list 'eclector.reader:unquote-splicing form)}.
 
+Backquote and unquote syntax is forbidden in some contexts such as
+multi-dimensional array literals (\texttt{\#A}) and structure literals
+(\texttt{\#S}) thus \sysname{} has a mechanism for controlling whether
+backquote, unquote or both should be allowed in a given context.
+Since custom reader macros may also have to control this aspect,
+\sysname{} provides an external protocol:
+
+\Defmacro {with-forbidden-quasiquotation} {context\\
+  \optional
+  (quasiquote-forbidden-p \texttt{t})
+  (unquote-forbidden-p \texttt{t})\\
+  \body body}
+
+Disallow backquote syntax, unquote syntax or both in \texttt{read}
+functions called during the execution of \textit{body}.
+\textit{context} is a symbol identifying the current context which is
+used for error reporting.  A typical value is the name of the reader
+macro function in which this macro is used.
+\textit{quasiquote-forbidden-p} controls whether backquote syntax
+should be forbidden.  The value \texttt{:keep} causes the binding to
+remain unchanged.  \textit{unquote-forbidden-p} controls whether
+unquote syntax should be forbidden.  The value \texttt{:keep} causes
+the binding to remain unchanged.
+
 \subsubsection{Readtable initialization}
 \label{sec:readtable-initialization}
 

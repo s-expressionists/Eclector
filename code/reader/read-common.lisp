@@ -32,9 +32,7 @@
     (funcall function input-stream char)))
 
 (defmethod read-common :around (client input-stream eof-error-p eof-value)
-  (let ((*input-stream* input-stream)
-        (*backquote-allowed-p* *backquote-in-subforms-allowed-p*)
-        (*backquote-in-subforms-allowed-p* nil))
+  (let ((*input-stream* input-stream))
     (call-next-method)))
 
 (defmethod read-common (client input-stream eof-error-p eof-value)

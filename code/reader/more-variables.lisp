@@ -2,11 +2,21 @@
 
 (defvar *input-stream*)
 
-(defparameter *backquote-allowed-p* t)
+(defparameter *preserve-whitespace* nil)
 
-(defparameter *backquote-in-subforms-allowed-p* t)
+(defparameter *client* nil)
+
+(defvar *skip-reason*)
+
+;;; Quasiquote syntax
+
+(defparameter *quasiquote-forbidden* nil)
+
+(defparameter *unquote-forbidden* nil)
 
 (defparameter *backquote-depth* 0)
+
+;;; List syntax
 
 (defvar *consing-dot* '#:|.|)
 
@@ -15,9 +25,3 @@
 (define-condition end-of-list () ())
 
 (defvar *end-of-list* (make-condition 'end-of-list))
-
-(defparameter *preserve-whitespace* nil)
-
-(defparameter *client* nil)
-
-(defvar *skip-reason*)

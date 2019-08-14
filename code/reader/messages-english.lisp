@@ -5,6 +5,8 @@
                                                (language acclimation:english))
                 ,description)))
   (define-description treat-as-keyword            "Treat the symbol as a keyword.")
+  (define-description ignore-quasiquote           "Read the following form as if it were not quasiquoted.")
+  (define-description ignore-unquote              "Read the following form as if it were not unquoted.")
   (define-description ignore-missing-delimiter    "Ignore the missing closing ")
   (define-description use-partial-string          "Return a string of the already read characters.")
   (define-description inject-nil                  "Use NIL in place of the missing object.")
@@ -12,6 +14,20 @@
   (define-description use-partial-list            "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
   (define-description use-partial-vector          "Return a vector of the already read elements."))
+
+(macrolet ((define-context (context name)
+             `(defmethod context-name ((context  (eql ',context))
+                                       (language acclimation:english))
+                ,name)))
+  (define-context sharpsign-single-quote "the function reader macro")
+  (define-context sharpsign-a            "the general array reader macro")
+  (define-context sharpsign-c            "the complex reader macro")
+  (define-context sharpsign-s-type       "the structure type name in the structure literal reader macro")
+  (define-context sharpsign-s-slot-name  "a structure slot name in the structure literal reader macro")
+  (define-context sharpsign-s-slot-value "a structure slot value in the structure literal reader macro")
+  (define-context sharpsign-p            "the pathname reader macro")
+  (define-context :sharpsign-plus        "the #+ conditionalization reader macro")
+  (define-context :sharpsign-minus       "the #- conditionalization reader macro"))
 
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var)
@@ -54,23 +70,32 @@
             (type-error-datum condition)
             (type-error-expected-type condition)))
 
-  (define-reporter ((condition invalid-context-for-backquote) stream)
-    (format stream "Backquote has been used in a context that does not ~
-                    permit it (like #C(1 `,2))."))
+;;; Conditions related to quasiquotation
 
-  (define-reporter ((condition comma-not-inside-backquote) stream)
-    (format stream "~:[Comma~;Splicing comma~] not inside backquote."
-            (at-sign-p condition)))
+  (define-reporter ((condition backquote-in-invalid-context) stream)
+    (format stream "Backquote is illegal in ~A."
+            (context-name (context condition) language)))
 
-  (define-reporter ((condition object-must-follow-comma) stream)
-    (format stream "An object must follow a~:[~; splicing~] comma."
-            (at-sign-p condition)))
+  (define-reporter ((condition unquote-not-inside-backquote) stream)
+    (format stream "~:[Unquote~;Splicing unquote~] not inside backquote."
+            (splicing-p condition)))
+
+  (define-reporter ((condition unquote-in-invalid-context) stream)
+    (format stream "~:[Unquote~;Splicing unquote~] is illegal in ~A."
+            (splicing-p condition)
+            (context-name (context condition) language)))
+
+  (define-reporter ((condition object-must-follow-unquote) stream)
+    (format stream "An object must follow a~:[~; splicing~] unquote."
+            (splicing-p condition)))
 
   (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
     (format stream "Splicing unquote at end of list (like a . ,@b)."))
 
   (define-reporter ((condition unquote-splicing-at-top) stream)
     (format stream "Splicing unquote as backquote form (like `,@foo)."))
+
+;;; Conditions related to consing dot
 
   (define-reporter ((condition too-many-dots) stream)
     (format stream "A token consisting solely of multiple dots is ~

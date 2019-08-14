@@ -49,6 +49,10 @@
 
           ("::foo"     1 :foo)
 
+          ;; Recover from forbidden quasiquotation.
+          ("#C(,1 2)"  1 #C(1 2))
+          ("#C(`,1 2)" 2 #C(1 2))
+
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     2 (1 (2)))
           ("(1 \"a"    2 (1 "a")))))

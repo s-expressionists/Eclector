@@ -22,26 +22,42 @@
 
 ;;; Conditions related to quasiquotation
 
-(define-condition backquote-condition (stream-position-reader-error)
+(defgeneric context-name (context language))
+
+(define-condition backquote-error (stream-position-reader-error)
   ())
 
-(define-condition invalid-context-for-backquote (backquote-condition)
+(define-condition backquote-context-error (backquote-error)
+  ((%context :initarg :context :reader context)))
+
+(define-condition backquote-in-invalid-context (backquote-context-error)
   ())
 
-(define-condition comma-syntax-error (backquote-condition)
-  ((%at-sign-p :initarg :at-sign-p :reader at-sign-p)))
+(define-condition unquote-error (backquote-error)
+  ((%splicing-p :initarg :splicing-p :reader splicing-p)))
 
-(define-condition comma-not-inside-backquote (comma-syntax-error)
+(define-condition invalid-context-for-unquote (unquote-error)
   ())
 
-(define-condition object-must-follow-comma (comma-syntax-error)
+(define-condition unquote-not-inside-backquote (invalid-context-for-unquote)
   ())
 
-(define-condition unquote-splicing-in-dotted-list (backquote-condition)
+(define-condition unquote-in-invalid-context (invalid-context-for-unquote
+                                              backquote-context-error)
   ())
 
-(define-condition unquote-splicing-at-top (backquote-condition)
+(define-condition object-must-follow-unquote (unquote-error)
   ())
+
+(define-condition unquote-splicing-in-dotted-list (unquote-error)
+  ()
+  (:default-initargs
+   :splicing-p t))
+
+(define-condition unquote-splicing-at-top (unquote-error)
+  ()
+  (:default-initargs
+   :splicing-p t))
 
 ;;; Conditions related to consing dot
 
