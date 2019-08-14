@@ -4,6 +4,7 @@
              `(defmethod recovery-description ((strategy (eql ',strategy))
                                                (language acclimation:english))
                 ,description)))
+  (define-description treat-as-keyword            "Treat the symbol as a keyword.")
   (define-description ignore-missing-delimiter    "Ignore the missing closing ")
   (define-description use-partial-string          "Return a string of the already read characters.")
   (define-description inject-nil                  "Use NIL in place of the missing object.")

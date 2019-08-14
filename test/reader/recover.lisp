@@ -47,6 +47,8 @@
 
           ("#"         1 nil)
 
+          ("::foo"     1 :foo)
+
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     2 (1 (2)))
           ("(1 \"a"    2 (1 "a")))))

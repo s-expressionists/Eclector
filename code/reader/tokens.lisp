@@ -87,29 +87,33 @@
                                    token
                                    position-package-marker-1
                                    position-package-marker-2)
-  (alexandria:when-let ((package-markers-end (or position-package-marker-2
-                                                 position-package-marker-1)))
-    (let ((length (length token)))
-      (when (and (> length 1) (= package-markers-end (1- length)))
-        (%reader-error input-stream
-                       'symbol-name-must-not-end-with-package-marker
-                       :token token))))
-  (flet ((interpret (package symbol count)
-           (interpret-symbol client input-stream package symbol count)))
-    (cond ((null position-package-marker-1)
-           (interpret :current token t))
-          ((not (null position-package-marker-2))
-           (interpret (subseq token 0 position-package-marker-1)
-                      (subseq token (1+ position-package-marker-2))
-                      t))
-          ((zerop position-package-marker-1)
-           (interpret :keyword
-                      (subseq token (1+ position-package-marker-1))
-                      t))
-          (t
-           (interpret (subseq token 0 position-package-marker-1)
-                      (subseq token (1+ position-package-marker-1))
-                      nil)))))
+  (let ((package-markers-end (or position-package-marker-2
+                                 position-package-marker-1))
+        (length (length token)))
+    (when (and package-markers-end
+               (> length 1)
+               (= package-markers-end (1- length)))
+      (%reader-error input-stream
+                     'symbol-name-must-not-end-with-package-marker
+                     :token token))
+    (flet ((interpret (package symbol count)
+             (interpret-symbol client input-stream package symbol count)))
+      (cond ((null position-package-marker-1)
+             (interpret :current token t))
+            ((zerop position-package-marker-1)
+             ;; We use PACKAGE-MARKERS-END so we can handle ::foo
+             ;; which can happen when recovering from errors.
+             (interpret :keyword
+                        (subseq token (1+ package-markers-end))
+                        t))
+            ((not (null position-package-marker-2))
+             (interpret (subseq token 0 position-package-marker-1)
+                        (subseq token (1+ position-package-marker-2))
+                        t))
+            (t
+             (interpret (subseq token 0 position-package-marker-1)
+                        (subseq token (1+ position-package-marker-1))
+                        nil))))))
 
 (defmethod interpret-symbol (client input-stream
                              (package-indicator null) symbol-name internp)
@@ -205,8 +209,9 @@
              (when (and (not escape-ranges)
                         (and (eql position-package-marker-1 0)
                              (= index 1)))
-               (%reader-error input-stream 'symbol-name-must-not-be-only-package-markers
-                              :token token))
+               (%reader-error
+                input-stream 'symbol-name-must-not-be-only-package-markers
+                :token token))
              (interpret-symbol-token
               client input-stream token
               position-package-marker-1
@@ -410,9 +415,10 @@
                              input-stream 'two-package-markers-must-be-adjacent
                              :token token))
                            ((= position-package-marker-1 0)
-                            (%reader-error
+                            (%recoverable-reader-error
                              input-stream 'two-package-markers-must-not-be-first
-                             :token token))
+                             :token token :report 'treat-as-keyword)
+                            (setf position-package-marker-2 index))
                            (t
                             (setf position-package-marker-2 index))))
                     (t
