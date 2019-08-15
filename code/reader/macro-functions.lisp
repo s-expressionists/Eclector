@@ -1,5 +1,12 @@
 (cl:in-package #:eclector.reader)
 
+;;;; Helper
+
+(declaim (inline recursive-read))
+(defun recursive-read (input-stream eof-error-p eof-value) ; TODO do this in an early commit
+  (let ((*preserve-whitespace* t))
+    (read-common *client* input-stream eof-error-p eof-value)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Macro WITH-FORBIDDEN-QUASIQUOTATION.
@@ -71,7 +78,7 @@
 
 (defun single-quote (stream char)
   (declare (ignore char))
-  (let ((material (read stream t nil t)))
+  (let ((material (recursive-read stream t nil)))
     (wrap-in-quote *client* material)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -163,10 +170,10 @@
        :context context :report 'ignore-quasiquote)
       (return-from backquote
         (let ((*backquote-depth* 0))
-          (read stream t nil t)))))
+          (recursive-read stream t nil)))))
   (let ((material (let ((*backquote-depth* (1+ *backquote-depth*))
                         (*unquote-forbidden* nil))
-                    (read stream t nil t))))
+                    (recursive-read stream t nil))))
     (wrap-in-quasiquote *client* material)))
 
 (defun comma (stream char)
@@ -178,7 +185,7 @@
                        (t (unread-char char2 stream)))))
     (flet ((read-material ()
              (handler-case
-                 (read stream t nil t)
+                 (recursive-read stream t nil)
                (end-of-list ()
                  (%reader-error stream 'object-must-follow-unquote
                                 :splicing-p splicing-p)))))
@@ -274,13 +281,13 @@
         (*consing-dot-allowed-p* t))
     (handler-case
         (loop for object = (let ((*consing-dot-allowed-p* nil))
-                             (read stream t nil t))
-              then (read stream t nil t)
+                             (recursive-read stream t nil))
+              then (recursive-read stream t nil)
               if (eq object *consing-dot*)
               do (setf *consing-dot-allowed-p* nil)
                  (setf tail
                        (handler-case
-                           (read stream t nil t)
+                           (recursive-read stream t nil)
                          (end-of-list ()
                            (%recoverable-reader-error
                             stream 'object-must-follow-consing-dot
@@ -290,7 +297,7 @@
                            nil)))
                  ;; This call to read must not return (it has to
                  ;; signal END-OF-LIST).
-                 (read stream t nil t)
+                 (recursive-read stream t nil)
                  (%recoverable-reader-error
                   stream 'multiple-objects-following-consing-dot
                   :report 'ignore-object)
@@ -323,7 +330,7 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-single-quote parameter))
   (let ((name (with-forbidden-quasiquotation ('sharpsign-single-quote :keep t)
-                (read stream t nil t))))
+                (recursive-read stream t nil))))
     (if *read-suppress*
         nil
         `(function ,name))))
@@ -336,7 +343,7 @@
   (declare (ignore char))
   (flet ((next-element ()
            (handler-case
-               (values (read stream t nil t) t)
+               (values (recursive-read stream t nil) t)
              (end-of-list ()
                (values nil nil))
              ((and end-of-file (not missing-delimiter)) (condition)
@@ -390,10 +397,10 @@
   (cond ((not *read-eval*)
          (%reader-error stream 'read-time-evaluation-inhibited))
         (*read-suppress*
-         (read stream t nil t))
+         (recursive-read stream t nil))
         (t
          (let ((expression (with-forbidden-quasiquotation (nil nil nil)
-                             (read stream t nil t))))
+                             (recursive-read stream t nil))))
            (handler-case
                (evaluate-expression *client* expression)
              (error (condition)
@@ -716,9 +723,9 @@
   (unless parameter
     (numeric-parameter-not-supplied stream 'sharpsign-a))
   (if *read-suppress*
-      (read stream t nil t)
+      (recursive-read stream t nil)
       (let* ((init (with-forbidden-quasiquotation ('sharpsign-a :keep)
-                     (read stream t nil t)))
+                     (recursive-read stream t nil)))
              (dimensions (determine-dimensions stream parameter init)))
         (check-dimensions stream dimensions init)
         (make-array dimensions :initial-contents init))))
@@ -815,7 +822,7 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-c parameter))
   (let ((parts (with-forbidden-quasiquotation ('sharpsign-c)
-                 (read stream t nil t))))
+                 (recursive-read stream t nil))))
     (cond
       (*read-suppress*
        nil)
@@ -835,13 +842,13 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-s parameter))
   (when *read-suppress*
-    (read stream t nil t)
+    (recursive-read stream t nil)
     (return-from sharpsign-s nil))
   (unless (char= (read-char stream t nil t) #\()
     (%reader-error stream 'non-list-following-sharpsign-s))
   (labels ((read* ()
              (handler-case
-                 (read stream t nil t)
+                 (recursive-read stream t nil)
                (end-of-list (condition)
                  condition)))
            (read-type ()
@@ -890,7 +897,7 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-p parameter))
   (let ((expression (with-forbidden-quasiquotation ('sharpsign-p)
-                      (read stream t nil t))))
+                      (recursive-read stream t nil))))
     (unless *read-suppress*
       (unless (stringp expression)
         (%reader-error stream 'read-object-type-error
@@ -957,18 +964,18 @@
                            ((if invertp
                                 :sharpsign-minus
                                 :sharpsign-plus))
-                         (read stream t nil t))))
+                         (recursive-read stream t nil))))
             '#:keyword)))
     (if (alexandria:xor (evaluate-feature-expression
                          client feature-expression)
                         invertp)
-        (read stream t nil t)
+        (recursive-read stream t nil)
         (let ((reason (if invertp
                           :sharpsign-minus
                           :sharpsign-plus)))
           (setf *skip-reason* (cons reason feature-expression))
           (let ((*read-suppress* t))
-            (read stream t nil t))
+            (recursive-read stream t nil))
           (values)))))
 
 (defun sharpsign-plus (stream char parameter)
@@ -1045,7 +1052,7 @@
   (let ((marker (make-fixup-marker)))
     (setf (gethash parameter *labels*) marker)
     ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
-    (let ((result (read stream t nil t)))
+    (let ((result (recursive-read stream t nil)))
       (when (eq result (fixup-marker-temporary marker))
         (%reader-error stream 'sharpsign-equals-only-refers-to-self
                        :label parameter))
