@@ -304,7 +304,8 @@
                   (with-input-from-string (stream input)
                     (multiple-value-call #'values
                       (eclector.parse-result:read
-                       (make-instance 'skipped-input-recording-client) stream)
+                       (make-instance 'skipped-input-recording-client)
+                       stream nil :eof)
                       (file-position stream)))))
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (equal expected-result result))
@@ -318,6 +319,7 @@
 
      ;; Toplevel Comments
      ("#||# 1"           1 ((:block-comment (0 . 4))))
+     ("; test"           :eof (((:line-comment . 1) (0 . 6))))
      ("; test~% 1"       1 (((:line-comment . 1) (0 . 6))))
      (";; test~% 1"      1 (((:line-comment . 2) (0 . 7))))
      (";;; test~% 1"     1 (((:line-comment . 3) (0 . 8))))

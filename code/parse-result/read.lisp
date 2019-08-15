@@ -73,7 +73,7 @@
       ;; EOF-VALUE was returned.  In the latter case, we want READ to
       ;; return EOF-VALUE.
       (cond ((and (null eof-error-p) (eq eof-value result))
-             eof-value)
+             (values eof-value orphan-results))
             (preserve-whitespace-p
              (values parse-result orphan-results))
             (t
