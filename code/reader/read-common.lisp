@@ -64,14 +64,43 @@
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
    :start
-     (multiple-value-bind (value what)
-         (read-maybe-nothing client input-stream eof-error-p eof-value)
-       (ecase what
-         ((:eof :suppress :value)
-          (return-from read-common value))
-         ((:whitespace :skip)
-          (go :start))))))
+     (let ((values (multiple-value-list
+                    (read-maybe-nothing
+                     client input-stream eof-error-p eof-value))))
+       (destructuring-bind (value what &rest rest) values
+         (ecase what
+           ((:eof :suppress :value)
+            (return-from read-common (apply #'values value rest)))
+           ((:whitespace :skip)
+            (go :start)))))))
 
-(defmethod read-common :around (client input-stream eof-error-p eof-value)
-  (let ((*input-stream* input-stream))
-    (call-next-method)))
+;;;
+
+(defmethod call-as-recursive-read (client input-stream function)
+  (error "not yet used")
+  (funcall function))
+
+(defmethod call-as-top-level-read (client input-stream
+                                   eof-error-p eof-value preserve-whitespace-p
+                                   function)
+  (let* ((labels (make-hash-table))
+         (values (multiple-value-list
+                  (let ((*input-stream* input-stream)
+                        (*labels* labels))
+                    (funcall function))))
+         (result (first values)))
+    ;; LABELS maps labels to conses of the form
+    ;;
+    ;;   (TEMPORARY-OBJECT . FINAL-OBJECT)
+    ;;
+    ;; where TEMPORARY-OBJECT is EQ-comparable and its sub-structure
+    ;; does not matter here. For the fixup step, convert these conses
+    ;; into a hash-table mapping temporary objects to final objects.
+    (unless (zerop (hash-table-count labels))
+      (print labels)
+      (let ((seen (make-hash-table :test #'eq))
+            (mapping (alexandria:alist-hash-table
+                      (alexandria:hash-table-values labels)
+                      :test #'eq)))
+        (fixup client result seen mapping)))
+    (values-list values)))
