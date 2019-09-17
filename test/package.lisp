@@ -22,10 +22,23 @@
 
 ;;; Test utilities
 
+(defun %expected-condition-type (condition-type)
+  (case condition-type
+    (eclector.reader:feature-expression-type-error
+     'eclector.reader::feature-expression-type-error/reader)
+    (eclector.reader:single-feature-expected
+     'eclector.reader::single-feature-expected/reader)
+    (t
+     condition-type)))
+
 (defun %signals-printable (condition-type thunk)
   (handler-bind
       ((condition (lambda (condition)
                     (when (typep condition condition-type)
+                      ;; The test should specify the exact expected
+                      ;; condition type, not some supertype.
+                      (is (type= (%expected-condition-type condition-type)
+                                 (type-of condition)))
                       (when (typep condition
                                    `(and reader-error
                                          (not (or eclector.reader:unquote-splicing-in-dotted-list
