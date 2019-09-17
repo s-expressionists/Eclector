@@ -6,53 +6,58 @@
   "Test recovering from various syntax errors."
 
   (mapc (lambda (input-and-expected)
-          (destructuring-bind (input expected-recover-count
-                               expected-value
+          (destructuring-bind (input expected-conditions expected-value
                                &optional (expected-position (length input)))
               input-and-expected
-            (let ((recover-count 0))
+            (let ((remaining-conditions expected-conditions))
               (flet ((do-it ()
                        (handler-bind
                            ((error
                               (lambda (condition)
-                                (declare (ignore condition))
+                                (is (typep condition (pop remaining-conditions)))
                                 (let ((restart (find-restart 'eclector.reader:recover)))
                                   (is (typep restart 'restart))
                                   (is (not (string= "" (princ-to-string restart))))
-                                  (incf recover-count)
                                   (invoke-restart restart)))))
                          (with-input-from-string (stream input)
-                           (values (eclector.reader:read stream nil)
+                           (values (let ((eclector.reader::*backquote-depth* 1))
+                                     (eclector.reader:read stream nil))
                                    (file-position stream))))))
                 (multiple-value-bind (value position) (do-it)
                   (is (equalp expected-value value))
                   (is (equalp expected-position position)))
-                (is (eql expected-recover-count recover-count))))))
+                (is (null remaining-conditions))))))
 
-        '(("("         1 ())
-          ("(1 2"      1 (1 2))
-          ("(1 ."      1 (1))
-          ("(1 .)"     1 (1))
-          ("(1 . 2 3)" 1 (1 . 2))
-          (")(1)"      1 (1))
+        '(("("         (eclector.reader:unterminated-list)                      ())
+          ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
+          ("(1 ."      (eclector.reader:unterminated-list)                      (1))
+          ("(1 .)"     (eclector.reader:object-must-follow-consing-dot)         (1))
+          ("(1 . 2 3)" (eclector.reader:multiple-objects-following-consing-dot) (1 . 2))
+          (")(1)"      (eclector.reader:invalid-context-for-right-parenthesis)  (1))
 
-          ("#("        1 #())
-          ("#(1 2"     1 #(1 2))
+          ("#("        (eclector.reader:unterminated-vector)                    #())
+          ("#(1 2"     (eclector.reader:unterminated-vector)                    #(1 2))
 
-          ("\""        1 "")
-          ("\"ab"      1 "ab")
+          ("\""        (eclector.reader:unterminated-string)                    "")
+          ("\"ab"      (eclector.reader:unterminated-string)                    "ab")
 
-          ("#|"        1 nil)
-          ("#|foo"     1 nil)
+          ("#|"        (eclector.reader:unterminated-block-comment)             nil)
+          ("#|foo"     (eclector.reader:unterminated-block-comment)             nil)
 
-          ("#"         1 nil)
+          ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
 
-          ("::foo"     1 :foo)
+          ("::foo"     (eclector.reader:two-package-markers-must-not-be-first)  :foo)
 
           ;; Recover from forbidden quasiquotation.
-          ("#C(,1 2)"  1 #C(1 2))
-          ("#C(`,1 2)" 2 #C(1 2))
+          ("#C(,1 2)"  (eclector.reader:unquote-in-invalid-context)             #C(1 2))
+          ("#C(`,1 2)" (eclector.reader:backquote-in-invalid-context
+                        eclector.reader:unquote-not-inside-backquote)
+                                                                                #C(1 2))
 
           ;; Multiple subsequent recoveries needed.
-          ("(1 (2"     2 (1 (2)))
-          ("(1 \"a"    2 (1 "a")))))
+          ("(1 (2"     (eclector.reader:unterminated-list
+                        eclector.reader:unterminated-list)
+                                                                                (1 (2)))
+          ("(1 \"a"    (eclector.reader:unterminated-string
+                        eclector.reader:unterminated-list)
+                                                                                (1 "a")))))
