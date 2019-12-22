@@ -1,5 +1,10 @@
 (cl:in-package #:eclector.readtable)
 
+;;; This function is the generic version of the standard Common Lisp
+;;; function with the same name.
+(defgeneric readtablep (object)
+  (:method ((object t)) nil))
+
 ;;; This function makes a fresh copy of READTABLE and returns the
 ;;; fresh copy.  READTABLE must be a readtable.
 (defgeneric copy-readtable (readtable))
@@ -22,10 +27,6 @@
 ;;; This function is the generic version of the standard Common Lisp
 ;;; function with the same name.
 (defgeneric (setf readtable-case) (mode readtable))
-
-;;; This function is the generic version of the standard Common Lisp
-;;; function with the same name.
-(defgeneric readtablep (object))
 
 ;;; This function is the generic version of the standard Common Lisp
 ;;; function with the same name.

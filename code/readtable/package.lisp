@@ -5,10 +5,10 @@
   ;; Shadowed standard symbols
   (:shadow
    . #1=(#:*readtable*
+         #:readtablep
          #:copy-readtable
          #:make-dispatch-macro-character
          #:readtable-case
-         #:readtablep
          #:get-macro-character
          #:set-macro-character
          #:get-dispatch-macro-character

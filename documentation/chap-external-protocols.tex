@@ -431,6 +431,25 @@ In this section, symbols written without package marker are in the
 \texttt{eclector.readtable} package
 \seesec{sec:package-readtable-features}
 
+This package exports two kinds of symbols:
+
+\begin{enumerate}
+\item Symbols the names of which correspond to the names of symbols in
+  the \texttt{common-lisp} package.  The functions bound to these
+  symbols are generic versions of the corresponding standard Common
+  Lisp functions.  Clients can define custom readtables by defining
+  methods on these generic functions.
+\item Symbols bound to additional functions and condition types.
+\end{enumerate}
+
+\Defgeneric {readtablep} {object}
+
+This function is the generic version of the standard Common Lisp
+function \texttt{cl:readtablep}.  The function returns true if
+\textit{object} can be used as a readtable in \sysname via the
+protocol functions in the \texttt{ecelctor.readtable} package.  The
+default method returns \texttt{nil}.
+
 TODO
 
 \section{Parse result construction features}

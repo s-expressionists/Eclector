@@ -9,7 +9,7 @@
 (cl:in-package #:eclector.readtable.test)
 
 (def-suite :eclector.readtable
-    :in :eclector)
+  :in :eclector)
 
 (defun run-tests ()
   (run! :eclector.readtable))

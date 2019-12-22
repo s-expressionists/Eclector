@@ -88,6 +88,13 @@
                  :serial t
                  :components ((:file "package")))
 
+                (:module "simple-readtable"
+                 :pathname "test/readtable/simple"
+                 :depends-on ("readtable")
+                 :serial t
+                 :components ((:file "package")
+                              (:file "methods")))
+
                 (:module "reader"
                  :pathname "test/reader"
                  :depends-on ("test")

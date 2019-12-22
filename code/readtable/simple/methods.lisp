@@ -1,5 +1,8 @@
 (cl:in-package #:eclector.readtable.simple)
 
+(defmethod eclector.readtable:readtablep ((readtable readtable))
+  t)
+
 (defun parse-parameter-and-sub-char (stream)
   (loop for parameter = 0 then (+ (* 10 parameter) value)
         for parameter-given = nil then t
