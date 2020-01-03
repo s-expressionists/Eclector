@@ -183,7 +183,6 @@
                 (error (do-it))
                 (t
                  (multiple-value-bind (result position) (do-it)
-
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors

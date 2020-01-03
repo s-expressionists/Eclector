@@ -28,12 +28,19 @@
                   (resolve report)))
       (values))))
 
-(define-condition stream-position-reader-error (acclimation:condition reader-error)
+(define-condition stream-position-condition (condition)
   ((%stream-position :initarg :stream-position
                      :reader stream-position)))
 
+(define-condition stream-position-reader-error (acclimation:condition
+                                                stream-position-condition
+                                                reader-error)
+  ())
+
 ;;; Adds a stream position to CL:END-OF-FILE.
-(define-condition end-of-file (stream-position-reader-error cl:end-of-file)
+(define-condition end-of-file (acclimation:condition
+                               stream-position-condition
+                               cl:end-of-file)
   ())
 
 (define-condition missing-delimiter (end-of-file)

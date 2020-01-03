@@ -40,7 +40,7 @@
                       (is (type= (%expected-condition-type condition-type)
                                  (type-of condition)))
                       (when (typep condition
-                                   `(and reader-error
+                                   `(and stream-error
                                          (not (or eclector.reader:unquote-splicing-in-dotted-list
                                                   eclector.reader:unquote-splicing-at-top))))
                         (is (not (null (stream-error-stream condition)))))
