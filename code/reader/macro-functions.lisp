@@ -979,14 +979,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Reader macros for sharpsign < and sharpsign )
-
-(defun sharpsign-invalid (stream char parameter)
-  (declare (ignore parameter))
-  (%reader-error stream 'sharpsign-invalid :character-found char))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Reader macros for sharpsign equals.
 ;;;
 ;;; When the SHARPSIGN-EQUALS reader macro encounters #N=EXPRESSION,
@@ -1072,3 +1064,11 @@
           ;; fixed up later.
           (t
            (fixup-marker-temporary marker)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Reader macros for sharpsign < and sharpsign )
+
+(defun sharpsign-invalid (stream char parameter)
+  (declare (ignore parameter))
+  (%reader-error stream 'sharpsign-invalid :character-found char))

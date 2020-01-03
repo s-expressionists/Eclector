@@ -1,23 +1,77 @@
 (cl:in-package #:eclector.reader)
 
-;;; Specialized end of input conditions
-
-(define-condition unterminated-list (missing-delimiter)
-  ())
-
-(define-condition unterminated-vector (missing-delimiter)
-  ())
-
-(define-condition unterminated-string (missing-delimiter)
-  ())
-
-(define-condition unterminated-block-comment (missing-delimiter)
-  ())
-
 ;;; Type error
 
 (define-condition read-object-type-error (stream-position-reader-error
                                           type-error)
+  ())
+
+;;; Conditions related to symbols
+;;;
+;;; See HyperSpec section 2.3.5 (Valid Patterns for Tokens).
+
+(define-condition package-does-not-exist (stream-position-reader-error)
+  ((%package-name :initarg :package-name :reader desired-package-name)))
+
+(define-condition symbol-access-error (stream-position-reader-error)
+  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
+   (%package :initarg :package :reader desired-symbol-package)))
+
+(define-condition symbol-does-not-exist (symbol-access-error)
+  ())
+
+(define-condition symbol-is-not-external (symbol-access-error)
+  ())
+
+(define-condition symbol-syntax-error (stream-position-reader-error)
+  ((%token :initarg :token :reader token)))
+
+(define-condition invalid-constituent-character (symbol-syntax-error)
+  ())
+
+(define-condition symbol-name-must-not-be-only-package-markers (symbol-syntax-error)
+  ())
+
+(define-condition symbol-name-must-not-end-with-package-marker (symbol-syntax-error)
+  ())
+
+(define-condition two-package-markers-must-be-adjacent (symbol-syntax-error)
+  ())
+
+(define-condition two-package-markers-must-not-be-first (symbol-syntax-error)
+  ())
+
+(define-condition symbol-can-have-at-most-two-package-markers (symbol-syntax-error)
+  ())
+
+(define-condition uninterned-symbol-must-not-contain-package-marker (symbol-syntax-error)
+  ())
+
+;;; General reader macro conditions
+
+(define-condition sharpsign-invalid (stream-position-reader-error)
+  ((%character-found :initarg :character-found :reader character-found)))
+
+(define-condition numeric-parameter-supplied-but-ignored (stream-position-reader-error)
+  ((%parameter :initarg :parameter :reader parameter)
+   (%macro-name :initarg :macro-name :reader macro-name)))
+
+(defun numeric-parameter-ignored (stream macro-name parameter)
+  (unless *read-suppress*
+    (%reader-error stream 'numeric-parameter-supplied-but-ignored
+                   :parameter parameter :macro-name macro-name)))
+
+(define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
+  ((%macro-name :initarg :macro-name :reader macro-name)))
+
+(defun numeric-parameter-not-supplied (stream macro-name)
+  (unless *read-suppress*
+    (%reader-error stream 'numeric-parameter-not-supplied-but-required
+                   :macro-name macro-name)))
+
+;;; Conditions related to strings
+
+(define-condition unterminated-string (missing-delimiter)
   ())
 
 ;;; Conditions related to quasiquotation
@@ -59,7 +113,10 @@
   (:default-initargs
    :splicing-p t))
 
-;;; Conditions related to consing dot
+;;; Conditions related to lists
+
+(define-condition unterminated-list (missing-delimiter)
+  ())
 
 (define-condition too-many-dots (stream-position-reader-error)
   ())
@@ -76,65 +133,7 @@
 (define-condition invalid-context-for-right-parenthesis (stream-position-reader-error)
   ())
 
-;;; Symbol-related conditions
-;;;
-;;; See HyperSpec section 2.3.5 (Valid Patterns for Tokens).
-
-(define-condition package-does-not-exist (stream-position-reader-error)
-  ((%package-name :initarg :package-name :reader desired-package-name)))
-
-(define-condition symbol-access-error (stream-position-reader-error)
-  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
-   (%package :initarg :package :reader desired-symbol-package)))
-
-(define-condition symbol-does-not-exist (symbol-access-error)
-  ())
-
-(define-condition symbol-is-not-external (symbol-access-error)
-  ())
-
-(define-condition symbol-syntax-error (stream-position-reader-error)
-  ((%token :initarg :token :reader token)))
-
-(define-condition invalid-constituent-character (symbol-syntax-error)
-  ())
-
-(define-condition symbol-name-must-not-be-only-package-markers (symbol-syntax-error)
-  ())
-
-(define-condition symbol-name-must-not-end-with-package-marker (symbol-syntax-error)
-  ())
-
-(define-condition two-package-markers-must-be-adjacent (symbol-syntax-error)
-  ())
-
-(define-condition two-package-markers-must-not-be-first (symbol-syntax-error)
-  ())
-
-(define-condition symbol-can-have-at-most-two-package-markers (symbol-syntax-error)
-  ())
-
-(define-condition uninterned-symbol-must-not-contain-package-marker (symbol-syntax-error)
-  ())
-
-;;; Conditions related to reader macros
-
-(define-condition numeric-parameter-supplied-but-ignored (stream-position-reader-error)
-  ((%parameter :initarg :parameter :reader parameter)
-   (%macro-name :initarg :macro-name :reader macro-name)))
-
-(defun numeric-parameter-ignored (stream macro-name parameter)
-  (unless *read-suppress*
-    (%reader-error stream 'numeric-parameter-supplied-but-ignored
-                   :parameter parameter :macro-name macro-name)))
-
-(define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
-  ((%macro-name :initarg :macro-name :reader macro-name)))
-
-(defun numeric-parameter-not-supplied (stream macro-name)
-  (unless *read-suppress*
-    (%reader-error stream 'numeric-parameter-not-supplied-but-required
-                   :macro-name macro-name)))
+;;; Conditions related to read-time evaluation
 
 (define-condition read-time-evaluation-inhibited (stream-position-reader-error)
   ())
@@ -142,6 +141,8 @@
 (define-condition read-time-evaluation-error (stream-position-reader-error)
   ((%expression :initarg :expression :reader expression)
    (%original-condition :initarg :original-condition :reader original-condition)))
+
+;;; Conditions related to characters and numbers
 
 (define-condition unknown-character-name (stream-position-reader-error)
   ((%name :initarg :name :reader name)))
@@ -155,6 +156,16 @@
 
 (define-condition invalid-default-float-format (stream-position-reader-error)
   ((%float-format :initarg :float-format :reader float-format)))
+
+;;; Conditions related to block comments
+
+(define-condition unterminated-block-comment (missing-delimiter)
+  ())
+
+;;; Conditions related to arrays
+
+(define-condition unterminated-vector (missing-delimiter)
+  ())
 
 (define-condition array-initialization-error (stream-position-reader-error)
   ((%array-type :initarg :array-type :reader array-type)))
@@ -193,7 +204,7 @@
   ((%slot-name :initarg :slot-name
                :reader slot-name)))
 
-;;; Feature expression conditions
+;;; Conditions related to feature expressions
 ;;;
 ;;; Can be evaluated without a stream context. Therefore each
 ;;; condition has a stream- and a non-stream-variant.
@@ -211,9 +222,6 @@
 (define-condition single-feature-expected/reader
     (single-feature-expected stream-position-reader-error)
   ())
-
-(define-condition sharpsign-invalid (stream-position-reader-error)
-  ((%character-found :initarg :character-found :reader character-found)))
 
 ;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
 

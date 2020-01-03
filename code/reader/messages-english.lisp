@@ -15,20 +15,6 @@
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
   (define-description use-partial-vector          "Return a vector of the already read elements."))
 
-(macrolet ((define-context (context name)
-             `(defmethod context-name ((context  (eql ',context))
-                                       (language acclimation:english))
-                ,name)))
-  (define-context sharpsign-single-quote "the function reader macro")
-  (define-context sharpsign-a            "the general array reader macro")
-  (define-context sharpsign-c            "the complex reader macro")
-  (define-context sharpsign-s-type       "the structure type name in the structure literal reader macro")
-  (define-context sharpsign-s-slot-name  "a structure slot name in the structure literal reader macro")
-  (define-context sharpsign-s-slot-value "a structure slot value in the structure literal reader macro")
-  (define-context sharpsign-p            "the pathname reader macro")
-  (define-context :sharpsign-plus        "the #+ conditionalization reader macro")
-  (define-context :sharpsign-minus       "the #- conditionalization reader macro"))
-
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var)
                        &body body)
@@ -36,82 +22,20 @@
             ((,condition-var ,condition-specializer)
              ,stream-var
              (language acclimation:english))
-          ,@body)))
+          ,@body))
+     (define-context (context name)
+       `(defmethod context-name ((context  (eql ',context))
+                                 (language acclimation:english))
+          ,name)))
 
-  ;; For the following reporters, we use the DELIMITER slot instead of
-  ;; a fixed character in the report since the reader macros may have
-  ;; been installed on non-default (sub-) characters.
-  (define-reporter ((condition unterminated-list) stream)
-    (let ((delimiter (delimiter condition)))
-      (format stream "While reading list, expected ~:c when input ~
-                      ended."
-              delimiter)))
-
-  (define-reporter ((condition unterminated-vector) stream)
-    (let ((delimiter (delimiter condition)))
-      (format stream "While reading vector, expected ~:c when input ~
-                      ended."
-                delimiter)))
-
-  (define-reporter ((condition unterminated-string) stream)
-    (let ((delimiter (delimiter condition)))
-      (format stream "While reading string, expected ~:c when input ~
-                      ended."
-              delimiter)))
-
-  (define-reporter ((condition unterminated-block-comment) stream)
-    (let ((delimiter (delimiter condition)))
-      (format stream "While reading block comment, expected ~:c ~:c ~
-                      when input ended."
-              delimiter #\#)))
+;;; Type error
 
   (define-reporter ((condition read-object-type-error) stream)
     (format stream "The read object ~s is not of the required type ~s."
             (type-error-datum condition)
             (type-error-expected-type condition)))
 
-;;; Conditions related to quasiquotation
-
-  (define-reporter ((condition backquote-in-invalid-context) stream)
-    (format stream "Backquote is illegal in ~A."
-            (context-name (context condition) language)))
-
-  (define-reporter ((condition unquote-not-inside-backquote) stream)
-    (format stream "~:[Unquote~;Splicing unquote~] not inside backquote."
-            (splicing-p condition)))
-
-  (define-reporter ((condition unquote-in-invalid-context) stream)
-    (format stream "~:[Unquote~;Splicing unquote~] is illegal in ~A."
-            (splicing-p condition)
-            (context-name (context condition) language)))
-
-  (define-reporter ((condition object-must-follow-unquote) stream)
-    (format stream "An object must follow a~:[~; splicing~] unquote."
-            (splicing-p condition)))
-
-  (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
-    (format stream "Splicing unquote at end of list (like a . ,@b)."))
-
-  (define-reporter ((condition unquote-splicing-at-top) stream)
-    (format stream "Splicing unquote as backquote form (like `,@foo)."))
-
-;;; Conditions related to consing dot
-
-  (define-reporter ((condition too-many-dots) stream)
-    (format stream "A token consisting solely of multiple dots is ~
-                    illegal."))
-
-  (define-reporter ((condition invalid-context-for-consing-dot) stream)
-    (format stream "A consing dot appeared in an illegal position."))
-
-  (define-reporter ((condition object-must-follow-consing-dot) stream)
-    (format stream "An object must follow a consing dot."))
-
-  (define-reporter ((condition multiple-objects-following-consing-dot) stream)
-    (format stream "Only a single object can follow a consing dot."))
-
-  (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
-    (format stream "Unmatched close parenthesis."))
+;;; Conditions related to symbols
 
   (define-reporter ((condition package-does-not-exist) stream)
     (format stream "Package named ~s does not exist."
@@ -136,10 +60,10 @@
 
   (define-reporter ((condition invalid-constituent-character) stream)
     (let ((char (aref (token condition) 0)))
-       (format stream "The character ~:[named ~A~*~;~*~C~] must not ~
-                       occur in a symbol as it is an invalid ~
-                       constituent."
-               (graphic-char-p char) (char-name char) char)))
+      (format stream "The character ~:[named ~A~*~;~*~C~] must not ~
+                      occur in a symbol as it is an invalid ~
+                      constituent."
+              (graphic-char-p char) (char-name char) char)))
 
   (define-reporter ((condition symbol-name-must-not-be-only-package-markers) stream)
     (format stream "Symbol name without any escapes must not consist ~
@@ -166,6 +90,12 @@
     (format stream "A symbol token following #: must not contain a ~
                     package marker."))
 
+;;; General reader macro conditions
+
+  (define-reporter ((condition sharpsign-invalid) stream)
+    (format stream "~:c is not a valid subchar for the # dispatch macro."
+            (character-found condition)))
+
   (define-reporter ((condition numeric-parameter-supplied-but-ignored) stream)
     (format stream "Dispatch reader macro ~a was supplied with a ~
                     numeric parameter it does not accept."
@@ -176,24 +106,94 @@
                     parameter, but none was supplied."
             (macro-name condition)))
 
+;;; Conditions related to quotation
+
+  (define-context sharpsign-single-quote "the function reader macro")
+
+;;; Conditions related to strings
+
+  (define-reporter ((condition unterminated-string) stream)
+    ;; Use the DELIMITER slot instead of a fixed character since the
+    ;; reader macro may have been installed on non-default character.
+    (format stream "While reading string, expected ~:c when input ~
+                    ended."
+            (delimiter condition)))
+
+;;; Conditions related to quasiquotation
+
+  (define-reporter ((condition backquote-in-invalid-context) stream)
+    (format stream "Backquote is illegal in ~A."
+            (context-name (context condition) language)))
+
+  (define-reporter ((condition unquote-not-inside-backquote) stream)
+    (format stream "~:[Unquote~;Splicing unquote~] not inside backquote."
+            (splicing-p condition)))
+
+  (define-reporter ((condition unquote-in-invalid-context) stream)
+    (format stream "~:[Unquote~;Splicing unquote~] is illegal in ~A."
+            (splicing-p condition)
+            (context-name (context condition) language)))
+
+  (define-reporter ((condition object-must-follow-unquote) stream)
+    (format stream "An object must follow a~:[~; splicing~] unquote."
+            (splicing-p condition)))
+
+  (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
+    (format stream "Splicing unquote at end of list (like a . ,@b)."))
+
+  (define-reporter ((condition unquote-splicing-at-top) stream)
+    (format stream "Splicing unquote as backquote form (like `,@foo)."))
+
+;;; Conditions related to lists
+
+  (define-reporter ((condition unterminated-list) stream)
+    ;; Use the DELIMITER slot instead of a fixed character since the
+    ;; reader macro may have been installed on a non-default
+    ;; character.
+    (format stream "While reading list, expected ~:c when input ~
+                    ended."
+            (delimiter condition)))
+
+  (define-reporter ((condition too-many-dots) stream)
+      (format stream "A token consisting solely of multiple dots is ~
+                    illegal."))
+
+  (define-reporter ((condition invalid-context-for-consing-dot) stream)
+    (format stream "A consing dot appeared in an illegal position."))
+
+  (define-reporter ((condition object-must-follow-consing-dot) stream)
+    (format stream "An object must follow a consing dot."))
+
+  (define-reporter ((condition multiple-objects-following-consing-dot) stream)
+    (format stream "Only a single object can follow a consing dot."))
+
+  (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
+    (format stream "Unmatched close parenthesis."))
+
+;;; Conditions related to read-time evaluation
+
   (define-reporter ((condition read-time-evaluation-inhibited) stream)
     (format stream "Cannot evaluate expression at read-time because ~s ~
                     is false."
             '*read-eval*))
 
   (define-reporter ((condition read-time-evaluation-error) stream)
-      (let ((expression (expression condition))
-            (original-condition (original-condition condition)))
-        (format stream "Read-time evaluation of expression ~s signaled ~
-                        ~s: ~a"
-                expression (type-of original-condition) original-condition)))
+    (let ((expression (expression condition))
+          (original-condition (original-condition condition)))
+      (format stream "Read-time evaluation of expression ~s signaled ~
+                      ~s: ~a"
+              expression (type-of original-condition) original-condition)))
+
+;;; Conditions related to characters and numbers
 
   (define-reporter ((condition unknown-character-name) stream)
     (format stream "Unrecognized character name: ~s" (name condition)))
 
+  (define-context sharpsign-c "the complex reader macro")
+
   (define-reporter ((condition digit-expected) stream)
-    (format stream "~:c is not a digit in base ~d."
-            (character-found condition) (base condition)))
+      (format stream "~:c is not a digit in base ~d."
+              (character-found condition) (base condition)))
 
   (define-reporter ((condition invalid-radix) stream)
     (format stream "~d is too ~:[big~;small~] to be a radix."
@@ -202,6 +202,28 @@
   (define-reporter ((condition invalid-default-float-format) stream)
     (format stream "~a is not a valid ~a."
             (float-format condition) 'cl:*read-default-float-format*))
+
+;;; Conditions related to block comments
+
+  (define-reporter ((condition unterminated-block-comment) stream)
+    ;; Use the DELIMITER slot instead of a fixed character since the
+    ;; reader macro may have been installed on non-default (sub-)
+    ;; character.
+    (format stream "While reading block comment, expected ~:c ~:c ~
+                    when input ended."
+            (delimiter condition) #\#))
+
+;;; Conditions related to arrays
+
+  (define-context sharpsign-a "the general array reader macro")
+
+  (define-reporter ((condition unterminated-vector) stream)
+    ;; Use the DELIMITER slot instead of a fixed character since the
+    ;; reader macro may have been installed on a non-default
+    ;; character.
+    (format stream "While reading vector, expected ~:c when input ~
+                    ended."
+            (delimiter condition)))
 
   (define-reporter ((condition too-many-elements) stream)
     (format stream "~a was specified to have length ~d, but ~d ~
@@ -226,6 +248,10 @@
 
 ;;; Sharpsign S conditions
 
+  (define-context sharpsign-s-type       "the structure type name in the structure literal reader macro")
+  (define-context sharpsign-s-slot-name  "a structure slot name in the structure literal reader macro")
+  (define-context sharpsign-s-slot-value "a structure slot value in the structure literal reader macro")
+
   (define-reporter ((condition non-list-following-sharpsign-s) stream)
     (format stream "A proper list must immediately follow #S."))
 
@@ -247,6 +273,15 @@
     (format stream "A slot value form must follow the slot name ~S."
             (slot-name condition)))
 
+;;; Conditions related to pathnames
+
+  (define-context sharpsign-p "the pathname reader macro")
+
+;;; Conditions related to feature expressions
+
+  (define-context :sharpsign-plus  "the #+ conditionalization reader macro")
+  (define-context :sharpsign-minus "the #- conditionalization reader macro")
+
   (define-reporter ((condition feature-expression-type-error) stream)
     (format stream "Feature expression is not of type ~a:~%~a"
             (type-error-expected-type condition) (type-error-datum condition)))
@@ -256,9 +291,7 @@
                     when only one was expected:~%~a"
             (features condition)))
 
-  (define-reporter ((condition sharpsign-invalid) stream)
-    (format stream "~:c is not a valid subchar for the # dispatch macro."
-            (character-found condition)))
+;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
 
   (define-reporter ((condition sharpsign-equals-label-defined-more-than-once) stream)
     (format stream "Label ~d defined more than once."

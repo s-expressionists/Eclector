@@ -88,19 +88,38 @@
    #:wrap-in-unquote
    #:wrap-in-unquote-splicing)
 
-  ;; Names of additional conditions.
+  ;; Conditions related to symbol and end-of-input.
   (:export
    #:end-of-file
 
    #:missing-delimiter
    #:delimiter
 
-   #:unterminated-list
-   #:unterminated-vector
-   #:unterminated-string
-   #:unterminated-block-comment
-
    #:read-object-type-error
+
+   #:package-does-not-exist
+   #:symbol-does-not-exist
+   #:symbol-is-not-external
+
+   #:invalid-constituent-character
+   #:symbol-name-must-not-be-only-package-markers
+   #:symbol-name-must-not-end-with-package-marker
+   #:two-package-markers-must-be-adjacent
+   #:two-package-markers-must-not-be-first
+   #:symbol-can-have-at-most-two-package-markers
+   #:uninterned-symbol-must-not-contain-package-marker)
+
+  ;; Conditions related to reader macros.
+  (:export
+   #:sharpsign-invalid
+
+   #:unterminated-dispatch-macro
+   #:unknown-macro-sub-character
+
+   #:numeric-parameter-supplied-but-ignored
+   #:numeric-parameter-not-supplied-but-required
+
+   #:unterminated-string
 
    #:backquote-error
    #:backquote-context-error
@@ -113,28 +132,12 @@
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
 
+   #:unterminated-list
    #:too-many-dots
    #:invalid-context-for-consing-dot
    #:object-must-follow-consing-dot
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis
-
-   #:package-does-not-exist
-   #:symbol-does-not-exist
-   #:symbol-is-not-external
-
-   #:invalid-constituent-character
-   #:symbol-name-must-not-be-only-package-markers
-   #:symbol-name-must-not-end-with-package-marker
-   #:two-package-markers-must-be-adjacent
-   #:two-package-markers-must-not-be-first
-   #:symbol-can-have-at-most-two-package-markers
-   #:uninterned-symbol-must-not-contain-package-marker
-
-   #:unterminated-dispatch-macro
-   #:unknown-macro-sub-character
-   #:numeric-parameter-supplied-but-ignored
-   #:numeric-parameter-not-supplied-but-required
 
    #:read-time-evaluation-inhibited
    #:read-time-evaluation-error
@@ -143,6 +146,10 @@
    #:digit-expected
    #:invalid-radix
    #:invalid-default-float-format
+
+   #:unterminated-block-comment
+
+   #:unterminated-vector
    #:too-many-elements
    #:no-elements-found
    #:incorrect-initialization-length
@@ -156,7 +163,6 @@
    #:feature-expression-type-error
    #:single-feature-expected
 
-   #:sharpsign-invalid
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-equals-only-refers-to-self
    #:sharpsign-sharpsign-undefined-label)
