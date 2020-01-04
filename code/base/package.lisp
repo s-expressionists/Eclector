@@ -17,6 +17,8 @@
 
    #:end-of-file
 
+   #:incomplete-construct
+
    #:missing-delimiter
    #:delimiter)
 

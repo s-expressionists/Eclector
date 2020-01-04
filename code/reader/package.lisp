@@ -28,6 +28,8 @@
    #:stream-position-reader-error
    #:stream-position
 
+   #:incomplete-construct
+
    #:missing-delimiter
    #:delimiter)
 
@@ -91,6 +93,8 @@
   ;; Conditions related to symbol and end-of-input.
   (:export
    #:end-of-file
+
+   #:incomplete-construct
 
    #:missing-delimiter
    #:delimiter

@@ -296,7 +296,7 @@
               else
               do (push object reversed-result))
       (end-of-list ())
-      ((and end-of-file (not missing-delimiter)) (condition)
+      ((and end-of-file (not incomplete-construct)) (condition)
         (%recoverable-reader-error
          stream 'unterminated-list
          :stream-position (stream-position condition)
@@ -337,7 +337,7 @@
                (values (read stream t nil t) t)
              (end-of-list ()
                (values nil nil))
-             ((and end-of-file (not missing-delimiter)) (condition)
+             ((and end-of-file (not incomplete-construct)) (condition)
                (%recoverable-reader-error
                 stream 'unterminated-vector
                 :stream-position (stream-position condition)
@@ -662,7 +662,7 @@
                             (unread-char char2 stream))))
                      (t
                       nil)))
-    ((and end-of-file (not missing-delimiter)) (condition)
+    ((and end-of-file (not incomplete-construct)) (condition)
       (%recoverable-reader-error
        stream 'unterminated-block-comment
        :stream-position (stream-position condition)

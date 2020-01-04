@@ -43,5 +43,8 @@
                                cl:end-of-file)
   ())
 
-(define-condition missing-delimiter (end-of-file)
+(define-condition incomplete-construct (stream-position-reader-error)
+  ())
+
+(define-condition missing-delimiter (end-of-file incomplete-construct)
   ((%delimiter :initarg :delimiter :reader delimiter)))

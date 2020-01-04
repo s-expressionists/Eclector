@@ -100,7 +100,8 @@
                                               backquote-context-error)
   ())
 
-(define-condition object-must-follow-unquote (unquote-error)
+(define-condition object-must-follow-unquote (unquote-error
+                                              incomplete-construct)
   ())
 
 (define-condition unquote-splicing-in-dotted-list (unquote-error)
@@ -124,7 +125,7 @@
 (define-condition invalid-context-for-consing-dot (stream-position-reader-error)
   ())
 
-(define-condition object-must-follow-consing-dot (stream-position-reader-error)
+(define-condition object-must-follow-consing-dot (incomplete-construct)
   ())
 
 (define-condition multiple-objects-following-consing-dot (stream-position-reader-error)
@@ -187,7 +188,7 @@
 (define-condition non-list-following-sharpsign-s (stream-position-reader-error)
   ())
 
-(define-condition no-structure-type-name-found (stream-position-reader-error)
+(define-condition no-structure-type-name-found (incomplete-construct)
   ())
 
 (define-condition structure-type-name-is-not-a-symbol (read-object-type-error)
@@ -200,7 +201,7 @@
   (:default-initargs
    :expected-type 'symbol))
 
-(define-condition no-slot-value-found (stream-position-reader-error)
+(define-condition no-slot-value-found (incomplete-construct)
   ((%slot-name :initarg :slot-name
                :reader slot-name)))
 
