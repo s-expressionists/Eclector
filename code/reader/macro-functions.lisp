@@ -281,12 +281,11 @@
                  (setf tail
                        (handler-case
                            (read stream t nil t)
-                         (end-of-list ()
+                         (end-of-list (condition)
                            (%recoverable-reader-error
                             stream 'object-must-follow-consing-dot
                             :report 'inject-nil)
-                           (unread-char
-                            (opposite-delimiter char) stream)
+                           (unread-char (%character condition) stream)
                            nil)))
                  ;; This call to read must not return (it has to
                  ;; signal END-OF-LIST).
@@ -306,11 +305,10 @@
     (nreconc reversed-result tail)))
 
 (defun right-parenthesis (stream char)
-  (declare (ignore char))
   ;; If the call to SIGNAL returns, then there is no handler for this
   ;; condition, which means that the right parenthesis was found in a
   ;; context where it is not allowed.
-  (signal *end-of-list*)
+  (signal-end-of-list char)
   (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
                              :report 'ignore-trailing-right-paren))
 
@@ -842,12 +840,12 @@
   (labels ((read* ()
              (handler-case
                  (read stream t nil t)
-               (end-of-list (condition)
-                 condition)))
+               (end-of-list ()
+                 'end-of-list)))
            (read-type ()
              (let ((type (with-forbidden-quasiquotation ('sharpsign-s-type)
                            (read*))))
-               (cond ((eq type *end-of-list*)
+               (cond ((eq type 'end-of-list)
                       (%reader-error stream 'no-structure-type-name-found))
                      ((symbolp type)
                       type)
@@ -858,7 +856,7 @@
              (let ((name (with-forbidden-quasiquotation
                              ('sharpsign-s-slot-name)
                            (read*))))
-               (cond ((eq name *end-of-list*)
+               (cond ((eq name 'end-of-list)
                       nil)
                      ((symbolp name)
                       name)
@@ -869,7 +867,7 @@
              (let ((value (with-forbidden-quasiquotation
                               ('sharpsign-s-slot-value :keep)
                             (read*))))
-               (if (eq value *end-of-list*)
+               (if (eq value 'end-of-list)
                    (%reader-error stream 'no-slot-value-found
                                   :slot-name slot-name)
                    value))))

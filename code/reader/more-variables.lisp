@@ -22,6 +22,14 @@
 
 (defparameter *consing-dot-allowed-p* nil)
 
-(define-condition end-of-list () ())
+(define-condition end-of-list (condition)
+  ((%character :initarg :character :reader %character)))
 
-(defvar *end-of-list* (make-condition 'end-of-list))
+(#+sbcl sb-ext:defglobal #-sbcl defvar **end-of-list**
+  (make-condition 'end-of-list :character #\)))
+
+(declaim (inline signal-end-of-list))
+(defun signal-end-of-list (character)
+  (if (char= character #\))
+      (signal **end-of-list**)
+      (signal 'end-of-list :character character)))
