@@ -80,11 +80,9 @@
              (push (cons (length token) nil) escape-ranges))
            (end-escape ()
              (setf (cdr (first escape-ranges)) (length token)))
-           (read-char-handling-eof ()
-             (let ((char (read-char input-stream eof-error-p)))
-               (if (not (null char))
-                   char
-                   (return-from read-token eof-value)))))
+           (read-char-handling-eof (context)
+             (declare (ignore context))
+             (read-char input-stream t)))
       (tagbody
          ;; This function is only called when a character is available
          ;; in INPUT-STREAM.
@@ -92,7 +90,7 @@
            (ecase (eclector.readtable:syntax-type *readtable* char)
              (:single-escape
               (start-escape)
-              (push-char (read-char-handling-eof))
+              (push-char (read-char-handling-eof :single-escape))
               (end-escape)
               (go step-8-even-escapes))
              (:multiple-escape
@@ -111,7 +109,7 @@
               (go step-8-even-escapes))
              (:single-escape
               (start-escape)
-              (push-char (read-char-handling-eof))
+              (push-char (read-char-handling-eof :single-escape))
               (end-escape)
               (go step-8-even-escapes))
              (:multiple-escape
@@ -125,14 +123,14 @@
                 (unread-char char input-stream))
               (go step-10-terminate-token))))
        step-9-odd-escapes
-         (let ((char (read-char-handling-eof)))
+         (let ((char (read-char-handling-eof :multiple-escape)))
            (ecase (eclector.readtable:syntax-type *readtable* char)
              ((:constituent :terminating-macro
                :non-terminating-macro :whitespace)
               (push-char char)
               (go step-9-odd-escapes))
              (:single-escape
-              (push-char (read-char-handling-eof))
+              (push-char (read-char-handling-eof :single-escape))
               (go step-9-odd-escapes))
              (:multiple-escape
               (end-escape)

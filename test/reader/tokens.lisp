@@ -30,7 +30,7 @@
           (,(format nil "~C" #\Rubout)      t   nil nil eclector.reader:invalid-constituent-character)
           ("a"                              t   nil nil |A|)
           ("\\"                             t   nil nil eclector.reader:end-of-file)
-          ("\\"                             nil nil nil nil)
+          ("\\"                             nil nil nil eclector.reader:end-of-file)
           ("\\a"                            t   nil nil |a|)
           (,(format nil "\\~C" #\Backspace) t   nil nil ,(intern (format nil "~C" #\Backspace)))
 
@@ -39,7 +39,7 @@
           ("aa"                             t   nil nil |AA|)
           ("a#"                             t   nil nil |A#|)
           ("a\\"                            t   nil nil eclector.reader:end-of-file)
-          ("a\\"                            nil nil nil nil)
+          ("a\\"                            nil nil nil eclector.reader:end-of-file)
           ("a\\a"                           t   nil nil |Aa|)
           ("a|a|"                           t   nil nil |Aa|)
           ("a,"                             t   nil nil |A|  1)
@@ -47,7 +47,7 @@
           ("a "                             t   nil t   |A|  1)
 
           ("|"                              t   nil nil eclector.reader:end-of-file)
-          ("|"                              nil nil nil nil)
+          ("|"                              nil nil nil eclector.reader:end-of-file)
           ("||"                             t   nil nil ||)
           ("||a"                            t   nil nil |A|)
           ("|a|"                            t   nil nil |a|)
@@ -56,9 +56,9 @@
           ("| |"                            t   nil nil | |)
           (,(format nil "|~C|" #\Backspace) t   nil nil ,(intern (format nil "~C" #\Backspace)))
           ("|\\"                            t   nil nil eclector.reader:end-of-file)
-          ("|\\"                            nil nil nil nil)
+          ("|\\"                            nil nil nil eclector.reader:end-of-file)
           ("|\\|"                           t   nil nil eclector.reader:end-of-file)
-          ("|\\|"                           nil nil nil nil)
+          ("|\\|"                           nil nil nil eclector.reader:end-of-file)
           ("|\\||"                          t   nil nil |\||)
 
           (".\\."                           t   nil nil |..|)
