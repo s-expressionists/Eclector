@@ -57,13 +57,17 @@
 
 ;;; Reading lists and READ-DELIMITED-LIST
 
+(defun %invalid-end-of-list (stream char)
+  (declare (ignore char))
+  (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
+                             :report 'ignore-trailing-right-paren))
+
 (defun %handle-end-of-list (stream char)
   ;; If the call to SIGNAL returns, then there is no handler for this
   ;; condition, which means that the right parenthesis was found in a
   ;; context where it is not allowed.
   (signal-end-of-list char)
-  (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
-                             :report 'ignore-trailing-right-paren))
+  (%invalid-end-of-list stream char))
 
 (defun %maybe-end-of-list (stream char recursive-p)
   (unless (null char)
@@ -73,7 +77,7 @@
           (unread-char next-char stream)))))
 
 (defun %closing-delimiter (open-char close-char)
-  ;; Not great, but we can't know the missing char generally.
+  ;; Not great, but we can't know the closing delimiter generally.
   (if (not (null close-char))
       close-char
       (case open-char
@@ -84,7 +88,21 @@
   (let ((reversed-result '())
         (tail nil)
         (*consing-dot-allowed-p* t))
-    (handler-case
+    (block nil
+      (handler-bind
+          ((end-of-list
+             (lambda (condition)
+               (when (or (null close-char)
+                         (char= close-char (%character condition)))
+                 (return nil))))
+           ((and end-of-file (not incomplete-construct))
+             (lambda (condition)
+               (%recoverable-reader-error
+                input-stream 'unterminated-list
+                :stream-position (stream-position condition)
+                :delimiter (%closing-delimiter open-char close-char)
+                :report 'use-partial-list)
+               (return nil))))
         (loop for object = (progn
                              (%maybe-end-of-list input-stream close-char recursive-p)
                              (let ((*consing-dot-allowed-p* nil))
@@ -110,14 +128,7 @@
                   input-stream 'multiple-objects-following-consing-dot
                   :report 'ignore-object)
               else
-              do (push object reversed-result))
-      (end-of-list ())
-      ((and end-of-file (not incomplete-construct)) (condition)
-        (%recoverable-reader-error
-         input-stream 'unterminated-list
-         :stream-position (stream-position condition)
-         :delimiter (%closing-delimiter open-char close-char)
-         :report 'use-partial-list)))
+              do (push object reversed-result))))
     (nreconc reversed-result tail)))
 
 (defun read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
