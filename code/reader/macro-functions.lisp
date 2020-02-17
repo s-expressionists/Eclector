@@ -262,55 +262,11 @@
 ;;; there was a second subform after the consing dot in the list, so
 ;;; we signal an ERROR.
 
-(defun opposite-delimiter (char)
-  ;; Not great, but we can't know the missing char generally.
-  (case char
-    (#\( #\))
-    (t   char)))
-
 (defun left-parenthesis (stream char)
-  (let ((reversed-result '())
-        (tail nil)
-        (*consing-dot-allowed-p* t))
-    (handler-case
-        (loop for object = (let ((*consing-dot-allowed-p* nil))
-                             (read stream t nil t))
-              then (read stream t nil t)
-              if (eq object *consing-dot*)
-              do (setf *consing-dot-allowed-p* nil)
-                 (setf tail
-                       (handler-case
-                           (read stream t nil t)
-                         (end-of-list (condition)
-                           (%recoverable-reader-error
-                            stream 'object-must-follow-consing-dot
-                            :report 'inject-nil)
-                           (unread-char (%character condition) stream)
-                           nil)))
-                 ;; This call to read must not return (it has to
-                 ;; signal END-OF-LIST).
-                 (read stream t nil t)
-                 (%recoverable-reader-error
-                  stream 'multiple-objects-following-consing-dot
-                  :report 'ignore-object)
-              else
-              do (push object reversed-result))
-      (end-of-list ())
-      ((and end-of-file (not incomplete-construct)) (condition)
-        (%recoverable-reader-error
-         stream 'unterminated-list
-         :stream-position (stream-position condition)
-         :delimiter (opposite-delimiter char)
-         :report 'use-partial-list)))
-    (nreconc reversed-result tail)))
+  (%read-delimited-list stream char nil t))
 
 (defun right-parenthesis (stream char)
-  ;; If the call to SIGNAL returns, then there is no handler for this
-  ;; condition, which means that the right parenthesis was found in a
-  ;; context where it is not allowed.
-  (signal-end-of-list char)
-  (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
-                             :report 'ignore-trailing-right-paren))
+  (%handle-end-of-list stream char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
