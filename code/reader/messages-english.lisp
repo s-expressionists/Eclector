@@ -1,5 +1,7 @@
 (cl:in-package #:eclector.reader)
 
+;;;; Recovery strategy descriptions
+
 (macrolet ((define-description (strategy description)
              `(defmethod recovery-description ((strategy (eql ',strategy))
                                                (language acclimation:english))
@@ -14,6 +16,8 @@
   (define-description use-partial-list            "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
   (define-description use-partial-vector          "Return a vector of the already read elements."))
+
+;;;; Contexts and condition reporters
 
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var)

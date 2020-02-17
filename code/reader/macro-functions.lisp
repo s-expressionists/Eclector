@@ -4,7 +4,7 @@
 ;;;
 ;;; Macro WITH-FORBIDDEN-QUASIQUOTATION.
 ;;;
-;;; This macros controls whether quasiquote and/or unquote should be
+;;; This macro controls whether quasiquote and/or unquote should be
 ;;; allowed in a given context.
 
 (defmacro with-forbidden-quasiquotation
