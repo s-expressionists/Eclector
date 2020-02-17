@@ -16,16 +16,21 @@
                               (lambda (condition)
                                 (is (typep condition (pop remaining-conditions)))
                                 (let ((restart (find-restart 'eclector.reader:recover)))
-                                  (is (typep restart 'restart))
+                                  (is-true (typep restart 'restart))
+                                  (unless restart
+                                    (return-from do-it))
                                   (is (not (string= "" (princ-to-string restart))))
                                   (invoke-restart restart)))))
                          (with-input-from-string (stream input)
                            (values (let ((eclector.reader::*backquote-depth* 1))
                                      (eclector.reader:read stream nil))
                                    (file-position stream))))))
+                ;; Check expected value and position.
                 (multiple-value-bind (value position) (do-it)
                   (is (equalp expected-value value))
                   (is (equalp expected-position position)))
+                ;; All signaled conditions were as expected. Make sure
+                ;; all expected conditions were signaled.
                 (is (null remaining-conditions))))))
 
         '(("("         (eclector.reader:unterminated-list)                      ())
