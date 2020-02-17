@@ -15,7 +15,8 @@
 
          #:read
          #:read-preserving-whitespace
-         #:read-from-string))
+         #:read-from-string
+         #:read-delimited-list))
 
   (:shadowing-import-from #:eclector.readtable
    #:*readtable*)
@@ -27,7 +28,11 @@
 
   (:local-nicknames
    (#:readtable #:eclector.readtable)
-   (#:reader    #:eclector.reader)))
+   (#:reader    #:eclector.reader))
+
+  (:documentation
+   "This package illustrates how the implementation could set up its
+CL package."))
 
 (cl:in-package #:eclector.examples.as-implementation-reader.cl)
 
@@ -65,17 +70,20 @@
 
 ;;; Reader interface
 
-(defun read (&optional (stream *standard-input*) (eof-error-p t) eof-value recursive-p)
-  (reader:read stream eof-error-p eof-value recursive-p))
+(defun read (&optional (input-stream *standard-input*) (eof-error-p t) eof-value recursive-p)
+  (reader:read input-stream eof-error-p eof-value recursive-p))
 
-(defun read-preserving-whitespace (&optional (stream *standard-input*) (eof-error-p t) eof-value recursive-p)
-  (reader:read-preserving-whitespace stream eof-error-p eof-value recursive-p))
+(defun read-preserving-whitespace (&optional (input-stream *standard-input*) (eof-error-p t) eof-value recursive-p)
+  (reader:read-preserving-whitespace input-stream eof-error-p eof-value recursive-p))
 
 (defun read-from-string (string &optional (eof-error-p t) eof-value
                                 &key (start 0) end preserving-whitespace)
   (reader:read-from-string string eof-error-p eof-value
                            :start start :end end
                            :preserve-whitespace preserving-whitespace))
+
+(defun read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
+  (reader:read-delimited-list char input-stream recursive-p))
 
 (cl:defpackage #:eclector.examples.as-implementation-reader.test
   (:use
@@ -97,7 +105,8 @@
 
    #:read
    #:read-preserving-whitespace
-   #:read-from-string))
+   #:read-from-string
+   #:read-delimited-list))
 
 (cl:in-package #:eclector.examples.as-implementation-reader.test)
 
