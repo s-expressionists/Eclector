@@ -102,11 +102,12 @@
            :disp-char disp-char
            :sub-char sub-char))
   (setf sub-char (char-upcase sub-char))
-  (let ((subtable (gethash disp-char (dispatch-macro-characters readtable))))
-    (when (null subtable)
+  (let ((sub-table (gethash disp-char (dispatch-macro-characters readtable))))
+    (when (null sub-table)
       (error 'eclector.readtable:char-must-be-a-dispatching-character
              :disp-char disp-char))
-    (setf (gethash sub-char subtable) function)))
+    (setf (gethash sub-char sub-table) function))
+  t)
 
 (defmethod eclector.readtable:syntax-type ((readtable readtable) char)
   (let ((type (gethash char (syntax-types readtable))))
@@ -146,6 +147,5 @@
   to-readtable)
 
 (defmethod eclector.readtable:copy-readtable ((readtable readtable))
-  (let ((result (make-instance 'readtable)))
-    (eclector.readtable:copy-readtable-into readtable result)
-    result))
+  (eclector.readtable:copy-readtable-into
+   readtable (make-instance 'readtable)))
