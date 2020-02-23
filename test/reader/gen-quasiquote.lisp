@@ -56,13 +56,15 @@
 ;;; The central function, GEN-QUASIQUOTE-EXPRESSION, uses the helper
 ;;; generators to make UNQUOTE, UNQUOTE-SPLICING, QUASIQUOTE, CONS,
 ;;; vector and form sub-expressions. GEN-QUASIQUOTE-EXPRESSION takes
-;;; randomly applies helper generators, taking care of constraints:
+;;; helper generators as arguments which it applies in a randomized
+;;; fashion while it also makes sure that the following constraints
+;;; hold:
 ;;;
-;;; 1) limiting the depth and width of the resulting expression tree
+;;; 1) the depth and width of the resulting expression tree is within
+;;;    given limits
 ;;;
-;;; 2) only composing helper generators in ways that produce valid
-;;;    expressions (in the sense that the expressions can be EVALed
-;;;    once)
+;;; 2) helper generators are only composed in ways that produce valid
+;;;    forms (in the sense that the expressions can be EVALed once)
 
 (defvar *quasiquote-depth* 0)
 
