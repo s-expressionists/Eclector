@@ -232,8 +232,8 @@
 
 (defclass skipped-input-recording-client
     (eclector.concrete-syntax-tree:cst-client)
-  ((skipped :accessor skipped
-            :initform '())))
+  ((%skipped :accessor skipped
+             :initform '())))
 
 (defmethod eclector.parse-result:make-skipped-input-result
     ((client skipped-input-recording-client) (stream t) (kind t) (source t))

@@ -7,13 +7,17 @@
 (defvar *mock-packages*)
 
 (defclass mock-package ()
-  ((%name :initarg :name :reader name)
-   (%symbols :initarg :symbols :reader %symbols
+  ((%name    :initarg  :name
+             :reader   name)
+   (%symbols :initarg  :symbols
+             :reader   %symbols
              :initform (make-hash-table :test #'equal))))
 
 (defclass mock-symbol ()
-  ((%name :initarg :name :reader name)
-   (%package :initarg :package :reader %package)))
+  ((%name    :initarg :name
+             :reader  name)
+   (%package :initarg :package
+             :reader  %package)))
 
 (defun %make-symbol (name package)
   (make-instance 'mock-symbol :name name :package package))

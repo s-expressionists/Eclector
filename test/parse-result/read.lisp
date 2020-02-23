@@ -6,34 +6,27 @@
 ;;; simulate what a client might do to represent parse results.
 
 (defclass parse-result ()
-  ((%raw
-    :initarg :raw
-    :reader raw)
-   (%source
-    :initarg :source
-    :reader source)
-   (%kind
-    :allocation :class
-    :reader kind)))
+  ((%raw    :initarg    :raw
+            :reader     raw)
+   (%source :initarg    :source
+            :reader     source)
+   (%kind   :allocation :class
+            :reader     kind)))
 
 (defmethod kind (thing)
   nil)
 
 (defclass atom-result (parse-result)
-  ((%kind
-    :allocation :class
-    :initform 'atom)))
+  ((%kind :allocation :class
+          :initform   'atom)))
 
 (defclass cons-result (parse-result)
-  ((%kind
-    :allocation :class
-    :initform 'cons)
-   (%first-child
-    :initarg :first
-    :reader first-child)
-   (%rest-child
-    :initarg :rest
-    :reader rest-child)))
+  ((%kind        :allocation :class
+                 :initform   'cons)
+   (%first-child :initarg    :first
+                 :reader     first-child)
+   (%rest-child  :initarg    :rest
+                 :reader     rest-child)))
 
 (defun resultify (raw results &optional source)
   (labels ((rec (raw-rest result-rest &optional source)
