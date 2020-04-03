@@ -109,7 +109,7 @@
                    (is (equal expected       result))
                    (is (eql   (length input) position))))))))
 
-        '(("(cons 1 2)"                 nil (cons 1 2))
+        `(("(cons 1 2)"                 nil (cons 1 2))
 
           ("#+(or) `1 2"                nil 2)
           ("#+(or) #.(error \"foo\") 2" nil 2)
@@ -142,6 +142,20 @@
           ;; End of input while trying to read macro sub character.
           ("#"                          nil eclector.reader:unterminated-dispatch-macro)
           ("#"                          t   eclector.reader:unterminated-dispatch-macro))))
+
+(defclass unbound-slot-class ()
+  ((%unbound-slot)))
+
+(test read/circularity-and-standard-objects
+  "Test the combination of circularity and standard instance literals."
+
+  (let* ((input "(#1=#.(make-instance 'unbound-slot-class) #1#)")
+         (result (read-from-string input)))
+    (is-true (typep result '(cons unbound-slot-class
+                             (cons unbound-slot-class null))))
+    (destructuring-bind (first second) result
+      (is (eq first second))
+      (is-false (slot-boundp first '%unbound-slot)))))
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."

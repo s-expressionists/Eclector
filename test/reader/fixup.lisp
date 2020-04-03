@@ -18,7 +18,10 @@
                  (eclector.reader:fixup t object seen mapping)
                  (typecase object
                    (mock-object
-                    (let ((slot-values (list (a object) (b object))))
+                    (let ((slot-values (list (if (slot-boundp object '%a)
+                                                 (a object)
+                                                 'unbound)
+                                             (b object))))
                       (is (equalp expected slot-values))))
                    (hash-table
                     (let ((as-alist (sort (alexandria:hash-table-alist object) #'<
@@ -40,6 +43,12 @@
                (list (make-instance 'mock-object :a a :b marker)
                      (list (cons marker a))
                      (list a a)))
+             ;; standard-object with unbound slot
+             (let* ((a (gensym))
+                    (marker (list t)))
+               (list (make-instance 'mock-object :b marker)
+                     (list (cons marker a))
+                     (list 'unbound a)))
              ;; hash-table
              (let* ((a (gensym))
                     (b (gensym))
