@@ -9,7 +9,7 @@
   (define-description treat-as-keyword            "Treat the symbol as a keyword.")
   (define-description ignore-quasiquote           "Read the following form as if it were not quasiquoted.")
   (define-description ignore-unquote              "Read the following form as if it were not unquoted.")
-  (define-description ignore-missing-delimiter    "Ignore the missing closing ")
+  (define-description ignore-missing-delimiter    "Ignore the missing delimiter.")
   (define-description use-partial-string          "Return a string of the already read characters.")
   (define-description inject-nil                  "Use NIL in place of the missing object.")
   (define-description ignore-object               "Ignore the object.")
