@@ -238,4 +238,8 @@
    #:set-standard-syntax-types
    #:set-standard-macro-characters
    #:set-standard-dispatch-macro-characters
-   #:set-standard-syntax-and-macros))
+   #:set-standard-syntax-and-macros)
+
+  ;; Reader macro functions
+  (:export
+   #:sharpsign-single-quote/relaxed))
