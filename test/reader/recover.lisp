@@ -5,7 +5,7 @@
 (test recover/smoke
   "Test recovering from various syntax errors."
 
-  (mapc (lambda (input-and-expected)
+  (mapc (alexandria:named-lambda one-case (input-and-expected)
           (destructuring-bind (input expected-conditions expected-value
                                &optional (expected-position (length input)))
               input-and-expected
@@ -14,12 +14,21 @@
                        (handler-bind
                            ((error
                               (lambda (condition)
-                                (is (typep condition (pop remaining-conditions)))
+                                (let ((expected-condition (pop remaining-conditions)))
+                                  (is (typep condition expected-condition)
+                                      "For input ~S, expected a ~
+                                       condition of type ~S but got ~
+                                       ~S."
+                                      input expected-condition condition))
                                 (let ((restart (find-restart 'eclector.reader:recover)))
-                                  (is-true (typep restart 'restart))
+                                  (is-true (typep restart 'restart)
+                                           "For input ~S expected a RECOVER restart."
+                                           input)
                                   (unless restart
-                                    (return-from do-it))
-                                  (is (not (string= "" (princ-to-string restart))))
+                                    (return-from one-case))
+                                  (is (not (string= "" (princ-to-string restart)))
+                                      "For input ~S expected restart to print properly."
+                                      input)
                                   (invoke-restart restart)))))
                          (with-input-from-string (stream input)
                            (values (let ((eclector.reader::*backquote-depth* 1))
@@ -27,11 +36,20 @@
                                    (file-position stream))))))
                 ;; Check expected value and position.
                 (multiple-value-bind (value position) (do-it)
-                  (is (equalp expected-value value))
-                  (is (equalp expected-position position)))
+                  (is (equalp expected-value value)
+                      "For input ~S, expected return value ~S ~
+                       but got ~S."
+                      input expected-value value)
+                  (is (equalp expected-position position)
+                      "For input ~S, expected position ~S but got ~S."
+                      input expected-position position))
                 ;; All signaled conditions were as expected. Make sure
                 ;; all expected conditions were signaled.
-                (is (null remaining-conditions))))))
+                (is (null remaining-conditions)
+                    "For input ~S, expected condition~P ~S but those ~
+                     were not signaled."
+                    input
+                    (length remaining-conditions) remaining-conditions)))))
 
         '(("("         (eclector.reader:unterminated-list)                      ())
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
