@@ -101,6 +101,7 @@
                  :serial t
                  :components ((:file "package")
 
+                              (:file "helpers")
                               (:file "gen-quasiquote")
 
                               (:file "tokens")

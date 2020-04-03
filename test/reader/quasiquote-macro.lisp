@@ -16,11 +16,7 @@
                 (error-case expected
                   (error (do-it))
                   (t
-                   (typecase expected
-                     ((and vector (not string))
-                      (is (equalp expected (eval (do-it)))))
-                     (t
-                      (is (equal expected (eval (do-it))))))))))))
+                   (is (relaxed-equalp expected (eval (do-it))))))))))
         '(("`,1"           1)
           ("`,@1"          eclector.reader:unquote-splicing-at-top)
           ("`,.1"          eclector.reader:unquote-splicing-at-top)
