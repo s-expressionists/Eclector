@@ -282,6 +282,24 @@
         nil
         `(function ,name))))
 
+;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
+;;; that is `#',(foo) is read as
+;;;
+;;;   (quasiquote (function (unquote (foo))))
+;;;
+;;; . Since it is not clear that this is supported by specification,
+;;; it is not the default behavior.
+(defun sharpsign-single-quote/relaxed (stream char parameter)
+  (declare (ignore char))
+  (unless (null parameter)
+    (numeric-parameter-ignored stream 'sharpsign-single-quote parameter))
+  (let ((name (with-forbidden-quasiquotation
+                  ('sharpsign-single-quote :keep :keep)
+                (read stream t nil t))))
+    (if *read-suppress*
+        nil
+        `(function ,name))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macro for sharpsign left parenthesis.
