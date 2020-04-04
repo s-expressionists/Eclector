@@ -163,7 +163,7 @@
    #:non-list-following-sharpsign-s
    #:no-structure-type-name-found
    #:structure-type-name-is-not-a-symbol
-   #:slot-name-is-not-a-symbol
+   #:slot-name-is-not-a-string-designator
    #:no-slot-value-found
 
    #:feature-expression-type-error
