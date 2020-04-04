@@ -109,7 +109,7 @@
                    (is (equal expected       result))
                    (is (eql   (length input) position))))))))
 
-        '(("(cons 1 2)"                 nil (cons 1 2))
+        `(("(cons 1 2)"                 nil (cons 1 2))
 
           ("#+(or) `1 2"                nil 2)
           ("#+(or) #.(error \"foo\") 2" nil 2)
@@ -136,7 +136,12 @@
           ("#+(or) ; skipme
             1 2"                        nil 2)
 
-          ;; Unknown macro sub character.
+          ;; Invalid macro sub-character.
+          (,(format nil "#~C" #\Tab)    nil eclector.reader:sharpsign-invalid)
+          (,(format nil "#~C" #\Tab)    t   eclector.reader:sharpsign-invalid)
+          ("#<"                         nil eclector.reader:sharpsign-invalid)
+          ("#<"                         t   eclector.reader:sharpsign-invalid)
+          ;; Unknown macro sub-character.
           ("#!"                         nil eclector.reader:unknown-macro-sub-character)
           ("#!"                         t   eclector.reader:unknown-macro-sub-character)
           ;; End of input while trying to read macro sub character.
