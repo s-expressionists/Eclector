@@ -545,10 +545,15 @@
                              (return-from integer (values value t))
                              (setf value (+ (* base (or value 0))
                                             (ensure-digit char))))
-                         (go rest))))))))
+                         (go rest)))))))
+             (read-denominator ()
+               (let ((value (integer nil)))
+                 (when (zerop value)
+                  (%reader-error stream 'zero-denominator))
+                 value)))
       (multiple-value-bind (sign numerator) (maybe-sign)
         (multiple-value-bind (numerator slashp) (integer (= sign 1) t numerator)
-          (let ((denominator (when slashp (integer nil))))
+          (let ((denominator (when slashp (read-denominator))))
             (unless read-suppress
               (* sign (if denominator
                           (/ numerator denominator)

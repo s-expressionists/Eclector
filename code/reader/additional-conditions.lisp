@@ -160,14 +160,19 @@
   ((%expression :initarg :expression :reader expression)
    (%original-condition :initarg :original-condition :reader original-condition)))
 
-;;; Conditions related to characters and numbers
+;;; Conditions related to characters
 
 (define-condition unknown-character-name (stream-position-reader-error)
   ((%name :initarg :name :reader name)))
 
+;;; Conditions related to rational numbers
+
 (define-condition digit-expected (stream-position-reader-error)
   ((%character-found :initarg :character-found :reader character-found)
    (%base :initarg :base :reader base)))
+
+(define-condition zero-denominator (stream-position-reader-error)
+  ())
 
 (define-condition invalid-radix (stream-position-reader-error)
   ((%radix :initarg :radix :reader radix)))

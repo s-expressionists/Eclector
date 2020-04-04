@@ -360,6 +360,7 @@
           ("1/x"    10 nil eclector.reader:digit-expected)
           ("1/1x"   10 nil eclector.reader:digit-expected)
           ("1/1#"   10 nil eclector.reader:digit-expected)
+          ("1/0"    10 nil eclector.reader:zero-denominator)
           ;; Good inputs
           ("1"      10 nil 1)
           ("-1"     10 nil -1)
@@ -437,9 +438,11 @@
   (define-rational-reader-macro-test #\B
     '(;; Errors
       (""     nil nil eclector.reader:end-of-file)
+      ("1/"   nil nil eclector.reader:end-of-file)
       ("2"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
+      ("1/0"  nil nil eclector.reader:zero-denominator)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid binary rationals
       ("1"    nil nil 1)
@@ -453,9 +456,11 @@
   (define-rational-reader-macro-test #\O
     '(;; Errors
       (""     nil nil eclector.reader:end-of-file)
+      ("1/"   nil nil eclector.reader:end-of-file)
       ("8"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
+      ("1/0"  nil nil eclector.reader:zero-denominator)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid octal rationals
       ("1"    nil nil 1)
@@ -469,9 +474,11 @@
   (define-rational-reader-macro-test #\X
     '(;; Errors
       (""     nil nil eclector.reader:end-of-file)
+      ("1/"   nil nil eclector.reader:end-of-file)
       ("g"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
+      ("1/0"  nil nil eclector.reader:zero-denominator)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid hexadecimal rationals
       ("1"    nil nil 1)
@@ -485,9 +492,11 @@
   (define-rational-reader-macro-test #\R
     '(;; Errors
       (""     17  nil eclector.reader:end-of-file)
+      ("1/"   17  nil eclector.reader:end-of-file)
       ("h"    17  nil eclector.reader:digit-expected)
       ("x"    17  nil eclector.reader:digit-expected)
       ("1."   17  nil eclector.reader:digit-expected)
+      ("1/0"  17  nil eclector.reader:zero-denominator)
       ("1"    nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
       ("1"    0   nil eclector.reader:invalid-radix)
       ("1"    1   nil eclector.reader:invalid-radix)

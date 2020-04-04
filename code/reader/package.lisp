@@ -152,7 +152,9 @@
    #:read-time-evaluation-error
 
    #:unknown-character-name
+
    #:digit-expected
+   #:zero-denominator
    #:invalid-radix
    #:invalid-default-float-format
 

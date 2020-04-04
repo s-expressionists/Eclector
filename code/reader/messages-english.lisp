@@ -207,17 +207,22 @@
                       ~s: ~a"
               expression (type-of original-condition) original-condition)))
 
-;;; Conditions related to characters and numbers
+;;; Conditions related to characters
 
   (define-reporter ((condition unknown-character-name) stream)
     (format stream "Unrecognized character name: ~s" (name condition)))
 
   (define-context sharpsign-c "the complex reader macro")
 
+;;; Conditions related to rational numbers
+
   (define-reporter ((condition digit-expected) stream)
     (format stream "The ~/eclector.base::describe-character-english/ is ~
                     not a digit in base ~D."
             (character-found condition) (base condition)))
+
+  (define-reporter ((condition zero-denominator) stream)
+    (format stream "The denominator of a rational number literal is 0."))
 
   (define-reporter ((condition invalid-radix) stream)
     (format stream "~d is too ~:[big~;small~] to be a radix."

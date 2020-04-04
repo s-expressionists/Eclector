@@ -369,7 +369,10 @@
              ((not char)
               (return-from interpret-token
                 (alexandria:if-let ((numerator (funcall numerator)))
-                  (* sign (/ numerator (funcall denominator)))
+                  (let ((denominator (funcall denominator)))
+                    (when (zerop denominator)
+                      (%reader-error input-stream 'zero-denominator))
+                    (* sign (/ numerator denominator)))
                   (symbol))))
              ((funcall denominator char)
               (go ratio)))

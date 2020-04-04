@@ -199,6 +199,7 @@
           ("1/a"        ((2 . 3))         10 :upcase   |1/a|)
           ("1/:"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
           ("1/a"        ()                10 :upcase   1/a)
+          ("1/0"        ()                10 :upcase   eclector.reader:zero-denominator)
           ("1/2a"       ((3 . 4))         10 :upcase   |1/2a|)
           ("1/2:"       ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
           ("1/2a"       ()                10 :upcase   1/2a)
