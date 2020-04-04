@@ -68,81 +68,95 @@
             (read-token client input-stream eof-error-p eof-value)))))))
 
 (defmethod read-token (client input-stream eof-error-p eof-value)
-  (let ((token (make-array 100
+  (let ((readtable *readtable*)
+        (token (make-array 10
                            :element-type 'character
                            :adjustable t
                            :fill-pointer 0))
-        (escape-ranges '()))
-    (flet ((push-char (char)
-             (vector-push-extend char token)
-             char)
-           (start-escape ()
-             (push (cons (length token) nil) escape-ranges))
-           (end-escape ()
-             (setf (cdr (first escape-ranges)) (length token)))
-           (read-char-handling-eof (context)
-             (declare (ignore context))
-             (read-char input-stream t)))
+        (escape-ranges '())
+        (escape-char))
+    (labels ((push-char (char)
+               (vector-push-extend char token)
+               char)
+             (start-escape (char)
+               (setf escape-char char)
+               (push (cons (length token) nil) escape-ranges))
+             (end-escape ()
+               (setf escape-char nil)
+               (setf (cdr (first escape-ranges)) (length token)))
+             (read-char-handling-eof (context)
+               (let ((char (read-char input-stream nil nil t)))
+                 (cond ((not (null char))
+                        (values char (eclector.readtable:syntax-type
+                                      readtable char)))
+                       ((eq context :single-escape)
+                        (%reader-error
+                         input-stream 'unterminated-single-escape-in-symbol
+                         :escape-char escape-char))
+                       ((eq context :multiple-escape)
+                        (%reader-error
+                         input-stream 'unterminated-multiple-escape-in-symbol
+                         :delimiter escape-char))
+                       (t
+                        (terminate-token)))))
+             (terminate-token ()
+               (return-from read-token
+                 (cond (*read-suppress*
+                        (note-skipped-input client input-stream
+                                            (or *skip-reason* '*read-suppress*))
+                        nil)
+                       (t
+                        (unless (null escape-ranges)
+                          (setf escape-ranges (nreverse escape-ranges)))
+                        (interpret-token client input-stream token escape-ranges))))))
       (tagbody
          ;; This function is only called when a character is available
          ;; in INPUT-STREAM.
-         (let ((char (read-char input-stream)))
-           (ecase (eclector.readtable:syntax-type *readtable* char)
+         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
+           (ecase syntax-type
              (:single-escape
-              (start-escape)
-              (push-char (read-char-handling-eof :single-escape))
+              (start-escape char)
+              (push-char (read-char-handling-eof syntax-type))
               (end-escape)
-              (go step-8-even-escapes))
+              (go even-escapes))
              (:multiple-escape
-              (start-escape)
-              (go step-9-odd-escapes))
+              (start-escape char)
+              (go odd-escapes))
              (:constituent
               (push-char char)
-              (go step-8-even-escapes))))
-       step-8-even-escapes
-         (let ((char (read-char input-stream nil nil)))
-           (when (null char)
-             (go step-10-terminate-token))
-           (ecase (eclector.readtable:syntax-type *readtable* char)
+              (go even-escapes))))
+       even-escapes
+         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
+           (ecase syntax-type
              ((:constituent :non-terminating-macro)
               (push-char char)
-              (go step-8-even-escapes))
+              (go even-escapes))
              (:single-escape
-              (start-escape)
-              (push-char (read-char-handling-eof :single-escape))
+              (start-escape char)
+              (push-char (read-char-handling-eof syntax-type))
               (end-escape)
-              (go step-8-even-escapes))
+              (go even-escapes))
              (:multiple-escape
-              (start-escape)
-              (go step-9-odd-escapes))
+              (start-escape char)
+              (go odd-escapes))
              (:terminating-macro
               (unread-char char input-stream)
-              (go step-10-terminate-token))
+              (terminate-token))
              (:whitespace
               (when *preserve-whitespace*
                 (unread-char char input-stream))
-              (go step-10-terminate-token))))
-       step-9-odd-escapes
-         (let ((char (read-char-handling-eof :multiple-escape)))
-           (ecase (eclector.readtable:syntax-type *readtable* char)
+              (terminate-token))))
+       odd-escapes
+         (multiple-value-bind (char syntax-type)
+             (read-char-handling-eof :multiple-escape)
+           (ecase syntax-type
              ((:constituent :terminating-macro
                :non-terminating-macro :whitespace)
               (push-char char)
-              (go step-9-odd-escapes))
+              (go odd-escapes))
              (:single-escape
-              (push-char (read-char-handling-eof :single-escape))
-              (go step-9-odd-escapes))
+              (push-char (read-char-handling-eof syntax-type))
+              (go odd-escapes))
              (:multiple-escape
               (end-escape)
-              (go step-8-even-escapes))))
-       step-10-terminate-token
-         (return-from read-token
-           (cond
-             (*read-suppress*
-              (note-skipped-input client input-stream
-                                  (or *skip-reason* '*read-suppress*))
-              nil)
-             (t
-              (unless (null escape-ranges)
-                (setf escape-ranges (nreverse escape-ranges)))
-              (interpret-token client input-stream token escape-ranges))))))))
+              (go even-escapes))))))))

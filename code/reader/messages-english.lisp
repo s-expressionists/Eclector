@@ -45,6 +45,8 @@
     (format stream "Package named ~s does not exist."
             (desired-package-name condition)))
 
+;;; Conditions related to symbols
+
   (flet ((package-name* (package)
            ;; PACKAGE may be a `cl:package' but could also be a
            ;; client-defined representation of a package.
@@ -67,6 +69,18 @@
                     not occur in a symbol as it is an invalid ~
                     constituent."
             (aref (token condition) 0)))
+
+  (define-reporter ((condition unterminated-single-escape-in-symbol) stream)
+    (format stream "While reading symbol, expected character after ~
+                    the ~/eclector.base::describe-character-english/ ~
+                    when input ended."
+            (escape-char condition)))
+
+  (define-reporter ((condition unterminated-multiple-escape-in-symbol) stream)
+    (format stream "While reading symbol, expected the ~
+                    ~/eclector.base::describe-character-english/ when ~
+                    input ended."
+            (delimiter condition)))
 
   (define-reporter ((condition symbol-name-must-not-be-only-package-markers) stream)
     (format stream "Symbol name without any escapes must not consist ~

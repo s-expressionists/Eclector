@@ -672,9 +672,9 @@
                    (is (string= (symbol-name expected) (symbol-name value)))
                    (is (equal expected-position position))))))))
         '(;; Errors
-          ("\\"      nil nil nil eclector.reader:end-of-file)
-          ("|"       nil nil nil eclector.reader:end-of-file)
-          ("|\\"     nil nil nil eclector.reader:end-of-file)
+          ("\\"      nil nil nil eclector.reader:unterminated-single-escape-in-symbol)
+          ("|"       nil nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
+          ("|\\"     nil nil nil eclector.reader:unterminated-single-escape-in-symbol)
           ("a:b"     nil nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker)
           ("a:b:c"   nil nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker)
           ("a"       1   nil nil eclector.reader:numeric-parameter-supplied-but-ignored)
@@ -691,8 +691,8 @@
           ("a "      nil nil nil #:a)
           ("a "      nil nil t   #:a 1)
           ;; With *READ-SUPPRESS* bound to T
-          ("\\"      nil t   nil eclector.reader:end-of-file)
-          ("|"       nil t   nil eclector.reader:end-of-file)
+          ("\\"      nil t   nil eclector.reader:unterminated-single-escape-in-symbol)
+          ("|"       nil t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
           ("a"       1   t   nil nil))))
 
 (test sharpsign-c/smoke

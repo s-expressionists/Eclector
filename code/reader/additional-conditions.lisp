@@ -38,6 +38,14 @@
 (define-condition invalid-constituent-character (symbol-syntax-error)
   ())
 
+(define-condition unterminated-single-escape-in-symbol (symbol-syntax-error
+                                                        unterminated-single-escape)
+  ())
+
+(define-condition unterminated-multiple-escape-in-symbol (symbol-syntax-error
+                                                          unterminated-multiple-escape)
+  ())
+
 (define-condition symbol-name-must-not-be-only-package-markers (symbol-syntax-error)
   ())
 

@@ -109,6 +109,8 @@
    #:symbol-is-not-external
 
    #:invalid-constituent-character
+   #:unterminated-single-escape-in-symbol
+   #:unterminated-multiple-escape-in-symbol
    #:symbol-name-must-not-be-only-package-markers
    #:symbol-name-must-not-end-with-package-marker
    #:two-package-markers-must-be-adjacent

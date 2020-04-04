@@ -747,7 +747,8 @@
                            :adjustable t
                            :fill-pointer 0))
         (escape-ranges '())
-        (package-marker nil))
+        (package-marker nil)
+        (escape-char))
     (labels ((push-char (char escapesp)
                (when (and (not escapesp)
                           (char= char #\:)
@@ -755,15 +756,27 @@
                  (setf package-marker (or (ignore-errors (file-position stream))
                                           t)))
                (vector-push-extend char token))
-             (start-escape ()
+             (start-escape (char)
+               (setf escape-char char)
                (push (cons (length token) nil) escape-ranges))
              (end-escape ()
+               (setf escape-char nil)
                (setf (cdr (first escape-ranges)) (length token)))
-             (read-char-handling-eof (eof-error-p)
-               (let ((char (read-char stream eof-error-p nil t)))
-                 (when (null char)
-                   (return-symbol))
-                 (values char (eclector.readtable:syntax-type readtable char))))
+             (read-char-handling-eof (context)
+               (let ((char (read-char stream nil nil t)))
+                 (cond ((not (null char))
+                        (values char (eclector.readtable:syntax-type
+                                      readtable char)))
+                       ((eq context :single-escape)
+                        (%reader-error
+                         stream 'unterminated-single-escape-in-symbol
+                         :escape-char escape-char))
+                       ((eq context :multiple-escape)
+                        (%reader-error
+                         stream 'unterminated-multiple-escape-in-symbol
+                         :delimiter escape-char))
+                       (t
+                        (return-symbol)))))
              (return-symbol ()
                (when (not (null escape-ranges))
                  (setf escape-ranges (nreverse escape-ranges)))
@@ -781,21 +794,22 @@
               (unread-char char stream)
               (return-symbol))
              (:single-escape
-              (start-escape)
-              (push-char (read-char-handling-eof t) t)
+              (start-escape char)
+              (push-char (read-char-handling-eof syntax-type) t)
               (end-escape)
               (go even-escapes))
              (:multiple-escape
-              (start-escape)
+              (start-escape char)
               (go odd-escapes))
              ((:constituent :non-terminating-macro)
               (push-char char nil)
               (go even-escapes))))
        odd-escapes
-         (multiple-value-bind (char syntax-type) (read-char-handling-eof t)
+         (multiple-value-bind (char syntax-type)
+             (read-char-handling-eof :multiple-escape)
            (case syntax-type
              (:single-escape
-              (push-char (read-char-handling-eof t) t)
+              (push-char (read-char-handling-eof syntax-type) t)
               (go odd-escapes))
              (:multiple-escape
               (end-escape)
