@@ -280,6 +280,10 @@
           ("1e01"       ()                10 :upcase     10.0f0)
 
           ;; Nondefault *READ-BASE*
+          ("2"          ()                2  :upcase    |2|)
+          ("2/1"        ()                2  :upcase    |2/1|)
+          ("2."         ()                2  :upcase    2)
+
           ("a"          ()                16 :upcase     10)
           ("-a"         ()                16 :upcase    -10)
           ("1a"         ()                16 :upcase     26)
