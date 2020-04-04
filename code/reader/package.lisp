@@ -153,6 +153,7 @@
 
    #:unknown-character-name
 
+   #:end-of-input-before-digit
    #:digit-expected
    #:zero-denominator
    #:invalid-radix

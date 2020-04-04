@@ -167,9 +167,17 @@
 
 ;;; Conditions related to rational numbers
 
-(define-condition digit-expected (stream-position-reader-error)
-  ((%character-found :initarg :character-found :reader character-found)
-   (%base :initarg :base :reader base)))
+(define-condition digit-condition (condition)
+  ((%base :initarg :base :reader base)))
+
+(define-condition end-of-input-before-digit (end-of-file
+                                             incomplete-construct
+                                             digit-condition)
+  ())
+
+(define-condition digit-expected (stream-position-reader-error
+                                  digit-condition)
+  ((%character-found :initarg :character-found :reader character-found)))
 
 (define-condition zero-denominator (stream-position-reader-error)
   ())

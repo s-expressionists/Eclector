@@ -216,6 +216,11 @@
 
 ;;; Conditions related to rational numbers
 
+  (define-reporter ((condition end-of-input-before-digit) stream)
+    (format stream "While reading number, expected digit in base ~d ~
+                    when input ended."
+            (base condition)))
+
   (define-reporter ((condition digit-expected) stream)
     (format stream "The ~/eclector.base::describe-character-english/ is ~
                     not a digit in base ~D."

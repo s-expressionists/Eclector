@@ -490,9 +490,15 @@
   (let ((readtable *readtable*)
         (read-suppress *read-suppress*))
     (labels ((next-char (eof-error-p)
-               (alexandria:if-let ((char (read-char stream eof-error-p nil t)))
-                 (values char (eclector.readtable:syntax-type readtable char))
-                 (values nil nil)))
+               (let ((char (read-char stream nil nil t)))
+                 (cond ((not (null char))
+                        (values char (eclector.readtable:syntax-type
+                                      readtable char)))
+                       (eof-error-p
+                        (%reader-error stream 'end-of-input-before-digit
+                                       :base base))
+                       (t
+                        (values nil nil)))))
              (digit-expected (char)
                (%reader-error stream 'digit-expected
                               :character-found char :base base))
@@ -505,26 +511,23 @@
                         (digit-expected char)))))
              (maybe-sign ()
                (multiple-value-bind (char type) (next-char t)
-                 (ecase type
-                   ((:whitespace :terminating-macro
-                     :non-terminating-macro :single-escape :multiple-escape)
-                    (digit-expected char))
+                 (case type
                    (:constituent
                     (if (char= char #\-)
                         (values -1 0)
-                        (values 1 (ensure-digit char)))))))
+                        (values 1 (ensure-digit char))))
+                   (t
+                    (digit-expected char)))))
              (integer (empty-allowed &optional /-allowed initial-value)
                (let ((value initial-value))
                  (tagbody
                     (when empty-allowed (go rest))
                     (multiple-value-bind (char type) (next-char t)
-                      (ecase type
-                        ((:whitespace
-                          :terminating-macro :non-terminating-macro
-                          :single-escape :multiple-escape)
-                         (digit-expected char))
+                      (case type
                         (:constituent
-                         (setf value (ensure-digit char)))))
+                         (setf value (ensure-digit char)))
+                        (t
+                         (digit-expected char))))
                   rest
                     (multiple-value-bind (char type) (next-char nil)
                       (ecase type

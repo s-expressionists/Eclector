@@ -349,13 +349,14 @@
                    (is (eql expected          value))
                    (is (eql expected-position position))))))))
         '(;; Error cases
+          (""       10 nil eclector.reader:end-of-input-before-digit)
           (" "      10 nil eclector.reader:digit-expected)
           ("x"      10 nil eclector.reader:digit-expected)
           ("- "     10 nil eclector.reader:digit-expected)
           ("-x"     10 nil eclector.reader:digit-expected)
           ("1x"     10 nil eclector.reader:digit-expected)
           ("1#"     10 t   eclector.reader:digit-expected)
-          ("1/"     10 nil eclector.reader:end-of-file)
+          ("1/"     10 nil eclector.reader:end-of-input-before-digit)
           ("1/ "    10 nil eclector.reader:digit-expected)
           ("1/x"    10 nil eclector.reader:digit-expected)
           ("1/1x"   10 nil eclector.reader:digit-expected)
@@ -437,8 +438,8 @@
 
   (define-rational-reader-macro-test #\B
     '(;; Errors
-      (""     nil nil eclector.reader:end-of-file)
-      ("1/"   nil nil eclector.reader:end-of-file)
+      (""     nil nil eclector.reader:end-of-input-before-digit)
+      ("1/"   nil nil eclector.reader:end-of-input-before-digit)
       ("2"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
@@ -455,8 +456,8 @@
 
   (define-rational-reader-macro-test #\O
     '(;; Errors
-      (""     nil nil eclector.reader:end-of-file)
-      ("1/"   nil nil eclector.reader:end-of-file)
+      (""     nil nil eclector.reader:end-of-input-before-digit)
+      ("1/"   nil nil eclector.reader:end-of-input-before-digit)
       ("8"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
@@ -473,8 +474,8 @@
 
   (define-rational-reader-macro-test #\X
     '(;; Errors
-      (""     nil nil eclector.reader:end-of-file)
-      ("1/"   nil nil eclector.reader:end-of-file)
+      (""     nil nil eclector.reader:end-of-input-before-digit)
+      ("1/"   nil nil eclector.reader:end-of-input-before-digit)
       ("g"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
@@ -491,8 +492,8 @@
 
   (define-rational-reader-macro-test #\R
     '(;; Errors
-      (""     17  nil eclector.reader:end-of-file)
-      ("1/"   17  nil eclector.reader:end-of-file)
+      (""     17  nil eclector.reader:end-of-input-before-digit)
+      ("1/"   17  nil eclector.reader:end-of-input-before-digit)
       ("h"    17  nil eclector.reader:digit-expected)
       ("x"    17  nil eclector.reader:digit-expected)
       ("1."   17  nil eclector.reader:digit-expected)
