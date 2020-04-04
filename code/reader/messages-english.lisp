@@ -6,7 +6,10 @@
              `(defmethod recovery-description ((strategy (eql ',strategy))
                                                (language acclimation:english))
                 ,description)))
-  (define-description treat-as-keyword            "Treat the symbol as a keyword.")
+  (define-description use-partial-symbol          "Return a symbol named by the already read characters.")
+  (define-description replace-invalid-character   "Replace the invalid character with a valid one.")
+  (define-description treat-as-escaped            "Treat the character as if it had been escaped.")
+
   (define-description ignore-quasiquote           "Read the following form as if it were not quasiquoted.")
   (define-description ignore-unquote              "Read the following form as if it were not unquoted.")
   (define-description ignore-missing-delimiter    "Ignore the missing delimiter.")

@@ -93,9 +93,11 @@
     (when (and package-markers-end
                (> length 1)
                (= package-markers-end (1- length)))
-      (%reader-error input-stream
-                     'symbol-name-must-not-end-with-package-marker
-                     :token token))
+      (%recoverable-reader-error
+       input-stream 'symbol-name-must-not-end-with-package-marker
+       :token token :report 'treat-as-escaped)
+      (setf position-package-marker-1 nil
+            position-package-marker-2 nil))
     (flet ((interpret (package symbol count)
              (interpret-symbol client input-stream package symbol count)))
       (cond ((null position-package-marker-1)
@@ -239,8 +241,12 @@
                           ((and ,char-var
                                 (not ,escapep-var)
                                 (char-invalid-p ,char-var))
-                           (%reader-error input-stream 'invalid-constituent-character
-                                          :token (string ,char-var)))
+                           (%recoverable-reader-error
+                            input-stream 'invalid-constituent-character
+                            :token (string ,char-var)
+                            :report 'replace-invalid-character)
+                           (setf (aref token index) #\_)
+                           (go symbol))
                           (,escapep-var (go symbol))
                           ,@(when colon-go-symbol
                               `(((eql ,char-var #\:)
@@ -411,17 +417,18 @@
                      (setf position-package-marker-1 index))
                     ((null position-package-marker-2)
                      (cond ((/= position-package-marker-1 (1- index))
-                            (%reader-error
+                            (%recoverable-reader-error
                              input-stream 'two-package-markers-must-be-adjacent
-                             :token token))
+                             :token token :report 'treat-as-escaped))
                            ((= position-package-marker-1 0)
                             (%recoverable-reader-error
                              input-stream 'two-package-markers-must-not-be-first
-                             :token token :report 'treat-as-keyword)
+                             :token token :report 'treat-as-escaped)
                             (setf position-package-marker-2 index))
                            (t
                             (setf position-package-marker-2 index))))
                     (t
-                     (%reader-error input-stream 'symbol-can-have-at-most-two-package-markers
-                                    :token token)))
+                     (%recoverable-reader-error
+                      input-stream 'symbol-can-have-at-most-two-package-markers
+                      :token token :report 'treat-as-escaped)))
               (go symbol))))))))

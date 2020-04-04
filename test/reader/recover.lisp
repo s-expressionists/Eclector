@@ -36,10 +36,9 @@
                                    (file-position stream))))))
                 ;; Check expected value and position.
                 (multiple-value-bind (value position) (do-it)
-                  (is (equalp expected-value value)
-                      "For input ~S, expected return value ~S ~
-                       but got ~S."
-                      input expected-value value)
+                  (is (relaxed-equalp expected-value value)
+                      "For input ~S, expected return value ~S but got ~
+                       ~S."  input expected-value value)
                   (is (equalp expected-position position)
                       "For input ~S, expected position ~S but got ~S."
                       input expected-position position))
@@ -51,7 +50,17 @@
                     input
                     (length remaining-conditions) remaining-conditions)))))
 
-        '(("("         (eclector.reader:unterminated-list)                      ())
+        `(;; Recover from invalid syntax in symbols.
+          (,(format nil ":foo~C" #\Backspace) (eclector.reader:invalid-constituent-character)                :foo_)
+          (":fo\\"                            (eclector.reader:unterminated-single-escape-in-symbol)         :fo)
+          (":fo|o"                            (eclector.reader:unterminated-multiple-escape-in-symbol)       :fo|o|)
+          ("foo:"                             (eclector.reader:symbol-name-must-not-end-with-package-marker) foo|:|)
+          (":foo:bar"                         (eclector.reader:two-package-markers-must-be-adjacent)         :foo|:|bar)
+          ("::foo"                            (eclector.reader:two-package-markers-must-not-be-first)        :foo)
+          ("eclector.reader.test:::foo"       (eclector.reader:symbol-can-have-at-most-two-package-markers)  |:|foo)
+
+          ;; Recover from list-related errors
+          ("("         (eclector.reader:unterminated-list)                      ())
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
           ("(1 ."      (eclector.reader:unterminated-list)                      (1))
           ("(1 .)"     (eclector.reader:object-must-follow-consing-dot)         (1))
@@ -67,9 +76,13 @@
           ("#|"        (eclector.reader:unterminated-block-comment)             nil)
           ("#|foo"     (eclector.reader:unterminated-block-comment)             nil)
 
-          ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
+          ;; Recover from errors related to uninterned symbols
+          ("#::foo"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:|:|foo)
+          ("#:foo:"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:foo|:|)
+          ("#:fo\\"    (eclector.reader:unterminated-single-escape-in-symbol)              #:fo)
+          ("#:fo|o"    (eclector.reader:unterminated-multiple-escape-in-symbol)            #:fo|o|)
 
-          ("::foo"     (eclector.reader:two-package-markers-must-not-be-first)  :foo)
+          ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
 
           ;; Recover from forbidden quasiquotation.
           ("#C(,1 2)"  (eclector.reader:unquote-in-invalid-context)             #C(1 2))

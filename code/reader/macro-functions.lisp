@@ -729,11 +729,12 @@
   (when *read-suppress*
     (return-from symbol-from-token nil))
   (when package-marker
-    (%reader-error stream 'uninterned-symbol-must-not-contain-package-marker
-                   :stream-position (if (eq package-marker t)
-                                        nil
-                                        package-marker)
-                   :token token))
+    (%recoverable-reader-error
+     stream 'uninterned-symbol-must-not-contain-package-marker
+     :stream-position (if (eq package-marker t)
+                          nil
+                          package-marker)
+     :token token :report 'treat-as-escaped))
   (convert-according-to-readtable-case token token-escapes)
   (interpret-symbol *client* stream nil (copy-seq token) nil))
 
@@ -768,13 +769,19 @@
                         (values char (eclector.readtable:syntax-type
                                       readtable char)))
                        ((eq context :single-escape)
-                        (%reader-error
+                        (%recoverable-reader-error
                          stream 'unterminated-single-escape-in-symbol
-                         :escape-char escape-char))
+                         :escape-char escape-char
+                         :report 'use-partial-symbol)
+                        (end-escape)
+                        (return-symbol))
                        ((eq context :multiple-escape)
-                        (%reader-error
+                        (%recoverable-reader-error
                          stream 'unterminated-multiple-escape-in-symbol
-                         :delimiter escape-char))
+                         :delimiter escape-char
+                         :report 'use-partial-symbol)
+                        (end-escape)
+                        (return-symbol))
                        (t
                         (return-symbol)))))
              (return-symbol ()
@@ -812,6 +819,7 @@
               (push-char (read-char-handling-eof syntax-type) t)
               (go odd-escapes))
              (:multiple-escape
+              (setf escape-char nil)
               (end-escape)
               (go even-escapes))
              (t

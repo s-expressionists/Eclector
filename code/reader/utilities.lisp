@@ -64,4 +64,5 @@
          (cond ((not upper-case-p)
                 (change-case nstring-upcase char-upcase))
                ((not lower-case-p)
-                (change-case nstring-downcase char-downcase))))))))
+                (change-case nstring-downcase char-downcase))))))
+    token))

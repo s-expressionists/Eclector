@@ -90,13 +90,19 @@
                         (values char (eclector.readtable:syntax-type
                                       readtable char)))
                        ((eq context :single-escape)
-                        (%reader-error
+                        (%recoverable-reader-error
                          input-stream 'unterminated-single-escape-in-symbol
-                         :escape-char escape-char))
+                         :escape-char escape-char
+                         :report 'use-partial-symbol)
+                        (end-escape)
+                        (terminate-token))
                        ((eq context :multiple-escape)
-                        (%reader-error
+                        (%recoverable-reader-error
                          input-stream 'unterminated-multiple-escape-in-symbol
-                         :delimiter escape-char))
+                         :delimiter escape-char
+                         :report 'use-partial-symbol)
+                        (end-escape)
+                        (terminate-token))
                        (t
                         (terminate-token)))))
              (terminate-token ()
