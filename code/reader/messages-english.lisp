@@ -63,11 +63,10 @@
               (package-name* (desired-symbol-package condition)))))
 
   (define-reporter ((condition invalid-constituent-character) stream)
-    (let ((char (aref (token condition) 0)))
-      (format stream "The character ~:[named ~A~*~;~*~C~] must not ~
-                      occur in a symbol as it is an invalid ~
-                      constituent."
-              (graphic-char-p char) (char-name char) char)))
+    (format stream "The ~/eclector.base::describe-character-english/ must ~
+                    not occur in a symbol as it is an invalid ~
+                    constituent."
+            (aref (token condition) 0)))
 
   (define-reporter ((condition symbol-name-must-not-be-only-package-markers) stream)
     (format stream "Symbol name without any escapes must not consist ~
@@ -97,7 +96,8 @@
 ;;; General reader macro conditions
 
   (define-reporter ((condition sharpsign-invalid) stream)
-    (format stream "~:c is not a valid subchar for the # dispatch macro."
+    (format stream "The ~/eclector.base::describe-character-english/ is not ~
+                    a valid sub-character for the # dispatch macro."
             (character-found condition)))
 
   (define-reporter ((condition numeric-parameter-supplied-but-ignored) stream)
@@ -119,7 +119,8 @@
   (define-reporter ((condition unterminated-string) stream)
     ;; Use the DELIMITER slot instead of a fixed character since the
     ;; reader macro may have been installed on non-default character.
-    (format stream "While reading string, expected ~:c when input ~
+    (format stream "While reading string, expected the ~
+                    ~/eclector.base::describe-character-english/ when input ~
                     ended."
             (delimiter condition)))
 
@@ -154,7 +155,8 @@
     ;; Use the DELIMITER slot instead of a fixed character since the
     ;; reader macro may have been installed on a non-default
     ;; character.
-    (format stream "While reading list, expected ~:c when input ~
+    (format stream "While reading list, expected the ~
+                    ~/eclector.base::describe-character-english/ when input ~
                     ended."
             (delimiter condition)))
 
@@ -196,8 +198,9 @@
   (define-context sharpsign-c "the complex reader macro")
 
   (define-reporter ((condition digit-expected) stream)
-      (format stream "~:c is not a digit in base ~d."
-              (character-found condition) (base condition)))
+    (format stream "The ~/eclector.base::describe-character-english/ is ~
+                    not a digit in base ~D."
+            (character-found condition) (base condition)))
 
   (define-reporter ((condition invalid-radix) stream)
     (format stream "~d is too ~:[big~;small~] to be a radix."
@@ -213,9 +216,16 @@
     ;; Use the DELIMITER slot instead of a fixed character since the
     ;; reader macro may have been installed on non-default (sub-)
     ;; character.
-    (format stream "While reading block comment, expected ~:c ~:c ~
-                    when input ended."
-            (delimiter condition) #\#))
+    (let ((delimiter-1 (delimiter condition))
+          (delimiter-2 #\#))
+      (format stream "While reading block comment, expected ~
+                      \"~A~A\" (that is the ~
+                      ~/eclector.base::describe-character-english/ ~
+                      followed by the ~
+                      ~/eclector.base::describe-character-english/) when ~
+                      input ended."
+              (string delimiter-1) (string delimiter-2)
+              delimiter-1 delimiter-2)))
 
 ;;; Conditions related to arrays
 
