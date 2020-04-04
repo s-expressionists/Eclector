@@ -59,6 +59,9 @@
           ("::foo"                            (eclector.reader:two-package-markers-must-not-be-first)        :foo)
           ("eclector.reader.test:::foo"       (eclector.reader:symbol-can-have-at-most-two-package-markers)  |:|foo)
 
+          ;; Recover from invalid number tokens.
+          ("3/0" (eclector.reader:zero-denominator) 3)
+
           ;; Recover from list-related errors
           ("("         (eclector.reader:unterminated-list)                      ())
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
@@ -73,6 +76,15 @@
           ("\""        (eclector.reader:unterminated-string)                    "")
           ("\"ab"      (eclector.reader:unterminated-string)                    "ab")
 
+          ;; Recover from errors in READ-RATIONAL.
+          ("#b"    (eclector.reader:end-of-input-before-digit) 1)
+          ("#b)"   (eclector.reader:digit-expected)            #b0   2)
+          ("#b121" (eclector.reader:digit-expected)            #b111)
+          ("#b1/"  (eclector.reader:end-of-input-before-digit) #b1/1)
+          ("#b1/)" (eclector.reader:digit-expected)            #b1   4)
+          ("#b1/0" (eclector.reader:zero-denominator)          #b1/1)
+
+          ;; Recover from block-comment-related errors
           ("#|"        (eclector.reader:unterminated-block-comment)             nil)
           ("#|foo"     (eclector.reader:unterminated-block-comment)             nil)
 

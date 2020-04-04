@@ -495,39 +495,49 @@
                         (values char (eclector.readtable:syntax-type
                                       readtable char)))
                        (eof-error-p
-                        (%reader-error stream 'end-of-input-before-digit
-                                       :base base))
+                        (%recoverable-reader-error
+                         stream 'end-of-input-before-digit
+                         :base base :report 'replace-invalid-digit)
+                        (values #\1 :constituent))
                        (t
                         (values nil nil)))))
-             (digit-expected (char)
-               (%reader-error stream 'digit-expected
-                              :character-found char :base base))
-             (ensure-digit (char)
+             (digit-expected (char type)
+               (%recoverable-reader-error
+                stream 'digit-expected
+                :character-found char :base base
+                :report 'replace-invalid-digit)
+               (when (member type '(:whitespace :terminating-macro))
+                 (unread-char char stream))
+               1)
+             (ensure-digit (char type)
                (let ((value (digit-char-p char base)))
                  (cond (value)
                        (read-suppress
-                        1)
+                        0)
                        (t
-                        (digit-expected char)))))
+                        (digit-expected char type)))))
              (maybe-sign ()
                (multiple-value-bind (char type) (next-char t)
                  (case type
                    (:constituent
                     (if (char= char #\-)
                         (values -1 0)
-                        (values 1 (ensure-digit char))))
+                        (values 1 (ensure-digit char type))))
+                   ((:whitespace :terminating-macro)
+                    (unread-char char stream)
+                    (values 0 0))
                    (t
-                    (digit-expected char)))))
+                    (digit-expected char type)))))
              (integer (empty-allowed &optional /-allowed initial-value)
                (let ((value initial-value))
                  (tagbody
                     (when empty-allowed (go rest))
                     (multiple-value-bind (char type) (next-char t)
-                      (case type
-                        (:constituent
-                         (setf value (ensure-digit char)))
-                        (t
-                         (digit-expected char))))
+                      (setf value (case type
+                                    (:constituent
+                                     (ensure-digit char type))
+                                    (t
+                                     (digit-expected char type)))))
                   rest
                     (multiple-value-bind (char type) (next-char nil)
                       (ecase type
@@ -542,18 +552,21 @@
                          (return-from integer value))
                         ((:non-terminating-macro
                           :single-escape :multiple-escape)
-                         (digit-expected char))
+                         (digit-expected char type))
                         (:constituent
                          (if (and /-allowed (eql char #\/))
                              (return-from integer (values value t))
                              (setf value (+ (* base (or value 0))
-                                            (ensure-digit char))))
+                                            (ensure-digit char type))))
                          (go rest)))))))
              (read-denominator ()
                (let ((value (integer nil)))
-                 (when (zerop value)
-                  (%reader-error stream 'zero-denominator))
-                 value)))
+                 (cond ((zerop value)
+                        (%recoverable-reader-error
+                         stream 'zero-denominator :report 'replace-invalid-digit)
+                        nil)
+                       (t
+                        value)))))
       (multiple-value-bind (sign numerator) (maybe-sign)
         (multiple-value-bind (numerator slashp) (integer (= sign 1) t numerator)
           (let ((denominator (when slashp (read-denominator))))

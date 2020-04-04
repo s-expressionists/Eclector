@@ -371,7 +371,10 @@
                 (alexandria:if-let ((numerator (funcall numerator)))
                   (let ((denominator (funcall denominator)))
                     (when (zerop denominator)
-                      (%reader-error input-stream 'zero-denominator))
+                      (%recoverable-reader-error
+                       input-stream 'zero-denominator
+                       :report 'replace-invalid-digit)
+                      (setf denominator 1))
                     (* sign (/ numerator denominator)))
                   (symbol))))
              ((funcall denominator char)

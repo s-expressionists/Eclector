@@ -10,6 +10,8 @@
   (define-description replace-invalid-character   "Replace the invalid character with a valid one.")
   (define-description treat-as-escaped            "Treat the character as if it had been escaped.")
 
+  (define-description replace-invalid-digit       "Use a suitable digit in place of the invalid digit.")
+
   (define-description ignore-quasiquote           "Read the following form as if it were not quasiquoted.")
   (define-description ignore-unquote              "Read the following form as if it were not unquoted.")
   (define-description ignore-missing-delimiter    "Ignore the missing delimiter.")
@@ -18,6 +20,7 @@
   (define-description ignore-object               "Ignore the object.")
   (define-description use-partial-list            "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
+
   (define-description use-partial-vector          "Return a vector of the already read elements."))
 
 ;;;; Contexts and condition reporters
