@@ -6,6 +6,15 @@
                                           type-error)
   ())
 
+;;; General escape errors
+
+(define-condition unterminated-single-escape (end-of-file
+                                              incomplete-construct)
+  ((%escape-char :initarg :escape-char :reader escape-char)))
+
+(define-condition unterminated-multiple-escape (missing-delimiter)
+  ())
+
 ;;; Conditions related to symbols
 ;;;
 ;;; See HyperSpec section 2.3.5 (Valid Patterns for Tokens).

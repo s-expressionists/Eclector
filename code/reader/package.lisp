@@ -101,6 +101,9 @@
 
    #:read-object-type-error
 
+   #:unterminated-single-escape
+   #:unterminated-multiple-escape
+
    #:package-does-not-exist
    #:symbol-does-not-exist
    #:symbol-is-not-external
