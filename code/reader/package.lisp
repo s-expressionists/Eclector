@@ -31,7 +31,10 @@
    #:incomplete-construct
 
    #:missing-delimiter
-   #:delimiter)
+   #:delimiter
+
+   #:read-char-or-error
+   #:read-char-or-recoverable-error)
 
   ;; Contrary to other variables affecting the reader, we cannot use
   ;; the host version of *READTABLE* because we do not necessarily

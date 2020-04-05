@@ -29,4 +29,7 @@
   ;; Exported for eclector.reader, not public use.
   (:export
    #:%reader-error
-   #:%recoverable-reader-error))
+   #:%recoverable-reader-error
+
+   #:read-char-or-error
+   #:read-char-or-recoverable-error))
