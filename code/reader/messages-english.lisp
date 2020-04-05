@@ -180,6 +180,11 @@
             (splicing-p condition)
             (context-name (context condition) language)))
 
+  (define-reporter ((condition end-of-input-after-unquote) stream)
+    (format stream "While reading ~:[~;splicing ~]unquote, expected an ~
+                    object when input ended."
+            (splicing-p condition)))
+
   (define-reporter ((condition object-must-follow-unquote) stream)
     (format stream "An object must follow a~:[~; splicing~] unquote."
             (splicing-p condition)))

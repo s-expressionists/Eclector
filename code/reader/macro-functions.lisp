@@ -195,13 +195,18 @@
 (defun comma (stream char)
   (declare (ignore char))
   (let* ((depth *backquote-depth*)
-         (char2 (read-char stream t nil t))
+         (char2 (read-char stream nil nil t))
          (splicing-p (case char2
                        ((#\@ #\.) t)
+                       ((nil) nil)
                        (t (unread-char char2 stream)))))
     (flet ((read-material ()
              (handler-case
                  (read stream t nil t)
+               ((and end-of-file (not incomplete-construct)) (condition)
+                 (%reader-error stream 'end-of-input-after-unquote
+                                :stream-position (stream-position condition)
+                                :splicing-p splicing-p))
                (end-of-list ()
                  (%reader-error stream 'object-must-follow-unquote
                                 :splicing-p splicing-p)))))

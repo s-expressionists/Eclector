@@ -146,6 +146,7 @@
    #:invalid-context-for-unquote
    #:unquote-not-inside-backquote
    #:unquote-in-invalid-context
+   #:end-of-input-after-unquote
    #:object-must-follow-unquote
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top

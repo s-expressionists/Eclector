@@ -137,11 +137,15 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""       nil 1 eclector.reader:end-of-file)
-          ("@"      nil 1 eclector.reader:end-of-file)
-          ("."      nil 1 eclector.reader:end-of-file)
+          (""       nil 1 eclector.reader:end-of-input-after-unquote)
+          ("@"      nil 1 eclector.reader:end-of-input-after-unquote)
+          ("."      nil 1 eclector.reader:end-of-input-after-unquote)
+          (")"      nil 1 eclector.reader:object-must-follow-unquote)
+          ("@)"     nil 1 eclector.reader:object-must-follow-unquote)
+          (".)"     nil 1 eclector.reader:object-must-follow-unquote)
           ("1"      nil 0 eclector.reader:unquote-not-inside-backquote)
           ("1"      t   1 eclector.reader:unquote-in-invalid-context)
+          (","      t   1 eclector.reader:unquote-in-invalid-context)
           ;; Valid
           ("1"      nil 1 (eclector.reader:unquote 1))
           ("@1"     nil 1 (eclector.reader:unquote-splicing 1))

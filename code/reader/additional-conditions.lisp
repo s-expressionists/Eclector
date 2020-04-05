@@ -124,8 +124,11 @@
                                                 backquote-error)
   ())
 
-(define-condition unquote-error (backquote-error)
+(define-condition unquote-condition ()
   ((%splicing-p :initarg :splicing-p :reader splicing-p)))
+
+(define-condition unquote-error (backquote-error unquote-condition)
+  ())
 
 (define-condition invalid-context-for-unquote (unquote-error)
   ())
@@ -135,6 +138,11 @@
 
 (define-condition unquote-in-invalid-context (invalid-context-for-unquote
                                               backquote-context-error)
+  ())
+
+(define-condition end-of-input-after-unquote (end-of-file
+                                              incomplete-construct
+                                              unquote-condition)
   ())
 
 (define-condition object-must-follow-unquote (unquote-error
