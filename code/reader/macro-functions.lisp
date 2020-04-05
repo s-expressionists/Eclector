@@ -71,7 +71,13 @@
 
 (defun single-quote (stream char)
   (declare (ignore char))
-  (let ((material (read stream t nil t)))
+  (let ((material (handler-case
+                      (read stream t nil t)
+                    ((and end-of-file (not incomplete-construct)) (condition)
+                      (%reader-error stream 'end-of-input-after-quote
+                                     :stream-position (stream-position condition)))
+                    (end-of-list ()
+                      (%reader-error stream 'object-must-follow-quote)))))
     (wrap-in-quote *client* material)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

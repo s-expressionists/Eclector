@@ -25,6 +25,28 @@
           (";"   ())
           (";~%" () 1))))
 
+(test single-quote/smoke
+  "Smoke test for the SINGLE-QUOTE reader macro function."
+
+  (mapc (lambda (input-expected)
+          (destructuring-bind (input expected
+                               &optional (expected-position (length input)))
+              input-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (values (eclector.reader::single-quote stream #\')
+                               (file-position stream)))))
+              (error-case expected
+                (error (do-it))
+                (t
+                 (multiple-value-bind (result position) (do-it)
+                   (is (equal expected          result))
+                   (is (eql   expected-position position))))))))
+        '((""  eclector.reader:end-of-input-after-quote)
+          (")" eclector.reader:object-must-follow-quote)
+
+          ("1" (quote 1)))))
+
 (test double-quote/smoke
   "Smoke test for the DOUBLE-QUOTE reader macro function."
 

@@ -128,6 +128,9 @@
    #:numeric-parameter-supplied-but-ignored
    #:numeric-parameter-not-supplied-but-required
 
+   #:end-of-input-after-quote
+   #:object-must-follow-quote
+
    #:unterminated-string
 
    #:backquote-error

@@ -134,6 +134,13 @@
 
   (define-context sharpsign-single-quote "the function reader macro")
 
+  (define-reporter ((condition end-of-input-after-quote) stream)
+    (format stream "While reading quote, expected quoted material when ~
+                    input ended."))
+
+  (define-reporter ((condition object-must-follow-quote) stream)
+    (format stream "An object must follow quote."))
+
 ;;; Conditions related to strings
 
   (define-reporter ((condition unterminated-string) stream)

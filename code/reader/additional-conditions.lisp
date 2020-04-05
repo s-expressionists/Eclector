@@ -86,6 +86,14 @@
     (%reader-error stream 'numeric-parameter-not-supplied-but-required
                    :macro-name macro-name)))
 
+;;; Conditions related to single quote
+
+(define-condition end-of-input-after-quote (end-of-file incomplete-construct)
+  ())
+
+(define-condition object-must-follow-quote (incomplete-construct)
+  ())
+
 ;;; Conditions related to strings
 
 (define-condition unterminated-string (missing-delimiter)
