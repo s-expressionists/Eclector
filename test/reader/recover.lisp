@@ -62,6 +62,10 @@
           ;; Recover from invalid number tokens.
           ("3/0" (eclector.reader:zero-denominator) 3)
 
+          ;; Single quote
+          ("'"         (eclector.reader:end-of-input-after-quote) 'nil)
+          ("(')"       (eclector.reader:object-must-follow-quote) ('nil))
+
           ;; Recover from list-related errors
           ("("         (eclector.reader:unterminated-list)                      ())
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
