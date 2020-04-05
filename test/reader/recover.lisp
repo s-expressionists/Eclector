@@ -111,6 +111,10 @@
           ("#|"        (eclector.reader:unterminated-block-comment)             nil)
           ("#|foo"     (eclector.reader:unterminated-block-comment)             nil)
 
+          ;; Recover from errors related to SHARPSIGN-SINGLE-QUOTE
+          ("#'"   (eclector.reader:end-of-input-after-sharpsign-single-quote) nil)
+          ("(#')" (eclector.reader:object-must-follow-sharpsign-single-quote) (nil))
+
           ;; Recover from errors related to uninterned symbols
           ("#::foo"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:|:|foo)
           ("#:foo:"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:foo|:|)

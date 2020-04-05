@@ -363,15 +363,23 @@
                 (handler-case
                     (read stream t nil t)
                   ((and end-of-file (not incomplete-construct)) (condition)
-                    (%reader-error
+                    (%recoverable-reader-error
                      stream 'end-of-input-after-sharpsign-single-quote
-                     :stream-position (stream-position condition)))
-                  (end-of-list ()
-                    (%reader-error
-                     stream 'object-must-follow-sharpsign-single-quote))))))
-    (if *read-suppress*
-        nil
-        `(function ,name))))
+                     :stream-position (stream-position condition)
+                     :report 'inject-nil)
+                    nil)
+                  (end-of-list (condition)
+                    (%recoverable-reader-error
+                     stream 'object-must-follow-sharpsign-single-quote
+                     :report 'inject-nil)
+                    (unread-char (%character condition) stream)
+                    nil)))))
+    (cond (*read-suppress*
+           nil)
+          ((null name)
+           nil)
+          (t
+           `(function ,name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
