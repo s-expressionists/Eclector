@@ -76,6 +76,11 @@
           ("`"         (eclector.reader:end-of-input-after-backquote)           (eclector.reader:quasiquote nil))
           ("(`)"       (eclector.reader:object-must-follow-backquote)           ((eclector.reader:quasiquote nil)))
 
+          ("`(1 ,)"    (eclector.reader:object-must-follow-unquote)             (eclector.reader:quasiquote
+                                                                                 (1 (eclector.reader:unquote nil))))
+          ("`,"        (eclector.reader:end-of-input-after-unquote)             (eclector.reader:quasiquote
+                                                                                 (eclector.reader:unquote nil)))
+
           ("#C(,1 2)"  (eclector.reader:unquote-in-invalid-context)             #C(1 2))
           ("#C(`,1 2)" (eclector.reader:backquote-in-invalid-context
                         eclector.reader:unquote-not-inside-backquote)

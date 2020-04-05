@@ -198,18 +198,23 @@
          (char2 (read-char stream nil nil t))
          (splicing-p (case char2
                        ((#\@ #\.) t)
-                       ((nil) nil)
+                       ((nil) nil) ; end-of-input, but we may recover
                        (t (unread-char char2 stream)))))
     (flet ((read-material ()
              (handler-case
                  (read stream t nil t)
                ((and end-of-file (not incomplete-construct)) (condition)
-                 (%reader-error stream 'end-of-input-after-unquote
-                                :stream-position (stream-position condition)
-                                :splicing-p splicing-p))
-               (end-of-list ()
-                 (%reader-error stream 'object-must-follow-unquote
-                                :splicing-p splicing-p)))))
+                 (%recoverable-reader-error
+                  stream 'end-of-input-after-unquote
+                  :stream-position (stream-position condition)
+                  :splicing-p splicing-p :report 'inject-nil)
+                 nil)
+               (end-of-list (condition)
+                 (%recoverable-reader-error
+                  stream 'object-must-follow-unquote
+                  :splicing-p splicing-p :report 'inject-nil)
+                 (unread-char (%character condition) stream)
+                 nil))))
       (unless (plusp depth)
         (%recoverable-reader-error
          stream 'unquote-not-inside-backquote
