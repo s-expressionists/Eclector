@@ -154,6 +154,7 @@
    #:unterminated-list
    #:too-many-dots
    #:invalid-context-for-consing-dot
+   #:end-of-input-after-consing-dot
    #:object-must-follow-consing-dot
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis

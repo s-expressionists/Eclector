@@ -170,6 +170,10 @@
 (define-condition invalid-context-for-consing-dot (stream-position-reader-error)
   ())
 
+(define-condition end-of-input-after-consing-dot (end-of-file
+                                                  incomplete-construct)
+  ())
+
 (define-condition object-must-follow-consing-dot (incomplete-construct)
   ())
 

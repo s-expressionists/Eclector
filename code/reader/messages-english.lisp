@@ -213,6 +213,10 @@
   (define-reporter ((condition invalid-context-for-consing-dot) stream)
     (format stream "A consing dot appeared in an illegal position."))
 
+  (define-reporter ((condition end-of-input-after-consing-dot) stream)
+    (format stream "While reading consing dot, expected an object when ~
+                    input ended."))
+
   (define-reporter ((condition object-must-follow-consing-dot) stream)
     (format stream "An object must follow a consing dot."))
 
