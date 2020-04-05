@@ -66,6 +66,12 @@
           ("'"         (eclector.reader:end-of-input-after-quote) 'nil)
           ("(')"       (eclector.reader:object-must-follow-quote) ('nil))
 
+          ;; Double quote
+          ("\""    (eclector.reader:unterminated-string)                  "")
+          ("\"ab"  (eclector.reader:unterminated-string)                  "ab")
+          ("\"a\\" (eclector.reader:unterminated-single-escape-in-string
+                    eclector.reader:unterminated-string)                  "a")
+
           ;; Recover from list-related errors
           ("("         (eclector.reader:unterminated-list)                      ())
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
@@ -76,9 +82,6 @@
 
           ("#("        (eclector.reader:unterminated-vector)                    #())
           ("#(1 2"     (eclector.reader:unterminated-vector)                    #(1 2))
-
-          ("\""        (eclector.reader:unterminated-string)                    "")
-          ("\"ab"      (eclector.reader:unterminated-string)                    "ab")
 
           ;; Recover from errors in READ-RATIONAL.
           ("#b"    (eclector.reader:end-of-input-before-digit) 1)

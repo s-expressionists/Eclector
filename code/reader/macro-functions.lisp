@@ -114,10 +114,11 @@
                        :delimiter char :report 'use-partial-string)
           until (eql char2 char)
           when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
-          do (setf char2 (read-char-or-error
-                          stream 'unterminated-single-escape-in-string
-                          :escape-char char2))
-          do (vector-push-extend char2 result)
+            do (setf char2 (read-char-or-recoverable-error
+                            stream nil 'unterminated-single-escape-in-string
+                            :escape-char char2 :report 'use-partial-string))
+          when char2
+            do (vector-push-extend char2 result)
           finally (return (copy-seq result)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
