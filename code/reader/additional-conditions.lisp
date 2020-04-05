@@ -99,6 +99,9 @@
 (define-condition unterminated-string (missing-delimiter)
   ())
 
+(define-condition unterminated-single-escape-in-string (unterminated-single-escape)
+  ())
+
 ;;; Conditions related to quasiquotation
 
 (defgeneric context-name (context language))

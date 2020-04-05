@@ -151,6 +151,13 @@
                     ended."
             (delimiter condition)))
 
+  (define-reporter ((condition unterminated-single-escape-in-string) stream)
+    (format stream "While reading string, expected character after ~
+                    the escape ~
+                    ~/eclector.base::describe-character-english/ ~
+                    when input ended."
+            (escape-char condition)))
+
 ;;; Conditions related to quasiquotation
 
   (define-reporter ((condition backquote-in-invalid-context) stream)

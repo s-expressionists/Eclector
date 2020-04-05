@@ -135,6 +135,7 @@
    #:object-must-follow-quote
 
    #:unterminated-string
+   #:unterminated-single-escape-in-string
 
    #:backquote-error
    #:backquote-context-error

@@ -67,6 +67,7 @@
                      (is (equal expected          result))
                      (is (eql   expected-position position)))))))))
         '((""       eclector.reader:unterminated-string)
+          ("\\"     eclector.reader:unterminated-single-escape-in-string)
 
           ("\""     "")
 

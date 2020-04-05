@@ -108,20 +108,17 @@
   (let ((result (make-array 100 :element-type 'character
                                 :adjustable t
                                 :fill-pointer 0)))
-    (handler-case
-        (loop with readtable = *readtable*
-              for char2 = (read-char stream t nil t)
-              until (eql char2 char)
-              when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
-                do (setf char2 (read-char stream t nil t))
-              do (vector-push-extend char2 result)
-              finally (return (copy-seq result)))
-      (end-of-file (condition)
-        (%recoverable-reader-error
-         stream 'unterminated-string
-         :stream-position (stream-position condition)
-         :delimiter char :report 'use-partial-string)
-        (copy-seq result)))))
+    (loop with readtable = *readtable*
+          for char2 = (read-char-or-recoverable-error
+                       stream char 'unterminated-string
+                       :delimiter char :report 'use-partial-string)
+          until (eql char2 char)
+          when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
+          do (setf char2 (read-char-or-error
+                          stream 'unterminated-single-escape-in-string
+                          :escape-char char2))
+          do (vector-push-extend char2 result)
+          finally (return (copy-seq result)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
