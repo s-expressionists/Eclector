@@ -315,8 +315,11 @@
                        (handler-case
                            (read stream t nil t)
                          ((and end-of-file (not incomplete-construct)) (condition)
-                           (%reader-error stream 'end-of-input-after-consing-dot
-                                          :stream-position (stream-position condition)))
+                           (%recoverable-reader-error
+                            stream 'end-of-input-after-consing-dot
+                            :stream-position (stream-position condition)
+                            :report 'inject-nil)
+                           nil)
                          (end-of-list (condition)
                            (%recoverable-reader-error
                             stream 'object-must-follow-consing-dot
