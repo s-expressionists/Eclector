@@ -214,7 +214,8 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""                nil nil eclector.reader:end-of-file)
+          (""                nil nil eclector.reader:end-of-input-after-sharpsign-single-quote)
+          (")"               nil nil eclector.reader:object-must-follow-sharpsign-single-quote)
           ("5"               nil nil (function 5))
           ("X"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
           (",foo"            nil nil eclector.reader:unquote-in-invalid-context)
@@ -224,8 +225,8 @@
           ("CL-USER::X"      nil nil (function cl-user::x))
           ("(lambda ())"     nil nil (function (lambda ())))
           ("(lambda () `,1)" nil nil (function (lambda ()
-                                                (eclector.reader:quasiquote
-                                                 (eclector.reader:unquote 1)))))
+                                                 (eclector.reader:quasiquote
+                                                  (eclector.reader:unquote 1)))))
           ("X "              nil nil (function X) 1)
           ;; With *READ-SUPPRESS* bound to T
           ("X"               nil t   nil)

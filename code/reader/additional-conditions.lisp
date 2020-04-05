@@ -183,6 +183,15 @@
 (define-condition invalid-context-for-right-parenthesis (stream-position-reader-error)
   ())
 
+;;; Conditions related to SHARPSIGN-DOT
+
+(define-condition end-of-input-after-sharpsign-single-quote (end-of-file
+                                                             incomplete-construct)
+  ())
+
+(define-condition object-must-follow-sharpsign-single-quote (incomplete-construct)
+  ())
+
 ;;; Conditions related to read-time evaluation
 
 (define-condition read-time-evaluation-inhibited (stream-position-reader-error)

@@ -226,6 +226,15 @@
   (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
     (format stream "Unmatched close parenthesis."))
 
+;;; Conditions related SHARPSIGN-SINGLE-QUOTE
+
+  (define-reporter ((condition end-of-input-after-sharpsign-single-quote) stream)
+    (format stream "While reading function literal, expected a ~
+                    function name when input ended."))
+
+  (define-reporter ((condition object-must-follow-sharpsign-single-quote) stream)
+    (format stream "An object must follow #'."))
+
 ;;; Conditions related to read-time evaluation
 
   (define-reporter ((condition read-time-evaluation-inhibited) stream)

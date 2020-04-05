@@ -159,6 +159,9 @@
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis
 
+   #:end-of-input-after-sharpsign-single-quote
+   #:object-must-follow-sharpsign-single-quote
+
    #:read-time-evaluation-inhibited
    #:read-time-evaluation-error
 

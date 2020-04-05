@@ -360,7 +360,15 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-single-quote parameter))
   (let ((name (with-forbidden-quasiquotation ('sharpsign-single-quote :keep t)
-                (read stream t nil t))))
+                (handler-case
+                    (read stream t nil t)
+                  ((and end-of-file (not incomplete-construct)) (condition)
+                    (%reader-error
+                     stream 'end-of-input-after-sharpsign-single-quote
+                     :stream-position (stream-position condition)))
+                  (end-of-list ()
+                    (%reader-error
+                     stream 'object-must-follow-sharpsign-single-quote))))))
     (if *read-suppress*
         nil
         `(function ,name))))
