@@ -140,6 +140,8 @@
    #:backquote-error
    #:backquote-context-error
    #:backquote-in-invalid-context
+   #:object-must-follow-backquote
+   #:end-of-input-after-backquote
    #:unquote-error
    #:invalid-context-for-unquote
    #:unquote-not-inside-backquote

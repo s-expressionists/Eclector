@@ -164,6 +164,13 @@
     (format stream "Backquote is illegal in ~A."
             (context-name (context condition) language)))
 
+  (define-reporter ((condition object-must-follow-backquote) stream)
+    (format stream "An object must follow backquote."))
+
+  (define-reporter ((condition end-of-input-after-backquote) stream)
+    (format stream "While reading backquote, expected an object when ~
+                    input ended."))
+
   (define-reporter ((condition unquote-not-inside-backquote) stream)
     (format stream "~:[Unquote~;Splicing unquote~] not inside backquote."
             (splicing-p condition)))

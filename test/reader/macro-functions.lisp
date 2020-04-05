@@ -105,7 +105,8 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Errors
-          (""   nil eclector.reader:end-of-file)
+          (""   nil eclector.reader:end-of-input-after-backquote)
+          (")"  nil eclector.reader:object-must-follow-backquote)
           ("1"  t   eclector.reader:backquote-in-invalid-context)
           ;; Valid
           ("1"  nil (eclector.reader:quasiquote 1))
@@ -900,14 +901,14 @@
                  (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
                    (do-it :minus)))
                 (eclector.reader::backquote-in-invalid-context
-                 (signals-printable eclector.reader::backquote-in-invalid-context
+                 (signals-printable eclector.reader:backquote-in-invalid-context
                    (do-it :plus))
-                 (signals-printable eclector.reader::backquote-in-invalid-context
+                 (signals-printable eclector.reader:backquote-in-invalid-context
                    (do-it :minus)))
                 (eclector.reader::unquote-in-invalid-context
-                 (signals-printable eclector.reader::unquote-in-invalid-context
+                 (signals-printable eclector.reader:unquote-in-invalid-context
                    (do-it :plus))
-                 (signals-printable eclector.reader::unquote-in-invalid-context
+                 (signals-printable eclector.reader:unquote-in-invalid-context
                    (do-it :minus)))
                 (t
                  (multiple-value-bind (value position) (do-it :plus)

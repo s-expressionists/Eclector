@@ -115,6 +115,15 @@
 (define-condition backquote-in-invalid-context (backquote-context-error)
   ())
 
+(define-condition object-must-follow-backquote (incomplete-construct
+                                                backquote-error)
+  ())
+
+(define-condition end-of-input-after-backquote (end-of-file
+                                                incomplete-construct
+                                                backquote-error)
+  ())
+
 (define-condition unquote-error (backquote-error)
   ((%splicing-p :initarg :splicing-p :reader splicing-p)))
 

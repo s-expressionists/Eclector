@@ -176,7 +176,13 @@
           (read stream t nil t)))))
   (let ((material (let ((*backquote-depth* (1+ *backquote-depth*))
                         (*unquote-forbidden* nil))
-                    (read stream t nil t))))
+                    (handler-case
+                        (read stream t nil t)
+                      ((and end-of-file (not incomplete-construct)) (condition)
+                        (%reader-error stream 'end-of-input-after-backquote
+                                       :stream-position (stream-position condition)))
+                      (end-of-list ()
+                        (%reader-error stream 'object-must-follow-backquote))))))
     (wrap-in-quasiquote *client* material)))
 
 (defun comma (stream char)
