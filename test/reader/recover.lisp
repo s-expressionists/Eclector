@@ -72,6 +72,15 @@
           ("\"a\\" (eclector.reader:unterminated-single-escape-in-string
                     eclector.reader:unterminated-string)                  "a")
 
+          ;; Recover from quasiquotation-related errors.
+          ("`"         (eclector.reader:end-of-input-after-backquote)           (eclector.reader:quasiquote nil))
+          ("(`)"       (eclector.reader:object-must-follow-backquote)           ((eclector.reader:quasiquote nil)))
+
+          ("#C(,1 2)"  (eclector.reader:unquote-in-invalid-context)             #C(1 2))
+          ("#C(`,1 2)" (eclector.reader:backquote-in-invalid-context
+                        eclector.reader:unquote-not-inside-backquote)
+                                                                                #C(1 2))
+
           ;; Recover from list-related errors
           ("("         (eclector.reader:unterminated-list)                      ())
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
@@ -102,12 +111,6 @@
           ("#:fo|o"    (eclector.reader:unterminated-multiple-escape-in-symbol)            #:fo|o|)
 
           ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
-
-          ;; Recover from forbidden quasiquotation.
-          ("#C(,1 2)"  (eclector.reader:unquote-in-invalid-context)             #C(1 2))
-          ("#C(`,1 2)" (eclector.reader:backquote-in-invalid-context
-                        eclector.reader:unquote-not-inside-backquote)
-                                                                                #C(1 2))
 
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list

@@ -179,10 +179,17 @@
                     (handler-case
                         (read stream t nil t)
                       ((and end-of-file (not incomplete-construct)) (condition)
-                        (%reader-error stream 'end-of-input-after-backquote
-                                       :stream-position (stream-position condition)))
-                      (end-of-list ()
-                        (%reader-error stream 'object-must-follow-backquote))))))
+                        (%recoverable-reader-error
+                         stream 'end-of-input-after-backquote
+                         :stream-position (stream-position condition)
+                         :report 'inject-nil)
+                        nil)
+                      (end-of-list (condition)
+                        (%recoverable-reader-error
+                         stream 'object-must-follow-backquote
+                         :report 'inject-nil)
+                        (unread-char (%character condition) stream)
+                        nil)))))
     (wrap-in-quasiquote *client* material)))
 
 (defun comma (stream char)
