@@ -329,9 +329,9 @@
                    (is (equal expected          result))
                    (is (eql   expected-position position))))))))
         '(;; Error cases
-          (""                  nil nil eclector.reader:end-of-file)
-          ("x\\"               nil nil eclector.reader:end-of-file)
-          ("x|"                nil nil eclector.reader:end-of-file)
+          (""                  nil nil eclector.reader:end-of-input-after-backslash)
+          ("x\\"               nil nil eclector.reader:unterminated-single-escape-in-character-name)
+          ("x|"                nil nil eclector.reader:unterminated-multiple-escape-in-character-name)
           ("\\no-such-char"    nil nil eclector.reader:unknown-character-name)
           ("|no-such-char"     nil nil eclector.reader:unknown-character-name)
           ("no-such-char"      nil nil eclector.reader:unknown-character-name)
@@ -355,9 +355,9 @@
           ("Re|tur|n"          nil nil #\Return)
           ("Re|t\\ur|n"        nil nil #\Return)
           ;; With *READ-SUPPRESS* bound to T
-          (""                  nil t   eclector.reader:end-of-file)
-          ("x\\"               nil t   eclector.reader:end-of-file)
-          ("x|"                nil t   eclector.reader:end-of-file)
+          (""                  nil t   eclector.reader:end-of-input-after-backslash)
+          ("x\\"               nil t   eclector.reader:unterminated-single-escape-in-character-name)
+          ("x|"                nil t   eclector.reader:unterminated-multiple-escape-in-character-name)
           ("no-such-char"      nil t   nil)
           ("1"                 1   t   nil))))
 

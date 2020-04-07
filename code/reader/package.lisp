@@ -167,6 +167,9 @@
    #:read-time-evaluation-inhibited
    #:read-time-evaluation-error
 
+   #:end-of-input-after-backslash
+   #:unterminated-single-escape-in-character-name
+   #:unterminated-multiple-escape-in-character-name
    #:unknown-character-name
 
    #:end-of-input-before-digit

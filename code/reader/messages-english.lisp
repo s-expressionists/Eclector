@@ -260,6 +260,22 @@
 
 ;;; Conditions related to characters
 
+  (define-reporter ((condition end-of-input-after-backslash) stream)
+    (format stream "While reading character name, expected a name when ~
+                    input ended."))
+
+  (define-reporter ((condition unterminated-single-escape-in-character-name) stream)
+    (format stream "While reading character name, expected character ~
+                    after the ~/eclector.base::describe-character-english/ ~
+                    when input ended."
+              (escape-char condition)))
+
+  (define-reporter ((condition unterminated-multiple-escape-in-character-name) stream)
+    (format stream "While reading character name, expected ~
+                    the ~/eclector.base::describe-character-english/ when ~
+                    input ended."
+              (delimiter condition)))
+
   (define-reporter ((condition unknown-character-name) stream)
     (format stream "Unrecognized character name: ~s" (name condition)))
 

@@ -210,6 +210,18 @@
 
 ;;; Conditions related to characters
 
+(define-condition end-of-input-after-backslash (end-of-file
+                                                incomplete-construct)
+  ())
+
+(define-condition unterminated-single-escape-in-character-name
+    (unterminated-single-escape)
+  ())
+
+(define-condition unterminated-multiple-escape-in-character-name
+    (unterminated-multiple-escape)
+  ())
+
 (define-condition unknown-character-name (stream-position-reader-error)
   ((%name :initarg :name :reader name)))
 

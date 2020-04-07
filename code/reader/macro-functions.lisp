@@ -494,66 +494,70 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
-  (let ((char1 (read-char stream t nil t))
+  (let ((char1 (read-char-or-error stream 'end-of-input-after-backslash))
         (token nil))
-    (flet ((next-char (&optional eof-error-p)
-             (let* ((char (read-char stream eof-error-p nil t))
-                    (syntax-type (when char
-                                   (eclector.readtable:syntax-type
-                                    *readtable* char))))
-               (values char syntax-type)))
-           (collect-char (char)
-             (cond
-               (token (vector-push-extend char token))
-               (t (setf token (make-array 10
-                                          :element-type 'character
-                                          :adjustable t
-                                          :fill-pointer 2)
-                        (aref token 0) char1
-                        (aref token 1) char)))))
+    (labels ((next-char (context)
+               (let ((char (read-char stream nil nil t)))
+                 (cond ((not (null char))
+                        (values char (eclector.readtable:syntax-type
+                                      *readtable* char)))
+                       ((eq context :single-escape)
+                        (%reader-error
+                         stream 'unterminated-single-escape-in-character-name
+                         :escape-char #\\))
+                       ((eq context :multiple-escape)
+                        (%reader-error
+                         stream 'unterminated-multiple-escape-in-character-name
+                         :delimiter #\|))
+                       (t
+                        (return-char)))))
+             (collect-char (char)
+               (cond (token (vector-push-extend char token))
+                     (t (setf token (make-array 10
+                                                :element-type 'character
+                                                :adjustable t
+                                                :fill-pointer 2)
+                              (aref token 0) char1
+                              (aref token 1) char))))
+             (return-char ()
+               (return-from sharpsign-backslash
+                 (cond (*read-suppress* nil)
+                       ((null token)
+                        char1)
+                       ((find-character *client* (string-upcase token)))
+                       (t
+                        (%reader-error stream 'unknown-character-name
+                                       :name token))))))
       (tagbody
        even-escapes
-         (multiple-value-bind (char syntax-type) (next-char)
+         (multiple-value-bind (char syntax-type) (next-char nil)
            (ecase syntax-type
-             ((nil)
-              (go terminate))
              ((:constituent :non-terminating-macro)
               (collect-char char)
               (go even-escapes))
              (:single-escape
-              (collect-char (read-char stream t nil t))
+              (collect-char (next-char syntax-type))
               (go even-escapes))
              (:multiple-escape
               (go odd-escapes))
              (:terminating-macro
               (unread-char char stream)
-              (go terminate))
+              (return-char))
              (:whitespace
               (when *preserve-whitespace*
                 (unread-char char stream))
-              (go terminate))))
+              (return-char))))
        odd-escapes
-         (multiple-value-bind (char syntax-type) (next-char t)
-           (ecase syntax-type
-             ((:constituent :terminating-macro
-               :non-terminating-macro :whitespace)
-              (collect-char char)
-              (go odd-escapes))
+         (multiple-value-bind (char syntax-type) (next-char :multiple-escape)
+           (case syntax-type
              (:single-escape
-              (collect-char (read-char stream t nil t))
+              (collect-char (next-char syntax-type))
               (go odd-escapes))
              (:multiple-escape
-              (go even-escapes))))
-       terminate
-         (return-from sharpsign-backslash
-           (cond
-             (*read-suppress* nil)
-             (token (alexandria:if-let ((char (find-character
-                                               *client* (string-upcase token))))
-                      char
-                      (%reader-error stream 'unknown-character-name
-                                     :name token)))
-             (t char1)))))))
+              (go even-escapes))
+             (t
+              (collect-char char)
+              (go odd-escapes))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
