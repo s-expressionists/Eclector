@@ -398,39 +398,42 @@
                 :stream-position (stream-position condition)
                 :delimiter #\) :report 'use-partial-vector)
                (values nil nil)))))
-    (cond
-      (*read-suppress*
-       (loop for elementp = (nth-value 1 (next-element))
-             while elementp))
-      ((null parameter)
-       (loop with result = (make-array 10 :adjustable t :fill-pointer 0)
-             for (element elementp) = (multiple-value-list (next-element))
-             while elementp
-             do (vector-push-extend element result)
-             finally (return (coerce result 'simple-vector))))
-      (t
-       (loop with result = (make-array parameter)
-             for index from 0
-             for (element elementp) = (multiple-value-list
-                                       (next-element))
-             while elementp
-             when (< index parameter)
-             do (setf (aref result index) element)
-             finally (cond
-                       ((and (zerop index) (plusp parameter))
-                        (%reader-error stream 'no-elements-found
-                                       :array-type 'vector
-                                       :expected-number parameter))
-                       ((> index parameter)
-                        (%reader-error stream 'too-many-elements
-                                       :array-type 'vector
-                                       :expected-number parameter
-                                       :number-found index)))
-                     (return
-                       (if (< index parameter)
-                           (fill result (aref result (1- index))
-                                 :start index)
-                           result)))))))
+    (cond (*read-suppress*
+           (loop for elementp = (nth-value 1 (next-element))
+                 while elementp))
+          ((null parameter)
+           (loop with result = (make-array 10 :adjustable t :fill-pointer 0)
+                 for (element elementp) = (multiple-value-list (next-element))
+                 while elementp
+                 do (vector-push-extend element result)
+                 finally (return (coerce result 'simple-vector))))
+          (t
+           (loop with result = (make-array parameter)
+                 for index from 0
+                 for (element elementp) = (multiple-value-list
+                                           (next-element))
+                 while elementp
+                 when (< index parameter)
+                 do (setf (aref result index) element)
+                 finally (cond ((and (zerop index) (plusp parameter))
+                                (%recoverable-reader-error
+                                 stream 'no-elements-found
+                                 :array-type 'vector :expected-number parameter
+                                 :report 'use-empty-vector)
+                                (setf result (make-array 0)
+                                      index parameter))
+                               ((> index parameter)
+                                (%recoverable-reader-error
+                                 stream 'too-many-elements
+                                 :array-type 'vector
+                                 :expected-number parameter
+                                 :number-found index
+                                 :report 'ignore-excess-elements)))
+                         (return
+                           (if (< index parameter)
+                               (fill result (aref result (1- index))
+                                     :start index)
+                               result)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

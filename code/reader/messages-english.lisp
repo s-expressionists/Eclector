@@ -21,7 +21,9 @@
   (define-description use-partial-list            "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
 
-  (define-description use-partial-vector          "Return a vector of the already read elements."))
+  (define-description use-empty-vector            "Return an empty vector.")
+  (define-description use-partial-vector          "Return a vector of the already read elements.")
+  (define-description ignore-excess-elements      "Use the already read elements and ignore the excess elements."))
 
 ;;;; Contexts and condition reporters
 

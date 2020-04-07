@@ -96,8 +96,11 @@
           ("(1 . 2 3)" (eclector.reader:multiple-objects-following-consing-dot) (1 . 2))
           (")(1)"      (eclector.reader:invalid-context-for-right-parenthesis)  (1))
 
-          ("#("        (eclector.reader:unterminated-vector)                    #())
-          ("#(1 2"     (eclector.reader:unterminated-vector)                    #(1 2))
+          ;; Recover from vector-related errors
+          ("#("        (eclector.reader:unterminated-vector) #())
+          ("#(1 2"     (eclector.reader:unterminated-vector) #(1 2))
+          ("#1()"      (eclector.reader:no-elements-found)   #())
+          ("#1(1 2)"   (eclector.reader:too-many-elements)   #(1))
 
           ;; Recover from errors in READ-RATIONAL.
           ("#b"    (eclector.reader:end-of-input-before-digit) 1)
