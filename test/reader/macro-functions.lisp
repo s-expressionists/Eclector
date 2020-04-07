@@ -383,6 +383,7 @@
           (""       10 nil eclector.reader:end-of-input-before-digit)
           (" "      10 nil eclector.reader:digit-expected)
           ("x"      10 nil eclector.reader:digit-expected)
+          ("|"      10 nil eclector.reader:digit-expected)
           ("- "     10 nil eclector.reader:digit-expected)
           ("-x"     10 nil eclector.reader:digit-expected)
           ("1x"     10 nil eclector.reader:digit-expected)

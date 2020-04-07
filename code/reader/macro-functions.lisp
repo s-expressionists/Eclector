@@ -586,43 +586,40 @@
                         (values #\1 :constituent))
                        (t
                         (values nil nil)))))
-             (digit-expected (char type)
+             (digit-expected (char type recover-value)
                (%recoverable-reader-error
                 stream 'digit-expected
                 :character-found char :base base
                 :report 'replace-invalid-digit)
-               (when (member type '(:whitespace :terminating-macro))
+               (unless (eq type :constituent)
                  (unread-char char stream))
-               1)
+               recover-value)
              (ensure-digit (char type)
                (let ((value (digit-char-p char base)))
                  (cond (value)
                        (read-suppress
                         0)
                        (t
-                        (digit-expected char type)))))
+                        (digit-expected char type 1)))))
              (maybe-sign ()
                (multiple-value-bind (char type) (next-char t)
-                 (case type
-                   (:constituent
-                    (if (char= char #\-)
-                        (values -1 0)
-                        (values 1 (ensure-digit char type))))
-                   ((:whitespace :terminating-macro)
-                    (unread-char char stream)
-                    (values 0 0))
-                   (t
-                    (digit-expected char type)))))
-             (integer (empty-allowed &optional /-allowed initial-value)
+                 (cond ((not (eq type :constituent))
+                        (digit-expected char type nil))
+                       ((char= char #\-)
+                        (values -1 0))
+                       (t
+                        (values 1 (ensure-digit char type))))))
+             (integer (empty-allowed /-allowed initial-value)
                (let ((value initial-value))
                  (tagbody
                     (when empty-allowed (go rest))
                     (multiple-value-bind (char type) (next-char t)
-                      (setf value (case type
-                                    (:constituent
-                                     (ensure-digit char type))
-                                    (t
-                                     (digit-expected char type)))))
+                      (case type
+                        (:constituent
+                         (setf value (ensure-digit char type)))
+                        (t
+                         (digit-expected char type nil)
+                         (return-from integer value))))
                   rest
                     (multiple-value-bind (char type) (next-char nil)
                       (ecase type
@@ -637,7 +634,8 @@
                          (return-from integer value))
                         ((:non-terminating-macro
                           :single-escape :multiple-escape)
-                         (digit-expected char type))
+                         (digit-expected char type nil)
+                         (return-from integer value))
                         (:constituent
                          (if (and /-allowed (eql char #\/))
                              (return-from integer (values value t))
@@ -645,20 +643,23 @@
                                             (ensure-digit char type))))
                          (go rest)))))))
              (read-denominator ()
-               (let ((value (integer nil)))
-                 (cond ((zerop value)
+               (let ((value (integer nil nil nil)))
+                 (cond ((eql value 0)
                         (%recoverable-reader-error
                          stream 'zero-denominator :report 'replace-invalid-digit)
                         nil)
                        (t
                         value)))))
       (multiple-value-bind (sign numerator) (maybe-sign)
-        (multiple-value-bind (numerator slashp) (integer (= sign 1) t numerator)
-          (let ((denominator (when slashp (read-denominator))))
-            (unless read-suppress
-              (* sign (if denominator
-                          (/ numerator denominator)
-                          numerator)))))))))
+        (if (null sign)
+            0
+            (multiple-value-bind (numerator slashp)
+                (integer (= sign 1) t numerator)
+              (let ((denominator (when slashp (read-denominator))))
+                (unless read-suppress
+                  (* sign (if denominator
+                              (/ numerator denominator)
+                              numerator))))))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))

@@ -119,12 +119,16 @@
                                                                                           #\?)
 
           ;; Recover from errors in READ-RATIONAL.
-          ("#b"    (eclector.reader:end-of-input-before-digit) 1)
-          ("#b)"   (eclector.reader:digit-expected)            #b0   2)
-          ("#b121" (eclector.reader:digit-expected)            #b111)
-          ("#b1/"  (eclector.reader:end-of-input-before-digit) #b1/1)
-          ("#b1/)" (eclector.reader:digit-expected)            #b1   4)
-          ("#b1/0" (eclector.reader:zero-denominator)          #b1/1)
+          ("#b"      (eclector.reader:end-of-input-before-digit) 1)
+          ("#b)"     (eclector.reader:digit-expected)            #b0     2)
+          ("#b|"     (eclector.reader:digit-expected)            #b0     2)
+          ("#b121"   (eclector.reader:digit-expected)            #b111)
+          ("#b1/"    (eclector.reader:end-of-input-before-digit) #b1/1)
+          ("#b1/)"   (eclector.reader:digit-expected)            #b1     4)
+          ("#b1/|"   (eclector.reader:digit-expected)            #b1     4)
+          ("#b1/1|"  (eclector.reader:digit-expected)            #b1     5)
+          ("#b1/121" (eclector.reader:digit-expected)            #b1/111 7)
+          ("#b1/0"   (eclector.reader:zero-denominator)          #b1/1)
 
           ;; Recover from block-comment-related errors
           ("#|"        (eclector.reader:unterminated-block-comment)             nil)
