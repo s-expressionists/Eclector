@@ -239,6 +239,13 @@
 
 ;;; Conditions related to read-time evaluation
 
+  (define-reporter ((condition end-of-input-after-sharpsign-dot) stream)
+    (format stream "While reading an expression to be evaluated at ~
+                    read-time, expected a form when input ended."))
+
+  (define-reporter ((condition object-must-follow-sharpsign-dot) stream)
+    (format stream "A form must follow #.."))
+
   (define-reporter ((condition read-time-evaluation-inhibited) stream)
     (format stream "Cannot evaluate expression at read-time because ~s ~
                     is false."

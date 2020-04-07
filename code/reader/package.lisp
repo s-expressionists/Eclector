@@ -162,6 +162,8 @@
    #:end-of-input-after-sharpsign-single-quote
    #:object-must-follow-sharpsign-single-quote
 
+   #:end-of-input-after-sharpsign-dot
+   #:object-must-follow-sharpsign-dot
    #:read-time-evaluation-inhibited
    #:read-time-evaluation-error
 

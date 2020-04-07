@@ -194,6 +194,13 @@
 
 ;;; Conditions related to read-time evaluation
 
+(define-condition end-of-input-after-sharpsign-dot (end-of-file
+                                                    incomplete-construct)
+  ())
+
+(define-condition object-must-follow-sharpsign-dot (incomplete-construct)
+  ())
+
 (define-condition read-time-evaluation-inhibited (stream-position-reader-error)
   ())
 

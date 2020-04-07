@@ -295,6 +295,8 @@
                    (is (equal expected       result))
                    (is (eql   (length input) position))))))))
         '(;; Error cases
+          (""                nil nil t   eclector.reader:end-of-input-after-sharpsign-dot)
+          (")"               nil nil t   eclector.reader:object-must-follow-sharpsign-dot)
           ("1"               1   nil t   eclector.reader:numeric-parameter-supplied-but-ignored)
           ("1"               nil nil nil eclector.reader:read-time-evaluation-inhibited)
           ("(error \"foo\")" nil nil t   eclector.reader:read-time-evaluation-error)
