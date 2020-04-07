@@ -21,6 +21,9 @@
   (define-description use-partial-list            "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
 
+  (define-description use-replacement-character   "Use a replacement character in place of the invalid one.")
+  (define-description use-partial-character-name  "Use the already read part of the character name.")
+
   (define-description use-empty-vector            "Return an empty vector.")
   (define-description use-partial-vector          "Return a vector of the already read elements.")
   (define-description ignore-excess-elements      "Use the already read elements and ignore the excess elements."))

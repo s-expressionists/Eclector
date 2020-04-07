@@ -494,21 +494,27 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
-  (let ((char1 (read-char-or-error stream 'end-of-input-after-backslash))
+  (let ((char1 (read-char-or-recoverable-error
+                stream nil 'end-of-input-after-backslash
+                :report 'use-replacement-character))
         (token nil))
+    (when (null char1) ; can happen when recovering
+      (return-from sharpsign-backslash #\?))
     (labels ((next-char (context)
                (let ((char (read-char stream nil nil t)))
                  (cond ((not (null char))
                         (values char (eclector.readtable:syntax-type
                                       *readtable* char)))
                        ((eq context :single-escape)
-                        (%reader-error
+                        (%recoverable-reader-error
                          stream 'unterminated-single-escape-in-character-name
-                         :escape-char #\\))
+                         :escape-char #\\ :report 'use-partial-character-name)
+                        (return-char))
                        ((eq context :multiple-escape)
-                        (%reader-error
+                        (%recoverable-reader-error
                          stream 'unterminated-multiple-escape-in-character-name
-                         :delimiter #\|))
+                         :delimiter #\| :report 'use-partial-character-name)
+                        (return-char))
                        (t
                         (return-char)))))
              (collect-char (char)
@@ -526,8 +532,10 @@
                         char1)
                        ((find-character *client* (string-upcase token)))
                        (t
-                        (%reader-error stream 'unknown-character-name
-                                       :name token))))))
+                        (%recoverable-reader-error
+                         stream 'unknown-character-name
+                         :name token :report 'use-replacement-character)
+                        #\?)))))
       (tagbody
        even-escapes
          (multiple-value-bind (char syntax-type) (next-char nil)

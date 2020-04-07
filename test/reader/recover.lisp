@@ -107,6 +107,17 @@
           ("#1()"      (eclector.reader:no-elements-found)   #())
           ("#1(1 2)"   (eclector.reader:too-many-elements)   #(1))
 
+          ;; Recover from errors in SHARPSIGN-BACKSLASH
+          ("#\\"         (eclector.reader:end-of-input-after-backslash)                   #\?)
+          ("#\\a\\"      (eclector.reader:unterminated-single-escape-in-character-name)   #\a)
+          ("#\\a|"       (eclector.reader:unterminated-multiple-escape-in-character-name) #\a)
+          ("#\\Return\\" (eclector.reader:unterminated-single-escape-in-character-name)   #\Return)
+          ("#\\Return|"  (eclector.reader:unterminated-multiple-escape-in-character-name) #\Return)
+          ("#\\Nosuch"   (eclector.reader:unknown-character-name)                         #\?)
+          ("#\\Nosuch\\" (eclector.reader:unterminated-single-escape-in-character-name
+                          eclector.reader:unknown-character-name)
+                                                                                          #\?)
+
           ;; Recover from errors in READ-RATIONAL.
           ("#b"    (eclector.reader:end-of-input-before-digit) 1)
           ("#b)"   (eclector.reader:digit-expected)            #b0   2)
