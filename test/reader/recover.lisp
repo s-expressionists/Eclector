@@ -130,6 +130,11 @@
           ("#b1/121" (eclector.reader:digit-expected)            #b1/111 7)
           ("#b1/0"   (eclector.reader:zero-denominator)          #b1/1)
 
+          ;; Recover from errors related to bit-vector literals
+          ("#1*"       (eclector.reader:no-elements-found) #*)
+          ("#1*11"     (eclector.reader:too-many-elements) #*1)
+          ("#*021"     (eclector.reader:digit-expected)    #*001)
+
           ;; Recover from block-comment-related errors
           ("#|"        (eclector.reader:unterminated-block-comment)             nil)
           ("#|foo"     (eclector.reader:unterminated-block-comment)             nil)

@@ -706,49 +706,54 @@
                              (digit-char-p char 2)))
                  (when (eq syntax-type :terminating-macro)
                    (unread-char char stream))
-                 (cond
-                   ((member syntax-type '(nil :whitespace :terminating-macro))
-                    nil)
-                   (read-suppress
-                    t)
-                   ((null value)
-                    (%reader-error stream 'digit-expected
-                                   :character-found char
-                                   :base 2.))
-                   (t
-                    value))))))
-      (cond
-        (read-suppress
-         (loop for value = (next-bit) while value))
-        ((null parameter)
-         (loop with bits = (make-array 10 :element-type 'bit
-                                          :adjustable t :fill-pointer 0)
-               for value = (next-bit)
-               while value
-               do (vector-push-extend value bits)
-               finally (return (coerce bits 'simple-bit-vector))))
-        (t
-         (loop with result = (make-array parameter :element-type 'bit)
-               for index from 0
-               for value = (next-bit)
-               while value
-               when (< index parameter)
-               do (setf (sbit result index) value)
-               finally (cond
-                         ((and (zerop index) (plusp parameter))
-                          (%reader-error stream 'no-elements-found
-                                         :array-type 'bit-vector
-                                         :expected-number parameter))
-                         ((> index parameter)
-                          (%reader-error stream 'too-many-elements
-                                         :array-type 'bit-vector
-                                         :expected-number parameter
-                                         :number-found index)))
-                       (return
-                         (if (< index parameter)
-                             (fill result (sbit result (1- index))
-                                   :start index)
-                             result))))))))
+                 (cond ((member syntax-type '(nil :whitespace :terminating-macro))
+                        nil)
+                       (read-suppress
+                        t)
+                       ((null value)
+                        (%recoverable-reader-error
+                         stream 'digit-expected
+                         :character-found char :base 2.
+                         :report 'replace-invalid-digit)
+                        0)
+                       (t
+                        value))))))
+      (cond (read-suppress
+             (loop for value = (next-bit) while value))
+            ((null parameter)
+             (loop with bits = (make-array 10 :element-type 'bit
+                                              :adjustable t :fill-pointer 0)
+                   for value = (next-bit)
+                   while value
+                   do (vector-push-extend value bits)
+                   finally (return (coerce bits 'simple-bit-vector))))
+            (t
+             (loop with result = (make-array parameter :element-type 'bit)
+                   for index from 0
+                   for value = (next-bit)
+                   while value
+                   when (< index parameter)
+                   do (setf (sbit result index) value)
+                   finally (cond ((and (zerop index) (plusp parameter))
+                                  (%recoverable-reader-error
+                                   stream 'no-elements-found
+                                   :array-type 'bit-vector
+                                   :expected-number parameter
+                                   :report 'use-empty-vector)
+                                  (setf result (make-array 0 :element-type 'bit)
+                                        index parameter))
+                                 ((> index parameter)
+                                  (%recoverable-reader-error
+                                   stream 'too-many-elements
+                                   :array-type 'bit-vector
+                                   :expected-number parameter
+                                   :number-found index
+                                   :report 'ignore-excess-elements)))
+                           (return
+                             (if (< index parameter)
+                                 (fill result (sbit result (1- index))
+                                       :start index)
+                                 result))))))))
 
 (defun sharpsign-vertical-bar (stream sub-char parameter)
   (unless (null parameter)
