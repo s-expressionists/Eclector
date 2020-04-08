@@ -3,7 +3,8 @@ name: test-in-implementations
 on: [push]
 
 env:
-  SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-2.0.3-x86-64-linux-binary.tar.bz2
+  # Should use 2.0.3 but that needs a too-new glibc
+  SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-1.5.0-x86-64-linux-binary.tar.bz2
   ECL_DOWNLOAD_URL:
 
   CL_LAUNCH_DOWNLOAD_URL: https://common-lisp.net/project/xcvb/cl-launch/cl-launch.sh
@@ -72,6 +73,9 @@ jobs:
 
           echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
           echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
+          cat ~/.cl-launchrc
+          /tmp/sbcl/bin/sbcl --version
+          cl -v
 
       - name: install quicklisp
         run: |
