@@ -34,8 +34,6 @@ jobs:
         run: |
           curl -L "${SBCL_DOWNLOAD_URL}" | tar -xj
           ( cd sbcl-* && INSTALL_ROOT="/tmp/sbcl" sh install.sh )
-
-          echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cllaunchrc
         working-directory: /tmp/
 
       # Install ECL (with cache)
@@ -59,8 +57,6 @@ jobs:
 
           make install
           echo '(setf *debugger-hook* (lambda (c fun) (princ c) (si::tpl-backtrace) (quit 1)))' > ~/.eclrc
-
-          echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cllaunchrc
         working-directory: /tmp
 
       # Install CCL (with cache)
@@ -73,6 +69,9 @@ jobs:
         run: |
           curl -l -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
           chmod +x cl
+
+          echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cllaunchrc
+          echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cllaunchrc
 
       - name: install quicklisp
         run: |
