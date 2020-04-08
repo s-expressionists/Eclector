@@ -23,7 +23,7 @@ jobs:
 
       - name: install implementation SBCL
         if: ${{ matrix.implementation }} == 'sbcl'
-        if: steps.sbcl-cache.outputs.cache-hit != 'true'
+            && steps.sbcl-cache.outputs.cache-hit != 'true'
         run: |
           curl -L "${SBCL_DOWNLOAD_URL}" | tar -xj
           ( cd sbcl-* && INSTALL_ROOT="${PREFIX}" sh install.sh )
