@@ -6,6 +6,9 @@ env:
   SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-2.0.3-x86-64-linux-binary.tar.bz2
   ECL_DOWNLOAD_URL:
 
+  CL_LAUNCH_DOWNLOAD_URL: https://common-lisp.net/project/xcvb/cl-launch/cl-launch.sh
+  QUICKLISP_DOWNLOAD_URL: https://beta.quicklisp.org/quicklisp.lisp
+
 jobs:
 
   test:
@@ -78,8 +81,6 @@ jobs:
 
       # Run tests
       - name: test
-        env:
-          SBCL_MAKE_TARGET_2_OPTIONS: --disable-ldb --disable-debugger
         run: |
           ./cl
             -l ${{ matrix.implementation }}
