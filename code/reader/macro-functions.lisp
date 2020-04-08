@@ -786,59 +786,78 @@
 
 (labels ((check-sequence (stream object)
            (when (not (typep object 'alexandria:proper-sequence))
-             (%reader-error stream 'read-object-type-error
-                            :expected-type 'sequence
-                            :datum object))
-           nil))
+             (%recoverable-reader-error
+              stream 'read-object-type-error
+              :expected-type 'sequence :datum object
+              :report 'use-empty-array)
+             (invoke-restart '%make-empty))
+           nil)
+         (make-empty-dimensions (rank)
+           (make-list rank :initial-element 0))
+         (determine-dimensions (stream rank initial-contents)
+           (labels ((rec (rank initial-contents)
+                      (cond ((zerop rank)
+                             '())
+                            ((check-sequence stream initial-contents))
+                            (t
+                             (let ((length (length initial-contents)))
+                               (if (zerop length)
+                                   (make-empty-dimensions rank)
+                                   (list* length
+                                          (rec (1- rank)
+                                               (elt initial-contents 0)))))))))
+             (rec rank initial-contents)))
 
-  (defun determine-dimensions (stream rank initial-contents)
-    (labels ((rec (rank initial-contents)
-               (cond ((zerop rank)
-                      '())
-                     ((check-sequence stream initial-contents))
-                     (t
-                      (let ((length (length initial-contents)))
-                        (if (zerop length)
-                            (make-list rank :initial-element 0)
-                            (list* length
-                                   (rec (1- rank) (elt initial-contents 0)))))))))
-      (rec rank initial-contents)))
+         (check-dimensions (stream dimensions initial-contents)
+           (labels ((rec (first rest axis initial-contents)
+                      (cond ((not first))
+                            ((check-sequence stream initial-contents))
+                            ((not (eql (length initial-contents) (or first 0)))
+                             (%recoverable-reader-error
+                              stream 'incorrect-initialization-length
+                              :array-type 'array :axis axis
+                              :expected-length first :datum initial-contents
+                              :report 'use-empty-array)
+                             (invoke-restart '%make-empty))
+                            (t
+                             (every (lambda (subseq)
+                                      (rec (first rest) (rest rest)
+                                           (1+ axis) subseq))
+                                    initial-contents)))))
+             (rec (first dimensions) (rest dimensions) 0 initial-contents)))
+         (read-init (stream)
+           (with-forbidden-quasiquotation ('sharpsign-a :keep)
+             (handler-case
+                 (read stream t nil t)
+               ((and end-of-file (not incomplete-construct)) (condition)
+                 (%recoverable-reader-error
+                  stream 'end-of-input-after-sharpsign-a
+                  :stream-position (stream-position condition)
+                  :report 'use-empty-array)
+                 (invoke-restart '%make-empty))
+               (end-of-list (condition)
+                 (%recoverable-reader-error
+                  stream 'object-must-follow-sharpsign-a
+                  :report 'use-empty-array)
+                 (unread-char (%character condition) stream)
+                 (invoke-restart '%make-empty))))))
 
-  (defun check-dimensions (stream dimensions initial-contents)
-    (labels ((rec (first rest axis initial-contents)
-               (cond
-                 ((not first))
-                 ((check-sequence stream initial-contents))
-                 ((not (eql (length initial-contents) (or first 0)))
-                  (%reader-error stream 'incorrect-initialization-length
-                                 :array-type 'array
-                                 :axis axis
-                                 :expected-length first
-                                 :datum initial-contents))
-                 (t
-                  (every (lambda (subseq)
-                           (rec (first rest) (rest rest) (1+ axis) subseq))
-                         initial-contents)))))
-      (rec (first dimensions) (rest dimensions) 0 initial-contents))))
-
-(defun sharpsign-a (stream char parameter)
-  (declare (ignore char))
-  (unless parameter
-    (numeric-parameter-not-supplied stream 'sharpsign-a))
-  (if *read-suppress*
-      (read stream t nil t)
-      (let* ((init (with-forbidden-quasiquotation ('sharpsign-a :keep)
-                     (handler-case
-                         (read stream t nil t)
-                       ((and end-of-file (not incomplete-construct)) (condition)
-                         (%reader-error
-                          stream 'end-of-input-after-sharpsign-a
-                          :stream-position (stream-position condition)))
-                       (end-of-list ()
-                         (%reader-error stream 'object-must-follow-sharpsign-a)))))
-             (dimensions (determine-dimensions stream parameter init)))
-        (check-dimensions stream dimensions init)
-        (make-array dimensions :initial-contents init))))
+  (defun sharpsign-a (stream char parameter)
+    (declare (ignore char))
+    (unless parameter
+      (numeric-parameter-not-supplied stream 'sharpsign-a))
+    (if *read-suppress*
+        (read stream t nil t)
+        (multiple-value-bind (dimensions init)
+            (restart-case
+                (let* ((init (read-init stream))
+                       (dimensions (determine-dimensions
+                                    stream parameter init)))
+                  (check-dimensions stream dimensions init)
+                  (values dimensions init))
+              (%make-empty ()
+                (values (make-empty-dimensions parameter) '())))
+          (make-array dimensions :initial-contents init)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

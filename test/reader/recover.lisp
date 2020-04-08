@@ -143,6 +143,13 @@
           ("#'"   (eclector.reader:end-of-input-after-sharpsign-single-quote) nil)
           ("(#')" (eclector.reader:object-must-follow-sharpsign-single-quote) (nil))
 
+          ;; Recover from general array-related errors
+          ("#2A"            (eclector.reader:end-of-input-after-sharpsign-a)  #2A())
+          ("(#2A)"          (eclector.reader:object-must-follow-sharpsign-a)  (#2A()))
+          ("#2A("           (eclector.reader:unterminated-list)               #2A())
+          ("#2A(1)"         (eclector.reader:read-object-type-error)          #2A())
+          ("#2A((1) (1 2))" (eclector.reader:incorrect-initialization-length) #2A())
+
           ;; Recover from errors related to uninterned symbols
           ("#::foo"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:|:|foo)
           ("#:foo:"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:foo|:|)

@@ -26,7 +26,9 @@
 
   (define-description use-empty-vector            "Return an empty vector.")
   (define-description use-partial-vector          "Return a vector of the already read elements.")
-  (define-description ignore-excess-elements      "Use the already read elements and ignore the excess elements."))
+  (define-description ignore-excess-elements      "Use the already read elements and ignore the excess elements.")
+
+  (define-description use-empty-array             "Use an empty array in place of the invalid one."))
 
 ;;;; Contexts and condition reporters
 
