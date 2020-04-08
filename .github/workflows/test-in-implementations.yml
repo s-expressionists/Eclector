@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        implementation: [ sbcl, ccl, ecl ]
+        implementation: [ sbcl, ecl ] # TODO ccl
 
     steps:
       - uses: actions/checkout@v1
@@ -38,7 +38,7 @@ jobs:
 
       - name: build implementation ECL
         if: ${{ matrix.implementation }} == 'ecl'
-        if: steps.ecl-cache.outputs.cache-hit != 'true'
+            && steps.ecl-cache.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/sbcl/sbcl/releases/download/sbcl-1.4.14/ecl.tgz
           tar xf ecl.tgz
@@ -49,16 +49,16 @@ jobs:
 
       - name: install implementation ECL
         if: ${{ matrix.implementation }} == 'ecl'
-        if: steps.ecl-cache.outputs.cache-hit != 'true'
+            && steps.ecl-cache.outputs.cache-hit != 'true'
         run: |
           sudo make install
           echo '(setf *debugger-hook* (lambda (c fun) (princ c) (si::tpl-backtrace) (quit 1)))' > ~/.eclrc
         working-directory: /tmp/ecl
 
       # Install CCL (with cache)
-      - name: install implementation CCL
-        if: ${{ matrix.implementation }} == 'ccl'
-        run: |
+      # - name: install implementation CCL
+      #  if: ${{ matrix.implementation }} == 'ccl'
+      #  run: |
 
       # Install cl-launch and Quicklisp
       - name: install cl-launch
