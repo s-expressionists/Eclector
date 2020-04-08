@@ -2,6 +2,10 @@ name: test-in-implementations
 
 on: [push]
 
+env:
+  SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-2.0.3-x86-64-linux-binary.tar.bz2
+  ECL_DOWNLOAD_URL:
+
 jobs:
 
   test:
@@ -26,7 +30,10 @@ jobs:
             && steps.sbcl-cache.outputs.cache-hit != 'true'
         run: |
           curl -L "${SBCL_DOWNLOAD_URL}" | tar -xj
-          ( cd sbcl-* && INSTALL_ROOT="${PREFIX}" sh install.sh )
+          ( cd sbcl-* && INSTALL_ROOT="/tmp/sbcl" sh install.sh )
+
+          echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cllaunchrc
+        working-directory: /tmp/
 
       # Install ECL (with cache)
       - uses: actions/cache@v1
@@ -41,19 +48,17 @@ jobs:
             && steps.ecl-cache.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/sbcl/sbcl/releases/download/sbcl-1.4.14/ecl.tgz
-          tar xf ecl.tgz
-          cd ecl
-          ./configure --prefix=/usr/
+          tar -xzf ecl.tgz
+          mv ecl ecl-src
+          cd ecl-src
+          ./configure --prefix=/tmp/ecl/
           make
-        working-directory: /tmp
 
-      - name: install implementation ECL
-        if: ${{ matrix.implementation }} == 'ecl'
-            && steps.ecl-cache.outputs.cache-hit != 'true'
-        run: |
-          sudo make install
+          make install
           echo '(setf *debugger-hook* (lambda (c fun) (princ c) (si::tpl-backtrace) (quit 1)))' > ~/.eclrc
-        working-directory: /tmp/ecl
+
+          echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cllaunchrc
+        working-directory: /tmp
 
       # Install CCL (with cache)
       # - name: install implementation CCL
