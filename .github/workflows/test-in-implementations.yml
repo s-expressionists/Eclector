@@ -23,7 +23,7 @@ jobs:
       # Install SBCL (with cache)
       - uses: actions/cache@v1
         id: sbcl-cache
-        if: ${{ matrix.implementation }} == 'sbcl'
+        if: matrix.implementation == 'sbcl'
         with:
           path: /tmp/sbcl
           key: sbcl-cache
@@ -39,7 +39,7 @@ jobs:
       # Install ECL (with cache)
       - uses: actions/cache@v1
         id: ecl-cache
-        if: ${{ matrix.implementation }} == 'ecl'
+        if: matrix.implementation == 'ecl'
         with:
           path: /tmp/ecl
           key: ecl-cache
@@ -70,8 +70,8 @@ jobs:
           curl -l -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
           chmod +x cl
 
-          echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cllaunchrc
-          echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cllaunchrc
+          echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
+          echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
 
       - name: install quicklisp
         run: |
