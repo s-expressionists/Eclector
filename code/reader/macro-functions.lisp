@@ -828,7 +828,14 @@
   (if *read-suppress*
       (read stream t nil t)
       (let* ((init (with-forbidden-quasiquotation ('sharpsign-a :keep)
-                     (read stream t nil t)))
+                     (handler-case
+                         (read stream t nil t)
+                       ((and end-of-file (not incomplete-construct)) (condition)
+                         (%reader-error
+                          stream 'end-of-input-after-sharpsign-a
+                          :stream-position (stream-position condition)))
+                       (end-of-list ()
+                         (%reader-error stream 'object-must-follow-sharpsign-a)))))
              (dimensions (determine-dimensions stream parameter init)))
         (check-dimensions stream dimensions init)
         (make-array dimensions :initial-contents init))))

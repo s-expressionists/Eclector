@@ -180,6 +180,8 @@
 
    #:unterminated-block-comment
 
+   #:end-of-input-after-sharpsign-a
+   #:object-must-follow-sharpsign-a
    #:unterminated-vector
    #:too-many-elements
    #:no-elements-found

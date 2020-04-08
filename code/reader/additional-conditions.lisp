@@ -255,6 +255,13 @@
 
 ;;; Conditions related to arrays
 
+(define-condition end-of-input-after-sharpsign-a (end-of-file
+                                                  incomplete-construct)
+  ())
+
+(define-condition object-must-follow-sharpsign-a (incomplete-construct)
+  ())
+
 (define-condition unterminated-vector (missing-delimiter)
   ())
 

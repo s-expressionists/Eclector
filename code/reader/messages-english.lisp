@@ -328,6 +328,13 @@
 
   (define-context sharpsign-a "the general array reader macro")
 
+  (define-reporter ((condition end-of-input-after-sharpsign-a) stream)
+    (format stream "While reading general array, expected initial ~
+                    contents when input ended."))
+
+  (define-reporter ((condition object-must-follow-sharpsign-a) stream)
+    (format stream "Initial contents must follow #A."))
+
   (define-reporter ((condition unterminated-vector) stream)
     ;; Use the DELIMITER slot instead of a fixed character since the
     ;; reader macro may have been installed on a non-default

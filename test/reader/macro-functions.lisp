@@ -656,7 +656,9 @@
                    (is (equalp expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          (""          1   nil eclector.reader:end-of-file)
+          (""          1   nil eclector.reader:end-of-input-after-sharpsign-a)
+          (")"         1   nil eclector.reader:object-must-follow-sharpsign-a)
+
           ("(,1)"      1   nil eclector.reader:unquote-in-invalid-context)
           ("(1)"       2   nil eclector.reader:read-object-type-error)
           ("(1 (1))"   2   nil eclector.reader:read-object-type-error)
