@@ -26,8 +26,8 @@ jobs:
           key: sbcl-cache
 
       - name: install implementation SBCL
-        if: ${{ matrix.implementation }} == 'sbcl'
-            && steps.sbcl-cache.outputs.cache-hit != 'true'
+        if: (matrix.implementation == 'sbcl')
+            && (steps.sbcl-cache.outputs.cache-hit != 'true')
         run: |
           curl -L "${SBCL_DOWNLOAD_URL}" | tar -xj
           ( cd sbcl-* && INSTALL_ROOT="/tmp/sbcl" sh install.sh )
@@ -44,8 +44,8 @@ jobs:
           key: ecl-cache
 
       - name: build implementation ECL
-        if: ${{ matrix.implementation }} == 'ecl'
-            && steps.ecl-cache.outputs.cache-hit != 'true'
+        if: (matrix.implementation == 'ecl')
+            && (steps.ecl-cache.outputs.cache-hit != 'true')
         run: |
           wget -q https://github.com/sbcl/sbcl/releases/download/sbcl-1.4.14/ecl.tgz
           tar -xzf ecl.tgz
