@@ -934,17 +934,56 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-c parameter))
-  (let ((parts (with-forbidden-quasiquotation ('sharpsign-c)
-                 (read stream t nil t))))
-    (cond
-      (*read-suppress*
-       nil)
-      ((typep parts '(cons real (cons real null)))
-       (complex (first parts) (second parts)))
-      (t
-       (%reader-error stream 'read-object-type-error
-                      :datum parts
-                      :expected-type '(cons real (cons real null)))))))
+  (when *read-suppress*
+    (read stream t nil t)
+    (return-from sharpsign-c nil))
+  ;; When we get here, we have to read a list of the form
+  ;; (REAL-PART-REAL-NUMBER-LITERAL IMAGINARY-PART-REAL-NUMBER) that
+  ;; is, a list of exactly two elements of type REAL.
+  ;;
+  ;; We call %READ-LIST-ELEMENTS which calls the local function PART
+  ;; for each list element as well as the events such as the end of
+  ;; the list or the end of input. The variable PART keeps track of
+  ;; the currently expected part which can be :REAL, :IMAGINARY or
+  ;; :END.
+  (let ((listp nil)
+        (part :real)
+        (real 1) (imaginary 1))
+    (labels ((check-value (value)
+               (typecase value
+                 (real
+                  value)
+                 (t
+                  (%reader-error stream 'read-object-type-error
+                                 :datum value :expected-type 'real))))
+             (part (kind value)
+               (declare (ignore kind))
+               (case part
+                 (:real
+                  (setf real (check-value value)
+                        part :imaginary)
+                  t)
+                 (:imaginary
+                  (setf imaginary (check-value value)
+                        part :end)
+                  t)
+                 (:end
+                  (%reader-error stream 'read-object-type-error
+                                 :datum value
+                                 :expected-type '(cons (real (cons real null)))))))
+             (read-parts (stream char)
+               (setf listp t)
+               (let ((*list-reader* nil))
+                 (%read-list-elements stream #'part nil nil char t nil))
+               nil))
+      (with-forbidden-quasiquotation ('sharpsign-c)
+        (let ((value (let ((*list-reader* #'read-parts))
+                       (read stream t nil t))))
+          (unless (and (eq part :end) listp)
+            (%reader-error stream 'read-object-type-error
+                           :datum value
+                           :expected-type '(cons (real (cons real null)))))))
+      (complex real imaginary))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
