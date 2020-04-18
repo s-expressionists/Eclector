@@ -231,7 +231,12 @@
     (format stream "Only a single object can follow a consing dot."))
 
   (define-reporter ((condition invalid-context-for-right-parenthesis) stream)
-    (format stream "Unmatched close parenthesis."))
+    (format stream "Unmatched closing parenthesis ~
+                    ~/eclector.base::describe-character-english/~@[ ~
+                    when ~/eclector.base::describe-character-english/ ~
+                    was expected~]."
+            (found-character condition)
+            (expected-character condition)))
 
 ;;; Conditions related SHARPSIGN-SINGLE-QUOTE
 

@@ -349,6 +349,7 @@
   ;; context where it is not allowed.
   (signal-end-of-list char)
   (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
+                             :found-character char
                              :report 'ignore-trailing-right-paren))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

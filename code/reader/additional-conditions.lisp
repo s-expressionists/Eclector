@@ -181,7 +181,11 @@
   ())
 
 (define-condition invalid-context-for-right-parenthesis (stream-position-reader-error)
-  ())
+  ((%expected-character :initarg :expected-character
+                        :reader expected-character
+                        :initform nil)
+   (%found-character :initarg :found-character
+                     :reader found-character)))
 
 ;;; Conditions related to SHARPSIGN-DOT
 
