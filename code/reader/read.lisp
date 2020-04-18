@@ -111,6 +111,10 @@
                 :delimiter close-char :report 'use-partial-list)))))))
 
 (defun %read-delimited-list (stream close-char recursive-p)
+  (alexandria:when-let ((list-reader *list-reader*))
+    (return-from %read-delimited-list
+      (funcall list-reader stream close-char)))
+
   (let ((reversed-result '())
         (tail nil))
     (flet ((element (state value)

@@ -18,6 +18,11 @@
 
 ;;; List syntax
 
+;;; If this variable is bound to a function, that function will be
+;;; called in %READ-DELIMITED-LIST with input stream and the close
+;;; character, replacing the usual behavior of %READ-DELIMITED-LIST.
+(defvar *list-reader* nil)
+
 (defvar *consing-dot* '#:|.|)
 
 (defparameter *consing-dot-allowed-p* nil)
