@@ -284,6 +284,33 @@
    (%expected-length :initarg :expected-length :reader expected-length)
    (%datum :initarg :datum :reader datum)))
 
+;;; Sharpsign C conditions
+
+(define-condition end-of-input-after-sharpsign-c (end-of-file
+                                                  incomplete-construct)
+  ())
+
+(define-condition complex-parts-must-follow-sharpsign-c (incomplete-construct)
+  ())
+
+(define-condition non-list-following-sharpsign-c (stream-position-reader-error)
+  ())
+
+(define-condition complex-part-condition ()
+  ((%which :initarg :which :reader which)))
+
+(define-condition end-of-input-before-complex-part (end-of-file
+                                                    incomplete-construct
+                                                    complex-part-condition)
+  ())
+
+(define-condition complex-part-expected (stream-position-reader-error
+                                         complex-part-condition)
+  ())
+
+(define-condition too-many-complex-parts (stream-position-reader-error)
+  ())
+
 ;;; Sharpsign S conditions
 
 (define-condition non-list-following-sharpsign-s (stream-position-reader-error)

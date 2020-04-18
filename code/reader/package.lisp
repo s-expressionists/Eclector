@@ -189,6 +189,13 @@
    #:no-elements-found
    #:incorrect-initialization-length
 
+   #:end-of-input-after-sharpsign-c
+   #:complex-parts-must-follow-sharpsign-c
+   #:non-list-following-sharpsign-c
+   #:end-of-input-before-complex-part
+   #:complex-part-expected
+   #:too-many-complex-parts
+
    #:non-list-following-sharpsign-s
    #:no-structure-type-name-found
    #:structure-type-name-is-not-a-symbol

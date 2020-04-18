@@ -951,6 +951,11 @@
         (real 1) (imaginary 1))
     (labels ((check-value (value)
                (typecase value
+                 ((eql #1=#.(gensym "END-OF-LIST"))
+                  (%reader-error stream 'complex-part-expected :which part))
+                 ((eql #2=#.(gensym "END-OF-INPUT"))
+                  (%reader-error stream 'end-of-input-before-complex-part
+                                 :which part))
                  (real
                   value)
                  (t
@@ -968,21 +973,31 @@
                         part :end)
                   t)
                  (:end
-                  (%reader-error stream 'read-object-type-error
-                                 :datum value
-                                 :expected-type '(cons (real (cons real null)))))))
+                  (case value
+                    (#1# t)
+                    (#2# nil)
+                    (t
+                     (when (eq part :end)
+                       (%reader-error stream 'too-many-complex-parts))
+                     t)))))
              (read-parts (stream char)
                (setf listp t)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'part nil nil char t nil))
+                 (%read-list-elements stream #'part '#1# '#2# char t nil))
                nil))
-      (with-forbidden-quasiquotation ('sharpsign-c)
-        (let ((value (let ((*list-reader* #'read-parts))
-                       (read stream t nil t))))
-          (unless (and (eq part :end) listp)
-            (%reader-error stream 'read-object-type-error
-                           :datum value
-                           :expected-type '(cons (real (cons real null)))))))
+      (handler-case
+          (with-forbidden-quasiquotation ('sharpsign-c)
+            (let ((*list-reader* #'read-parts))
+              (read stream t nil t)))
+        ((and end-of-file (not incomplete-construct)) (condition)
+          (%reader-error stream 'end-of-input-after-sharpsign-c
+                         :stream-position (stream-position condition)))
+        (end-of-list ()
+          (%reader-error stream 'complex-parts-must-follow-sharpsign-c))
+        (:no-error (&rest values)
+          (declare (ignore values))
+          (unless listp
+            (%reader-error stream 'non-list-following-sharpsign-c))))
       (complex real imaginary))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -371,6 +371,34 @@
             (1+ (axis condition))
             (datum condition)))
 
+;;; Sharpsign C conditions
+
+  (define-context sharpsign-c "the complex reader macro")
+
+  (define-reporter ((condition end-of-input-after-sharpsign-c) stream)
+    (format stream "While reading complex number literal, expected ~
+                    list of two complex parts when input ended."))
+
+  (define-reporter ((condition complex-parts-must-follow-sharpsign-c) stream)
+    (format stream "A list of two complex parts must follow #C."))
+
+  (define-reporter ((condition non-list-following-sharpsign-c) stream)
+    (format stream "A proper list must immediately follow #C."))
+
+  (define-reporter ((condition end-of-input-before-complex-part) stream)
+    (format stream "While reading ~(~A~) part of a complex number ~
+                    literal, expected real number when input ended."
+            (which condition)))
+
+  (define-reporter ((condition complex-part-expected) stream)
+    (format stream "The ~(~A~) part of a complex number literal must ~
+                    be a real number but is missing."
+            (which condition)))
+
+  (define-reporter ((condition too-many-complex-parts) stream)
+    (format stream "A complex number literal must contain exactly one ~
+                    real part and one imaginary part."))
+
 ;;; Sharpsign S conditions
 
   (define-context sharpsign-s-type       "the structure type name in the structure literal reader macro")
