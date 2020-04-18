@@ -123,3 +123,6 @@
                (:tail (setf tail value)))))
       (%read-list-elements stream #'element nil nil close-char recursive-p t))
     (nreconc reversed-result tail)))
+
+(defun read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
+  (%read-delimited-list input-stream char recursive-p))

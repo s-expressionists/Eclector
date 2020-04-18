@@ -208,3 +208,30 @@
           (":foo 1 "  (t nil :preserve-whitespace t)   :foo                         4)
           (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
           (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
+
+(test read-delimited-list/smoke
+  "Smoke test for the READ-DELIMITED-LIST function."
+
+  (mapc (lambda (input-char-expected)
+          (destructuring-bind (input char expected) input-char-expected
+            (flet ((do-it ()
+                     (let ((readtable (eclector.readtable:copy-readtable
+                                       eclector.reader:*readtable*)))
+                       (eclector.readtable:set-macro-character
+                        readtable #\]
+                        (eclector.readtable:get-macro-character readtable #\)))
+                       (let ((eclector.reader:*readtable* readtable))
+                         (with-input-from-string (stream input)
+                           (eclector.reader:read-delimited-list
+                            char stream nil))))))
+              (error-case expected
+                (error (do-it))
+                (t
+                 (is (equal expected (do-it))))))))
+        '((""    #\] eclector.reader:unterminated-list)
+          (")"   #\] eclector.reader:invalid-context-for-right-parenthesis)
+          ("]"   #\] ())
+          ("1"   #\] eclector.reader:unterminated-list)
+          ("."   #\] eclector.reader:invalid-context-for-consing-dot)
+          ("1]"  #\] (1))
+          ("1 ]" #\] (1)))))

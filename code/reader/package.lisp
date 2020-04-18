@@ -10,7 +10,8 @@
    #:peek-char
    #:read
    #:read-preserving-whitespace
-   #:read-from-string)
+   #:read-from-string
+   #:read-delimited-list)
 
   (:shadowing-import-from #:eclector.base
    #:end-of-file
@@ -61,6 +62,7 @@
    #:read
    #:read-preserving-whitespace
    #:read-from-string
+   #:read-delimited-list
 
    #:recover) ; Restart name
 
