@@ -302,46 +302,7 @@
     (t   char)))
 
 (defun left-parenthesis (stream char)
-  (let ((reversed-result '())
-        (tail nil)
-        (*consing-dot-allowed-p* t))
-    (handler-case
-        (loop for object = (let ((*consing-dot-allowed-p* nil))
-                             (read stream t nil t))
-              then (read stream t nil t)
-              if (eq object *consing-dot*)
-              do (setf *consing-dot-allowed-p* nil)
-                 (setf tail
-                       (handler-case
-                           (read stream t nil t)
-                         ((and end-of-file (not incomplete-construct)) (condition)
-                           (%recoverable-reader-error
-                            stream 'end-of-input-after-consing-dot
-                            :stream-position (stream-position condition)
-                            :report 'inject-nil)
-                           nil)
-                         (end-of-list (condition)
-                           (%recoverable-reader-error
-                            stream 'object-must-follow-consing-dot
-                            :report 'inject-nil)
-                           (unread-char (%character condition) stream)
-                           nil)))
-                 ;; This call to read must not return (it has to
-                 ;; signal END-OF-LIST).
-                 (read stream t nil t)
-                 (%recoverable-reader-error
-                  stream 'multiple-objects-following-consing-dot
-                  :report 'ignore-object)
-              else
-              do (push object reversed-result))
-      (end-of-list ())
-      ((and end-of-file (not incomplete-construct)) (condition)
-        (%recoverable-reader-error
-         stream 'unterminated-list
-         :stream-position (stream-position condition)
-         :delimiter (opposite-delimiter char)
-         :report 'use-partial-list)))
-    (nreconc reversed-result tail)))
+  (%read-delimited-list stream (opposite-delimiter char) t))
 
 (defun right-parenthesis (stream char)
   ;; If the call to SIGNAL returns, then there is no handler for this
