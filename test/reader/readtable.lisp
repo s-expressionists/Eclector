@@ -39,7 +39,18 @@
      (,(lambda (readtable)
          (setf (eclector.readtable:syntax-from-char #\Space readtable readtable) #\A)
          readtable)
-      " " eclector.reader:invalid-constituent-character))))
+      " " eclector.reader:invalid-constituent-character)
+
+     ;; Change [ and ] to the syntax of ( and )
+     (,(lambda (readtable)
+         (eclector.readtable:set-macro-character
+          readtable #\] (eclector.readtable:get-macro-character readtable #\)))
+         (eclector.readtable:set-macro-character
+          readtable #\[ (lambda (stream char)
+                          (declare (ignore char))
+                          (eclector.reader:read-delimited-list #\] stream t)))
+         readtable)
+      "#C[1 2]" #C(1 2) 7))))
 
 (test peek-char/readtable-interaction
   "Test for the interaction between PEEK-CHAR and the readtable."
