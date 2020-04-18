@@ -944,23 +944,31 @@
   ;; We call %READ-LIST-ELEMENTS which calls the local function PART
   ;; for each list element as well as the events such as the end of
   ;; the list or the end of input. The variable PART keeps track of
-  ;; the currently expected part which can be :REAL, :IMAGINARY or
-  ;; :END.
+  ;; the currently expected part which can be :REAL, :IMAGINARY, :END
+  ;; or :PAST-END (the latter only comes into play when reading more
+  ;; than two list elements due to error recovery).
   (let ((listp nil)
         (part :real)
         (real 1) (imaginary 1))
     (labels ((check-value (value)
                (typecase value
                  ((eql #1=#.(gensym "END-OF-LIST"))
-                  (%reader-error stream 'complex-part-expected :which part))
+                  (%recoverable-reader-error
+                   stream 'complex-part-expected
+                   :which part :report 'use-partial-complex)
+                  1)
                  ((eql #2=#.(gensym "END-OF-INPUT"))
-                  (%reader-error stream 'end-of-input-before-complex-part
-                                 :which part))
+                  (%recoverable-reader-error
+                   stream 'end-of-input-before-complex-part
+                   :which part :report 'use-partial-complex)
+                  1)
                  (real
                   value)
                  (t
-                  (%reader-error stream 'read-object-type-error
-                                 :datum value :expected-type 'real))))
+                  (%recoverable-reader-error stream 'read-object-type-error
+                                             :datum value :expected-type 'real
+                                             :report 'use-replacement-part)
+                  1)))
              (part (kind value)
                (declare (ignore kind))
                (case part
@@ -972,13 +980,16 @@
                   (setf imaginary (check-value value)
                         part :end)
                   t)
-                 (:end
+                 ((:end :past-end)
                   (case value
                     (#1# t)
                     (#2# nil)
                     (t
                      (when (eq part :end)
-                       (%reader-error stream 'too-many-complex-parts))
+                       (%recoverable-reader-error
+                        stream 'too-many-complex-parts
+                        :report 'ignore-excess-parts)
+                       (setf part :past-end))
                      t)))))
              (read-parts (stream char)
                (setf listp t)
@@ -990,14 +1001,21 @@
             (let ((*list-reader* #'read-parts))
               (read stream t nil t)))
         ((and end-of-file (not incomplete-construct)) (condition)
-          (%reader-error stream 'end-of-input-after-sharpsign-c
-                         :stream-position (stream-position condition)))
-        (end-of-list ()
-          (%reader-error stream 'complex-parts-must-follow-sharpsign-c))
+          (%recoverable-reader-error
+           stream 'end-of-input-after-sharpsign-c
+           :stream-position (stream-position condition)
+           :report 'use-replacement-part))
+        (end-of-list (condition)
+          (%recoverable-reader-error
+           stream 'complex-parts-must-follow-sharpsign-c
+           :report 'use-partial-complex)
+          (unread-char (%character condition) stream))
         (:no-error (&rest values)
           (declare (ignore values))
           (unless listp
-            (%reader-error stream 'non-list-following-sharpsign-c))))
+            (%recoverable-reader-error
+             stream 'non-list-following-sharpsign-c
+             :report 'use-replacement-part))))
       (complex real imaginary))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

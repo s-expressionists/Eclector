@@ -156,6 +156,20 @@
           ("#:fo\\"    (eclector.reader:unterminated-single-escape-in-symbol)              #:fo)
           ("#:fo|o"    (eclector.reader:unterminated-multiple-escape-in-symbol)            #:fo|o|)
 
+          ;; Recover from complex-related errors
+          ("#C"          (eclector.reader:end-of-input-after-sharpsign-c)        #C(1 1))
+          ("#C1"         (eclector.reader:non-list-following-sharpsign-c)        #C(1 1))
+          ("#C||"        (eclector.reader:non-list-following-sharpsign-c)        #C(1 1))
+          ("#C)"         (eclector.reader:complex-parts-must-follow-sharpsign-c) #C(1 1) 2)
+          ("#C("         (eclector.reader:end-of-input-before-complex-part)      #C(1 1))
+          ("#C()"        (eclector.reader:complex-part-expected)                 #C(1 1))
+          ("#C(2"        (eclector.reader:end-of-input-before-complex-part)      #C(2 1))
+          ("#C(2)"       (eclector.reader:complex-part-expected)                 #C(2 1))
+          ("#C(2 3"      (eclector.reader:unterminated-list)                     #C(2 3))
+          ("#C(2 3 4)"   (eclector.reader:too-many-complex-parts)                #C(2 3))
+          ("#C(2 3 4 5)" (eclector.reader:too-many-complex-parts)                #C(2 3))
+          ("#C(#\\a 2)"  (eclector.reader:read-object-type-error)                #C(1 2))
+
           ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
 
           ;; Multiple subsequent recoveries needed.

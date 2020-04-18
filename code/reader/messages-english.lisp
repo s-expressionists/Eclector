@@ -28,7 +28,11 @@
   (define-description use-partial-vector          "Return a vector of the already read elements.")
   (define-description ignore-excess-elements      "Use the already read elements and ignore the excess elements.")
 
-  (define-description use-empty-array             "Use an empty array in place of the invalid one."))
+  (define-description use-empty-array             "Use an empty array in place of the invalid one.")
+
+  (define-description use-replacement-part        "Use a replacement part in place of the invalid part.")
+  (define-description use-partial-complex         "Complete the complex number using default values for missing parts.")
+  (define-description ignore-excess-parts         "Use the already read parts and ignore the excess parts."))
 
 ;;;; Contexts and condition reporters
 
@@ -288,8 +292,6 @@
 
   (define-reporter ((condition unknown-character-name) stream)
     (format stream "Unrecognized character name: ~s" (name condition)))
-
-  (define-context sharpsign-c "the complex reader macro")
 
 ;;; Conditions related to rational numbers
 
