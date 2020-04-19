@@ -1056,7 +1056,7 @@
                     ((eql #1=#.(gensym "END-OF-LIST"))
                      (%reader-error stream 'no-structure-type-name-found))
                     ((eql #2=#.(gensym "END-OF-INPUT"))
-                     (%reader-error stream 'non-list-following-sharpsign-s))
+                     (%reader-error stream 'end-of-input-before-structure-type-name))
                     (symbol
                      (setf type value))
                     (t
@@ -1069,7 +1069,7 @@
                   (typecase value
                     ((eql #1#))
                     ((eql #2#)
-                     (%reader-error stream 'end-of-file))
+                     (%reader-error stream 'end-of-input-before-slot-name))
                     (alexandria:string-designator
                      (setf slot-name value))
                     (t
@@ -1085,7 +1085,8 @@
                      (%reader-error stream 'no-slot-value-found
                                     :slot-name slot-name))
                     ((eql #2#)
-                     (%reader-error stream 'end-of-file))
+                     (%reader-error stream 'end-of-input-before-slot-value
+                                    :slot-name slot-name))
                     (t
                      (push slot-name initargs)
                      (push value initargs)))
@@ -1098,9 +1099,16 @@
                      *unquote-forbidden* 'sharpsign-s-type)
                (let ((*list-reader* nil))
                  (%read-list-elements stream #'element '#1# '#2# char t nil))))
-      (with-forbidden-quasiquotation ('sharpsign-s)
-        (let ((*list-reader* #'read-constructor))
-          (read stream t nil t)))
+      (handler-case
+          (with-forbidden-quasiquotation ('sharpsign-s)
+            (let ((*list-reader* #'read-constructor))
+              (read stream t nil t)))
+        ((and end-of-file (not incomplete-construct)) (condition)
+          (%reader-error stream 'end-of-input-after-sharpsign-s
+                         :stream-position (stream-position condition)))
+        (end-of-list ()
+          (%reader-error
+           stream 'structure-constructor-must-follow-sharpsign-s)))
       (unless listp
         (%reader-error stream 'non-list-following-sharpsign-s))
       (make-structure-instance *client* type (nreverse initargs)))))

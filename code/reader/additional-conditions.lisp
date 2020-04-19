@@ -313,7 +313,17 @@
 
 ;;; Sharpsign S conditions
 
+(define-condition end-of-input-after-sharpsign-s (stream-position-reader-error)
+  ())
+
+(define-condition structure-constructor-must-follow-sharpsign-s (stream-position-reader-error)
+  ())
+
 (define-condition non-list-following-sharpsign-s (stream-position-reader-error)
+  ())
+
+(define-condition end-of-input-before-structure-type-name (end-of-file
+                                                           incomplete-construct)
   ())
 
 (define-condition no-structure-type-name-found (incomplete-construct)
@@ -324,14 +334,27 @@
   (:default-initargs
    :expected-type 'symbol))
 
+(define-condition end-of-input-before-slot-name (end-of-file
+                                                 incomplete-construct)
+  ())
+
 (define-condition slot-name-is-not-a-string-designator (read-object-type-error)
   ()
   (:default-initargs
    :expected-type 'symbol))
 
-(define-condition no-slot-value-found (incomplete-construct)
+(define-condition slot-value-condition (condition)
   ((%slot-name :initarg :slot-name
                :reader slot-name)))
+
+(define-condition end-of-input-before-slot-value (slot-value-condition
+                                                  end-of-file
+                                                  incomplete-construct)
+  ())
+
+(define-condition no-slot-value-found (slot-value-condition
+                                       incomplete-construct)
+  ())
 
 ;;; Conditions related to feature expressions
 ;;;

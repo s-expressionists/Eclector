@@ -196,10 +196,15 @@
    #:complex-part-expected
    #:too-many-complex-parts
 
+   #:end-of-input-after-sharpsign-s
+   #:structure-constructor-must-follow-sharpsign-s
    #:non-list-following-sharpsign-s
+   #:end-of-input-before-structure-type-name
    #:no-structure-type-name-found
    #:structure-type-name-is-not-a-symbol
+   #:end-of-input-before-slot-name
    #:slot-name-is-not-a-string-designator
+   #:end-of-input-before-slot-value
    #:no-slot-value-found
 
    #:feature-expression-type-error

@@ -408,8 +408,22 @@
   (define-context sharpsign-s-slot-name  "a structure slot name in the structure literal reader macro")
   (define-context sharpsign-s-slot-value "a structure slot value in the structure literal reader macro")
 
+  (define-reporter ((condition end-of-input-after-sharpsign-s) stream)
+    (format stream "While reading structure literal, expected list of ~
+                    structure type name and initargs when input ~
+                    ended."))
+
+  (define-reporter ((condition structure-constructor-must-follow-sharpsign-s) stream)
+    (format stream "A list of a structure name and initargs must ~
+                    follow #S. "))
+
   (define-reporter ((condition non-list-following-sharpsign-s) stream)
-    (format stream "A proper list must immediately follow #S."))
+    (format stream "A proper list of a structure type name and ~
+                    initargs must follow #S."))
+
+  (define-reporter ((condition end-of-input-before-structure-type-name) stream)
+    (format stream "While reading structure literal, expected structure ~
+                    type name when input ended."))
 
   (define-reporter ((condition no-structure-type-name-found) stream)
     (format stream "A symbol naming a structure type must be the first ~
@@ -420,10 +434,19 @@
                     symbol."
             (type-error-datum condition)))
 
+  (define-reporter ((condition end-of-input-before-slot-name) stream)
+    (format stream "While reading structure literal, expected slot ~
+                    name designator when input ended."))
+
   (define-reporter ((condition slot-name-is-not-a-string-designator) stream)
     (format stream "~S should designate a structure slot but is ~
                     neither a symbol, nor a string nor a character."
             (type-error-datum condition)))
+
+  (define-reporter ((condition end-of-input-before-slot-value) stream)
+    (format stream "While reading structure literal, expected value ~
+                    for slot ~S when input ended."
+            (slot-name condition)))
 
   (define-reporter ((condition no-slot-value-found) stream)
     (format stream "A slot value form must follow the slot name ~S."

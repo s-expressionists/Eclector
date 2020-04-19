@@ -818,17 +818,21 @@
         '(;; Errors
           ("(foo)"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
 
-          (""               nil nil eclector.reader:end-of-file)
+          (""               nil nil eclector.reader:end-of-input-after-sharpsign-s)
           ("1"              nil nil eclector.reader:non-list-following-sharpsign-s)
-          (")"              nil nil eclector.reader:invalid-context-for-right-parenthesis)
+          (")"              nil nil eclector.reader:structure-constructor-must-follow-sharpsign-s)
           ("`"              nil nil eclector.reader:backquote-in-invalid-context)
           ("(foo . 1)"      nil nil eclector.reader:invalid-context-for-consing-dot)
 
+          ("("              nil nil eclector.reader:end-of-input-before-structure-type-name)
           ("()"             nil nil eclector.reader:no-structure-type-name-found)
           ("(1)"            nil nil eclector.reader:structure-type-name-is-not-a-symbol)
 
+          ("(foo"           nil nil eclector.reader:end-of-input-before-slot-name)
           ("(foo 1 2)"      nil nil eclector.reader:slot-name-is-not-a-string-designator)
+          ("(foo :bar"      nil nil eclector.reader:end-of-input-before-slot-value)
           ("(foo :bar)"     nil nil eclector.reader:no-slot-value-found)
+          ("(foo :bar 1"    nil nil eclector.reader:end-of-input-before-slot-name)
 
           ("(`,foo :bar 1)" nil nil eclector.reader:backquote-in-invalid-context)
           ("(,foo :bar 1)"  nil nil eclector.reader:unquote-in-invalid-context)
