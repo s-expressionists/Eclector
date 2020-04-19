@@ -1052,10 +1052,10 @@
                            (read*))))
                (cond ((eq name 'end-of-list)
                       nil)
-                     ((symbolp name)
+                     ((typep name 'alexandria:string-designator)
                       name)
                      (t
-                      (%reader-error stream 'slot-name-is-not-a-symbol
+                      (%reader-error stream 'slot-name-is-not-a-string-designator
                                      :datum name)))))
            (read-slot-value (slot-name)
              (let ((value (with-forbidden-quasiquotation

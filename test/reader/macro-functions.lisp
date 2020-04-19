@@ -813,8 +813,8 @@
                 (error (do-it))
                 (t
                  (multiple-value-bind (value position) (do-it)
-                   (is (equal expected value))
-                   (is (equal (length input) position))))))))
+                   (is (relaxed-equalp expected       value))
+                   (is (equal          (length input) position))))))))
         '(;; Errors
           ("(foo)"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
 
@@ -826,7 +826,7 @@
           ("()"             nil nil eclector.reader:no-structure-type-name-found)
           ("(1)"            nil nil eclector.reader:structure-type-name-is-not-a-symbol)
 
-          ("(foo 1 2)"      nil nil eclector.reader:slot-name-is-not-a-symbol)
+          ("(foo 1 2)"      nil nil eclector.reader:slot-name-is-not-a-string-designator)
           ("(foo :bar)"     nil nil eclector.reader:no-slot-value-found)
 
           ("(`,foo :bar 1)" nil nil eclector.reader:backquote-in-invalid-context)
@@ -836,7 +836,11 @@
           ("(foo :bar ,1)"  nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid
           ("(foo)"          nil nil (foo))
+          ("(foo #:bar 1)"  nil nil (foo #:bar 1))
           ("(foo :bar 1)"   nil nil (foo :bar 1))
+          ("(foo bar 1)"    nil nil (foo bar 1))
+          ("(foo \"bar\" 1)"nil nil (foo "bar" 1))
+          ("(foo #\\b 1)"   nil nil (foo #\b 1))
           ("(foo :bar `,1)" nil nil (foo :bar (eclector.reader:quasiquote
                                                (eclector.reader:unquote 1))))
           ;; With *READ-SUPPRESS* bound to T

@@ -324,7 +324,7 @@
   (:default-initargs
    :expected-type 'symbol))
 
-(define-condition slot-name-is-not-a-symbol (read-object-type-error)
+(define-condition slot-name-is-not-a-string-designator (read-object-type-error)
   ()
   (:default-initargs
    :expected-type 'symbol))

@@ -419,9 +419,9 @@
                     symbol."
             (type-error-datum condition)))
 
-  (define-reporter ((condition slot-name-is-not-a-symbol) stream)
-    (format stream "~S should designate a structure slot but is not ~
-                    a symbol."
+  (define-reporter ((condition slot-name-is-not-a-string-designator) stream)
+    (format stream "~S should designate a structure slot but is ~
+                    neither a symbol, nor a string nor a character."
             (type-error-datum condition)))
 
   (define-reporter ((condition no-slot-value-found) stream)
