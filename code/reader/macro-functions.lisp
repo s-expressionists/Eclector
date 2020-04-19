@@ -1148,14 +1148,25 @@
             (handler-case
                 (read stream t nil t)
               ((and end-of-file (not incomplete-construct)) (condition)
-                (%reader-error stream 'end-of-input-after-sharpsign-p
-                               :stream-position (stream-position condition)))
-              (end-of-list ()
-                (%reader-error stream 'namestring-must-follow-sharpsign-p))))))
-    (unless (stringp expression)
-      (%reader-error stream 'non-string-following-sharpsign-p
-                     :expected-type 'string :datum expression))
-    (parse-namestring expression)))
+                (%recoverable-reader-error
+                 stream 'end-of-input-after-sharpsign-p
+                 :stream-position (stream-position condition)
+                 :report 'replace-namestring)
+                ".")
+              (end-of-list (condition)
+                (%recoverable-reader-error
+                 stream 'namestring-must-follow-sharpsign-p
+                 :report 'replace-namestring)
+                (unread-char (%character condition) stream)
+                ".")))))
+    (cond ((stringp expression)
+           (parse-namestring expression))
+          (t
+           (%recoverable-reader-error
+            stream 'non-string-following-sharpsign-p
+            :expected-type 'string :datum expression
+            :report 'replace-namestring)
+           #P"."))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

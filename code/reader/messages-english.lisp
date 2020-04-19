@@ -35,7 +35,9 @@
   (define-description ignore-excess-parts         "Use the already read parts and ignore the excess parts.")
 
   (define-description use-partial-initargs        "Use already read structure type name and initargs.")
-  (define-description skip-slot                   "Skip the invalid slot."))
+  (define-description skip-slot                   "Skip the invalid slot.")
+
+  (define-description replace-namestring          "Use a suitable namestring in place of the invalid one."))
 
 ;;;; Contexts and condition reporters
 

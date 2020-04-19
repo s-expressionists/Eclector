@@ -190,6 +190,11 @@
 
           ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
 
+          ;; Recover from errors related to pathname literals
+          ("#P"   (eclector.reader:end-of-input-after-sharpsign-p)     #P".")
+          ("(#P)" (eclector.reader:namestring-must-follow-sharpsign-p) (#P"."))
+          ("#P1"  (eclector.reader:non-string-following-sharpsign-p)   #P".")
+
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list
                         eclector.reader:unterminated-list)
