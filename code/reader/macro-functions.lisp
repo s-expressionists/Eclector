@@ -1140,14 +1140,22 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-p parameter))
-  (let ((expression (with-forbidden-quasiquotation ('sharpsign-p)
-                      (read stream t nil t))))
-    (unless *read-suppress*
-      (unless (stringp expression)
-        (%reader-error stream 'read-object-type-error
-                       :expected-type 'string
-                       :datum expression))
-      (parse-namestring expression))))
+  (when *read-suppress*
+    (read stream t nil t)
+    (return-from sharpsign-p nil))
+  (let ((expression
+          (with-forbidden-quasiquotation ('sharpsign-p)
+            (handler-case
+                (read stream t nil t)
+              ((and end-of-file (not incomplete-construct)) (condition)
+                (%reader-error stream 'end-of-input-after-sharpsign-p
+                               :stream-position (stream-position condition)))
+              (end-of-list ()
+                (%reader-error stream 'namestring-must-follow-sharpsign-p))))))
+    (unless (stringp expression)
+      (%reader-error stream 'non-string-following-sharpsign-p
+                     :expected-type 'string :datum expression))
+    (parse-namestring expression)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

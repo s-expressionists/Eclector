@@ -870,12 +870,11 @@
                    (is (equal expected value))
                    (is (equal (length input) position))))))))
         '(;; Errors
-          (""          nil nil eclector.reader:end-of-file)
-
-          ("1"         nil nil eclector.reader:read-object-type-error)
-
           ("\"foo\""   1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
 
+          (""          nil nil eclector.reader:end-of-input-after-sharpsign-p)
+          ("1"         nil nil eclector.reader:non-string-following-sharpsign-p)
+          (")"         nil nil eclector.reader:namestring-must-follow-sharpsign-p)
           ("`,\"foo\"" nil nil eclector.reader:backquote-in-invalid-context)
           (",\"foo\""  nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid

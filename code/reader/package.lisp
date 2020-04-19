@@ -207,6 +207,10 @@
    #:end-of-input-before-slot-value
    #:no-slot-value-found
 
+   #:end-of-input-after-sharpsign-p
+   #:namestring-must-follow-sharpsign-p
+   #:non-string-following-sharpsign-p
+
    #:feature-expression-type-error
    #:single-feature-expected
 

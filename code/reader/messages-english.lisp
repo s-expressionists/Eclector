@@ -459,6 +459,18 @@
 
   (define-context sharpsign-p "the pathname reader macro")
 
+  (define-reporter ((condition end-of-input-after-sharpsign-p) stream)
+    (format stream "While reading pathname literal, expected namestring ~
+                    when input ended."))
+
+  (define-reporter ((condition namestring-must-follow-sharpsign-p) stream)
+    (format stream "A namestring must follow #P."))
+
+  (define-reporter ((condition non-string-following-sharpsign-p) stream)
+    (format stream "~S should be a namestring but is not a ~S."
+            (type-error-datum condition)
+            (type-error-expected-type condition)))
+
 ;;; Conditions related to feature expressions
 
   (define-context :sharpsign-plus  "the #+ conditionalization reader macro")

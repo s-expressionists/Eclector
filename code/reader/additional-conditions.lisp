@@ -356,6 +356,18 @@
                                        incomplete-construct)
   ())
 
+;;; Conditions related to pathname literals
+
+(define-condition end-of-input-after-sharpsign-p (end-of-file
+                                                  incomplete-construct)
+  ())
+
+(define-condition namestring-must-follow-sharpsign-p (incomplete-construct)
+  ())
+
+(define-condition non-string-following-sharpsign-p (read-object-type-error)
+  ())
+
 ;;; Conditions related to feature expressions
 ;;;
 ;;; Can be evaluated without a stream context. Therefore each
