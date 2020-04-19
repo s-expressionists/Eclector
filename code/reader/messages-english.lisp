@@ -32,7 +32,10 @@
 
   (define-description use-replacement-part        "Use a replacement part in place of the invalid part.")
   (define-description use-partial-complex         "Complete the complex number using default values for missing parts.")
-  (define-description ignore-excess-parts         "Use the already read parts and ignore the excess parts."))
+  (define-description ignore-excess-parts         "Use the already read parts and ignore the excess parts.")
+
+  (define-description use-partial-initargs        "Use already read structure type name and initargs.")
+  (define-description skip-slot                   "Skip the invalid slot."))
 
 ;;;; Contexts and condition reporters
 

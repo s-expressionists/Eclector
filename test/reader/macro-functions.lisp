@@ -787,12 +787,6 @@
           ("(0 :a)"  nil t   nil)
           ("(0 0)"   nil t   nil))))
 
-(defclass sharpsign-s-client () ())
-
-(defmethod eclector.reader:make-structure-instance
-    ((client sharpsign-s-client) (name t) (initargs t))
-  (list* name initargs))
-
 (test sharpsign-s/smoke
   "Smoke test for the SHARPSIGN-S reader macro function."
 

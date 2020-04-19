@@ -1054,14 +1054,19 @@
                  (:type
                   (typecase value
                     ((eql #1=#.(gensym "END-OF-LIST"))
-                     (%reader-error stream 'no-structure-type-name-found))
+                     (%recoverable-reader-error
+                      stream 'no-structure-type-name-found
+                      :report 'inject-nil))
                     ((eql #2=#.(gensym "END-OF-INPUT"))
-                     (%reader-error stream 'end-of-input-before-structure-type-name))
+                     (%recoverable-reader-error
+                      stream 'end-of-input-before-structure-type-name
+                      :report 'inject-nil))
                     (symbol
                      (setf type value))
                     (t
-                     (%reader-error stream 'structure-type-name-is-not-a-symbol
-                                    :datum value)))
+                     (%recoverable-reader-error
+                      stream 'structure-type-name-is-not-a-symbol
+                      :datum value :report 'inject-nil)))
                   (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
                         *unquote-forbidden* 'sharpsign-s-slot-name
                         element :name))
@@ -1069,24 +1074,29 @@
                   (typecase value
                     ((eql #1#))
                     ((eql #2#)
-                     (%reader-error stream 'end-of-input-before-slot-name))
+                     (%recoverable-reader-error
+                      stream 'end-of-input-before-slot-name
+                      :report 'use-partial-initargs))
                     (alexandria:string-designator
                      (setf slot-name value))
                     (t
-                     (%reader-error
+                     (%recoverable-reader-error
                       stream 'slot-name-is-not-a-string-designator
-                      :datum value)))
+                      :datum value :report 'skip-slot)
+                     (setf slot-name value)))
                   (setf *quasiquote-forbidden* old-quasiquote-forbidden
                         *unquote-forbidden* 'sharpsign-s-slot-value
                         element :value))
                  (:value
                   (typecase value
                     ((eql #1#)
-                     (%reader-error stream 'no-slot-value-found
-                                    :slot-name slot-name))
+                     (%recoverable-reader-error
+                      stream 'no-slot-value-found
+                      :slot-name slot-name :report 'skip-slot))
                     ((eql #2#)
-                     (%reader-error stream 'end-of-input-before-slot-value
-                                    :slot-name slot-name))
+                     (%recoverable-reader-error
+                      stream 'end-of-input-before-slot-value
+                      :slot-name slot-name :report 'skip-slot))
                     (t
                      (push slot-name initargs)
                      (push value initargs)))
@@ -1104,14 +1114,23 @@
             (let ((*list-reader* #'read-constructor))
               (read stream t nil t)))
         ((and end-of-file (not incomplete-construct)) (condition)
-          (%reader-error stream 'end-of-input-after-sharpsign-s
-                         :stream-position (stream-position condition)))
-        (end-of-list ()
-          (%reader-error
-           stream 'structure-constructor-must-follow-sharpsign-s)))
-      (unless listp
-        (%reader-error stream 'non-list-following-sharpsign-s))
-      (make-structure-instance *client* type (nreverse initargs)))))
+          (%recoverable-reader-error
+           stream 'end-of-input-after-sharpsign-s
+           :stream-position (stream-position condition)
+           :report 'inject-nil))
+        (end-of-list (condition)
+          (%recoverable-reader-error
+           stream 'structure-constructor-must-follow-sharpsign-s
+           :report 'inject-nil)
+          (unread-char (%character condition) stream))
+        (:no-error (&rest values)
+          (declare (ignore values))
+          (unless listp
+            (%recoverable-reader-error stream 'non-list-following-sharpsign-s
+                                       :report 'inject-nil))))
+      (if (not (null type))
+          (make-structure-instance *client* type (nreverse initargs))
+          nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

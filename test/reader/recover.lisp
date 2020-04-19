@@ -31,7 +31,9 @@
                                       input)
                                   (invoke-restart restart)))))
                          (with-input-from-string (stream input)
-                           (values (let ((eclector.reader::*backquote-depth* 1))
+                           (values (let ((eclector.reader::*backquote-depth* 1)
+                                         (eclector.reader::*client*
+                                           (make-instance 'sharpsign-s-client)))
                                      (eclector.reader:read stream nil))
                                    (file-position stream))))))
                 ;; Check expected value and position.
@@ -169,6 +171,22 @@
           ("#C(2 3 4)"   (eclector.reader:too-many-complex-parts)                #C(2 3))
           ("#C(2 3 4 5)" (eclector.reader:too-many-complex-parts)                #C(2 3))
           ("#C(#\\a 2)"  (eclector.reader:read-object-type-error)                #C(1 2))
+
+          ;; Recover from structure-literal-related errors
+          ("#S"            (eclector.reader:end-of-input-after-sharpsign-s)                nil)
+          ("#S1"           (eclector.reader:non-list-following-sharpsign-s)                nil)
+          ("#S1"           (eclector.reader:non-list-following-sharpsign-s)                nil)
+          ("#S)"           (eclector.reader:structure-constructor-must-follow-sharpsign-s) nil 2)
+          ("#S("           (eclector.reader:end-of-input-before-structure-type-name)       nil)
+          ("#S()"          (eclector.reader:no-structure-type-name-found)                  nil)
+          ("#S(1)"         (eclector.reader:structure-type-name-is-not-a-symbol)           nil)
+          ("#S(foo"        (eclector.reader:end-of-input-before-slot-name)                 (foo))
+          ("#S(foo 1)"     (eclector.reader:slot-name-is-not-a-string-designator
+                            eclector.reader:no-slot-value-found)
+                                                                                           (foo))
+          ("#S(foo :bar"   (eclector.reader:end-of-input-before-slot-value)                (foo))
+          ("#S(foo :bar)"  (eclector.reader:no-slot-value-found)                           (foo))
+          ("#S(foo :bar 1" (eclector.reader:end-of-input-before-slot-name)                 (foo :bar 1))
 
           ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
 
