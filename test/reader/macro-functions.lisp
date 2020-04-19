@@ -820,7 +820,8 @@
 
           (""               nil nil eclector.reader:end-of-file)
           ("1"              nil nil eclector.reader:non-list-following-sharpsign-s)
-          (" (foo)"         nil nil eclector.reader:non-list-following-sharpsign-s)
+          (")"              nil nil eclector.reader:invalid-context-for-right-parenthesis)
+          ("`"              nil nil eclector.reader:backquote-in-invalid-context)
           ("(foo . 1)"      nil nil eclector.reader:invalid-context-for-consing-dot)
 
           ("()"             nil nil eclector.reader:no-structure-type-name-found)
@@ -836,6 +837,7 @@
           ("(foo :bar ,1)"  nil nil eclector.reader:unquote-in-invalid-context)
           ;; Valid
           ("(foo)"          nil nil (foo))
+          (" (foo)"         nil nil (foo)) ; unclear in the spec, but we allow it
           ("(foo #:bar 1)"  nil nil (foo #:bar 1))
           ("(foo :bar 1)"   nil nil (foo :bar 1))
           ("(foo bar 1)"    nil nil (foo bar 1))

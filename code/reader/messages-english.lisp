@@ -403,6 +403,7 @@
 
 ;;; Sharpsign S conditions
 
+  (define-context sharpsign-s            "the structure literal reader macro")
   (define-context sharpsign-s-type       "the structure type name in the structure literal reader macro")
   (define-context sharpsign-s-slot-name  "a structure slot name in the structure literal reader macro")
   (define-context sharpsign-s-slot-value "a structure slot value in the structure literal reader macro")

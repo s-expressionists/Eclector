@@ -1021,6 +1021,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macro for sharpsign S.
+;;;
+;;; In contrast to 2.4.8.11 Sharpsign C which says "#C reads a
+;;; following object …" thus allowing whitespace preceding the object,
+;;; 2.4.8.13 Sharpsign S spells out the syntax as "#s(…)". However,
+;;; since a strict reading of this would also preclude "#S(…)" we
+;;; assume that the intention is to allow whitespace after "#s".
 
 (defun sharpsign-s (stream char parameter)
   (declare (ignore char))
@@ -1029,49 +1035,75 @@
   (when *read-suppress*
     (read stream t nil t)
     (return-from sharpsign-s nil))
-  (unless (char= (read-char stream t nil t) #\()
-    (%reader-error stream 'non-list-following-sharpsign-s))
-  (labels ((read* ()
-             (handler-case
-                 (read stream t nil t)
-               (end-of-list ()
-                 'end-of-list)))
-           (read-type ()
-             (let ((type (with-forbidden-quasiquotation ('sharpsign-s-type)
-                           (read*))))
-               (cond ((eq type 'end-of-list)
-                      (%reader-error stream 'no-structure-type-name-found))
-                     ((symbolp type)
-                      type)
-                     (t
-                      (%reader-error stream 'structure-type-name-is-not-a-symbol
-                                     :datum type)))))
-           (read-slot-name ()
-             (let ((name (with-forbidden-quasiquotation
-                             ('sharpsign-s-slot-name)
-                           (read*))))
-               (cond ((eq name 'end-of-list)
-                      nil)
-                     ((typep name 'alexandria:string-designator)
-                      name)
-                     (t
-                      (%reader-error stream 'slot-name-is-not-a-string-designator
-                                     :datum name)))))
-           (read-slot-value (slot-name)
-             (let ((value (with-forbidden-quasiquotation
-                              ('sharpsign-s-slot-value :keep)
-                            (read*))))
-               (if (eq value 'end-of-list)
-                   (%reader-error stream 'no-slot-value-found
-                                  :slot-name slot-name)
-                   value))))
-    (make-structure-instance
-     *client* (read-type) (loop for slot-name = (read-slot-name)
-                                for slot-value = (when slot-name
-                                                   (read-slot-value slot-name))
-                                while slot-name
-                                collect slot-name
-                                collect slot-value))))
+  ;; When we get here, we have to read a list of the form
+  ;; (STRUCTURE-TYPE-NAME SLOT-NAME SLOT-VALUE …). We call
+  ;; %READ-LIST-ELEMENTS which calls the local function ELEMENT for
+  ;; each list element as well as events such as the end of the list
+  ;; or the end of input. The variable ELEMENT keeps track of the
+  ;; currently expected ELEMENT which can be :TYPE, :SLOT-NAME, or
+  ;; :SLOT-VALUE.
+  (let ((old-quasiquote-forbidden *quasiquote-forbidden*)
+        (listp nil)
+        (element :type)
+        (type)
+        (slot-name)
+        (initargs '()))
+    (labels ((element (kind value)
+               (declare (ignore kind))
+               (case element
+                 (:type
+                  (typecase value
+                    ((eql #1=#.(gensym "END-OF-LIST"))
+                     (%reader-error stream 'no-structure-type-name-found))
+                    ((eql #2=#.(gensym "END-OF-INPUT"))
+                     (%reader-error stream 'non-list-following-sharpsign-s))
+                    (symbol
+                     (setf type value))
+                    (t
+                     (%reader-error stream 'structure-type-name-is-not-a-symbol
+                                    :datum value)))
+                  (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
+                        *unquote-forbidden* 'sharpsign-s-slot-name
+                        element :name))
+                 (:name
+                  (typecase value
+                    ((eql #1#))
+                    ((eql #2#)
+                     (%reader-error stream 'end-of-file))
+                    (alexandria:string-designator
+                     (setf slot-name value))
+                    (t
+                     (%reader-error
+                      stream 'slot-name-is-not-a-string-designator
+                      :datum value)))
+                  (setf *quasiquote-forbidden* old-quasiquote-forbidden
+                        *unquote-forbidden* 'sharpsign-s-slot-value
+                        element :value))
+                 (:value
+                  (typecase value
+                    ((eql #1#)
+                     (%reader-error stream 'no-slot-value-found
+                                    :slot-name slot-name))
+                    ((eql #2#)
+                     (%reader-error stream 'end-of-file))
+                    (t
+                     (push slot-name initargs)
+                     (push value initargs)))
+                  (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
+                        *unquote-forbidden* 'sharpsign-s-slot-name
+                        element :name))))
+             (read-constructor (stream char)
+               (setf listp t)
+               (setf *quasiquote-forbidden* 'sharpsign-s-type
+                     *unquote-forbidden* 'sharpsign-s-type)
+               (let ((*list-reader* nil))
+                 (%read-list-elements stream #'element '#1# '#2# char t nil))))
+      (with-forbidden-quasiquotation ('sharpsign-s)
+        (let ((*list-reader* #'read-constructor))
+          (read stream t nil t)))
+      (unless listp
+        (%reader-error stream 'non-list-following-sharpsign-s))
+      (make-structure-instance *client* type (nreverse initargs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
