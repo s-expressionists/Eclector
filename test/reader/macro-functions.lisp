@@ -959,10 +959,11 @@
   "Smoke test for the SHARPSIGN-{EQUAL,SHARPSIGN} functions."
 
   (mapc (lambda (input-expected)
-          (destructuring-bind (input expected) input-expected
+          (destructuring-bind (input read-suppress expected) input-expected
             (flet ((do-it ()
                      (with-input-from-string (stream input)
-                       (eclector.reader:read stream))))
+                       (let ((*read-suppress* read-suppress))
+                         (eclector.reader:read stream)))))
               (error-case expected
                 (error (do-it))
                 (recursive-cons
@@ -972,24 +973,29 @@
                 (t
                  (is (equalp expected (do-it))))))))
         '(;; sharpsign equals errors
-          ("#1="            eclector.reader:end-of-input-after-sharpsign-equals)
-          ("(#1=)"          eclector.reader:object-must-follow-sharpsign-equals)
-          ("#="             eclector.reader:numeric-parameter-not-supplied-but-required)
-          ("(#1=1 #1=2)"    eclector.reader:sharpsign-equals-label-defined-more-than-once)
-          ("#1=#1#"         eclector.reader:sharpsign-equals-only-refers-to-self)
+          ("#1="            nil eclector.reader:end-of-input-after-sharpsign-equals)
+          ("(#1=)"          nil eclector.reader:object-must-follow-sharpsign-equals)
+          ("#="             nil eclector.reader:numeric-parameter-not-supplied-but-required)
+          ("(#1=1 #1=2)"    nil eclector.reader:sharpsign-equals-label-defined-more-than-once)
+          ("#1=#1#"         nil eclector.reader:sharpsign-equals-only-refers-to-self)
           ;; sharpsign sharpsign errors
-          ("##"             eclector.reader:numeric-parameter-not-supplied-but-required)
-          ("#1#"            eclector.reader:sharpsign-sharpsign-undefined-label)
-          ("(#1=1 #2#)"     eclector.reader:sharpsign-sharpsign-undefined-label)
+          ("##"             nil eclector.reader:numeric-parameter-not-supplied-but-required)
+          ("#1#"            nil eclector.reader:sharpsign-sharpsign-undefined-label)
+          ("(#1=1 #2#)"     nil eclector.reader:sharpsign-sharpsign-undefined-label)
           ;;
-          ("(#1=1)"         (1))
-          ("(#1=1 #1#)"     (1 1))
-          ("(#1=1 #1# #1#)" (1 1 1))
-          ("#1=(#1#)"       recursive-cons)
+          ("(#1=1)"         nil (1))
+          ("(#1=1 #1#)"     nil (1 1))
+          ("(#1=1 #1# #1#)" nil (1 1 1))
+          ("#1=(#1#)"       nil recursive-cons)
           ;; There was problem leading to unrelated expressions of the
           ;; forms (nil) and (t) being replaced by the fixup
           ;; processor.
-          ("(#1=1 (nil))"   (1 (nil)))
-          ("(#1=((nil)))"   (((nil))))
-          ("(#1=1 (t))"     (1 (t)))
-          ("(#1=((t)))"     (((t)))))))
+          ("(#1=1 (nil))"   nil (1 (nil)))
+          ("(#1=((nil)))"   nil (((nil))))
+          ("(#1=1 (t))"     nil (1 (t)))
+          ("(#1=((t)))"     nil (((t))))
+          ;; With *READ-SUPPRESS* bound to t
+          ("#=1"            t   nil)
+          ("(#1=1 #1=2)"    t   nil)
+          ("##"             t   nil)
+          ("#1#"            t   nil))))

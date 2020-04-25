@@ -1341,6 +1341,8 @@
                 :report 'inject-nil)
                (unread-char (%character condition) stream)
                nil))))
+    (when *read-suppress*
+      (return-from sharpsign-equals (read-object)))
     (let ((labels *labels*))
       (when (nth-value 1 (gethash parameter labels))
         (%recoverable-reader-error
@@ -1365,6 +1367,8 @@
   (declare (ignore char))
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
+  (when *read-suppress*
+    (return-from sharpsign-sharpsign nil))
   (multiple-value-bind (marker definedp) (gethash parameter *labels*)
     (cond ((not definedp)
            (%recoverable-reader-error
