@@ -888,53 +888,28 @@
 
   (mapc (lambda (input-parameter-context-expected)
           (destructuring-bind
-                (input parameter *read-suppress*
-                       plus-expected &optional minus-expected)
+              (input parameter *read-suppress*
+               plus-expected &optional (minus-expected plus-expected))
               input-parameter-context-expected
-            (flet ((do-it (which)
-                     (with-input-from-string (stream input)
-                       (let ((eclector.reader::*input-stream* stream)
-                             (eclector.reader::*backquote-depth* 1))
-                         (values
-                          (ecase which
-                            (:plus  (eclector.reader::sharpsign-plus
-                                     stream #\+ parameter))
-                            (:minus (eclector.reader::sharpsign-minus
-                                     stream #\- parameter)))
-                          (file-position stream))))))
-              (case plus-expected
-                (eclector.reader:feature-expression-type-error
-                 (signals-printable eclector.reader:feature-expression-type-error
-                   (do-it :plus))
-                 (signals-printable eclector.reader:feature-expression-type-error
-                   (do-it :minus)))
-                (eclector.reader:single-feature-expected
-                 (signals-printable eclector.reader:single-feature-expected
-                   (do-it :plus))
-                 (signals-printable eclector.reader:single-feature-expected
-                   (do-it :minus)))
-                (eclector.reader:numeric-parameter-supplied-but-ignored
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it :plus))
-                 (signals-printable eclector.reader:numeric-parameter-supplied-but-ignored
-                   (do-it :minus)))
-                (eclector.reader::backquote-in-invalid-context
-                 (signals-printable eclector.reader:backquote-in-invalid-context
-                   (do-it :plus))
-                 (signals-printable eclector.reader:backquote-in-invalid-context
-                   (do-it :minus)))
-                (eclector.reader::unquote-in-invalid-context
-                 (signals-printable eclector.reader:unquote-in-invalid-context
-                   (do-it :plus))
-                 (signals-printable eclector.reader:unquote-in-invalid-context
-                   (do-it :minus)))
-                (t
-                 (multiple-value-bind (value position) (do-it :plus)
-                   (is (equal plus-expected value))
-                   (is (equal (length input) position)))
-                 (multiple-value-bind (value position) (do-it :minus)
-                   (is (equal minus-expected value))
-                   (is (equal (length input) position))))))))
+            (labels ((do-it (which)
+                       (with-input-from-string (stream input)
+                         (let ((eclector.reader::*input-stream* stream)
+                               (eclector.reader::*backquote-depth* 1))
+                           (values (ecase which
+                                     (:plus  (eclector.reader::sharpsign-plus
+                                              stream #\+ parameter))
+                                     (:minus (eclector.reader::sharpsign-minus
+                                              stream #\- parameter)))
+                                   (file-position stream)))))
+                     (do-one (which expected)
+                       (error-case expected
+                         (error (do-it which))
+                         (t
+                          (multiple-value-bind (value position) (do-it which)
+                            (is (equal expected value))
+                            (is (equal (length input) position)))))))
+              (do-one :plus  plus-expected)
+              (do-one :minus minus-expected))))
         '(;; Errors
           ("1"                     nil nil eclector.reader:feature-expression-type-error)
           ("(1)"                   nil nil eclector.reader:feature-expression-type-error)
