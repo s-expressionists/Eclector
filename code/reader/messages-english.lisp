@@ -516,6 +516,13 @@
 
 ;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
 
+  (define-reporter ((condition end-of-input-after-sharpsign-equals) stream)
+    (format stream "While reading label definition, expected ~
+                    expression when input ended."))
+
+  (define-reporter ((condition object-must-follow-sharpsign-equals) stream)
+    (format stream "An expression must follow #=."))
+
   (define-reporter ((condition sharpsign-equals-label-defined-more-than-once) stream)
     (format stream "Label ~d defined more than once."
             (label condition)))

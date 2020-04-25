@@ -972,6 +972,8 @@
                 (t
                  (is (equalp expected (do-it))))))))
         '(;; sharpsign equals errors
+          ("#1="            eclector.reader:end-of-input-after-sharpsign-equals)
+          ("(#1=)"          eclector.reader:object-must-follow-sharpsign-equals)
           ("#="             eclector.reader:numeric-parameter-not-supplied-but-required)
           ("(#1=1 #1=2)"    eclector.reader:sharpsign-equals-label-defined-more-than-once)
           ("#1=#1#"         eclector.reader:sharpsign-equals-only-refers-to-self)

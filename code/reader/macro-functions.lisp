@@ -1274,7 +1274,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Reader macros for sharpsign equals.
+;;; Reader macros for sharpsign equals and sharpsign sharpsign.
 ;;;
 ;;; When the SHARPSIGN-EQUALS reader macro encounters #N=EXPRESSION,
 ;;; it associates a marker object with N in the hash-table bound to
@@ -1326,23 +1326,28 @@
   (declare (ignore char))
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
-  (when (nth-value 1 (gethash parameter *labels*))
-    (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
-                   :label parameter))
-  (let ((marker (make-fixup-marker)))
-    (setf (gethash parameter *labels*) marker)
-    ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
-    (let ((result (read stream t nil t)))
-      (when (eq result (fixup-marker-temporary marker))
-        (%reader-error stream 'sharpsign-equals-only-refers-to-self
-                       :label parameter))
-      (setf (fixup-marker-final marker) result
-            (fixup-marker-final-p marker) t)
-      result)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Reader macros for sharpsign sharpsign.
+  (let ((labels *labels*))
+    (when (nth-value 1 (gethash parameter labels))
+      (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
+                     :label parameter))
+    (let ((marker (make-fixup-marker)))
+      (setf (gethash parameter labels) marker)
+      ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
+      (let ((result (handler-case
+                        (read stream t nil t)
+                      ((and end-of-file (not incomplete-construct)) (condition)
+                        (%reader-error
+                         stream 'end-of-input-after-sharpsign-equals
+                         :stream-position (stream-position condition)))
+                      (end-of-list ()
+                        (%reader-error
+                         stream 'object-must-follow-sharpsign-equals)))))
+        (when (eq result (fixup-marker-temporary marker))
+          (%reader-error stream 'sharpsign-equals-only-refers-to-self
+                         :label parameter))
+        (setf (fixup-marker-final marker) result
+              (fixup-marker-final-p marker) t)
+        result))))
 
 (defun sharpsign-sharpsign (stream char parameter)
   (declare (ignore char))

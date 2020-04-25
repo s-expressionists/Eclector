@@ -218,6 +218,8 @@
    #:end-of-input-after-feature-expression
    #:object-must-follow-feature-expression
 
+   #:end-of-input-after-sharpsign-equals
+   #:object-must-follow-sharpsign-equals
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-equals-only-refers-to-self
    #:sharpsign-sharpsign-undefined-label)

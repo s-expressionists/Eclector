@@ -414,6 +414,13 @@
 
 ;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
 
+(define-condition end-of-input-after-sharpsign-equals (end-of-file
+                                                       incomplete-construct)
+  ())
+
+(define-condition object-must-follow-sharpsign-equals (incomplete-construct)
+  ())
+
 (define-condition reference-error (stream-position-reader-error)
   ((%label :initarg :label :reader label)))
 
