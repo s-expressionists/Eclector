@@ -1389,4 +1389,6 @@
 
 (defun sharpsign-invalid (stream char parameter)
   (declare (ignore parameter))
-  (%reader-error stream 'sharpsign-invalid :character-found char))
+  (%recoverable-reader-error
+   stream 'sharpsign-invalid :character-found char :report 'inject-nil)
+  nil)

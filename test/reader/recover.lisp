@@ -188,8 +188,6 @@
           ("#S(foo :bar)"  (eclector.reader:no-slot-value-found)                           (foo))
           ("#S(foo :bar 1" (eclector.reader:end-of-input-before-slot-name)                 (foo :bar 1))
 
-          ("#"         (eclector.reader:unterminated-dispatch-macro)            nil)
-
           ;; Recover from errors related to pathname literals
           ("#P"   (eclector.reader:end-of-input-after-sharpsign-p)     #P".")
           ("(#P)" (eclector.reader:namestring-must-follow-sharpsign-p) (#P"."))
@@ -215,6 +213,11 @@
           ("#1=#1#"      (eclector.reader:sharpsign-equals-only-refers-to-self)          nil)
 
           ("#1#"         (eclector.reader:sharpsign-sharpsign-undefined-label)           nil)
+
+          ;; Recover from missing, undefined and invalid # sub-characters
+          ("#"  (eclector.reader:unterminated-dispatch-macro)    nil)
+          ("#!" (eclector.readtable:unknown-macro-sub-character) nil)
+          ("#<" (eclector.reader:sharpsign-invalid)              nil)
 
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list

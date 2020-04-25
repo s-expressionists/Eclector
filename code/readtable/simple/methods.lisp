@@ -48,7 +48,7 @@
         ;; If we signal an error and the client invokes the recovery
         ;; restart, we just return. This means that characters
         ;; following the sub-char will be read outside the context of
-        ;; the reader macro..
+        ;; the reader macro.
         (if (null macro-function)
             (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unknown-macro-sub-character
