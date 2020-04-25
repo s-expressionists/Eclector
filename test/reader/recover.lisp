@@ -195,10 +195,23 @@
           ("(#P)" (eclector.reader:namestring-must-follow-sharpsign-p) (#P"."))
           ("#P1"  (eclector.reader:non-string-following-sharpsign-p)   #P".")
 
+          ;; Recover from errors related to feature-expressions
+          ("#+"        (eclector.reader:end-of-input-after-sharpsign-plus-minus
+                        eclector.reader:end-of-input-after-feature-expression)
+                                                                                            nil)
+          ("(#+)"      (eclector.reader:feature-expression-must-follow-sharpsign-plus-minus
+                        eclector.reader:object-must-follow-feature-expression)
+                                                                                            (nil))
+          ("#+(and)"   (eclector.reader:end-of-input-after-feature-expression)              nil)
+          ("(#+(and))" (eclector.reader:object-must-follow-feature-expression)              (nil))
+
+          ("#+1 :foo"         (eclector.reader:feature-expression-type-error)               nil)
+          ("#+(not a b) :foo" (eclector.reader:single-feature-expected)                     nil)
+
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list
                         eclector.reader:unterminated-list)
-                                                                                (1 (2)))
+                       (1 (2)))
           ("(1 \"a"    (eclector.reader:unterminated-string
                         eclector.reader:unterminated-list)
                                                                                 (1 "a")))))

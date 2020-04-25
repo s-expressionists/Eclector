@@ -37,7 +37,9 @@
   (define-description use-partial-initargs        "Use already read structure type name and initargs.")
   (define-description skip-slot                   "Skip the invalid slot.")
 
-  (define-description replace-namestring          "Use a suitable namestring in place of the invalid one."))
+  (define-description replace-namestring          "Use a suitable namestring in place of the invalid one.")
+
+  (define-description treat-as-false              "Treat the feature expression as false."))
 
 ;;;; Contexts and condition reporters
 

@@ -1221,16 +1221,22 @@
   (let ((context (if invertp
                      :sharpsign-minus
                      :sharpsign-plus)))
-    (flet ((read-expression (end-of-file-condition end-of-list-condition)
+    (flet ((read-expression (end-of-file-condition end-of-list-condition
+                             fallback-value)
              (handler-case
                  (read stream t nil t)
                ((and end-of-file (not incomplete-construct)) (condition)
-                 (%reader-error stream end-of-file-condition
-                                :stream-position (stream-position condition)
-                                :context context))
-               (end-of-list ()
-                 (%reader-error stream end-of-list-condition
-                                :context context)))))
+                 (%recoverable-reader-error
+                  stream end-of-file-condition
+                  :stream-position (stream-position condition)
+                  :context context :report 'inject-nil)
+                 fallback-value)
+               (end-of-list (condition)
+                 (%recoverable-reader-error
+                  stream end-of-list-condition
+                  :context context :report 'inject-nil)
+                 (unread-char (%character condition) stream)
+                 fallback-value))))
       (let* ((client *client*)
              (feature-expression
                (call-with-current-package
@@ -1239,18 +1245,25 @@
                            (with-forbidden-quasiquotation (context)
                              (read-expression
                               'end-of-input-after-sharpsign-plus-minus
-                              'feature-expression-must-follow-sharpsign-plus-minus))))
+                              'feature-expression-must-follow-sharpsign-plus-minus
+                              '(:and)))))
                 '#:keyword)))
-        (if (alexandria:xor (evaluate-feature-expression
-                             client feature-expression)
-                            invertp)
+        (if (alexandria:xor
+             (with-simple-restart
+                 (recover (recovery-description
+                           'treat-as-false (acclimation:language
+                                            acclimation:*locale*)))
+               (evaluate-feature-expression client feature-expression))
+             invertp)
             (read-expression 'end-of-input-after-feature-expression
-                             'object-must-follow-feature-expression)
+                             'object-must-follow-feature-expression
+                             nil)
             (progn
               (setf *skip-reason* (cons context feature-expression))
               (let ((*read-suppress* t))
                 (read-expression 'end-of-input-after-feature-expression
-                                 'object-must-follow-feature-expression))
+                                 'object-must-follow-feature-expression
+                                 nil))
               (values)))))))
 
 (defun sharpsign-plus (stream char parameter)
