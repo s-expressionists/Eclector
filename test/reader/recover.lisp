@@ -208,6 +208,14 @@
           ("#+1 :foo"         (eclector.reader:feature-expression-type-error)               nil)
           ("#+(not a b) :foo" (eclector.reader:single-feature-expected)                     nil)
 
+          ;; Recover from reference-related errors
+          ("#1="         (eclector.reader:end-of-input-after-sharpsign-equals)           nil)
+          ("(#1=)"       (eclector.reader:object-must-follow-sharpsign-equals)           (nil))
+          ("(#1=1 #1=2)" (eclector.reader:sharpsign-equals-label-defined-more-than-once) (1 2))
+          ("#1=#1#"      (eclector.reader:sharpsign-equals-only-refers-to-self)          nil)
+
+          ("#1#"         (eclector.reader:sharpsign-sharpsign-undefined-label)           nil)
+
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list
                         eclector.reader:unterminated-list)

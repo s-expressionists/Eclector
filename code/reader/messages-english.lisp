@@ -39,7 +39,9 @@
 
   (define-description replace-namestring          "Use a suitable namestring in place of the invalid one.")
 
-  (define-description treat-as-false              "Treat the feature expression as false."))
+  (define-description treat-as-false              "Treat the feature expression as false.")
+
+  (define-description ignore-label                "Read the following object as is if there was no label."))
 
 ;;;; Contexts and condition reporters
 

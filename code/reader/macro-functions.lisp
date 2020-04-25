@@ -1326,28 +1326,40 @@
   (declare (ignore char))
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
-  (let ((labels *labels*))
-    (when (nth-value 1 (gethash parameter labels))
-      (%reader-error stream 'sharpsign-equals-label-defined-more-than-once
-                     :label parameter))
-    (let ((marker (make-fixup-marker)))
-      (setf (gethash parameter labels) marker)
-      ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
-      (let ((result (handler-case
-                        (read stream t nil t)
-                      ((and end-of-file (not incomplete-construct)) (condition)
-                        (%reader-error
-                         stream 'end-of-input-after-sharpsign-equals
-                         :stream-position (stream-position condition)))
-                      (end-of-list ()
-                        (%reader-error
-                         stream 'object-must-follow-sharpsign-equals)))))
-        (when (eq result (fixup-marker-temporary marker))
-          (%reader-error stream 'sharpsign-equals-only-refers-to-self
-                         :label parameter))
-        (setf (fixup-marker-final marker) result
-              (fixup-marker-final-p marker) t)
-        result))))
+  (flet ((read-object ()
+           (handler-case
+               (read stream t nil t)
+             ((and end-of-file (not incomplete-construct)) (condition)
+               (%recoverable-reader-error
+                stream 'end-of-input-after-sharpsign-equals
+                :stream-position (stream-position condition)
+                :report 'inject-nil)
+               nil)
+             (end-of-list (condition)
+               (%recoverable-reader-error
+                stream 'object-must-follow-sharpsign-equals
+                :report 'inject-nil)
+               (unread-char (%character condition) stream)
+               nil))))
+    (let ((labels *labels*))
+      (when (nth-value 1 (gethash parameter labels))
+        (%recoverable-reader-error
+         stream 'sharpsign-equals-label-defined-more-than-once
+         :label parameter :report 'ignore-label)
+        (return-from sharpsign-equals (read-object)))
+      (let ((marker (make-fixup-marker)))
+        (setf (gethash parameter labels) marker)
+        ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
+        (let ((result (read-object)))
+          (when (eq result (fixup-marker-temporary marker))
+            (%recoverable-reader-error
+             stream 'sharpsign-equals-only-refers-to-self
+             :label parameter :report 'inject-nil)
+            (remhash parameter labels)
+            (return-from sharpsign-equals nil))
+          (setf (fixup-marker-final marker) result
+                (fixup-marker-final-p marker) t)
+          result)))))
 
 (defun sharpsign-sharpsign (stream char parameter)
   (declare (ignore char))
@@ -1355,8 +1367,10 @@
     (numeric-parameter-not-supplied stream 'sharpsign-equals))
   (multiple-value-bind (marker definedp) (gethash parameter *labels*)
     (cond ((not definedp)
-           (%reader-error stream 'sharpsign-sharpsign-undefined-label
-                          :label parameter))
+           (%recoverable-reader-error
+            stream 'sharpsign-sharpsign-undefined-label
+            :label parameter :report 'inject-nil)
+           nil)
           ;; If the final object has already been supplied, use it.
           ((fixup-marker-final-p marker)
            (fixup-marker-final marker))
