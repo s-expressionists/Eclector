@@ -42,12 +42,13 @@
 ;;;; Contexts and condition reporters
 
 (macrolet
-    ((define-reporter (((condition-var condition-specializer) stream-var)
+    ((define-reporter (((condition-var condition-specializer) stream-var
+                        &optional (language-var 'language))
                        &body body)
        `(defmethod acclimation:report-condition
             ((,condition-var ,condition-specializer)
              ,stream-var
-             (language acclimation:english))
+             (,language-var acclimation:english))
           ,@body))
      (define-context (context name)
        `(defmethod context-name ((context  (eql ',context))
@@ -478,14 +479,38 @@
   (define-context :sharpsign-plus  "the #+ conditionalization reader macro")
   (define-context :sharpsign-minus "the #- conditionalization reader macro")
 
-  (define-reporter ((condition feature-expression-type-error) stream)
-    (format stream "Feature expression is not of type ~a:~%~a"
-            (type-error-expected-type condition) (type-error-datum condition)))
+  (define-reporter ((condition end-of-input-after-sharpsign-plus-minus)
+                    stream language)
+    (format stream "While reading ~A, expected a feature expression ~
+                    when input ended."
+            (context-name (context condition) language)))
 
-  (define-reporter ((condition single-feature-expected) stream)
-    (format stream "Bad feature expression- found multiple features ~
-                    when only one was expected:~%~a"
+  (define-reporter ((condition feature-expression-must-follow-sharpsign-plus-minus)
+                    stream language)
+    (format stream "A feature expression must follow ~A."
+            (context-name (context condition) language)))
+
+  (define-reporter ((condition feature-expression-type-error) stream language)
+    (format stream "The feature expression ~S is not of type ~A."
+            (type-error-datum condition)
+            (type-error-expected-type condition)))
+
+  (define-reporter ((condition single-feature-expected) stream language)
+    (format stream "Found the features ~S when only one was ~
+                    expected,"
             (features condition)))
+
+  (define-reporter ((condition end-of-input-after-feature-expression)
+                    stream language)
+    (format stream "While reading ~A, expected an expression following ~
+                    the feature expression when input ended."
+              (context-name (context condition) language)))
+
+  (define-reporter ((condition object-must-follow-feature-expression)
+                    stream language)
+    (format stream "An expression must follow the feature expression ~
+                    in ~A."
+            (context-name (context condition) language)))
 
 ;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
 

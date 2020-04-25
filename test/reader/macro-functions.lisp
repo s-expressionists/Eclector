@@ -911,6 +911,11 @@
               (do-one :plus  plus-expected)
               (do-one :minus minus-expected))))
         '(;; Errors
+          (""                      nil nil eclector.reader:end-of-input-after-sharpsign-plus-minus)
+          (")"                     nil nil eclector.reader:feature-expression-must-follow-sharpsign-plus-minus)
+          ("(and)"                 nil nil eclector.reader:end-of-input-after-feature-expression)
+          ("(and))"                nil nil eclector.reader:object-must-follow-feature-expression)
+
           ("1"                     nil nil eclector.reader:feature-expression-type-error)
           ("(1)"                   nil nil eclector.reader:feature-expression-type-error)
           ("(not :foo :bar)"       nil nil eclector.reader:single-feature-expected)

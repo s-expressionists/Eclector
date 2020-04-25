@@ -211,8 +211,12 @@
    #:namestring-must-follow-sharpsign-p
    #:non-string-following-sharpsign-p
 
+   #:end-of-input-after-sharpsign-plus-minus
+   #:feature-expression-must-follow-sharpsign-plus-minus
    #:feature-expression-type-error
    #:single-feature-expected
+   #:end-of-input-after-feature-expression
+   #:object-must-follow-feature-expression
 
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-equals-only-refers-to-self

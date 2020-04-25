@@ -1218,28 +1218,40 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-plus-minus parameter))
-  (let* ((client *client*)
-         (feature-expression
-           (call-with-current-package
-            client (lambda ()
-                     (let ((*read-suppress* nil))
-                       (with-forbidden-quasiquotation
-                           ((if invertp
-                                :sharpsign-minus
-                                :sharpsign-plus))
-                         (read stream t nil t))))
-            '#:keyword)))
-    (if (alexandria:xor (evaluate-feature-expression
-                         client feature-expression)
-                        invertp)
-        (read stream t nil t)
-        (let ((reason (if invertp
-                          :sharpsign-minus
-                          :sharpsign-plus)))
-          (setf *skip-reason* (cons reason feature-expression))
-          (let ((*read-suppress* t))
-            (read stream t nil t))
-          (values)))))
+  (let ((context (if invertp
+                     :sharpsign-minus
+                     :sharpsign-plus)))
+    (flet ((read-expression (end-of-file-condition end-of-list-condition)
+             (handler-case
+                 (read stream t nil t)
+               ((and end-of-file (not incomplete-construct)) (condition)
+                 (%reader-error stream end-of-file-condition
+                                :stream-position (stream-position condition)
+                                :context context))
+               (end-of-list ()
+                 (%reader-error stream end-of-list-condition
+                                :context context)))))
+      (let* ((client *client*)
+             (feature-expression
+               (call-with-current-package
+                client (lambda ()
+                         (let ((*read-suppress* nil))
+                           (with-forbidden-quasiquotation (context)
+                             (read-expression
+                              'end-of-input-after-sharpsign-plus-minus
+                              'feature-expression-must-follow-sharpsign-plus-minus))))
+                '#:keyword)))
+        (if (alexandria:xor (evaluate-feature-expression
+                             client feature-expression)
+                            invertp)
+            (read-expression 'end-of-input-after-feature-expression
+                             'object-must-follow-feature-expression)
+            (progn
+              (setf *skip-reason* (cons context feature-expression))
+              (let ((*read-suppress* t))
+                (read-expression 'end-of-input-after-feature-expression
+                                 'object-must-follow-feature-expression))
+              (values)))))))
 
 (defun sharpsign-plus (stream char parameter)
   (sharpsign-plus-minus stream char parameter nil))

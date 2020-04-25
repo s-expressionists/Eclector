@@ -373,6 +373,20 @@
 ;;; Can be evaluated without a stream context. Therefore each
 ;;; condition has a stream- and a non-stream-variant.
 
+(define-condition reader-conditional-condition (condition)
+  ((%context :initarg :context :reader context)))
+
+(define-condition end-of-input-after-sharpsign-plus-minus
+    (reader-conditional-condition
+     end-of-file
+     incomplete-construct)
+  ())
+
+(define-condition feature-expression-must-follow-sharpsign-plus-minus
+    (reader-conditional-condition
+     incomplete-construct)
+  ())
+
 (define-condition feature-expression-type-error (acclimation:condition type-error)
   ())
 
@@ -385,6 +399,17 @@
 
 (define-condition single-feature-expected/reader
     (single-feature-expected stream-position-reader-error)
+  ())
+
+(define-condition end-of-input-after-feature-expression
+    (reader-conditional-condition
+     end-of-file
+     incomplete-construct)
+  ())
+
+(define-condition object-must-follow-feature-expression
+    (reader-conditional-condition
+     incomplete-construct)
   ())
 
 ;;; SHARPSIGN-{EQUALS,SHARPSIGN} conditions
