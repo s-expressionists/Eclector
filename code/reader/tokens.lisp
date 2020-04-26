@@ -171,15 +171,18 @@
 (defun make-integer-accumulator (base)
   (let ((value 0))
     (lambda (&optional char invalidatep)
-      (if char
-          (let ((digit (digit-char-p char base)))
-            (cond ((not (null digit))
-                   (setf value (+ (* value base) digit)))
-                  (invalidatep
-                   (setf value nil))
-                  (t
-                   nil)))
-          value))))
+      (cond ((null char)
+             value)
+            ((null value)
+             nil)
+            (t
+             (let ((digit (digit-char-p char base)))
+               (cond ((not (null digit))
+                      (setf value (+ (* value base) digit)))
+                     (invalidatep
+                      (setf value nil))
+                     (t
+                      nil))))))))
 
 (defmethod interpret-token (client input-stream token escape-ranges)
   (convert-according-to-readtable-case token escape-ranges)
