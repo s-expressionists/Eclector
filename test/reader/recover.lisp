@@ -136,6 +136,9 @@
           ("#b1/121" (eclector.reader:digit-expected)                              #b1/111 7)
           ("#b1/0"   (eclector.reader:zero-denominator)                            #b1/1)
 
+          ("#37rz"   (eclector.reader:invalid-radix)                               35)
+          ("#1rz"    (eclector.reader:invalid-radix)                               35)
+
           ("#1b10"   (eclector.reader:numeric-parameter-supplied-but-ignored)      #b10)
 
           ("#rz"     (eclector.reader:numeric-parameter-not-supplied-but-required) 35)

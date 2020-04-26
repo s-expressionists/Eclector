@@ -647,10 +647,11 @@
                       (numeric-parameter-not-supplied stream 'sharpsign-r)
                       36)
                      ((not (<= 2 parameter 36))
-                      (if *read-suppress*
-                          36
-                          (%reader-error
-                           stream 'invalid-radix :radix parameter)))
+                      (unless *read-suppress*
+                        (%recoverable-reader-error
+                         stream 'invalid-radix
+                         :radix parameter :report 'use-replacement-radix))
+                      36)
                      (t
                       parameter))))
     (read-rational stream radix)))

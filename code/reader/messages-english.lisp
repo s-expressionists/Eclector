@@ -11,6 +11,7 @@
   (define-description treat-as-escaped            "Treat the character as if it had been escaped.")
 
   (define-description replace-invalid-digit       "Use a suitable digit in place of the invalid digit.")
+  (define-description use-replacement-radix       "Use a suitable radix in place of the invalid radix.")
 
   (define-description ignore-quasiquote           "Read the following form as if it were not quasiquoted.")
   (define-description ignore-unquote              "Read the following form as if it were not unquoted.")
