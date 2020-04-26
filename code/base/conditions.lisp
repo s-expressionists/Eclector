@@ -28,6 +28,10 @@
                   (resolve report)))
       (values))))
 
+(defun recover (&optional condition)
+  (alexandria:when-let ((restart (find-restart 'recover condition)))
+    (invoke-restart restart)))
+
 (define-condition stream-position-condition (condition)
   ((%stream-position :initarg :stream-position
                      :reader stream-position)))

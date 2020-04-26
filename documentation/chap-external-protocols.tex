@@ -649,7 +649,20 @@ described above for \texttt{read} compared to \texttt{cl:read}.
 \sysname{} offers limited support for recovering from syntax errors
 and continue reading from the input stream.  To this end, a restart
 named \texttt{eclector.reader:recover} is established when recoverable
-errors are signaled.  Recoverable syntax errors include:
+errors are signaled.  Like the standard \commonlisp{} restart
+\texttt{cl:continue}, the above restart can be invoked by a function
+of the same name:
+
+\Defun {recover} {\optional condition}
+
+This function recovers from an error by invoking the most recently
+established applicable restart named \texttt{eclector.reader:recover}.
+If no such restart is currently established, it returns \texttt{nil}.
+If \textit{condition} is non-\texttt{nil}, only restarts that are
+either explicitly associated with \textit{condition}, or not
+associated with any condition are considered.
+
+Recoverable syntax errors include:
 
 \begin{itemize}
 \item No object or multiple objects following the consing dot when

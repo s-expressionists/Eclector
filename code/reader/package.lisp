@@ -18,7 +18,7 @@
 
    #:read-char
 
-   #:recover) ; Restart name
+   #:recover) ; Function and restart name
 
   (:import-from #:eclector.base
    #:%reader-error
@@ -64,7 +64,7 @@
    #:read-from-string
    #:read-delimited-list
 
-   #:recover) ; Restart name
+   #:recover) ; Function and restart name
 
   ;; Client protocol
   (:export
