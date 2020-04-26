@@ -99,9 +99,11 @@
           (")(1)"      (eclector.reader:invalid-context-for-right-parenthesis)  (1))
 
           ;; Recover from errors related to read-time evaluation.
-          ("#."             (eclector.reader:end-of-input-after-sharpsign-dot) nil)
-          ("(#.)"           (eclector.reader:object-must-follow-sharpsign-dot) (nil))
-          ("#.(error \"\")" (eclector.reader:read-time-evaluation-error)       nil)
+          ("#."             (eclector.reader:end-of-input-after-sharpsign-dot)       nil)
+          ("(#.)"           (eclector.reader:object-must-follow-sharpsign-dot)       (nil))
+          ("#.(error \"\")" (eclector.reader:read-time-evaluation-error)             nil)
+
+          ("#1.1"           (eclector.reader:numeric-parameter-supplied-but-ignored) 1)
 
           ;; Recover from vector-related errors
           ("#("        (eclector.reader:unterminated-vector) #())
@@ -120,17 +122,23 @@
                           eclector.reader:unknown-character-name)
                                                                                           #\?)
 
+          ("#1\\a"       (eclector.reader:numeric-parameter-supplied-but-ignored)         #\a)
+
           ;; Recover from errors in READ-RATIONAL.
-          ("#b"      (eclector.reader:end-of-input-before-digit) 1)
-          ("#b)"     (eclector.reader:digit-expected)            #b0     2)
-          ("#b|"     (eclector.reader:digit-expected)            #b0     2)
-          ("#b121"   (eclector.reader:digit-expected)            #b111)
-          ("#b1/"    (eclector.reader:end-of-input-before-digit) #b1/1)
-          ("#b1/)"   (eclector.reader:digit-expected)            #b1     4)
-          ("#b1/|"   (eclector.reader:digit-expected)            #b1     4)
-          ("#b1/1|"  (eclector.reader:digit-expected)            #b1     5)
-          ("#b1/121" (eclector.reader:digit-expected)            #b1/111 7)
-          ("#b1/0"   (eclector.reader:zero-denominator)          #b1/1)
+          ("#b"      (eclector.reader:end-of-input-before-digit)                   1)
+          ("#b)"     (eclector.reader:digit-expected)                              #b0     2)
+          ("#b|"     (eclector.reader:digit-expected)                              #b0     2)
+          ("#b121"   (eclector.reader:digit-expected)                              #b111)
+          ("#b1/"    (eclector.reader:end-of-input-before-digit)                   #b1/1)
+          ("#b1/)"   (eclector.reader:digit-expected)                              #b1     4)
+          ("#b1/|"   (eclector.reader:digit-expected)                              #b1     4)
+          ("#b1/1|"  (eclector.reader:digit-expected)                              #b1     5)
+          ("#b1/121" (eclector.reader:digit-expected)                              #b1/111 7)
+          ("#b1/0"   (eclector.reader:zero-denominator)                            #b1/1)
+
+          ("#1b10"   (eclector.reader:numeric-parameter-supplied-but-ignored)      #b10)
+
+          ("#rz"     (eclector.reader:numeric-parameter-not-supplied-but-required) 35)
 
           ;; Recover from errors related to bit-vector literals
           ("#1*"       (eclector.reader:no-elements-found) #*)
@@ -138,39 +146,49 @@
           ("#*021"     (eclector.reader:digit-expected)    #*001)
 
           ;; Recover from block-comment-related errors
-          ("#|"        (eclector.reader:unterminated-block-comment)             nil)
-          ("#|foo"     (eclector.reader:unterminated-block-comment)             nil)
+          ("#|"    (eclector.reader:unterminated-block-comment)             nil)
+          ("#|foo" (eclector.reader:unterminated-block-comment)             nil)
+
+          ("#1||#" (eclector.reader:numeric-parameter-supplied-but-ignored) nil)
 
           ;; Recover from errors related to SHARPSIGN-SINGLE-QUOTE
           ("#'"   (eclector.reader:end-of-input-after-sharpsign-single-quote) nil)
           ("(#')" (eclector.reader:object-must-follow-sharpsign-single-quote) (nil))
 
+          ("#1'+" (eclector.reader:numeric-parameter-supplied-but-ignored)    (function +))
+
           ;; Recover from general array-related errors
-          ("#2A"            (eclector.reader:end-of-input-after-sharpsign-a)  #2A())
-          ("(#2A)"          (eclector.reader:object-must-follow-sharpsign-a)  (#2A()))
-          ("#2A("           (eclector.reader:unterminated-list)               #2A())
-          ("#2A(1)"         (eclector.reader:read-object-type-error)          #2A())
-          ("#2A((1) (1 2))" (eclector.reader:incorrect-initialization-length) #2A())
+          ("#2A"            (eclector.reader:end-of-input-after-sharpsign-a)              #2A())
+          ("(#2A)"          (eclector.reader:object-must-follow-sharpsign-a)              (#2A()))
+          ("#2A("           (eclector.reader:unterminated-list)                           #2A())
+          ("#2A(1)"         (eclector.reader:read-object-type-error)                      #2A())
+          ("#2A((1) (1 2))" (eclector.reader:incorrect-initialization-length)             #2A())
+
+          ("#A(1 2)"        (eclector.reader:numeric-parameter-not-supplied-but-required) #0A(1 2))
 
           ;; Recover from errors related to uninterned symbols
-          ("#::foo"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:|:|foo)
-          ("#:foo:"    (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:foo|:|)
-          ("#:fo\\"    (eclector.reader:unterminated-single-escape-in-symbol)              #:fo)
-          ("#:fo|o"    (eclector.reader:unterminated-multiple-escape-in-symbol)            #:fo|o|)
+          ("#::foo" (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:|:|foo)
+          ("#:foo:" (eclector.reader:uninterned-symbol-must-not-contain-package-marker) #:foo|:|)
+          ("#:fo\\" (eclector.reader:unterminated-single-escape-in-symbol)              #:fo)
+          ("#:fo|o" (eclector.reader:unterminated-multiple-escape-in-symbol)            #:fo|o|)
+
+          ("#1:foo" (eclector.reader:numeric-parameter-supplied-but-ignored)            #:foo)
 
           ;; Recover from complex-related errors
-          ("#C"          (eclector.reader:end-of-input-after-sharpsign-c)        #C(1 1))
-          ("#C1"         (eclector.reader:non-list-following-sharpsign-c)        #C(1 1))
-          ("#C||"        (eclector.reader:non-list-following-sharpsign-c)        #C(1 1))
-          ("#C)"         (eclector.reader:complex-parts-must-follow-sharpsign-c) #C(1 1) 2)
-          ("#C("         (eclector.reader:end-of-input-before-complex-part)      #C(1 1))
-          ("#C()"        (eclector.reader:complex-part-expected)                 #C(1 1))
-          ("#C(2"        (eclector.reader:end-of-input-before-complex-part)      #C(2 1))
-          ("#C(2)"       (eclector.reader:complex-part-expected)                 #C(2 1))
-          ("#C(2 3"      (eclector.reader:unterminated-list)                     #C(2 3))
-          ("#C(2 3 4)"   (eclector.reader:too-many-complex-parts)                #C(2 3))
-          ("#C(2 3 4 5)" (eclector.reader:too-many-complex-parts)                #C(2 3))
-          ("#C(#\\a 2)"  (eclector.reader:read-object-type-error)                #C(1 2))
+          ("#C"          (eclector.reader:end-of-input-after-sharpsign-c)         #C(1 1))
+          ("#C1"         (eclector.reader:non-list-following-sharpsign-c)         #C(1 1))
+          ("#C||"        (eclector.reader:non-list-following-sharpsign-c)         #C(1 1))
+          ("#C)"         (eclector.reader:complex-parts-must-follow-sharpsign-c)  #C(1 1) 2)
+          ("#C("         (eclector.reader:end-of-input-before-complex-part)       #C(1 1))
+          ("#C()"        (eclector.reader:complex-part-expected)                  #C(1 1))
+          ("#C(2"        (eclector.reader:end-of-input-before-complex-part)       #C(2 1))
+          ("#C(2)"       (eclector.reader:complex-part-expected)                  #C(2 1))
+          ("#C(2 3"      (eclector.reader:unterminated-list)                      #C(2 3))
+          ("#C(2 3 4)"   (eclector.reader:too-many-complex-parts)                 #C(2 3))
+          ("#C(2 3 4 5)" (eclector.reader:too-many-complex-parts)                 #C(2 3))
+          ("#C(#\\a 2)"  (eclector.reader:read-object-type-error)                 #C(1 2))
+
+          ("#1C(2 3)"    (eclector.reader:numeric-parameter-supplied-but-ignored) #C(2 3))
 
           ;; Recover from structure-literal-related errors
           ("#S"            (eclector.reader:end-of-input-after-sharpsign-s)                nil)
@@ -188,36 +206,47 @@
           ("#S(foo :bar)"  (eclector.reader:no-slot-value-found)                           (foo))
           ("#S(foo :bar 1" (eclector.reader:end-of-input-before-slot-name)                 (foo :bar 1))
 
+          ("#1S(foo)"      (eclector.reader:numeric-parameter-supplied-but-ignored)        (foo))
+
           ;; Recover from errors related to pathname literals
-          ("#P"   (eclector.reader:end-of-input-after-sharpsign-p)     #P".")
-          ("(#P)" (eclector.reader:namestring-must-follow-sharpsign-p) (#P"."))
-          ("#P1"  (eclector.reader:non-string-following-sharpsign-p)   #P".")
+          ("#P"       (eclector.reader:end-of-input-after-sharpsign-p)         #P".")
+          ("(#P)"     (eclector.reader:namestring-must-follow-sharpsign-p)     (#P"."))
+          ("#P1"      (eclector.reader:non-string-following-sharpsign-p)       #P".")
+
+          ("#1P\".\"" (eclector.reader:numeric-parameter-supplied-but-ignored) #P".")
 
           ;; Recover from errors related to feature-expressions
-          ("#+"        (eclector.reader:end-of-input-after-sharpsign-plus-minus
-                        eclector.reader:end-of-input-after-feature-expression)
-                                                                                            nil)
-          ("(#+)"      (eclector.reader:feature-expression-must-follow-sharpsign-plus-minus
-                        eclector.reader:object-must-follow-feature-expression)
-                                                                                            (nil))
-          ("#+(and)"   (eclector.reader:end-of-input-after-feature-expression)              nil)
-          ("(#+(and))" (eclector.reader:object-must-follow-feature-expression)              (nil))
+          ("#+"               (eclector.reader:end-of-input-after-sharpsign-plus-minus
+                               eclector.reader:end-of-input-after-feature-expression)
+                              nil)
+          ("(#+)"             (eclector.reader:feature-expression-must-follow-sharpsign-plus-minus
+                               eclector.reader:object-must-follow-feature-expression)
+                                                                                                   (nil))
+          ("#+(and)"          (eclector.reader:end-of-input-after-feature-expression)              nil)
+          ("(#+(and))"        (eclector.reader:object-must-follow-feature-expression)              (nil))
 
-          ("#+1 :foo"         (eclector.reader:feature-expression-type-error)               nil)
-          ("#+(not a b) :foo" (eclector.reader:single-feature-expected)                     nil)
+          ("#+1 :foo"         (eclector.reader:feature-expression-type-error)                      nil)
+          ("#+(not a b) :foo" (eclector.reader:single-feature-expected)                            nil)
+
+          ("#1+(and) :foo"    (eclector.reader:numeric-parameter-supplied-but-ignored)             :foo)
 
           ;; Recover from reference-related errors
           ("#1="         (eclector.reader:end-of-input-after-sharpsign-equals)           nil)
           ("(#1=)"       (eclector.reader:object-must-follow-sharpsign-equals)           (nil))
           ("(#1=1 #1=2)" (eclector.reader:sharpsign-equals-label-defined-more-than-once) (1 2))
           ("#1=#1#"      (eclector.reader:sharpsign-equals-only-refers-to-self)          nil)
+          ("#=1"         (eclector.reader:numeric-parameter-not-supplied-but-required)   1)
 
           ("#1#"         (eclector.reader:sharpsign-sharpsign-undefined-label)           nil)
+          ("##"          (eclector.reader:numeric-parameter-not-supplied-but-required)   nil)
 
           ;; Recover from missing, undefined and invalid # sub-characters
-          ("#"  (eclector.reader:unterminated-dispatch-macro)    nil)
-          ("#!" (eclector.readtable:unknown-macro-sub-character) nil)
-          ("#<" (eclector.reader:sharpsign-invalid)              nil)
+          ("#"   (eclector.reader:unterminated-dispatch-macro)    nil)
+          ("#1"  (eclector.reader:unterminated-dispatch-macro)    nil)
+          ("#!"  (eclector.readtable:unknown-macro-sub-character) nil)
+          ("#1!" (eclector.readtable:unknown-macro-sub-character) nil)
+          ("#<"  (eclector.reader:sharpsign-invalid)              nil)
+          ("#1<" (eclector.reader:sharpsign-invalid)              nil)
 
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list

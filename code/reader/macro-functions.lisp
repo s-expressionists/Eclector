@@ -806,20 +806,24 @@
 
   (defun sharpsign-a (stream char parameter)
     (declare (ignore char))
-    (unless parameter
-      (numeric-parameter-not-supplied stream 'sharpsign-a))
-    (if *read-suppress*
-        (read stream t nil t)
-        (multiple-value-bind (dimensions init)
-            (restart-case
-                (let* ((init (read-init stream))
-                       (dimensions (determine-dimensions
-                                    stream parameter init)))
-                  (check-dimensions stream dimensions init)
-                  (values dimensions init))
-              (%make-empty ()
-                (values (make-empty-dimensions parameter) '())))
-          (make-array dimensions :initial-contents init)))))
+    (when *read-suppress*
+      (return-from sharpsign-a (read stream t nil t)))
+
+    (let ((rank (cond ((null parameter)
+                       (numeric-parameter-not-supplied stream 'sharpsign-a)
+                       0)
+                      (t
+                       parameter))))
+      (multiple-value-bind (dimensions init)
+          (restart-case
+              (let* ((init (read-init stream))
+                     (dimensions (determine-dimensions
+                                  stream rank init)))
+                (check-dimensions stream dimensions init)
+                (values dimensions init))
+            (%make-empty ()
+              (values (make-empty-dimensions rank) '())))
+        (make-array dimensions :initial-contents init)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -1324,8 +1328,6 @@
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
-  (when (null parameter)
-    (numeric-parameter-not-supplied stream 'sharpsign-equals))
   (flet ((read-object ()
            (handler-case
                (read stream t nil t)
@@ -1342,6 +1344,9 @@
                (unread-char (%character condition) stream)
                nil))))
     (when *read-suppress*
+      (return-from sharpsign-equals (read-object)))
+    (when (null parameter)
+      (numeric-parameter-not-supplied stream 'sharpsign-equals)
       (return-from sharpsign-equals (read-object)))
     (let ((labels *labels*))
       (when (nth-value 1 (gethash parameter labels))
@@ -1365,9 +1370,10 @@
 
 (defun sharpsign-sharpsign (stream char parameter)
   (declare (ignore char))
-  (when (null parameter)
-    (numeric-parameter-not-supplied stream 'sharpsign-equals))
   (when *read-suppress*
+    (return-from sharpsign-sharpsign nil))
+  (when (null parameter)
+    (numeric-parameter-not-supplied stream 'sharpsign-equals)
     (return-from sharpsign-sharpsign nil))
   (multiple-value-bind (marker definedp) (gethash parameter *labels*)
     (cond ((not definedp)

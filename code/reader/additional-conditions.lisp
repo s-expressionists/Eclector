@@ -75,16 +75,18 @@
 
 (defun numeric-parameter-ignored (stream macro-name parameter)
   (unless *read-suppress*
-    (%reader-error stream 'numeric-parameter-supplied-but-ignored
-                   :parameter parameter :macro-name macro-name)))
+    (%recoverable-reader-error
+     stream 'numeric-parameter-supplied-but-ignored
+     :parameter parameter :macro-name macro-name :report 'ignore-parameter)))
 
 (define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
   ((%macro-name :initarg :macro-name :reader macro-name)))
 
 (defun numeric-parameter-not-supplied (stream macro-name)
   (unless *read-suppress*
-    (%reader-error stream 'numeric-parameter-not-supplied-but-required
-                   :macro-name macro-name)))
+    (%recoverable-reader-error
+     stream 'numeric-parameter-not-supplied-but-required
+     :macro-name macro-name :report 'use-replacement-parameter)))
 
 ;;; Conditions related to single quote
 

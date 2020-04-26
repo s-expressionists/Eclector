@@ -21,6 +21,9 @@
   (define-description use-partial-list            "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
 
+  (define-description ignore-parameter            "Ignore the invalid numeric parameter.")
+  (define-description use-replacement-parameter   "Use a valid numeric parameter in place of the missing one.")
+
   (define-description use-replacement-character   "Use a replacement character in place of the invalid one.")
   (define-description use-partial-character-name  "Use the already read part of the character name.")
 
