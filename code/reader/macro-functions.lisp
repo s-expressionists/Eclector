@@ -297,7 +297,7 @@
 
 (defun left-parenthesis (stream char)
   (declare (ignore char))
-  (%read-delimited-list stream #\) t))
+  (%read-delimited-list stream #\)))
 
 (defun right-parenthesis (stream char)
   ;; If the call to SIGNAL returns, then there is no handler for this
@@ -991,7 +991,7 @@
              (read-parts (stream char)
                (setf listp t)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'part '#1# '#2# char t nil))
+                 (%read-list-elements stream #'part '#1# '#2# char nil))
                nil))
       (handler-case
           (with-forbidden-quasiquotation ('sharpsign-c)
@@ -1105,7 +1105,7 @@
                (setf *quasiquote-forbidden* 'sharpsign-s-type
                      *unquote-forbidden* 'sharpsign-s-type)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'element '#1# '#2# char t nil))))
+                 (%read-list-elements stream #'element '#1# '#2# char nil))))
       (handler-case
           (with-forbidden-quasiquotation ('sharpsign-s)
             (let ((*list-reader* #'read-constructor))

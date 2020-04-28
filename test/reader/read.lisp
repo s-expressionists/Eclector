@@ -270,25 +270,42 @@
   "Smoke test for the READ-DELIMITED-LIST function."
 
   (mapc (lambda (input-char-expected)
-          (destructuring-bind (input char expected) input-char-expected
-            (flet ((do-it ()
+          (destructuring-bind (input char
+                               expected1 &optional (expected2 expected1))
+              input-char-expected
+            (flet ((do-it (install-macro-p)
                      (let ((readtable (eclector.readtable:copy-readtable
                                        eclector.reader:*readtable*)))
-                       (eclector.readtable:set-macro-character
-                        readtable #\]
-                        (eclector.readtable:get-macro-character readtable #\)))
+                       (when install-macro-p
+                         (eclector.readtable:set-macro-character
+                          readtable #\]
+                          (eclector.readtable:get-macro-character readtable #\))))
                        (let ((eclector.reader:*readtable* readtable))
                          (with-input-from-string (stream input)
                            (eclector.reader:read-delimited-list
                             char stream nil))))))
-              (error-case expected
-                (error (do-it))
+              ;; Test with #\] behaving like #\).
+              (error-case expected1
+                (error (do-it t))
                 (t
-                 (is (equal expected (do-it))))))))
-        '((""    #\] eclector.reader:unterminated-list)
-          (")"   #\] eclector.reader:invalid-context-for-right-parenthesis)
-          ("]"   #\] ())
-          ("1"   #\] eclector.reader:unterminated-list)
-          ("."   #\] eclector.reader:invalid-context-for-consing-dot)
-          ("1]"  #\] (1))
-          ("1 ]" #\] (1)))))
+                 (is (equal expected1 (do-it t)))))
+              ;; Test with #\] having constituent syntax type.
+              (error-case expected2
+                (error (do-it nil))
+                (t
+                 (is (equal expected2 (do-it nil))))))))
+        '((""             #\] eclector.reader:unterminated-list)
+          (")"            #\] eclector.reader:invalid-context-for-right-parenthesis)
+          ("]"            #\] ())
+          ("1"            #\] eclector.reader:unterminated-list)
+          ("."            #\] eclector.reader:invalid-context-for-consing-dot)
+          ("1]"           #\] (1) eclector.reader:unterminated-list)
+          ("1 ]"          #\] (1))
+          ("1 #|2|# ]"    #\] (1))
+          ("1 #+(or) 2 ]" #\] (1))
+
+          ;; We call READ-DELIMITED-LIST with RECURSIVE-P being false,
+          ;; so labels and references should work between list
+          ;; elements.
+          ("#1=1 #1#]"    #\] (1 1))
+          ("(#1=1 #1#)]"  #\] ((1 1))))))
