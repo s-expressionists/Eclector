@@ -239,8 +239,13 @@ This generic function is called by the default \texttt{\#S}~reader
 macro function to construct structure instances.  \textit{name} is a
 symbol naming the structure type of which an instance should be
 constructed.  \textit{initargs} is a list the elements of which
-alternate between symbols naming structure slots and values for those
-slots.
+alternate between string designators naming structure slots and values
+for those slots.
+
+It is the responsibility of the client to coerce the string
+designators to symbols as if by \texttt{(intern (string slot-name)
+  (find-package 'keyword))} as described in the \commonlisp{}
+specification.
 
 There is no default method on this generic function since there is no
 portable way to construct structure instances given only the name of
