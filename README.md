@@ -21,10 +21,16 @@ directory.
 In the simplest case, the eclector reader can be used like any Common
 Lisp reader:
 
-```lisp
-(with-input-from-string (stream "(1 2 3)")
-  (eclector.reader:read stream))
-```
+* ```lisp
+  (with-input-from-string (stream "(1 2 3)")
+    (eclector.reader:read stream))
+  ; => (1 2 3)
+  ```
+
+* ```lisp
+  (eclector.reader:read-from-string "#C(1 1)")
+  ; => #C(1 1) 7
+  ```
 
 ### Error Recovery
 
@@ -45,7 +51,7 @@ For example, the following code
   (eclector.reader:read-from-string "`(::foo ,"))
 ```
 
-produces this output
+produces this:
 
 ```
 Recovering from error:
@@ -60,8 +66,7 @@ Recovering from error:
   While reading list, expected the character ) when input ended.
 using
   Return a list of the already read elements.
-(ECLECTOR.READER:QUASIQUOTE (:FOO (ECLECTOR.READER:UNQUOTE NIL)))
-9
+; => (ECLECTOR.READER:QUASIQUOTE (:FOO (ECLECTOR.READER:UNQUOTE NIL))) 9
 ```
 
 indicating that eclector recovered from multiple errors and consumed
@@ -99,8 +104,8 @@ The `eclector.concrete-syntax-tree` system provides a variant of the
 classes provided by the [concrete syntax tree library]:
 
 ```lisp
-(with-input-from-string (stream "(1 2 3)")
-  (eclector.concrete-syntax-tree:cst-read stream))
+(eclector.concrete-syntax-tree:read-from-string "(1 2 3)")
+; => #<CONCRETE-SYNTAX-TREE:CONS-CST raw: (1 2 3) {100BF94EF3}> 7 NIL
 ```
 
-[concrete syntax tree library]: https://github.com/robert-strandh/Concrete-Syntax-Tree
+[concrete syntax tree library]: https://github.com/s-expressionists/Concrete-Syntax-Tree
