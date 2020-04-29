@@ -1,0 +1,90 @@
+\chapter{Recovering from errors}
+
+\section{Recovering from errors}
+\label{sec:recovering-from-errors}
+
+\sysname{} offers extensive support for recovering from many syntax
+errors, continuing to read from the input stream and return a result
+that somewhat resembles what would have been returned in case the
+syntax had been valid.  To this end, a restart named
+\texttt{eclector.reader:recover} is established when recoverable
+errors are signaled.  Like the standard \commonlisp{} restart
+\texttt{cl:continue}, this restart can be invoked by a function of the
+same name:
+
+\Defun {recover} {\optional condition}
+
+This function recovers from an error by invoking the most recently
+established applicable restart named \texttt{eclector.reader:recover}.
+If no such restart is currently established, it returns \texttt{nil}.
+If \textit{condition} is non-\texttt{nil}, only restarts that are
+either explicitly associated with \textit{condition}, or not
+associated with any condition are considered.
+
+When a \texttt{read} call during which error recovery has been
+performed returns, \sysname{} tries to return an object that is
+similar in terms of type, numeric value, sequence length, etc. to what
+would have been returned in case the input had been well-formed.  For
+example, recovering after encountering the invalid digit in
+\texttt{\#b11311} returns either the number \texttt{\#b11011} or the
+number \texttt{\#b11111}.
+
+\section{Recoverable errors}
+\label{sec:recoverable-errors}
+
+A syntax error and a corresponding recovery strategy are characterized
+by the type of the signaled condition and the report of the
+established \texttt{eclector.reader:recover} restart respectively.
+Attempting to list and describe all examples of both would provide
+little insight.  Instead, this section describes different classes of
+errors and corresponding recovery strategies in broad terms:
+
+\newcommand{\RecoverExample}[2]{\texttt{#1} $\rightarrow$ \texttt{#2}}
+
+\begin{itemize}
+\item Replace a missing numeric macro parameter or ignore an invalid
+  numeric macro parameter.  Examples: \RecoverExample{\#=1}{1},
+  \RecoverExample{\#5P"."}{\#P"."}
+
+\item Add a missing closing delimiter.  Examples:
+  \RecoverExample{"foo}{"foo"}, \RecoverExample{(1 2}{(1 2)},
+  \RecoverExample{\#(1 2}{\#(1 2)}, \RecoverExample{\#C(1 2}{\#C(1 2)}
+
+\item Replace an invalid digit or an invalid number with a valid one.
+  This includes digits which are invalid for a given base but also
+  things like $0$ denominator.  Examples: \RecoverExample{\#12rc}{1},
+  \RecoverExample{1/0}{1}, \RecoverExample{\#C(1 :foo)}{\#C(1 1)}
+
+\item Replace an invalid character with a valid one.  Example:
+  \RecoverExample{\#\textbackslash{}foo}{\#\textbackslash{}?}
+
+\item Invalid constructs can sometimes be ignored.  Examples:
+  \RecoverExample{(,1)}{(1)}, \RecoverExample{\#S(foo :bar 1 2
+    3)}{\#S(foo :bar 1)}
+
+\item Excess parts can often be ignored.  Examples:
+  \RecoverExample{\#C(1 2 3)}{\#C(1 2)}, \RecoverExample{\#2(1 2
+    3)}{\#2(1 2)}
+
+\item Replace an entire construct by some fallback value.  Example:
+  \RecoverExample{\#S(5)}{nil}, \RecoverExample{(\#1=)}{(nil)}
+
+\end{itemize}
+
+\section{Potential problems}
+\label{sec:potential-problems}
+
+Note that attempting to recover from syntax errors may lead to
+apparent success in the sense that the \texttt{read} call returns an
+object, but this object may not be what the caller wanted.  For
+example, recovering from the missing closing \texttt{"} in the
+following example
+
+\begin{Verbatim}[frame=single]
+(defun foo (x y)
+  "My documentation string
+  (+ x y))
+\end{Verbatim}
+
+results in \verb!(DEFUN FOO (X Y) "My documentation string<newline>  (+ x y))")!,
+not \verb!(DEFUN FOO (X Y) "My documentation string" (+ x y))!.

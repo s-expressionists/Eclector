@@ -8,6 +8,11 @@ implementation-specific versions of \texttt{read}, \sysname{} uses
 generic functions to allow clients to customize the exact behavior,
 such as the interpretation of tokens.
 
+Another unusual feature of \sysname{} is its ability to, at the
+discretion of the client, recover from many syntax errors, continue
+reading and return a result that somewhat resembles what would have
+been returned in case the syntax had been valid.
+
 Furthermore, \sysname{} can be used as a \texttt{source tracking}
 reader, which is accomplished through a mode of operation that
 produces \emph{parse results} which wrap the \commonlisp{} expressions
