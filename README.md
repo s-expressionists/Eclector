@@ -1,6 +1,6 @@
 # Eclector: A portable and extensible Common Lisp Reader
 
-## Introduction ##
+## Introduction
 
 The `eclector` system provides a portable implementation of a reader
 following the Common Lisp specification.
@@ -14,19 +14,62 @@ This document only gives a very brief overview and highlights some
 features. Proper documentation can be found in the `documentation`
 directory.
 
-## Tutorial ##
+## Usage Overview and Highlights
 
-### Basics ###
+### Basics
 
 In the simplest case, the eclector reader can be used like any Common
 Lisp reader:
 
-``` lisp
+```lisp
 (with-input-from-string (stream "(1 2 3)")
   (eclector.reader:read stream))
 ```
 
-### Custom Parse Results ###
+### Error Recovery
+
+In contrast to many other reader implementations, eclector can recover
+from most errors in the input supplied to it and continue
+reading. This capability is realized as a restart named
+`eclector.reader:recover` which is established whenever an error is
+signaled for which a recovery strategy is available.
+
+For example, the following code
+
+```lisp
+(handler-bind ((error (lambda (condition)
+                        (let ((restart (find-restart 'eclector.reader:recover)))
+                          (format t "Recovering from error:~%~2@T~A~%using~%~2@T~A~%"
+                                  condition restart))
+                        (eclector.reader:recover))))
+  (eclector.reader:read-from-string "`(::foo ,"))
+```
+
+produces this output
+
+```
+Recovering from error:
+  A symbol token must not start with two package markers as in ::name.
+using
+  Treat the character as if it had been escaped.
+Recovering from error:
+  While reading unquote, expected an object when input ended.
+using
+  Use NIL in place of the missing object.
+Recovering from error:
+  While reading list, expected the character ) when input ended.
+using
+  Return a list of the already read elements.
+(ECLECTOR.READER:QUASIQUOTE (:FOO (ECLECTOR.READER:UNQUOTE NIL)))
+9
+```
+
+indicating that eclector recovered from multiple errors and consumed
+all input. Of course, the returned expression is likely unsuitable for
+evaluation, but recovery is useful for detecting multiple errors in
+one go and performing further processing such as static analysis.
+
+### Custom Parse Results
 
 Using features provided in the `eclector.parse-result` package,
 the reader can produce parse results controlled by the client,
@@ -49,13 +92,13 @@ input (due to e.g. comments and reader conditionals):
   (eclector.parse-result:read (make-instance 'my-client) stream))
 ```
 
-### Concrete Syntax Trees ###
+### Concrete Syntax Trees
 
 The `eclector.concrete-syntax-tree` system provides a variant of the
 `eclector` reader that produces instances of the concrete syntax tree
 classes provided by the [concrete syntax tree library]:
 
-``` lisp
+```lisp
 (with-input-from-string (stream "(1 2 3)")
   (eclector.concrete-syntax-tree:cst-read stream))
 ```
