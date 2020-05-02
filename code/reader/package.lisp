@@ -68,6 +68,7 @@
   ;; Client protocol
   (:export
    #:call-as-top-level-read
+   #:call-as-recursive-read
    #:read-common
    #:read-maybe-nothing
 

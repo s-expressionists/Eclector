@@ -5,6 +5,8 @@
 (defgeneric call-as-top-level-read (client thunk input-stream
                                     eof-error-p eof-value preserve-whitespace-p))
 
+(defgeneric call-as-recursive-read (client input-stream function))
+
 (defgeneric read-common (client input-stream eof-error-p eof-value))
 
 (defgeneric read-maybe-nothing (client input-stream eof-error-p eof-value))

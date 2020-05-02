@@ -54,6 +54,10 @@
       (skip-whitespace input-stream))
     (values-list values)))
 
+(defmethod call-as-recursive-read (client input-stream function)
+  (error "not yet used")
+  (funcall function))
+
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
    :start
