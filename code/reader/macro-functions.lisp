@@ -295,14 +295,9 @@
 ;;; there was a second subform after the consing dot in the list, so
 ;;; we signal an ERROR.
 
-(defun opposite-delimiter (char)
-  ;; Not great, but we can't know the missing char generally.
-  (case char
-    (#\( #\))
-    (t   char)))
-
 (defun left-parenthesis (stream char)
-  (%read-delimited-list stream (opposite-delimiter char) t))
+  (declare (ignore char))
+  (%read-delimited-list stream #\) t))
 
 (defun right-parenthesis (stream char)
   ;; If the call to SIGNAL returns, then there is no handler for this

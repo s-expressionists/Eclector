@@ -45,7 +45,22 @@
       (" "  eclector.reader:invalid-constituent-character)
       ("b " eclector.reader:invalid-constituent-character))
 
-     ;; Change [ and ] to the syntax of ( and )
+     ;; Change [ to the syntax of (. The left-parenthesis reader macro
+     ;; is specified to read until a closing parenthesis (not some
+     ;; "opposite" character of the character the reader macro
+     ;; function was invoked with).
+     (,(lambda (readtable)
+         (eclector.readtable:set-macro-character
+          readtable #\[ (eclector.readtable:get-macro-character readtable #\())
+         readtable)
+      ("[1 2)"   (1 2))
+      ("[1 2]"   eclector.reader:unterminated-list)
+      ("#C[1 2)" #C(1 2))
+      ("#C[1 2]" eclector.reader:read-object-type-error))
+
+     ;; To define a proper alternate list syntax, the combination of
+     ;; using READ-DELIMITED-LIST for [ and copying ) for ] must be
+     ;; used.
      (,(lambda (readtable)
          (eclector.readtable:set-macro-character
           readtable #\] (eclector.readtable:get-macro-character readtable #\)))
