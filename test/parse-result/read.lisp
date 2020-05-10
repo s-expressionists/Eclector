@@ -386,14 +386,10 @@
      (";; test~% 1"      1    (((:line-comment . 2) (0 . 7))))
      (";;; test~% 1"     1    (((:line-comment . 3) (0 . 8))))
      ;; Toplevel Reader conditionals
-     ("#+(or) 1 2"       (2 . (((:or) . (:or))
-                               (*read-suppress* (7 . 8))
-                               nil))
-                         (((:sharpsign-plus . (:or)) (0 . 9))))
-     ("#-(and) 1 2"      (2 . (((:and) . (:and))
-                               (*read-suppress* (8 . 9))
-                               nil))
-                         (((:sharpsign-minus . (:and)) (0 . 10))))
+     ("#+(or) 1 2"       2
+                         (((:sharpsign-plus . (:or)) (0 . 8))))
+     ("#-(and) 1 2"      2
+                         (((:sharpsign-minus . (:and)) (0 . 9))))
 
      ;; Non-toplevel Comments
      ("(#||# 1)"         ((1) . ((:block-comment (1 . 5))
@@ -405,7 +401,4 @@
      ("(~%;;; test~% 1)" ((1) . (((:line-comment . 3) (2 . 10))
                                  1)))
      ;; Non-toplevel Reader conditionals
-     ("(#+(or) 1 2)"     ((2) . (((:sharpsign-plus . (:or)) (1 . 10))
-                                 (2 . (((:or) . (:or))
-                                       (*read-suppress* (8 . 9))
-                                       nil))))))))
+     ("(#+(or) 1 2)"     ((2) . (((:sharpsign-plus . (:or)) (1 . 9)) 2))))))
