@@ -102,4 +102,4 @@
          (unread-char char input-stream)
          (let* ((*skip-reason* nil)
                 (object (read-token client input-stream eof-error-p eof-value)))
-           (values object :object)))))))
+           (values object (if *read-suppress* :suppress :object))))))))

@@ -32,7 +32,7 @@
         (*stack* (list '())))
     (call-next-method)))
 
-(defmethod eclector.reader:read-common :around
+(defmethod eclector.reader:read-common :around ; TODO should not be around
     ((client parse-result-client) input-stream eof-error-p eof-value)
   (let ((orphan-results '()))
     (tagbody
@@ -43,7 +43,8 @@
          (ecase what
            ((:eof :suppress :object)
             (return-from eclector.reader:read-common
-              (values value parse-result (nreverse orphan-results))))
+              (values value parse-result (if (eq what :object) (rest (first *stack*)) (first *stack*)) ; (nreverse orphan-results)
+                      )))
            (:whitespace
             (go :start))
            (:skip
