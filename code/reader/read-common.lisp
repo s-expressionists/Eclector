@@ -30,10 +30,18 @@
 (defmethod call-as-top-level-read (client thunk input-stream
                                    eof-error-p eof-value preserve-whitespace-p)
   (let* ((labels (make-hash-table))
-         (values (multiple-value-list
-                  (let ((*labels* labels))
-                    (funcall thunk))))
-         (result (first values)))
+         (values)
+         (result))
+    (loop (setf values (multiple-value-list
+                        (let ((*labels* labels))
+                          (funcall thunk)))
+                result (first values))
+          (if (or (eq result **end-of-list**)
+                  (typep result 'end-of-list))
+              (%recoverable-reader-error input-stream 'invalid-context-for-right-parenthesis
+                                         :found-character (%character result)
+                                         :report 'ignore-trailing-right-paren)
+              (return)))
     ;; LABELS maps labels to conses of the form
     ;;
     ;;   (TEMPORARY-OBJECT . FINAL-OBJECT)
@@ -86,6 +94,9 @@
                   (note-skipped-input client input-stream
                                       (or *skip-reason* :reader-macro))
                   (values nil :skip))
+                 ((or (eq (car values) **end-of-list**)
+                      (typep (car values) 'end-of-list))
+                  (values (car values) :object))
                  ;; This case takes care of reader macro not returning
                  ;; nil when *READ-SUPPRESS* is true.
                  (*read-suppress*

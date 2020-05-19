@@ -38,3 +38,8 @@
   (if (char= character #\))
       (signal **end-of-list**)
       (signal 'end-of-list :character character)))
+
+;;;
+
+(defconstant +end-of-input+
+  '%%end-of-input)
