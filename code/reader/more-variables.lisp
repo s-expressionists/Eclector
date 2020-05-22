@@ -42,4 +42,4 @@
 ;;;
 
 (defconstant +end-of-input+
-  '%%end-of-input)
+  (intern "%%END-OF-INPUT"))
