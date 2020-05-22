@@ -54,8 +54,8 @@
         count 1 into semicolons
         else
         do (setf state nil)
-        finally (when (eql char #\Newline)
-                  (setf *skip-reason* (cons :line-comment (1+ semicolons)))
+        finally (setf *skip-reason* (cons :line-comment (1+ semicolons)))
+                (when (eql char #\Newline)
                   (unread-char char stream)))
   (values))
 
