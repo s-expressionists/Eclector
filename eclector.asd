@@ -104,6 +104,7 @@
                               (:file "helpers")
                               (:file "gen-quasiquote")
 
+                              (:file "utilities")
                               (:file "tokens")
                               (:file "read")
                               (:file "macro-functions")

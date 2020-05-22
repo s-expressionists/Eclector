@@ -3,6 +3,9 @@
    #:common-lisp
    #:fiveam)
 
+  (:import-from #:eclector.reader
+   #:convert-according-to-readtable-case)
+
   (:import-from #:eclector.test
    #:signals-printable
    #:error-case)
