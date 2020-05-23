@@ -1,5 +1,7 @@
 (cl:in-package #:eclector.reader)
 
+;;; Escapes and case conversion
+
 (defmacro update-escape-ranges
     (index escape-range-place remaining-escape-ranges-place)
   (alexandria:once-only (index)
@@ -66,3 +68,35 @@
                ((not lower-case-p)
                 (change-case nstring-downcase char-downcase))))))
     token))
+
+;;; READ helpers
+
+(declaim (inline skip-whitespace skip-whitespace*))
+
+;;; Skip zero to one whitespace characters in STREAM. Return NIL when
+;;; end-of-input is encountered before reading a character, return T
+;;; otherwise.
+(defun skip-whitespace (stream)
+  (let ((char (read-char stream nil nil t)))
+    (cond ((null char)
+           nil)
+          ((not (eq (eclector.readtable:syntax-type *readtable* char)
+                    :whitespace))
+           (unread-char char stream)
+           t)
+          (t
+           t))))
+
+;;; Skip zero or more consecutive whitespace characters in
+;;; STREAM. Return NIL when end-of-input is encountered before a
+;;; non-whitespace character, return T otherwise.
+(defun skip-whitespace* (stream)
+  (loop with readtable = *readtable*
+        for i from 0
+        for char = (read-char stream nil nil t)
+        when (null char)
+          do (return nil)
+        when (not (eq (eclector.readtable:syntax-type readtable char)
+                      :whitespace))
+          do (unread-char char stream)
+             (return t)))

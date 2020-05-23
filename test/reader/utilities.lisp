@@ -53,3 +53,37 @@
           ("Foo" ((1 . 2)) :invert   "Foo")
           ("foO" ()        :invert   "foO")
           ("foO" ((1 . 2)) :invert   "foO"))))
+
+(test skip-whitespace/smoke
+  "Smoke test for the SKIP-WHITESPACE function."
+
+  (mapc (lambda (input-and-expected)
+          (destructuring-bind (input expected-value expected-position)
+              input-and-expected
+            (let* ((stream (make-string-input-stream input))
+                   (value (skip-whitespace stream))
+                   (position (file-position stream)))
+              (is (equal expected-value     value))
+              (is (eql   expected-position  position)))))
+        '((""      nil 0)
+          (" "     t   1)
+          ("foo"   t   0)
+          (" foo"  t   1)
+          ("  foo" t   1))))
+
+(test skip-whitespace*/smoke
+  "Smoke test for the SKIP-WHITESPACE* function."
+
+  (mapc (lambda (input-and-expected)
+          (destructuring-bind (input expected-value expected-position)
+              input-and-expected
+            (let* ((stream (make-string-input-stream input))
+                   (value (skip-whitespace* stream))
+                   (position (file-position stream)))
+              (is (equal expected-value     value))
+              (is (eql   expected-position  position)))))
+        '((""      nil 0)
+          (" "     nil 1)
+          ("foo"   t   0)
+          (" foo"  t   1)
+          ("  foo" t   2))))

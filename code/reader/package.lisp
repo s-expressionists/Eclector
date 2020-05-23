@@ -55,7 +55,6 @@
 
    #:*client*
    #:*skip-reason*
-   #:*preserve-whitespace*
 
    #:read-char
    #:peek-char

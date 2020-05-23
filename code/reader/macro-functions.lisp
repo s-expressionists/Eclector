@@ -509,8 +509,7 @@
               (unread-char char stream)
               (return-char))
              (:whitespace
-              (when *preserve-whitespace*
-                (unread-char char stream))
+              (unread-char char stream)
               (return-char))))
        odd-escapes
          (multiple-value-bind (char syntax-type) (next-char :multiple-escape)
@@ -583,8 +582,7 @@
                         ((nil)
                          (return-from integer value))
                         (:whitespace
-                         (when *preserve-whitespace*
-                           (unread-char char stream))
+                         (unread-char char stream)
                          (return-from integer value))
                         (:terminating-macro
                          (unread-char char stream)
@@ -894,8 +892,7 @@
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
            (ecase syntax-type
              (:whitespace
-              (when *preserve-whitespace*
-                (unread-char char stream))
+              (unread-char char stream)
               (return-symbol))
              (:terminating-macro
               (unread-char char stream)

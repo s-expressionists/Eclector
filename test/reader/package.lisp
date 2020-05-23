@@ -4,7 +4,9 @@
    #:fiveam)
 
   (:import-from #:eclector.reader
-   #:convert-according-to-readtable-case)
+   #:convert-according-to-readtable-case
+   #:skip-whitespace
+   #:skip-whitespace*)
 
   (:import-from #:eclector.test
    #:signals-printable

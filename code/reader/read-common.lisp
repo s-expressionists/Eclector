@@ -149,8 +149,7 @@
               (unread-char char input-stream)
               (terminate-token))
              (:whitespace
-              (when *preserve-whitespace*
-                (unread-char char input-stream))
+              (unread-char char input-stream)
               (terminate-token))))
        odd-escapes
          (multiple-value-bind (char syntax-type)

@@ -4,8 +4,7 @@
 
 (defun read-aux
     (input-stream eof-error-p eof-value recursive-p preserve-whitespace-p)
-  (let ((client *client*)
-        (*preserve-whitespace* preserve-whitespace-p))
+  (let ((client *client*))
     (if recursive-p
         (read-common client input-stream eof-error-p eof-value)
         (let* ((*labels* (make-hash-table))
@@ -26,6 +25,12 @@
                             (alexandria:hash-table-values *labels*)
                             :test #'eq)))
               (fixup client result seen mapping)))
+          ;; All reading in READ-COMMON and its callees was done in a
+          ;; whitespace-preserving way. So we skip zero to one
+          ;; whitespace characters here if requested via
+          ;; PRESERVE-WHITESPACE-P.
+          (unless preserve-whitespace-p
+            (skip-whitespace input-stream))
           (values-list values)))))
 
 (defun read (&optional
