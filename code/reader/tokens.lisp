@@ -1,5 +1,106 @@
 (cl:in-package #:eclector.reader)
 
+;;; Token Reading
+
+(defmethod read-token (client input-stream eof-error-p eof-value)
+  (let ((readtable *readtable*)
+        (token (make-array 10
+                           :element-type 'character
+                           :adjustable t
+                           :fill-pointer 0))
+        (escape-ranges '())
+        (escape-char))
+    (labels ((push-char (char)
+               (vector-push-extend char token)
+               char)
+             (start-escape (char)
+               (setf escape-char char)
+               (push (cons (length token) nil) escape-ranges))
+             (end-escape ()
+               (setf escape-char nil)
+               (setf (cdr (first escape-ranges)) (length token)))
+             (read-char-handling-eof (context)
+               (let ((char (read-char input-stream nil nil t)))
+                 (cond ((not (null char))
+                        (values char (eclector.readtable:syntax-type
+                                      readtable char)))
+                       ((eq context :single-escape)
+                        (%recoverable-reader-error
+                         input-stream 'unterminated-single-escape-in-symbol
+                         :escape-char escape-char
+                         :report 'use-partial-symbol)
+                        (end-escape)
+                        (terminate-token))
+                       ((eq context :multiple-escape)
+                        (%recoverable-reader-error
+                         input-stream 'unterminated-multiple-escape-in-symbol
+                         :delimiter escape-char
+                         :report 'use-partial-symbol)
+                        (end-escape)
+                        (terminate-token))
+                       (t
+                        (terminate-token)))))
+             (terminate-token ()
+               (return-from read-token
+                 (cond (*read-suppress*
+                        (note-skipped-input client input-stream
+                                            (or *skip-reason* '*read-suppress*))
+                        nil)
+                       (t
+                        (unless (null escape-ranges)
+                          (setf escape-ranges (nreverse escape-ranges)))
+                        (interpret-token client input-stream token escape-ranges))))))
+      (tagbody
+         ;; This function is only called when a character is available
+         ;; in INPUT-STREAM.
+         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
+           (ecase syntax-type
+             (:single-escape
+              (start-escape char)
+              (push-char (read-char-handling-eof syntax-type))
+              (end-escape)
+              (go even-escapes))
+             (:multiple-escape
+              (start-escape char)
+              (go odd-escapes))
+             (:constituent
+              (push-char char)
+              (go even-escapes))))
+       even-escapes
+         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
+           (ecase syntax-type
+             ((:constituent :non-terminating-macro)
+              (push-char char)
+              (go even-escapes))
+             (:single-escape
+              (start-escape char)
+              (push-char (read-char-handling-eof syntax-type))
+              (end-escape)
+              (go even-escapes))
+             (:multiple-escape
+              (start-escape char)
+              (go odd-escapes))
+             (:terminating-macro
+              (unread-char char input-stream)
+              (terminate-token))
+             (:whitespace
+              (unread-char char input-stream)
+              (terminate-token))))
+       odd-escapes
+         (multiple-value-bind (char syntax-type)
+             (read-char-handling-eof :multiple-escape)
+           (ecase syntax-type
+             ((:constituent :terminating-macro
+               :non-terminating-macro :whitespace)
+              (push-char char)
+              (go odd-escapes))
+             (:single-escape
+              (push-char (read-char-handling-eof syntax-type))
+              (go odd-escapes))
+             (:multiple-escape
+              (end-escape)
+              (go even-escapes))))))))
+
 ;;; Constituent traits
 ;;;
 ;;; Based on Table 2-8 in 2.1.4.2 Constituent Traits
@@ -77,7 +178,8 @@
                   (defun ,name (char)
                     (let ((code (char-code char)))
                       (when (< code ,(length +constituent-traits+))
-                        (logtest ,(trait->index trait) (aref +constituent-traits+ code)))))))))
+                        (logtest ,(trait->index trait)
+                                 (aref +constituent-traits+ code)))))))))
   (define-trait-predicate :invalid)
   (define-trait-predicate :float-exponent-marker))
 
