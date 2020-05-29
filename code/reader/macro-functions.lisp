@@ -1309,7 +1309,8 @@
 (declaim (inline make-fixup-marker
                  fixup-marker-temporary
                  fixup-marker-final-p (setf fixup-marker-final-p)
-                 fixup-marker-final (setf fixup-marker-final)))
+                 fixup-marker-final (setf fixup-marker-final)
+                 find-fixup-marker))
 
 (defun make-fixup-marker ()
   (let ((temporary (list nil)))
@@ -1329,6 +1330,11 @@
 
 (defun (setf fixup-marker-final) (new-value marker)
   (setf (cdr marker) new-value))
+
+(defun find-fixup-marker (label)
+  (alexandria:if-let ((labels *labels*))
+    (gethash label labels)
+    (values nil nil)))
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
@@ -1352,8 +1358,12 @@
     (when (null parameter)
       (numeric-parameter-not-supplied stream 'sharpsign-equals)
       (return-from sharpsign-equals (read-object)))
-    (let ((labels *labels*))
-      (when (nth-value 1 (gethash parameter labels))
+
+    (multiple-value-bind (labels definedp)
+        (alexandria:if-let ((labels *labels*))
+          (values labels (nth-value 1 (gethash parameter labels)))
+          (values (setf *labels* (make-hash-table)) nil))
+      (when definedp
         (%recoverable-reader-error
          stream 'sharpsign-equals-label-defined-more-than-once
          :label parameter :report 'ignore-label)
@@ -1378,7 +1388,7 @@
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals)
     (return-from sharpsign-sharpsign nil))
-  (multiple-value-bind (marker definedp) (gethash parameter *labels*)
+  (multiple-value-bind (marker definedp) (find-fixup-marker parameter)
     (cond ((not definedp)
            (%recoverable-reader-error
             stream 'sharpsign-sharpsign-undefined-label
