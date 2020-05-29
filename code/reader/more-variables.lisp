@@ -6,6 +6,10 @@
 
 (defvar *skip-reason*)
 
+;;; Labels
+
+(defvar *labels*)
+
 ;;; Quasiquote syntax
 
 (defparameter *quasiquote-forbidden* nil)

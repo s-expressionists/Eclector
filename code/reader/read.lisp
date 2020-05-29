@@ -1,7 +1,5 @@
 (cl:in-package #:eclector.reader)
 
-(defvar *labels*)
-
 (defun read-aux
     (input-stream eof-error-p eof-value recursive-p preserve-whitespace-p)
   (let ((client *client*))
