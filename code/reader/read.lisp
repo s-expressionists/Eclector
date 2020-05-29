@@ -140,3 +140,14 @@
                (%read-delimited-list input-stream char)))
         (declare (dynamic-extent #'do-it))
         (call-as-top-level-read *client* #'do-it input-stream nil nil t))))
+
+(define-compiler-macro read-delimited-list (&whole form
+                                            char &optional input-stream recursive-p)
+  (if (and (constantp recursive-p)
+           (eval recursive-p))
+      (progn
+        (format *trace-output* "Applicable ~S~%" form)
+        `(%read-delimited-list ,input-stream ,char))
+      (progn
+        (format *trace-output* "Not applicable ~S~%" form)
+        form)))
