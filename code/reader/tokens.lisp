@@ -404,7 +404,7 @@
                      (return-from interpret-token (symbol)))
                     (*consing-dot-allowed-p*
                      (return-from interpret-token
-                       *consing-dot*))
+                       **consing-dot**))
                     (t
                      (%reader-error input-stream 'invalid-context-for-consing-dot))))
              ((eql char #\.)

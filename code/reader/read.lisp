@@ -79,7 +79,7 @@
               for object = (let ((*consing-dot-allowed-p* nil))
                              (read-list-element client stream close-char))
               then (read-list-element client stream close-char)
-              if (eq object *consing-dot*)
+              if (eq object **consing-dot**)
               do (setf *consing-dot-allowed-p* nil
                        state :tail)
                  (funcall function :tail (read stream t nil t))

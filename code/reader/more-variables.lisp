@@ -23,7 +23,7 @@
 ;;; character, replacing the usual behavior of %READ-DELIMITED-LIST.
 (defvar *list-reader* nil)
 
-(defvar *consing-dot* '#:|.|)
+(#+sbcl sb-ext:defglobal #-sbcl defvar **consing-dot** '#:|.|)
 
 (defparameter *consing-dot-allowed-p* nil)
 
