@@ -31,27 +31,33 @@
             (skip-whitespace input-stream))
           (values-list values)))))
 
-(defun read (&optional
-             (input-stream *standard-input*)
-             (eof-error-p t)
-             (eof-value nil)
-             (recursive-p nil))
-  (read-aux input-stream eof-error-p eof-value recursive-p recursive-p))
+(macrolet
+    ((define (name preserve-whitespace-form)
+       `(progn
+          (defun ,name (&optional
+                        (input-stream *standard-input*)
+                        (eof-error-p t)
+                        (eof-value nil)
+                        (recursive-p nil))
+            (read-aux input-stream eof-error-p eof-value recursive-p ,preserve-whitespace-form))
 
-(defun read-preserving-whitespace (&optional
-                                   (input-stream *standard-input*)
-                                   (eof-error-p t)
-                                   (eof-value nil)
-                                   (recursive-p nil))
-  (read-aux input-stream eof-error-p eof-value recursive-p t))
+          (define-compiler-macro ,name (&whole form
+                                        &optional (input-stream '*standard-input*)
+                                                  (eof-error-p 't)
+                                                  (eof-value 'nil)
+                                                  (recursive-p nil))
+            (if (and (constantp recursive-p)
+                     (eval recursive-p))
+                `(read-common *client* ,input-stream ,eof-error-p ,eof-value)
+                form)))))
+  (define read                       recursive-p)
+  (define read-preserving-whitespace t))
 
-(defun read-from-string (string &optional
-                                (eof-error-p t)
-                                (eof-value nil)
-                                &key
-                                (start 0)
-                                (end nil)
-                                (preserve-whitespace nil))
+(defun read-from-string (string &optional (eof-error-p t)
+                                          (eof-value nil)
+                                &key (start 0)
+                                     (end nil)
+                                     (preserve-whitespace nil))
   (let ((index))
     (values (with-input-from-string (stream string :start start :end end
                                                    :index index)
