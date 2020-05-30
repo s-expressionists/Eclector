@@ -1,7 +1,5 @@
 (cl:in-package #:eclector.reader)
 
-(defvar *input-stream*)
-
 (defparameter *client* nil)
 
 (defvar *skip-reason*)

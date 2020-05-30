@@ -1169,6 +1169,11 @@
 ;;;
 ;;; Reader macros for sharpsign + and sharpsign -.
 
+;;; This variable is bound to the current input stream in
+;;; SHARPSIGN-PLUS-MINUS to make the stream available for error
+;;; reporting in CHECK-STANDARD-FEATURE-EXPRESSION.
+(defvar *input-stream*)
+
 (deftype feature-expression-operator ()
   '(member :not :or :and))
 
@@ -1250,7 +1255,8 @@
                  (recover (recovery-description
                            'treat-as-false (acclimation:language
                                             acclimation:*locale*)))
-               (evaluate-feature-expression client feature-expression))
+               (let ((*input-stream* stream))
+                 (evaluate-feature-expression client feature-expression)))
              invertp)
             (read-expression 'end-of-input-after-feature-expression
                              'object-must-follow-feature-expression

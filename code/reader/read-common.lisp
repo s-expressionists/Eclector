@@ -31,10 +31,6 @@
   (let ((function (eclector.readtable:get-macro-character readtable char)))
     (funcall function input-stream char)))
 
-(defmethod read-common :around (client input-stream eof-error-p eof-value)
-  (let ((*input-stream* input-stream))
-    (call-next-method)))
-
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
    step-1-start
