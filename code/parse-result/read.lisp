@@ -24,9 +24,11 @@
     (eclector.reader::skip-whitespace* input-stream)
     (setf *start* (source-position client input-stream))))
 
+;;; Establishing context
+
 (defmethod eclector.reader:read-common :around
     ((client parse-result-client) input-stream eof-error-p eof-value)
-  (let ((*stack* (cons '() *stack*)))
+  (let ((*stack* (list* '() *stack*)))
     (unless (eclector.reader::skip-whitespace* input-stream)
       (when eof-error-p
         (eclector.base:%reader-error input-stream 'eclector.reader:end-of-file))
@@ -44,6 +46,8 @@
                           client result children source)))
       (push parse-result (second *stack*))
       (values result parse-result))))
+
+;;; Entry points
 
 (defun read-aux (client input-stream eof-error-p eof-value preserve-whitespace-p)
   (multiple-value-bind (result parse-result orphan-results)

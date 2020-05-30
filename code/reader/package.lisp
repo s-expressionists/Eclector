@@ -68,6 +68,7 @@
   ;; Client protocol
   (:export
    #:read-common
+
    #:read-token
    #:note-skipped-input
    #:interpret-token
