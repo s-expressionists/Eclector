@@ -509,9 +509,10 @@
             (type-error-expected-type condition)))
 
   (define-reporter ((condition single-feature-expected) stream language)
-    (format stream "Found the features ~S when only one was ~
-                    expected,"
-            (features condition)))
+    (let ((features (features condition)))
+      (format stream "Found ~[no features~*~:;the features ~{~S~^ ~}~] ~
+                      when exactly one feature was expected,"
+              (length features) features)))
 
   (define-reporter ((condition end-of-input-after-feature-expression)
                     stream language)
