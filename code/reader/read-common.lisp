@@ -27,10 +27,6 @@
 
 ;;;
 
-(defmethod call-reader-macro (client input-stream char readtable)
-  (let ((function (eclector.readtable:get-macro-character readtable char)))
-    (funcall function input-stream char)))
-
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (tagbody
    step-1-start

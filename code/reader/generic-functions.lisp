@@ -20,7 +20,10 @@
 
 ;;; Calling reader macros and behavior of standard reader macros
 
-(defgeneric call-reader-macro (client input-stream char readtable))
+(defgeneric call-reader-macro (client input-stream char readtable)
+  (:method ((client t) (input-stream t) (char t) (readtable t))
+    (let ((function (eclector.readtable:get-macro-character readtable char)))
+      (funcall function input-stream char))))
 
 (defgeneric find-character (client name)
   (:method ((client t) (name t))
