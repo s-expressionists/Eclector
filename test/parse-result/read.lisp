@@ -364,14 +364,14 @@
                       (file-position stream)))))
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (equal expected-result result)
-                 "For input ~S, expected result ~S but got ~S."
+                 "~@<For input ~S, expected result ~S but got ~S.~@:>"
                  input expected-result result)
              (is (equal expected-orphan-results orphan-results)
-                 "For input ~S, expected orphan results ~S but got ~
-                 ~S."
+                 "~@<For input ~S, expected orphan results ~S but got ~
+                 ~S.~@:>"
                  input expected-orphan-results orphan-results)
              (is (eql expected-position position)
-                 "For input ~S, expected position ~S but got ~S."
+                 "~@<For input ~S, expected position ~S but got ~S.~@:>"
                  input expected-position position))))))
    '(;; Whitespace is not skipped input.
      ("1"                1)

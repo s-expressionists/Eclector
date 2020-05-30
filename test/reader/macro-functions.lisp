@@ -703,7 +703,8 @@
                  (multiple-value-bind (value position) (do-it)
                    (is (string= (symbol-name expected) (symbol-name value)))
                    (is (equal expected-position position)
-                       "For input ~S, expected position ~S but got ~S."
+                       "~@<For input ~S, expected position ~S but got ~
+                        ~S.~@:>"
                        input expected-position position)))))))
         '(;; Errors
           ("\\"      nil nil eclector.reader:unterminated-single-escape-in-symbol)
