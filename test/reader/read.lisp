@@ -226,7 +226,45 @@
 (test read-maybe-nothing/smoke
   "Smoke test for the READ-MAYBE-NOTHING function."
 
-  )
+  (mapc (lambda (input-expected)
+          (destructuring-bind ((input eof-error-p read-suppress)
+                               (expected-value
+                                &optional expected-kind expected-position))
+              input-expected
+            (flet ((do-it ()
+                     (with-input-from-string (stream input)
+                       (multiple-value-bind (value kind)
+                           (eclector.reader:call-as-top-level-read
+                            nil (lambda ()
+                                  (let ((*read-suppress* read-suppress))
+                                    (eclector.reader:read-maybe-nothing
+                                     nil stream eof-error-p :eof)))
+                            stream eof-error-p :eof t)
+                         (values value kind (file-position stream))))))
+              (error-case expected-value
+                (error (do-it))
+                (t
+                 (multiple-value-bind (value kind position) (do-it)
+                   (is (equal expected-value    value))
+                   (is (eq    expected-kind     kind))
+                   (is (eql   expected-position position))))))))
+        '(((""       nil nil) (:eof :eof       0))
+          ((""       t   nil) (eclector.reader:end-of-file))
+
+          (("   "    nil nil) (nil :whitespace 3))
+          (("   "    nil nil) (nil :whitespace 3))
+
+          ((";  "    nil nil) (nil :skip       3))
+
+          (("#||#"   nil nil) (nil :skip       4))
+          (("#||# "  nil nil) (nil :skip       4))
+          (("#||#  " nil nil) (nil :skip       4))
+          (("#||#"   nil t)   (nil :skip       4))
+
+          (("1"      nil nil) (1   :object     1))
+          (("1 "     nil nil) (1   :object     1))
+          (("1"      nil t)   (nil :suppress   1))
+          (("1 "     nil t)   (nil :suppress   1)))))
 
 (test read-delimited-list/smoke
   "Smoke test for the READ-DELIMITED-LIST function."

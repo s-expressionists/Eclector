@@ -59,6 +59,19 @@
     ((client simple-result-client) (result t) (children t) (source t))
   (make-instance 'atom-result :raw result :source source))
 
+;;;
+
+(defclass list-result-client (eclector.parse-result:parse-result-client)
+  ())
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client list-result-client) (result t) (children t) (source t))
+  (list :result result :children children :source source))
+
+(defmethod eclector.parse-result:make-skipped-input-result
+    ((client list-result-client) (stream t) (reason t) (source t))
+  (list :reason reason :source source))
+
 ;;; Smoke test with parse results
 
 (test read/smoke
@@ -177,6 +190,55 @@
           (":foo 1"   (t nil :preserve-whitespace t)   :foo                         4)
           (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
           (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
+
+(test read-maybe-nothing/smoke
+  "Smoke test for the READ-MAYBE-NOTHING function."
+
+  (mapc (lambda (input-expected)
+          (destructuring-bind ((input eof-error-p read-suppress)
+                               (expected-value
+                                &optional expected-kind
+                                          expected-parse-result
+                                          (expected-position (length input))))
+              input-expected
+            (flet ((do-it ()
+                     (let ((client (make-instance 'list-result-client)))
+                       (with-input-from-string (stream input)
+                         (multiple-value-bind (value kind parse-result)
+                             (eclector.reader:call-as-top-level-read
+                              client (lambda ()
+                                       (let ((*read-suppress* read-suppress))
+                                         (eclector.reader:read-maybe-nothing
+                                          client stream eof-error-p :eof)))
+                              stream eof-error-p :eof t)
+                           (values value kind parse-result
+                                   (file-position stream)))))))
+              (error-case expected-value
+                (error (do-it))
+                (t
+                 (multiple-value-bind (value kind parse-result position)
+                     (do-it)
+                   (is (equal expected-value        value))
+                   (is (eq    expected-kind         kind))
+                   (is (equal expected-parse-result parse-result))
+                   (is (eql   expected-position     position))))))))
+        '(((""       nil nil) (:eof :eof))
+          ((""       t   nil) (eclector.reader:end-of-file))
+
+          (("   "    nil nil) (nil :whitespace))
+          (("   "    nil nil) (nil :whitespace))
+
+          ((";  "    nil nil) (nil :skip       (:reason (:line-comment . 1) :source (0 . 3))  ))
+
+          (("#||#"   nil nil) (nil :skip       (:reason :block-comment :source (0 . 4))       ))
+          (("#||# "  nil nil) (nil :skip       (:reason :block-comment :source (0 . 4))      4))
+          (("#||#  " nil nil) (nil :skip       (:reason :block-comment :source (0 . 4))      4))
+          (("#||#"   nil t)   (nil :skip       (:reason :block-comment :source (0 . 4))       ))
+
+          (("1"      nil nil) (1   :object     (:result 1 :children () :source (0 . 1))       ))
+          (("1 "     nil nil) (1   :object     (:result 1 :children () :source (0 . 1))      1))
+          (("1"      nil t)   (nil :suppress   (:reason *read-suppress* :source (0 . 1))      ))
+          (("1 "     nil t)   (nil :suppress   (:reason *read-suppress* :source (0 . 1))     1)))))
 
 ;;; Source locations
 
