@@ -1355,7 +1355,6 @@
         (return-from sharpsign-equals (read-object)))
       (let ((marker (make-fixup-marker)))
         (setf (gethash parameter labels) marker)
-        ;; FIXME Do we need to transmit EOF-ERROR-P through reader macros?
         (let ((result (read-object)))
           (when (eq result (fixup-marker-temporary marker))
             (%recoverable-reader-error

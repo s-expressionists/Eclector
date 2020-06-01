@@ -38,6 +38,11 @@
            (:whitespace
             (go step-1-start))
            ((:terminating-macro :non-terminating-macro)
+            ;; There is no need to consider the value of EOF-ERROR-P
+            ;; in reader macros since: "read signals an error of type
+            ;; end-of-file, regardless of eof-error-p, if the file
+            ;; ends in the middle of an object representation."
+            ;; (HyperSpec entry for READ)
             (let* ((*skip-reason* nil)
                    (values (multiple-value-list
                             (call-reader-macro
