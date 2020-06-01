@@ -7,31 +7,12 @@
   (let ((client *client*))
     (if recursive-p
         (read-common client input-stream eof-error-p eof-value)
-        (let* ((*labels* (make-hash-table))
-               (values (multiple-value-list
-                        (read-common client input-stream eof-error-p eof-value)))
-               (result (first values)))
-          ;; *LABELS* maps labels to conses of the form
-          ;;
-          ;;   (TEMPORARY-OBJECT . FINAL-OBJECT)
-          ;;
-          ;; where TEMPORARY-OBJECT is EQ-comparable and its
-          ;; sub-structure does not matter here. For the fixup step,
-          ;; convert these conses into a hash-table mapping temporary
-          ;; objects to final objects.
-          (unless (zerop (hash-table-count *labels*))
-            (let ((seen (make-hash-table :test #'eq))
-                  (mapping (alexandria:alist-hash-table
-                            (alexandria:hash-table-values *labels*)
-                            :test #'eq)))
-              (fixup client result seen mapping)))
-          ;; All reading in READ-COMMON and its callees was done in a
-          ;; whitespace-preserving way. So we skip zero to one
-          ;; whitespace characters here if requested via
-          ;; PRESERVE-WHITESPACE-P.
-          (unless preserve-whitespace-p
-            (skip-whitespace input-stream))
-          (values-list values)))))
+        (flet ((read-common ()
+                 (read-common client input-stream eof-error-p eof-value)))
+          (declare (dynamic-extent #'read-common))
+          (call-as-top-level-read
+           client #'read-common input-stream
+           eof-error-p eof-value preserve-whitespace-p)))))
 
 (macrolet
     ((define (name preserve-whitespace-form)

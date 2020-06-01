@@ -90,13 +90,34 @@ some generic function of \sysname{} should bind this variable to some
 standard object and provide a method on that generic function,
 specialized to the class of that standard object.
 
+\Defgeneric {call-as-top-level-read} {client thunk input-stream\\
+  eof-error-p eof-value preserve-whitespace-p}
+
+This generic function is called by \texttt{read}, if \texttt{read} is
+called with a true value for the \textit{recursive-p} parameter.  It
+calls \textit{thunk} with the necessary context for a global
+\texttt{read} call.  \textit{thunk} should read and return an object
+without consuming any whitespace following the object.  If
+\textit{preserve-whitespace-p} is false, this function reads up to one
+character of whitespace after \textit{thunk} returns.  This function
+returns the object or \textit{eof-value} returned by \textit{thunk} as
+its first value.  It may return additional values.
+
+The default method on this generic function performs two tasks:
+\begin{enumerate}
+\item It establishes a context in which labels (\texttt{\#N=}) and
+  references (\texttt{\#N\#}) work.
+\item It realizes the requested \textit{preserve-whitespace-p}
+  behavior.
+\end{enumerate}
+
 \Defgeneric {read-common} {client input-stream eof-error-p eof-value}
 
 This generic function is called by \texttt{read}, passing it the value
 of the variable \texttt{*client*} and the corresponding parameters.
 Client code can add methods on this function, specializing them to the
 client class of its choice.  The actions that \texttt{read} need to
-take for different values of the parameter \texttt{recursive-p} have
+take for different values of the parameter \textit{recursive-p} have
 already been taken before \texttt{read} calls this generic function.
 
 \Defgeneric {note-skipped-input} {client input-stream reason}

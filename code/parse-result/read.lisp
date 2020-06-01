@@ -26,6 +26,16 @@
 
 ;;; Establishing context
 
+(defmethod eclector.reader:call-as-top-level-read :around
+    ((client parse-result-client) thunk input-stream
+     eof-error-p eof-value preserve-whitespace-p)
+  (let ((stack (list '())))
+    (multiple-value-bind (result parse-result)
+        (let ((eclector.reader:*client* client)
+              (*stack* stack))
+          (call-next-method))
+      (values result parse-result (reverse (rest (first stack)))))))
+
 (defmethod eclector.reader:read-common :around
     ((client parse-result-client) input-stream eof-error-p eof-value)
   (let ((*stack* (list* '() *stack*)))
@@ -51,17 +61,18 @@
 
 (defun read-aux (client input-stream eof-error-p eof-value preserve-whitespace-p)
   (multiple-value-bind (result parse-result orphan-results)
-      (let ((eclector.reader:*client* client)
-            (*stack* (list '())))
-        (multiple-value-call #'values
-          (eclector.reader::read-aux
-           input-stream eof-error-p eof-value nil preserve-whitespace-p)
-          (reverse (rest (first *stack*)))))
+      (flet ((read-common ()
+               (eclector.reader:read-common
+                client input-stream eof-error-p eof-value)))
+        (declare (dynamic-extent #'read-common))
+        (eclector.reader:call-as-top-level-read
+         client #'read-common input-stream
+         eof-error-p eof-value preserve-whitespace-p))
     ;; If we come here, that means that either the call to READ-AUX
-    ;; succeeded without encountering end-of-file, or that
-    ;; EOF-ERROR-P is false, end-of-file was encountered, and
-    ;; EOF-VALUE was returned.  In the latter case, we want READ to
-    ;; return EOF-VALUE.
+    ;; succeeded without encountering end-of-file, or that EOF-ERROR-P
+    ;; is false, end-of-file was encountered, and EOF-VALUE was
+    ;; returned.  In the latter case, we want READ to return
+    ;; EOF-VALUE.
     (values (if (and (null eof-error-p) (eq eof-value result))
                 eof-value
                 parse-result)
