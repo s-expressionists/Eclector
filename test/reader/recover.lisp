@@ -2,56 +2,59 @@
 
 (in-suite :eclector.reader)
 
+(defun do-recover-test-case (input-and-expected)
+  (destructuring-bind (input expected-conditions expected-value
+                       &optional (expected-position (length input)))
+      input-and-expected
+    (let ((remaining-conditions expected-conditions))
+      (flet ((do-it ()
+               (handler-bind
+                   ((error
+                      (lambda (condition)
+                        (let ((expected-condition (pop remaining-conditions)))
+                          (is (typep condition expected-condition)
+                              "For input ~S, expected a condition ~
+                               of type ~S but got ~S."
+                              input expected-condition condition))
+                        (let ((restart (find-restart 'eclector.reader:recover)))
+                          (is-true (typep restart 'restart)
+                                   "For input ~S expected a RECOVER ~
+                                    restart."
+                                   input)
+                          (unless restart
+                            (return-from do-recover-test-case))
+                          (is (not (string= "" (princ-to-string restart)))
+                              "For input ~S expected restart to ~
+                               print properly."
+                              input)
+                          (invoke-restart restart)))))
+                 (with-input-from-string (stream input)
+                   (values (let ((eclector.reader::*backquote-depth* 1)
+                                 (eclector.reader::*client*
+                                   (make-instance 'sharpsign-s-client)))
+                             (eclector.reader:read stream nil))
+                           (file-position stream))))))
+        ;; Check expected value and position.
+        (multiple-value-bind (value position) (do-it)
+          (is (relaxed-equalp expected-value value)
+              "For input ~S, expected return value ~S but got ~
+               ~S."
+              input expected-value value)
+          (is (equalp expected-position position)
+              "For input ~S, expected position ~S but got ~S."
+              input expected-position position))
+        ;; All signaled conditions were as expected. Make sure
+        ;; all expected conditions were signaled.
+        (is (null remaining-conditions)
+            "For input ~S, expected condition~P ~S but those ~
+             were not signaled."
+            input
+            (length remaining-conditions) remaining-conditions)))))
+
 (test recover/smoke
   "Test recovering from various syntax errors."
 
-  (mapc (alexandria:named-lambda one-case (input-and-expected)
-          (destructuring-bind (input expected-conditions expected-value
-                               &optional (expected-position (length input)))
-              input-and-expected
-            (let ((remaining-conditions expected-conditions))
-              (flet ((do-it ()
-                       (handler-bind
-                           ((error
-                              (lambda (condition)
-                                (let ((expected-condition (pop remaining-conditions)))
-                                  (is (typep condition expected-condition)
-                                      "For input ~S, expected a ~
-                                       condition of type ~S but got ~
-                                       ~S."
-                                      input expected-condition condition))
-                                (let ((restart (find-restart 'eclector.reader:recover)))
-                                  (is-true (typep restart 'restart)
-                                           "For input ~S expected a RECOVER restart."
-                                           input)
-                                  (unless restart
-                                    (return-from one-case))
-                                  (is (not (string= "" (princ-to-string restart)))
-                                      "For input ~S expected restart to print properly."
-                                      input)
-                                  (invoke-restart restart)))))
-                         (with-input-from-string (stream input)
-                           (values (let ((eclector.reader::*backquote-depth* 1)
-                                         (eclector.reader::*client*
-                                           (make-instance 'sharpsign-s-client)))
-                                     (eclector.reader:read stream nil))
-                                   (file-position stream))))))
-                ;; Check expected value and position.
-                (multiple-value-bind (value position) (do-it)
-                  (is (relaxed-equalp expected-value value)
-                      "For input ~S, expected return value ~S but got ~
-                       ~S."  input expected-value value)
-                  (is (equalp expected-position position)
-                      "For input ~S, expected position ~S but got ~S."
-                      input expected-position position))
-                ;; All signaled conditions were as expected. Make sure
-                ;; all expected conditions were signaled.
-                (is (null remaining-conditions)
-                    "For input ~S, expected condition~P ~S but those ~
-                     were not signaled."
-                    input
-                    (length remaining-conditions) remaining-conditions)))))
-
+  (mapc #'do-recover-test-case
         `(;; Recover from invalid syntax in symbols.
           (,(format nil ":foo~C" #\Backspace) (eclector.reader:invalid-constituent-character)                :foo_)
           (":fo\\"                            (eclector.reader:unterminated-single-escape-in-symbol)         :fo)
@@ -258,3 +261,17 @@
           ("(1 \"a"    (eclector.reader:unterminated-string
                         eclector.reader:unterminated-list)
                                                                                 (1 "a")))))
+
+;;; Binding *READ-DEFAULT-FLOAT-FORMAT* to a non-standard value is
+;;; allowed if the implementation accepts the value. SBCL allows the
+;;; specific value RATIONAL. CCL doesn't seem to type-check the value
+;;; so we can get away with it. Other implementations could signal an
+;;; error.
+#+(or sbcl ccl)
+(test recover-from-invalid-float-format
+  "Test recovering from invalid value of *READ-DEFAULT-FLOAT-FORMAT*."
+
+  (let ((*read-default-float-format* 'rational))
+    (mapc #'do-recover-test-case
+          '(("1.0" (eclector.reader:invalid-default-float-format) 1.0f0)
+            ("1e0" (eclector.reader:invalid-default-float-format) 1.0f0)))))

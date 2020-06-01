@@ -6,46 +6,47 @@
              `(defmethod recovery-description ((strategy (eql ',strategy))
                                                (language acclimation:english))
                 ,description)))
-  (define-description use-partial-symbol          "Return a symbol named by the already read characters.")
-  (define-description replace-invalid-character   "Replace the invalid character with a valid one.")
-  (define-description treat-as-escaped            "Treat the character as if it had been escaped.")
+  (define-description use-partial-symbol           "Return a symbol named by the already read characters.")
+  (define-description replace-invalid-character    "Replace the invalid character with a valid one.")
+  (define-description treat-as-escaped             "Treat the character as if it had been escaped.")
 
-  (define-description replace-invalid-digit       "Use a suitable digit in place of the invalid digit.")
-  (define-description use-replacement-radix       "Use a suitable radix in place of the invalid radix.")
+  (define-description replace-invalid-digit        "Use a suitable digit in place of the invalid digit.")
+  (define-description use-replacement-radix        "Use a suitable radix in place of the invalid radix.")
+  (define-description use-replacement-float-format "Use a suitable float format in place of the invalid one.")
 
-  (define-description ignore-quasiquote           "Read the following form as if it were not quasiquoted.")
-  (define-description ignore-unquote              "Read the following form as if it were not unquoted.")
-  (define-description ignore-missing-delimiter    "Ignore the missing delimiter.")
-  (define-description use-partial-string          "Return a string of the already read characters.")
-  (define-description inject-nil                  "Use NIL in place of the missing object.")
-  (define-description ignore-object               "Ignore the object.")
-  (define-description use-partial-list            "Return a list of the already read elements.")
-  (define-description ignore-trailing-right-paren "Ignore the trailing right parenthesis.")
+  (define-description ignore-quasiquote            "Read the following form as if it were not quasiquoted.")
+  (define-description ignore-unquote               "Read the following form as if it were not unquoted.")
+  (define-description ignore-missing-delimiter     "Ignore the missing delimiter.")
+  (define-description use-partial-string           "Return a string of the already read characters.")
+  (define-description inject-nil                   "Use NIL in place of the missing object.")
+  (define-description ignore-object                "Ignore the object.")
+  (define-description use-partial-list             "Return a list of the already read elements.")
+  (define-description ignore-trailing-right-paren  "Ignore the trailing right parenthesis.")
 
-  (define-description ignore-parameter            "Ignore the invalid numeric parameter.")
-  (define-description use-replacement-parameter   "Use a valid numeric parameter in place of the missing one.")
+  (define-description ignore-parameter             "Ignore the invalid numeric parameter.")
+  (define-description use-replacement-parameter    "Use a valid numeric parameter in place of the missing one.")
 
-  (define-description use-replacement-character   "Use a replacement character in place of the invalid one.")
-  (define-description use-partial-character-name  "Use the already read part of the character name.")
+  (define-description use-replacement-character    "Use a replacement character in place of the invalid one.")
+  (define-description use-partial-character-name   "Use the already read part of the character name.")
 
-  (define-description use-empty-vector            "Return an empty vector.")
-  (define-description use-partial-vector          "Return a vector of the already read elements.")
-  (define-description ignore-excess-elements      "Use the already read elements and ignore the excess elements.")
+  (define-description use-empty-vector             "Return an empty vector.")
+  (define-description use-partial-vector           "Return a vector of the already read elements.")
+  (define-description ignore-excess-elements       "Use the already read elements and ignore the excess elements.")
 
-  (define-description use-empty-array             "Use an empty array in place of the invalid one.")
+  (define-description use-empty-array              "Use an empty array in place of the invalid one.")
 
-  (define-description use-replacement-part        "Use a replacement part in place of the invalid part.")
-  (define-description use-partial-complex         "Complete the complex number using default values for missing parts.")
-  (define-description ignore-excess-parts         "Use the already read parts and ignore the excess parts.")
+  (define-description use-replacement-part         "Use a replacement part in place of the invalid part.")
+  (define-description use-partial-complex          "Complete the complex number using default values for missing parts.")
+  (define-description ignore-excess-parts          "Use the already read parts and ignore the excess parts.")
 
-  (define-description use-partial-initargs        "Use already read structure type name and initargs.")
-  (define-description skip-slot                   "Skip the invalid slot.")
+  (define-description use-partial-initargs         "Use already read structure type name and initargs.")
+  (define-description skip-slot                    "Skip the invalid slot.")
 
-  (define-description replace-namestring          "Use a suitable namestring in place of the invalid one.")
+  (define-description replace-namestring           "Use a suitable namestring in place of the invalid one.")
 
-  (define-description treat-as-false              "Treat the feature expression as false.")
+  (define-description treat-as-false               "Treat the feature expression as false.")
 
-  (define-description ignore-label                "Read the following object as is if there was no label."))
+  (define-description ignore-label                 "Read the following object as is if there was no label."))
 
 ;;;; Contexts and condition reporters
 
@@ -327,8 +328,12 @@
             (radix condition) (< (radix condition) 2)))
 
   (define-reporter ((condition invalid-default-float-format) stream)
-    (format stream "~a is not a valid ~a."
-            (float-format condition) 'cl:*read-default-float-format*))
+    (format stream "~:[A floating-point number without exponent ~
+                    marker~;The exponent marker ~:*~a~] cannot be used ~
+                    since the value of ~a is ~a which is not valid."
+            (exponent-marker condition)
+            'cl:*read-default-float-format*
+            (float-format condition)))
 
 ;;; Conditions related to block comments
 

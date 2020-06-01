@@ -251,18 +251,18 @@
 (defun reader-float-format (&optional exponent-marker)
   (ecase exponent-marker
     ((nil #\e #\E)
-     (case *read-default-float-format*
-       (single-float 'single-float)
-       (short-float 'short-float)
-       (double-float 'double-float)
-       (long-float 'long-float)
-       (t
-        ;; *read-default-float-format* may be some other type
-        ;; *specifier which the implementation chooses to allow
-        (if (subtypep *read-default-float-format* 'float)
-            *read-default-float-format*
-            (error 'invalid-default-float-format ; FIXME this is currently a READER-ERROR, but we do not have a stream at this point
-                   :float-format *read-default-float-format*)))))
+     (let ((default-format *read-default-float-format*))
+       (case default-format
+         (single-float 'single-float)
+         (short-float 'short-float)
+         (double-float 'double-float)
+         (long-float 'long-float)
+         ;; *READ-DEFAULT-FLOAT-FORMAT* may be some other type
+         ;; specifier which the implementation chooses to allow.
+         (t
+          (if (subtypep default-format 'float)
+              default-format
+              (values nil default-format))))))
     ((#\f #\F) 'single-float)
     ((#\s #\S) 'short-float)
     ((#\d #\D) 'double-float)
@@ -327,15 +327,23 @@
               position-package-marker-1
               position-package-marker-2))
            (return-float (&optional exponentp)
-             (let ((magnitude (* (+ (funcall decimal-mantissa)
-                                    (/ (funcall fraction-numerator)
-                                       fraction-denominator))
-                                 (if exponentp
-                                     (expt 10 (* exponent-sign (funcall exponent)))
-                                     1)))
-                   (type (reader-float-format exponent-marker)))
-               (return-from interpret-token
-                 (* sign (coerce magnitude type))))))
+             (multiple-value-bind (type default-format)
+                 (reader-float-format exponent-marker)
+               (when (null type)
+                 (%recoverable-reader-error
+                  input-stream 'invalid-default-float-format
+                  :exponent-marker exponent-marker
+                  :float-format default-format
+                  :report 'use-replacement-float-format)
+                 (setf type 'single-float))
+               (let ((magnitude (* (+ (funcall decimal-mantissa)
+                                      (/ (funcall fraction-numerator)
+                                         fraction-denominator))
+                                   (if exponentp
+                                       (expt 10 (* exponent-sign (funcall exponent)))
+                                       1))))
+                 (return-from interpret-token
+                   (* sign (coerce magnitude type)))))))
       (macrolet ((next-cond ((char-var &optional
                                        return-symbol-if-eoi
                                        (colon-go-symbol t))

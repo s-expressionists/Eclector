@@ -252,7 +252,8 @@
   ((%radix :initarg :radix :reader radix)))
 
 (define-condition invalid-default-float-format (stream-position-reader-error)
-  ((%float-format :initarg :float-format :reader float-format)))
+  ((%exponent-marker :initarg :exponent-marker :reader exponent-marker)
+   (%float-format :initarg :float-format :reader float-format)))
 
 ;;; Conditions related to block comments
 
