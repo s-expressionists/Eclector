@@ -1333,7 +1333,7 @@
 
 (defun find-fixup-marker (label)
   (alexandria:if-let ((labels *labels*))
-    (gethash label labels)
+    (gethash label (car labels))
     (values nil nil)))
 
 (defun sharpsign-equals (stream char parameter)
@@ -1359,23 +1359,25 @@
       (numeric-parameter-not-supplied stream 'sharpsign-equals)
       (return-from sharpsign-equals (read-object)))
 
-    (multiple-value-bind (labels definedp)
+    (multiple-value-bind (labels definedp) ; TODO rename to table
         (alexandria:if-let ((labels *labels*))
-          (values labels (nth-value 1 (gethash parameter labels)))
-          (values (setf *labels* (make-hash-table)) nil))
+          (values labels
+                  (nth-value 1 (gethash parameter (car labels))))
+          (values (setf *labels* (cons (make-hash-table) nil))
+                  nil))
       (when definedp
         (%recoverable-reader-error
          stream 'sharpsign-equals-label-defined-more-than-once
          :label parameter :report 'ignore-label)
         (return-from sharpsign-equals (read-object)))
       (let ((marker (make-fixup-marker)))
-        (setf (gethash parameter labels) marker)
+        (setf (gethash parameter (car labels)) marker)
         (let ((result (read-object)))
           (when (eq result (fixup-marker-temporary marker))
             (%recoverable-reader-error
              stream 'sharpsign-equals-only-refers-to-self
              :label parameter :report 'inject-nil)
-            (remhash parameter labels)
+            (remhash parameter (car labels))
             (return-from sharpsign-equals nil))
           (setf (fixup-marker-final marker) result
                 (fixup-marker-final-p marker) t)
@@ -1400,6 +1402,7 @@
           ;; Else, we must use the temporary object and it will be
           ;; fixed up later.
           (t
+           (setf (cdr *labels*) t) ; TODO return the values of *LABELS*
            (fixup-marker-temporary marker)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

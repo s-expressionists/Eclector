@@ -40,11 +40,12 @@
     ;; does not matter here. For the fixup step, convert these conses
     ;; into a hash-table mapping temporary objects to final objects.
     (alexandria:when-let ((labels *labels*))
-      (unless (zerop (hash-table-count labels))
-        (let ((seen (make-hash-table :test #'eq))
-              (mapping (alexandria:alist-hash-table
-                        (alexandria:hash-table-values labels)
-                        :test #'eq)))
+      (when (cdr labels)
+        (let* ((table (car labels))
+               (seen (make-hash-table :test #'eq))
+               (mapping (alexandria:alist-hash-table
+                         (alexandria:hash-table-values table)
+                         :test #'eq)))
           (fixup client result seen mapping))))
     ;; All reading in READ-COMMON and its callees was done in a
     ;; whitespace-preserving way. So we skip zero to one whitespace
