@@ -16,7 +16,8 @@
          (parse-result (make-skipped-input-result
                         client input-stream reason range)))
     (when parse-result
-      (push parse-result (second *stack*)))
+      (assert (eq :ok (first (second *stack*))))
+      (push parse-result (second (second *stack*))))
     ;; Try to advance to the next non-whitespace input character,
     ;; then update *START*. This way, the source location for an
     ;; object subsequently read from INPUT-STREAM will not include
@@ -29,8 +30,11 @@
     ((client parse-result-client) thunk input-stream
      eof-error-p eof-value preserve-whitespace-p)
   (let ((eclector.reader:*client* client)
-        (*stack* (list '())))
-    (call-next-method)))
+        (*stack* (list (list :ok '()))))
+    (multiple-value-prog1
+        (call-next-method)
+      (print *stack*)
+      (assert (eq :ok (first (first *stack*)))))))
 
 (defmethod eclector.reader:read-common :around ; TODO should not be around
     ((client parse-result-client) input-stream eof-error-p eof-value)
@@ -42,8 +46,9 @@
             client input-stream eof-error-p eof-value)
          (ecase what
            ((:eof :suppress :object)
+            (assert (eq :ok (first (first *stack*))))
             (return-from eclector.reader:read-common
-              (values value parse-result (if (eq what :object) (rest (first *stack*)) (first *stack*)) ; (nreverse orphan-results)
+              (values value parse-result (if (eq what :object) (rest (second (first *stack*))) (second (first *stack*))) ; (nreverse orphan-results)
                       )))
            (:whitespace
             (go :start))
@@ -53,7 +58,7 @@
 
 (defmethod eclector.reader:read-maybe-nothing
     ((client parse-result-client) input-stream eof-error-p eof-value)
-  (let ((stack (list* '() *stack*))
+  (let ((stack (list* (list :ok '()) *stack*))
         ;; *START* is used and potentially modified in
         ;; NOTE-SKIPPED-INPUT to reflect skipped input (comments,
         ;; reader macros, *READ-SUPPRESS*) before actually reading
@@ -64,17 +69,22 @@
           (call-next-method))
       (case what
         (:object
-         (let* ((children (reverse (first stack))) ; TODO nreverse
+         (assert (eq :ok (first (first stack))))
+         (setf (first (first stack)) :bad)
+         (let* ((children (nreverse (second (first stack))))
                 (end (source-position client input-stream))
                 (source (make-source-range client *start* end))
                 (parse-result (make-expression-result
                                client value children source)))
-           (push parse-result (second stack))
+           (assert (eq :ok (first (second stack))))
+           (push parse-result (second (second stack)))
+           (print stack)
            (values value what parse-result)))
         (:whitespace
          (values value what))
         (t
-         (values value what (first (second stack))))))))
+         (assert (eq :ok (first (second stack))))
+         (values value what (first (second (second stack)))))))))
 
 ;;; Entry points
 
