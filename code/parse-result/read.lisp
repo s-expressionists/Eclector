@@ -33,7 +33,6 @@
         (*stack* (list (list :ok '()))))
     (multiple-value-prog1
         (call-next-method)
-      (print *stack*)
       (assert (eq :ok (first (first *stack*)))))))
 
 (defmethod eclector.reader:read-common :around ; TODO should not be around
@@ -78,7 +77,6 @@
                                client value children source)))
            (assert (eq :ok (first (second stack))))
            (push parse-result (second (second stack)))
-           (print stack)
            (values value what parse-result)))
         (:whitespace
          (values value what))
