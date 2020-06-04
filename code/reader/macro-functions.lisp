@@ -992,11 +992,14 @@
                (setf listp t)
                (let ((*list-reader* nil))
                  (%read-list-elements stream #'part '#1# '#2# char nil))
-               nil))
+               (list real imaginary))) ; TODO either this or use READ-MAYBE-NOTHING and do not produce a result for the list
       (handler-case
           (with-forbidden-quasiquotation ('sharpsign-c)
             (let ((*list-reader* #'read-parts))
-              (read stream t nil t)))
+              ;; We use %READ-MAYBE-NOTHING here to prevent the creation of a parse result
+              (%read-maybe-nothing *client* stream t nil)
+              ; (read stream t nil t)
+              ))
         ((and end-of-file (not incomplete-construct)) (condition)
           (%recoverable-reader-error
            stream 'end-of-input-after-sharpsign-c
@@ -1105,7 +1108,9 @@
                (setf *quasiquote-forbidden* 'sharpsign-s-type
                      *unquote-forbidden* 'sharpsign-s-type)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'element '#1# '#2# char nil))))
+                 (%read-list-elements stream #'element '#1# '#2# char nil))
+               (setf initargs (nreverse initargs))
+               (list* type initargs)))
       (handler-case
           (with-forbidden-quasiquotation ('sharpsign-s)
             (let ((*list-reader* #'read-constructor))
@@ -1126,7 +1131,7 @@
             (%recoverable-reader-error stream 'non-list-following-sharpsign-s
                                        :report 'inject-nil))))
       (if (not (null type))
-          (make-structure-instance *client* type (nreverse initargs))
+          (make-structure-instance *client* type initargs)
           nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

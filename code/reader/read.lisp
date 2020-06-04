@@ -49,21 +49,21 @@
 
 ;;; Reading lists
 
-(defun peek (stream close-char)
-  (tagbody
+(defun read-list-element (client stream close-char)
+  (tagbody ; TODO this is just loop
    :start
      (let ((char (peek-char t stream t nil)))
        (if (eql char close-char)
            (progn
              (read-char stream)
              (signal-end-of-list char))
-           (multiple-value-bind (values what)
-               (read-maybe-nothing *client* stream t nil)
+           (multiple-value-bind (object what)
+               (read-maybe-nothing client stream t nil)
              (case what
                (:skip
                 (go :start))
                (t
-                (return-from peek values))))))))
+                (return-from read-list-element object))))))))
 
 ;;; Read a list terminated by CLOSE-CHAR from STREAM. For each
 ;;; encountered list element as well the end of the list (or premature
@@ -72,12 +72,13 @@
 ;;; element, EOL-VALUE or EOF-VALUE.
 (defun %read-list-elements (stream function eol-value eof-value
                             close-char consing-dot-allowed-p)
-  (let ((state :proper))
+  (let ((client *client*)
+        (state :proper))
     (handler-case
         (loop with *consing-dot-allowed-p* = consing-dot-allowed-p
               for object = (let ((*consing-dot-allowed-p* nil))
-                             (peek stream close-char))
-              then (peek stream close-char)
+                             (read-list-element client stream close-char))
+              then (read-list-element client stream close-char)
               if (eq object *consing-dot*)
               do (setf *consing-dot-allowed-p* nil
                        state :tail)
