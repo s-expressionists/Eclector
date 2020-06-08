@@ -322,10 +322,10 @@
                (%reader-error
                 input-stream 'symbol-name-must-not-be-only-package-markers
                 :token token))
-             (interpret-symbol-token
-              client input-stream token
-              position-package-marker-1
-              position-package-marker-2))
+             (values (interpret-symbol-token
+                      client input-stream token
+                      position-package-marker-1
+                      position-package-marker-2)))
            (return-float (&optional exponentp)
              (multiple-value-bind (type default-format)
                  (reader-float-format exponent-marker)
