@@ -1157,7 +1157,7 @@
                 (unread-char (%character condition) stream)
                 ".")))))
     (cond ((stringp expression)
-           (parse-namestring expression))
+           (values (parse-namestring expression)))
           (t
            (%recoverable-reader-error
             stream 'non-string-following-sharpsign-p
