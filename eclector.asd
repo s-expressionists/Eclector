@@ -80,7 +80,8 @@
                 (:version "fiveam" "1.4"))
 
   :components  ((:module "test"
-                 :components ((:file "package")))
+                 :components ((:file "package")
+                              (:file "utilities")))
 
                 (:module "readtable"
                  :pathname "test/readtable"
