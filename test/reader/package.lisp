@@ -9,6 +9,8 @@
    #:skip-whitespace*)
 
   (:import-from #:eclector.test
+   #:do-input-cases        #:expect
+   #:do-stream-input-cases #:with-stream
    #:signals-printable
    #:error-case)
 

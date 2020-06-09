@@ -7,33 +7,32 @@
   "Smoke test for QUASIQUOTE expansion. This covers some of the error
    cases the random test cannot."
 
-  (mapc (lambda (input-and-expected)
-          (destructuring-bind (input expected) input-and-expected
-            (let ((form (with-input-from-string (stream input)
-                          (eclector.reader:read stream))))
-              (flet ((do-it ()
-                       (macroexpand-1 form)))
-                (error-case expected
-                  (error (do-it))
-                  (t
-                   (is (relaxed-equalp expected (eval (do-it))))))))))
-        '(("`,1"           1)
-          ("`,@1"          eclector.reader:unquote-splicing-at-top)
-          ("`,.1"          eclector.reader:unquote-splicing-at-top)
+  (do-stream-input-cases (() expected)
+    (let ((form (with-stream (stream)
+                  (eclector.reader:read stream))))
+      (flet ((do-it ()
+               (macroexpand-1 form)))
+        (error-case expected
+          (error (do-it))
+          (t
+           (expect "evaluated result" (relaxed-equalp expected (eval (do-it))))))))
+    '(("`,1"           1)
+      ("`,@1"          eclector.reader:unquote-splicing-at-top)
+      ("`,.1"          eclector.reader:unquote-splicing-at-top)
 
-          ("`(1 ,2)"       (1 2))
-          ("`(1 ,@'(2))"   (1 2))
-          ("`(1 ,.'(2))"   (1 2))
+      ("`(1 ,2)"       (1 2))
+      ("`(1 ,@'(2))"   (1 2))
+      ("`(1 ,.'(2))"   (1 2))
 
-          ("`(1 . ,2)"     (1 . 2))
-          ("`(1 . ,@'(2))" eclector.reader:unquote-splicing-in-dotted-list)
-          ("`(1 . ,.'(2))" eclector.reader:unquote-splicing-in-dotted-list)
+      ("`(1 . ,2)"     (1 . 2))
+      ("`(1 . ,@'(2))" eclector.reader:unquote-splicing-in-dotted-list)
+      ("`(1 . ,.'(2))" eclector.reader:unquote-splicing-in-dotted-list)
 
-          ("`#(,1)"        #(1))
-          ("`#(,@'(1))"    #(1))
-          ("`#(,.'(1))"    #(1))
+      ("`#(,1)"        #(1))
+      ("`#(,@'(1))"    #(1))
+      ("`#(,.'(1))"    #(1))
 
-          ("`\"foo\""      "foo"))))
+      ("`\"foo\""      "foo"))))
 
 (test expand-quasiquote.host-equivalence/random
   "Checks equivalence to host's result of expanded and evaluated

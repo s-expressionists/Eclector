@@ -1,70 +1,65 @@
 (cl:in-package #:eclector.reader.test)
 
 (def-suite* :eclector.reader.tokens
-    :in :eclector.reader)
+  :in :eclector.reader)
 
 (test read-token/smoke
   "Smoke test for the default method on READ-TOKEN."
 
-  (mapc (lambda (input-args-expected)
-          (destructuring-bind
-              (input eof-error-p eof-value
-               expected &optional (expected-position (length input)))
-              input-args-expected
-            (flet ((do-it ()
-                     (with-input-from-string (stream input)
-                       (values (let ((*package*
-                                       (find-package '#:eclector.reader.test))) ; TODO use a client that does not intern in INTERPRET-TOKEN
-                                 (eclector.reader:read-token
-                                  t stream eof-error-p eof-value))
-                               (file-position stream)))))
-              (error-case expected
-                (error (do-it))
-                (t
-                 (multiple-value-bind (value position) (do-it)
-                   (is (equalp expected          value))
-                   (is (eql    expected-position position))))))))
-        `((,(format nil "~C" #\Backspace)   t   nil eclector.reader:invalid-constituent-character)
-          (,(format nil "~C" #\Rubout)      t   nil eclector.reader:invalid-constituent-character)
-          ("a"                              t   nil |A|)
-          ("\\"                             t   nil eclector.reader:unterminated-single-escape-in-symbol)
-          ("\\"                             nil nil eclector.reader:unterminated-single-escape-in-symbol)
-          ("\\a"                            t   nil |a|)
-          (,(format nil "\\~C" #\Backspace) t   nil ,(intern (format nil "~C" #\Backspace)))
+  (do-stream-input-cases ((length) eof-error-p eof-value
+                          expected &optional (expected-position length))
+    (flet ((do-it ()
+             (with-stream (stream)
+               (let ((*package* (find-package '#:eclector.reader.test))) ; TODO use a client that does not intern in INTERPRET-TOKEN
+                 (eclector.reader:read-token
+                  t stream eof-error-p eof-value)))))
+      (error-case expected
+        (error (do-it))
+        (t
+         (multiple-value-bind (value position) (do-it)
+           (expect "value"    (equalp expected          value))
+           (expect "position" (eql    expected-position position))))))
+    `((,(format nil "~C" #\Backspace)   t   nil eclector.reader:invalid-constituent-character)
+      (,(format nil "~C" #\Rubout)      t   nil eclector.reader:invalid-constituent-character)
+      ("a"                              t   nil |A|)
+      ("\\"                             t   nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("\\"                             nil nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("\\a"                            t   nil |a|)
+      (,(format nil "\\~C" #\Backspace) t   nil ,(intern (format nil "~C" #\Backspace)))
 
-          (,(format nil "a~C" #\Backspace)  t   nil eclector.reader:invalid-constituent-character)
-          (,(format nil "a~C" #\Rubout)     t   nil eclector.reader:invalid-constituent-character)
-          ("aa"                             t   nil |AA|)
-          ("a#"                             t   nil |A#|)
-          ("a\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol)
-          ("a\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol)
-          ("a\\a"                           t   nil |Aa|)
-          ("a|a|"                           t   nil |Aa|)
-          ("a,"                             t   nil |A|  1)
-          ("a "                             t   nil |A|  1)
+      (,(format nil "a~C" #\Backspace)  t   nil eclector.reader:invalid-constituent-character)
+      (,(format nil "a~C" #\Rubout)     t   nil eclector.reader:invalid-constituent-character)
+      ("aa"                             t   nil |AA|)
+      ("a#"                             t   nil |A#|)
+      ("a\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("a\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("a\\a"                           t   nil |Aa|)
+      ("a|a|"                           t   nil |Aa|)
+      ("a,"                             t   nil |A|  1)
+      ("a "                             t   nil |A|  1)
 
-          ("|"                              t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
-          ("|"                              nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
-          ("||"                             t   nil ||)
-          ("||a"                            t   nil |A|)
-          ("|a|"                            t   nil |a|)
-          ("|#|"                            t   nil |#|)
-          ("|,|"                            t   nil |,|)
-          ("| |"                            t   nil | |)
-          (,(format nil "|~C|" #\Backspace) t   nil ,(intern (format nil "~C" #\Backspace)))
-          ("|\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol)
-          ("|\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol)
-          ("|\\|"                           t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
-          ("|\\|"                           nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
-          ("|\\||"                          t   nil |\||)
+      ("|"                              t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
+      ("|"                              nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
+      ("||"                             t   nil ||)
+      ("||a"                            t   nil |A|)
+      ("|a|"                            t   nil |a|)
+      ("|#|"                            t   nil |#|)
+      ("|,|"                            t   nil |,|)
+      ("| |"                            t   nil | |)
+      (,(format nil "|~C|" #\Backspace) t   nil ,(intern (format nil "~C" #\Backspace)))
+      ("|\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("|\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("|\\|"                           t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
+      ("|\\|"                           nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
+      ("|\\||"                          t   nil |\||)
 
-          (".\\."                           t   nil |..|)
-          (".||."                           t   nil |..|)
-          (".||"                            t   nil |.|)
-          ("..a"                            t   nil |..A|)
+      (".\\."                           t   nil |..|)
+      (".||."                           t   nil |..|)
+      (".||"                            t   nil |.|)
+      ("..a"                            t   nil |..A|)
 
-          ("\\a||"                          t   nil |a|)
-          ("\\a||b"                         t   nil |aB|))))
+      ("\\a||"                          t   nil |a|)
+      ("\\a||b"                         t   nil |aB|))))
 
 (test interpet-symbol-token/smoke
   "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
@@ -104,8 +99,7 @@
           ("CL::ABS"                        2   3   nil abs))))
 
 (defun do-interpret-token-test-case (arguments-context-expected)
-  (destructuring-bind
-      (token token-escapes *read-base* case expected)
+  (destructuring-bind (token token-escapes *read-base* case expected)
       arguments-context-expected
     (let ((table (eclector.readtable:copy-readtable
                   eclector.reader:*readtable*)))

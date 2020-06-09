@@ -9,24 +9,21 @@
   (mapc
    (lambda (setup-cases)
      (destructuring-bind (setup &rest cases) setup-cases
-       (mapc (lambda (input-expected)
-               (destructuring-bind (input expected
-                                    &optional (expected-position (length input)))
-                   input-expected
-                 (flet ((do-it ()
-                          (let ((eclector.reader:*readtable*
-                                  (funcall setup (eclector.readtable:copy-readtable
-                                                  eclector.reader:*readtable*))))
-                            (with-input-from-string (stream input)
-                              (values (eclector.reader:read stream)
-                                      (file-position stream))))))
-                   (error-case expected
-                     (error (do-it))
-                     (t
-                      (multiple-value-bind (result position) (do-it)
-                        (is (equal expected          result))
-                        (is (eql   expected-position position))))))))
-             cases)))
+       (do-stream-input-cases ((length)
+                               expected &optional (expected-position length))
+         (flet ((do-it ()
+                  (let ((eclector.reader:*readtable*
+                          (funcall setup (eclector.readtable:copy-readtable
+                                          eclector.reader:*readtable*))))
+                    (with-stream (stream)
+                      (eclector.reader:read stream)))))
+           (error-case expected
+             (error (do-it))
+             (t
+              (multiple-value-bind (result position) (do-it)
+                (expect "result"   (equal expected          result))
+                (expect "position" (eql   expected-position position))))))
+         cases)))
    `(;; Change syntax of a character
      (,(lambda (readtable)
          (setf (eclector.readtable:syntax-from-char #\7 readtable readtable) #\;)
