@@ -95,8 +95,8 @@ specialized to the class of that standard object.
 This generic function is called by \texttt{read}, passing it the value
 of the variable \texttt{*client*} and the corresponding parameters.
 Client code can add methods on this function, specializing them to the
-client class of its choice.  The actions that \texttt{read} need to
-take for different values of the parameter \texttt{recursive-p} have
+client class of its choice.  The actions that \texttt{read} needs to
+take for different values of the parameter \textit{recursive-p} have
 already been taken before \texttt{read} calls this generic function.
 
 \Defgeneric {note-skipped-input} {client input-stream reason}
