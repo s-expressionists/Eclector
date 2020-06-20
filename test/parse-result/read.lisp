@@ -305,21 +305,18 @@
       ("1 2"              nil 1 () 2)
 
       ;; Toplevel comments
-      ("#||# 1"           nil 1    ((:block-comment (0 . 4))))
-      ("#||# 1"           t   nil  ((:block-comment (0 . 4))
-                                    (*read-suppress* (5 . 6))))
-      ("; test"           nil :eof (((:line-comment . 1) (0 . 6))))
-      ("; test~% 1"       nil 1    (((:line-comment . 1) (0 . 6))))
-      (";; test~% 1"      nil 1    (((:line-comment . 2) (0 . 7))))
-      (";;; test~% 1"     nil 1    (((:line-comment . 3) (0 . 8))))
+      ("#||# 1"           nil 1                         ((:block-comment (0 . 4))))
+      ("#||# 1"           t   (*read-suppress* (5 . 6)) ((:block-comment (0 . 4))))
+      ("; test"           nil :eof                      (((:line-comment . 1) (0 . 6))))
+      ("; test~% 1"       nil 1                         (((:line-comment . 1) (0 . 6))))
+      (";; test~% 1"      nil 1                         (((:line-comment . 2) (0 . 7))))
+      (";;; test~% 1"     nil 1                         (((:line-comment . 3) (0 . 8))))
       ;; Toplevel reader conditionals
       ("#+(or) 1 2"       nil (2 . (((:or) . (:or))
-                                    (*read-suppress* (7 . 8))
-                                    nil))
+                                    (*read-suppress* (7 . 8))))
        (((:sharpsign-plus . (:or)) (0 . 9))))
       ("#-(and) 1 2"      nil (2 . (((:and) . (:and))
-                                    (*read-suppress* (8 . 9))
-                                    nil))
+                                    (*read-suppress* (8 . 9))))
        (((:sharpsign-minus . (:and)) (0 . 10))))
 
       ;; Non-toplevel comments
@@ -334,20 +331,13 @@
       ;; Non-toplevel reader conditionals
       ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 10))
                                       (2 . (((:or) . (:or))
-                                            (*read-suppress* (8 . 9))
-                                            nil)))))
+                                            (*read-suppress* (8 . 9)))))))
       ;; Order of skipped inputs
-      ("#|1|# #|2|# 3"    nil 3   ((:block-comment (0 . 5))
-                                   (:block-comment (6 . 11))))
-      ("#|1|# #|2|# 3"    t   nil ((:block-comment (0 . 5))
-                                   (:block-comment (6 . 11))
-                                   (*read-suppress* (12 . 13))))
+      ("#|1|# #|2|# 3"    nil 3                           ((:block-comment (0 . 5))
+                                                           (:block-comment (6 . 11))))
+      ("#|1|# #|2|# 3"    t   (*read-suppress* (12 . 13)) ((:block-comment (0 . 5))
+                                                           (:block-comment (6 . 11))))
 
       ;; Non-toplevel suppressed objects
-      ;; FIXME `nil' children are bogus
-      ;; FIXME the suppressed input should not appear as an orphan result
-      ("(nil)"            t   (nil (*read-suppress* (1 . 4)) nil)
-                              ((*read-suppress* (0 . 5))))
-      ("#|1|# (nil)"      t   (nil (*read-suppress* (7 . 10)) nil)
-                              ((:block-comment (0 . 5))
-                               (*read-suppress* (6 . 11)))))))
+      ("(nil)"            t   (*read-suppress* (0 . 5))  ())
+      ("#|1|# (nil)"      t   (*read-suppress* (6 . 11)) ((:block-comment (0 . 5)))))))

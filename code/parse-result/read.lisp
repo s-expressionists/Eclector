@@ -34,18 +34,20 @@
         (eclector.base:%reader-error input-stream 'eclector.reader:end-of-file))
       (return-from eclector.reader:read-common eof-value))
     (let* (;; *START* is used and potentially modified in
-           ;; NOTE-SKIPPED-INPUT to reflect skipped input
-           ;; (comments, reader macros, *READ-SUPPRESS*) before
-           ;; actually reading something.
+           ;; NOTE-SKIPPED-INPUT to reflect skipped input (comments,
+           ;; reader macros, *READ-SUPPRESS*) before actually reading
+           ;; something.
            (*start* (source-position client input-stream))
-           (result (call-next-method))
-           (children (reverse (first *stack*)))
-           (end (source-position client input-stream))
-           (source (make-source-range client *start* end))
-           (parse-result (make-expression-result
-                          client result children source)))
-      (push parse-result (second *stack*))
-      (values result parse-result))))
+           (result  (call-next-method)))
+      (if *read-suppress*
+          (values result (first (second *stack*)))
+          (let* ((children (reverse (first *stack*)))
+                 (end (source-position client input-stream))
+                 (source (make-source-range client *start* end))
+                 (parse-result (make-expression-result
+                                client result children source)))
+            (push parse-result (second *stack*))
+            (values result parse-result))))))
 
 ;;; Entry points
 
@@ -78,13 +80,11 @@
                                           (eof-value nil))
   (read-aux client input-stream eof-error-p eof-value t))
 
-(defun read-from-string (client string &optional
-                                       (eof-error-p t)
-                                       (eof-value nil)
-                                       &key
-                                       (start 0)
-                                       (end nil)
-                                       (preserve-whitespace nil))
+(defun read-from-string (client string &optional (eof-error-p t)
+                                                 (eof-value nil)
+                                       &key (start 0)
+                                            (end nil)
+                                            (preserve-whitespace nil))
   (let ((index))
     (multiple-value-bind (result orphan-results)
         (with-input-from-string (stream string :start start :end end
