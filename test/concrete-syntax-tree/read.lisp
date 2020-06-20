@@ -231,27 +231,40 @@
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
 
-  (do-stream-input-cases ((length) expected)
+  (do-stream-input-cases ((length) read-suppress expected)
     (flet ((do-it ()
              (let ((client
                      (make-instance 'skipped-input-recording-client)))
                (with-stream (stream)
-                 (let ((eclector.reader:*client* client))
+                 (let ((eclector.reader:*client* client)
+                       (*read-suppress* read-suppress))
                    (eclector.concrete-syntax-tree:read stream))
                  (skipped client)))))
       (multiple-value-bind (skipped position) (do-it)
-        (is (eql   length   position))
-        (is (equal expected skipped))))
+        (expect "position"       (eql   length   position))
+        (expect "skipped inputs" (equal expected skipped))))
     '(;; No skipping
-      ("1"            ())
+      ("1"             nil ())
       ;; Comments
-      ("#||# 1"       ((:block-comment (0 . 4))))
-      ("; test~% 1"   (((:line-comment . 1) (0 . 6))))
-      (";; test~% 1"  (((:line-comment . 2) (0 . 7))))
-      (";;; test~% 1" (((:line-comment . 3) (0 . 8))))
+      ("#||# 1"        nil ((:block-comment (0 . 4))))
+      ("; test~% 1"    nil (((:line-comment . 1) (0 . 6))))
+      (";; test~% 1"   nil (((:line-comment . 2) (0 . 7))))
+      (";;; test~% 1"  nil (((:line-comment . 3) (0 . 8))))
       ;; Reader conditionals
-      ("#+(or) 1 2"   ((*read-suppress* (7 . 8))
-                       ((:sharpsign-plus . (:or)) (0 . 9)))))))
+      ("#+(or) 1 2"    nil ((*read-suppress* (7 . 8))
+                            ((:sharpsign-plus . (:or)) (0 . 9))))
+      ;; Order of skipped inputs
+      ("#|1|# #|2|# 3" nil ((:block-comment (0 . 5))
+                            (:block-comment (6 . 11))))
+      ("#|1|# #|2|# 3" t   ((:block-comment (0 . 5))
+                            (:block-comment (6 . 11))
+                            (*read-suppress* (12 . 13))))
+      ;; Non-toplevel suppressed objects
+      ("(nil)"         t   ((*read-suppress* (1 . 4))
+                            (*read-suppress* (0 . 5))))
+      ("#|1|# (nil)"   t   ((:block-comment (0 . 5))
+                            (*read-suppress* (7 . 10))
+                            (*read-suppress* (6 . 11)))))))
 
 ;;; Regressions and other tests
 

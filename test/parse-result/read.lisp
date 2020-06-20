@@ -274,51 +274,69 @@
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
 
-  (do-stream-input-cases ((length) expected-result
+  (do-stream-input-cases ((length) read-suppress expected-result
                           &optional (expected-orphan-results '())
                                     (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
-               (eclector.parse-result:read
-                (make-instance 'skipped-input-recording-client)
-                stream nil :eof))))
+               (let ((*read-suppress* read-suppress))
+                 (eclector.parse-result:read
+                  (make-instance 'skipped-input-recording-client)
+                  stream nil :eof)))))
       (multiple-value-bind (result orphan-results position) (do-it)
         (expect "result"         (equal expected-result         result))
         (expect "orphan results" (equal expected-orphan-results orphan-results))
         (expect "position"       (eql   expected-position       position))))
     '(;; Whitespace is not skipped input.
-      ("1"                1)
-      (" 1"               1)
-      ("1 "               1)
-      ("1 2"              1 () 2)
+      ("1"                nil 1)
+      (" 1"               nil 1)
+      ("1 "               nil 1)
+      ("1 2"              nil 1 () 2)
 
-      ;; Toplevel Comments
-      ("#||# 1"           1    ((:block-comment (0 . 4))))
-      ("; test"           :eof (((:line-comment . 1) (0 . 6))))
-      ("; test~% 1"       1    (((:line-comment . 1) (0 . 6))))
-      (";; test~% 1"      1    (((:line-comment . 2) (0 . 7))))
-      (";;; test~% 1"     1    (((:line-comment . 3) (0 . 8))))
-      ;; Toplevel Reader conditionals
-      ("#+(or) 1 2"       (2 . (((:or) . (:or))
-                                (*read-suppress* (7 . 8))
-                                nil))
+      ;; Toplevel comments
+      ("#||# 1"           nil 1    ((:block-comment (0 . 4))))
+      ("#||# 1"           t   nil  ((:block-comment (0 . 4))
+                                    (*read-suppress* (5 . 6))))
+      ("; test"           nil :eof (((:line-comment . 1) (0 . 6))))
+      ("; test~% 1"       nil 1    (((:line-comment . 1) (0 . 6))))
+      (";; test~% 1"      nil 1    (((:line-comment . 2) (0 . 7))))
+      (";;; test~% 1"     nil 1    (((:line-comment . 3) (0 . 8))))
+      ;; Toplevel reader conditionals
+      ("#+(or) 1 2"       nil (2 . (((:or) . (:or))
+                                    (*read-suppress* (7 . 8))
+                                    nil))
        (((:sharpsign-plus . (:or)) (0 . 9))))
-      ("#-(and) 1 2"      (2 . (((:and) . (:and))
-                                (*read-suppress* (8 . 9))
-                                nil))
+      ("#-(and) 1 2"      nil (2 . (((:and) . (:and))
+                                    (*read-suppress* (8 . 9))
+                                    nil))
        (((:sharpsign-minus . (:and)) (0 . 10))))
 
-      ;; Non-toplevel Comments
-      ("(#||# 1)"         ((1) . ((:block-comment (1 . 5))
-                                  1)))
-      ("(~%; test~% 1)"   ((1) . (((:line-comment . 1) (2 . 8))
-                                  1)))
-      ("(~%;; test~% 1)"  ((1) . (((:line-comment . 2) (2 . 9))
-                                  1)))
-      ("(~%;;; test~% 1)" ((1) . (((:line-comment . 3) (2 . 10))
-                                  1)))
-      ;; Non-toplevel Reader conditionals
-      ("(#+(or) 1 2)"     ((2) . (((:sharpsign-plus . (:or)) (1 . 10))
-                                  (2 . (((:or) . (:or))
-                                        (*read-suppress* (8 . 9))
-                                        nil))))))))
+      ;; Non-toplevel comments
+      ("(#||# 1)"         nil ((1) . ((:block-comment (1 . 5))
+                                      1)))
+      ("(~%; test~% 1)"   nil ((1) . (((:line-comment . 1) (2 . 8))
+                                      1)))
+      ("(~%;; test~% 1)"  nil ((1) . (((:line-comment . 2) (2 . 9))
+                                      1)))
+      ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) (2 . 10))
+                                      1)))
+      ;; Non-toplevel reader conditionals
+      ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 10))
+                                      (2 . (((:or) . (:or))
+                                            (*read-suppress* (8 . 9))
+                                            nil)))))
+      ;; Order of skipped inputs
+      ("#|1|# #|2|# 3"    nil 3   ((:block-comment (0 . 5))
+                                   (:block-comment (6 . 11))))
+      ("#|1|# #|2|# 3"    t   nil ((:block-comment (0 . 5))
+                                   (:block-comment (6 . 11))
+                                   (*read-suppress* (12 . 13))))
+
+      ;; Non-toplevel suppressed objects
+      ;; FIXME `nil' children are bogus
+      ;; FIXME the suppressed input should not appear as an orphan result
+      ("(nil)"            t   (nil (*read-suppress* (1 . 4)) nil)
+                              ((*read-suppress* (0 . 5))))
+      ("#|1|# (nil)"      t   (nil (*read-suppress* (7 . 10)) nil)
+                              ((:block-comment (0 . 5))
+                               (*read-suppress* (6 . 11)))))))
