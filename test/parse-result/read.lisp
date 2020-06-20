@@ -74,20 +74,17 @@
       (error-case expected-raw
         (error (do-it))
         (:eof
-         (is (eq :eof (do-it))))
+         (multiple-value-bind (result orphan-results position) (do-it)
+           (expect "result"         (eq    expected-raw      result))
+           (expect "orphan results" (equal '()               orphan-results))
+           (expect "position"       (eql   expected-position position))))
         (t
          (multiple-value-bind (result orphan-results position) (do-it)
-           ;; PARSE-RESULT and its raw content.
            (is (typep result 'parse-result))
-           ;; (is-consistent-with-raw result)
-           (let ((raw (raw result)))
-             (expect "raw result" (equal expected-raw raw)))
-           ;; Expected source location.
+           (expect "raw result"      (equal expected-raw      (raw result)))
            (expect "source location" (equal expected-location (source result)))
-           ;; Orphan results
-           (expect "orphan results" (equal '() orphan-results))
-           ;; Stream position.
-           (expect "position" (eql expected-position position))))))
+           (expect "orphan results"  (equal '()               orphan-results))
+           (expect "position"        (eql   expected-position position))))))
     '(;; End of file
       (""              t   eclector.reader:end-of-file)
       (""              nil :eof)
@@ -107,8 +104,8 @@
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
 
-  (do-stream-input-cases (() eof-error-p eof-value
-                          expected-raw &optional expected-position)
+  (do-stream-input-cases (() eof-error-p eof-value expected-raw
+                          &optional expected-location expected-position)
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.parse-result:read-preserving-whitespace
@@ -118,56 +115,70 @@
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
-             (expect "result"         (eq    :eof              result))
+             (expect "result"         (eq    expected-raw      result))
              (expect "orphan results" (equal '()               orphan-results))
              (expect "position"       (eql   expected-position position))))
           (t
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (typep result 'parse-result))
-             (expect "raw result"     (equal expected-raw      (raw result)))
-             (expect "orphan results" (equal '()               orphan-results))
-             (expect "position"       (eql   expected-position position))))))
+             (expect "raw result"      (equal expected-raw      (raw result)))
+             (expect "source location" (equal expected-location (source result)))
+             (expect "orphan results"  (equal '()               orphan-results))
+             (expect "position"        (eql   expected-position position))))))
     '((""        t   nil  eclector.reader:end-of-file)
-      (""        nil :eof :eof                        0)
+      (""        nil :eof :eof nil     0)
 
-      (":foo"    t   nil  :foo                        4)
-      (":foo "   t   nil  :foo                        4)
-      (":foo  "  t   nil  :foo                        4)
-      (":foo  1" t   nil  :foo                        4))))
+      (":foo"    t   nil  :foo (0 . 4) 4)
+      (":foo "   t   nil  :foo (0 . 4) 4)
+      (":foo  "  t   nil  :foo (0 . 4) 4)
+      (":foo  1" t   nil  :foo (0 . 4) 4))))
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
 
-  (do-input-cases ((input length) args expected-value
-                   &optional (expected-position length))
+  (do-input-cases ((input length) args expected-raw
+                   &optional expected-location (expected-position length))
       (flet ((do-it ()
                (apply #'eclector.parse-result:read-from-string
                       (make-instance 'simple-result-client) input args)))
-        (error-case expected-value
+        (error-case expected-raw
           (error (do-it))
+          (:eof
+           (multiple-value-bind (result position orphan-results) (do-it)
+             (expect "result"          (eq    expected-raw      result))
+             (expect "orphan results"  (equal '()               orphan-results))
+             (expect "position"        (eql   expected-position position))))
           (t
-           (multiple-value-bind (value position) (do-it)
-             (expect "value"    (equal expected-value    (if (typep value 'parse-result)
-                                                             (raw value)
-                                                             value)))
-             (expect "position" (eql   expected-position position))))))
+           (multiple-value-bind (result position orphan-results) (do-it)
+             (expect "value"           (equal expected-raw      (raw result)))
+             (expect "source location" (equal expected-location (source result)))
+             (expect "orphan results"  (equal '()               orphan-results))
+             (expect "position"        (eql   expected-position position))))))
     '((""         ()                               eclector.reader:end-of-file)
       (""         (nil :eof)                       :eof)
 
-      (":foo 1 2" ()                               :foo                         5)
+      (":foo 1 2" ()                               :foo (0 . 4) 5)
 
       ;; Start and end
-      (":foo 1 2" (t nil :start 4)                 1                            7)
-      (":foo 1 2" (t nil :end 3)                   :fo                          3)
+      ;;
+      ;; Implementations do not agree regarding what
+      ;;
+      ;;   (with-input-from-string (stream STRING :start START)
+      ;;     (file-position stream))
+      ;;
+      ;; should return. So on some implementations, the source
+      ;; position will be (5 . 6) instead of (1 . 2).
+      (":foo 1 2" (t nil :start 4)                 1    (1 . 2) 7)
+      (":foo 1 2" (t nil :end 3)                   :fo  (0 . 3) 3)
 
       ;; Preserving whitespace
-      (":foo 1"   (t nil :preserve-whitespace nil) :foo                         5)
-      (":foo 1  " (t nil :preserve-whitespace nil) :foo                         5)
-      (":foo 1 2" (t nil :preserve-whitespace nil) :foo                         5)
+      (":foo 1"   (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
+      (":foo 1  " (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
+      (":foo 1 2" (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
 
-      (":foo 1"   (t nil :preserve-whitespace t)   :foo                         4)
-      (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
-      (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
+      (":foo 1"   (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
+      (":foo 1  " (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
+      (":foo 1 2" (t nil :preserve-whitespace t)   :foo (0 . 4) 4))))
 
 ;;; Source locations
 
