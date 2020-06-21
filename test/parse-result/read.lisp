@@ -59,6 +59,19 @@
     ((client simple-result-client) (result t) (children t) (source t))
   (make-instance 'atom-result :raw result :source source))
 
+;;; A client that stores all result information in lists.
+
+(defclass list-result-client (eclector.parse-result:parse-result-client)
+  ())
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client list-result-client) (result t) (children t) (source t))
+  (list :result result :children children :source source))
+
+(defmethod eclector.parse-result:make-skipped-input-result
+    ((client list-result-client) (stream t) (reason t) (source t))
+  (list :reason reason :source source))
+
 ;;; Smoke test with parse results
 
 (test read/smoke
@@ -179,6 +192,52 @@
       (":foo 1"   (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
       (":foo 1  " (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
       (":foo 1 2" (t nil :preserve-whitespace t)   :foo (0 . 4) 4))))
+
+(test read-maybe-nothing/smoke
+  "Smoke test for the READ-MAYBE-NOTHING function."
+
+  (do-stream-input-cases ((length) (eof-error-p read-suppress)
+                          expected-value &optional expected-kind
+                                                   expected-parse-result
+                                                   (expected-position length))
+      (flet ((do-it ()
+               (let ((client (make-instance 'list-result-client)))
+                 (with-stream (stream)
+                   (let (value kind parse-result)
+                    (eclector.reader:call-as-top-level-read
+                     client (lambda ()
+                              (setf (values value kind parse-result)
+                                    (let ((*read-suppress* read-suppress))
+                                      (eclector.reader:read-maybe-nothing
+                                       client stream eof-error-p :eof))))
+                     stream eof-error-p :eof t)
+                     (values value kind parse-result))))))
+        (error-case expected-value
+          (error (do-it))
+          (t
+           (multiple-value-bind (value kind parse-result position)
+               (do-it)
+             (expect "value"        (equal expected-value        value))
+             (expect "kind"         (eq    expected-kind         kind))
+             (expect "parse result" (equal expected-parse-result parse-result))
+             (expect "position"     (eql   expected-position     position))))))
+    '((""       (nil nil) :eof :eof)
+      (""       (t   nil) eclector.reader:end-of-file)
+
+      ("   "    (nil nil) nil :whitespace)
+      ("   "    (nil nil) nil :whitespace)
+
+      (";  "    (nil nil) nil :skip       (:reason (:line-comment . 1) :source (0 . 3))  )
+
+      ("#||#"   (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))       )
+      ("#||# "  (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))      4)
+      ("#||#  " (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))      4)
+      ("#||#"   (nil t)   nil :skip       (:reason :block-comment :source (0 . 4))       )
+
+      ("1"      (nil nil) 1   :object     (:result 1 :children () :source (0 . 1))       )
+      ("1 "     (nil nil) 1   :object     (:result 1 :children () :source (0 . 1))      1)
+      ("1"      (nil t)   nil :suppress   (:reason *read-suppress* :source (0 . 1))      )
+      ("1 "     (nil t)   nil :suppress   (:reason *read-suppress* :source (0 . 1))     1))))
 
 ;;; Source locations
 
@@ -305,19 +364,15 @@
       ("1 2"              nil 1 () 2)
 
       ;; Toplevel comments
-      ("#||# 1"           nil 1                         ((:block-comment (0 . 4))))
-      ("#||# 1"           t   (*read-suppress* (5 . 6)) ((:block-comment (0 . 4))))
-      ("; test"           nil :eof                      (((:line-comment . 1) (0 . 6))))
-      ("; test~% 1"       nil 1                         (((:line-comment . 1) (0 . 6))))
-      (";; test~% 1"      nil 1                         (((:line-comment . 2) (0 . 7))))
-      (";;; test~% 1"     nil 1                         (((:line-comment . 3) (0 . 8))))
+      ("#||# 1"           nil 1                          ((:block-comment (0 . 4))))
+      ("#||# 1"           t   (*read-suppress* (5 . 6))  ((:block-comment (0 . 4))))
+      ("; test"           nil :eof                       (((:line-comment . 1) (0 . 6))))
+      ("; test~% 1"       nil 1                          (((:line-comment . 1) (0 . 6))))
+      (";; test~% 1"      nil 1                          (((:line-comment . 2) (0 . 7))))
+      (";;; test~% 1"     nil 1                          (((:line-comment . 3) (0 . 8))))
       ;; Toplevel reader conditionals
-      ("#+(or) 1 2"       nil (2 . (((:or) . (:or))
-                                    (*read-suppress* (7 . 8))))
-       (((:sharpsign-plus . (:or)) (0 . 9))))
-      ("#-(and) 1 2"      nil (2 . (((:and) . (:and))
-                                    (*read-suppress* (8 . 9))))
-       (((:sharpsign-minus . (:and)) (0 . 10))))
+      ("#+(or) 1 2"       nil 2                          (((:sharpsign-plus . (:or)) (0 . 8))))
+      ("#-(and) 1 2"      nil 2                          (((:sharpsign-minus . (:and)) (0 . 9))))
 
       ;; Non-toplevel comments
       ("(#||# 1)"         nil ((1) . ((:block-comment (1 . 5))
@@ -329,9 +384,8 @@
       ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) (2 . 10))
                                       1)))
       ;; Non-toplevel reader conditionals
-      ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 10))
-                                      (2 . (((:or) . (:or))
-                                            (*read-suppress* (8 . 9)))))))
+      ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 9)) 2)))
+
       ;; Order of skipped inputs
       ("#|1|# #|2|# 3"    nil 3                           ((:block-comment (0 . 5))
                                                            (:block-comment (6 . 11))))

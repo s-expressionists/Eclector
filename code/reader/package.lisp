@@ -69,6 +69,7 @@
   (:export
    #:call-as-top-level-read
    #:read-common
+   #:read-maybe-nothing
 
    #:read-token
    #:note-skipped-input

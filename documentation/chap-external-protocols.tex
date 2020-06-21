@@ -120,6 +120,30 @@ client class of its choice.  The actions that \texttt{read} needs to
 take for different values of the parameter \textit{recursive-p} have
 already been taken before \texttt{read} calls this generic function.
 
+\Defgeneric {read-maybe-nothing} {client input-stream\\
+  eof-error-p eof-value}
+
+This generic function can be called directly by the client or by the
+generic function \texttt{read-common} to read an object or consume
+input without returning an object.  If called directly by the client,
+the call has to be in the dynamic scope of a
+\texttt{call-as-top-level-read} call.  The function
+\texttt{read-maybe-nothing} either
+\begin{itemize}
+\item encounters the end of input on \textit{input-stream} and,
+  depending on \textit{eof-error-p} either signals an error or returns
+  the values \textit{eof-value} and \texttt{:eof}
+\item or reads one or more whitespace characters an returns the values
+  \texttt{nil} and \texttt{:whitespace}
+\item or reads an object.  If \texttt{*read-suppress*} is true, the
+  function returns nil and \texttt{:suppress}.  Otherwise it returns
+  the object and \texttt{:object}.
+\item or consumes a macro character and the characters consumed by the
+  associated reader macro function if that reader macro function does
+  not return a value.  In this case the function returns \texttt{nil}
+  and \texttt{:skip}.
+\end{itemize}
+
 \Defgeneric {note-skipped-input} {client input-stream reason}
 
 This generic function is called whenever the reader skips some input

@@ -252,7 +252,7 @@
       (";;; test~% 1"  nil (((:line-comment . 3) (0 . 8))))
       ;; Reader conditionals
       ("#+(or) 1 2"    nil ((*read-suppress* (7 . 8))
-                            ((:sharpsign-plus . (:or)) (0 . 9))))
+                            ((:sharpsign-plus . (:or)) (0 . 8))))
       ;; Order of skipped inputs
       ("#|1|# #|2|# 3" nil ((:block-comment (0 . 5))
                             (:block-comment (6 . 11))))

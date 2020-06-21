@@ -16,13 +16,7 @@
          (parse-result (make-skipped-input-result
                         client input-stream reason range)))
     (when parse-result
-      (push parse-result (second *stack*)))
-    ;; Try to advance to the next non-whitespace input character,
-    ;; then update *START*. This way, the source location for an
-    ;; object subsequently read from INPUT-STREAM will not include
-    ;; the whitespace.
-    (eclector.reader::skip-whitespace* input-stream)
-    (setf *start* (source-position client input-stream))))
+      (push parse-result (second *stack*)))))
 
 ;;; Establishing context
 
@@ -46,28 +40,43 @@
         (values-list values)
         (multiple-value-call #'values (values-list values) orphan-results))))
 
-(defmethod eclector.reader:read-common :around
+(defmethod eclector.reader:read-common
     ((client parse-result-client) input-stream eof-error-p eof-value)
-  (let ((*stack* (list* '() *stack*)))
-    (unless (eclector.reader::skip-whitespace* input-stream)
-      (when eof-error-p
-        (eclector.base:%reader-error input-stream 'eclector.reader:end-of-file))
-      (return-from eclector.reader:read-common eof-value))
-    (let* (;; *START* is used and potentially modified in
-           ;; NOTE-SKIPPED-INPUT to reflect skipped input (comments,
-           ;; reader macros, *READ-SUPPRESS*) before actually reading
-           ;; something.
-           (*start* (source-position client input-stream))
-           (result  (call-next-method)))
-      (if *read-suppress*
-          (values result (first (second *stack*)))
-          (let* ((children (reverse (first *stack*)))
-                 (end (source-position client input-stream))
-                 (source (make-source-range client *start* end))
-                 (parse-result (make-expression-result
-                                client result children source)))
-            (push parse-result (second *stack*))
-            (values result parse-result))))))
+  (loop for (value what parse-result)
+           = (multiple-value-list
+              (eclector.reader:read-maybe-nothing
+               client input-stream eof-error-p eof-value))
+        do (ecase what
+             (:eof
+              (return (values value nil)))
+             ((:suppress :object)
+              (return (values value parse-result)))
+             ((:whitespace :skip)))))
+
+(defmethod eclector.reader:read-maybe-nothing
+    ((client parse-result-client) input-stream eof-error-p eof-value)
+  (let* ((stack (list* '() *stack*))
+         (start (source-position client input-stream)))
+    (multiple-value-bind (value what)
+        (let ((*stack* stack)
+              ;; *START* is used in NOTE-SKIPPED-INPUT to describe
+              ;; skipped input (comments, reader macros,
+              ;; *READ-SUPPRESS*).
+              (*start* start))
+          (call-next-method))
+      (case what
+        (:object
+         (let* ((children (reverse (first stack)))
+                (end (source-position client input-stream))
+                (source (make-source-range client start end))
+                (parse-result (make-expression-result
+                               client value children source)))
+           (push parse-result (second stack))
+           (values value what parse-result)))
+        ((:eof :whitespace)
+         (values value what))
+        (t
+         (values value what (first (second stack))))))))
 
 ;;; Entry points
 

@@ -220,6 +220,44 @@
       (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
       (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
 
+(test read-maybe-nothing/smoke
+  "Smoke test for the READ-MAYBE-NOTHING function."
+
+  (do-stream-input-cases (() (eof-error-p read-suppress)
+                          expected-value &optional expected-kind expected-position)
+      (flet ((do-it ()
+               (with-stream (stream)
+                 (eclector.reader:call-as-top-level-read
+                  nil (lambda ()
+                        (let ((*read-suppress* read-suppress))
+                          (eclector.reader:read-maybe-nothing
+                           nil stream eof-error-p :eof)))
+                  stream eof-error-p :eof t))))
+        (error-case expected-value
+          (error (do-it))
+          (t
+           (multiple-value-bind (value kind position) (do-it)
+             (expect "value"    (equal expected-value    value))
+             (expect "kind"     (eq    expected-kind     kind))
+             (expect "position" (eql   expected-position position))))))
+    '((""       (nil nil) :eof :eof       0)
+      (""       (t   nil) eclector.reader:end-of-file)
+
+      ("   "    (nil nil) nil :whitespace 3)
+      ("   "    (nil nil) nil :whitespace 3)
+
+      (";  "    (nil nil) nil :skip       3)
+
+      ("#||#"   (nil nil) nil :skip       4)
+      ("#||# "  (nil nil) nil :skip       4)
+      ("#||#  " (nil nil) nil :skip       4)
+      ("#||#"   (nil t)   nil :skip       4)
+
+      ("1"      (nil nil) 1   :object     1)
+      ("1 "     (nil nil) 1   :object     1)
+      ("1"      (nil t)   nil :suppress   1)
+      ("1 "     (nil t)   nil :suppress   1))))
+
 (test read-delimited-list/smoke
   "Smoke test for the READ-DELIMITED-LIST function."
 

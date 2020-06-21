@@ -1083,8 +1083,8 @@
                      (setf slot-name value)))
                   (setf *quasiquote-forbidden* old-quasiquote-forbidden
                         *unquote-forbidden* 'sharpsign-s-slot-value
-                        element :value))
-                 (:value
+                        element :object))
+                 (:object
                   (typecase value
                     ((eql #1#)
                      (%recoverable-reader-error
