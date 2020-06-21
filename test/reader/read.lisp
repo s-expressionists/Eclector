@@ -152,6 +152,19 @@
       (is (eq first second))
       (is-false (slot-boundp first '%unbound-slot)))))
 
+(test read/runtime-recursive-p
+  "Test READ with RECURSIVE-P being unknown until runtime."
+
+  (do-stream-input-cases ((length) recursive-p
+                          expected-result &optional (expected-position length))
+      (multiple-value-bind (result position)
+          (with-stream (stream)
+            (eclector.reader:read stream nil :eof recursive-p))
+        (expect "result"   (eql expected-result   result))
+        (expect "position" (eql expected-position position)))
+    '(("1" nil 1)
+      ("1" t   1))))
+
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
 
