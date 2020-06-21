@@ -678,6 +678,7 @@
       (")"       nil nil eclector.reader:complex-parts-must-follow-sharpsign-c)
       ("\"foo\"" nil nil eclector.reader:non-list-following-sharpsign-c)
       ("("       nil nil eclector.reader:end-of-input-before-complex-part)
+      (" (0 1)"  nil nil eclector.reader:non-list-following-sharpsign-c) ; unclear in the spec. we do not allow it
       ("()"      nil nil eclector.reader:complex-part-expected)
       ("(0"      nil nil eclector.reader:end-of-input-before-complex-part)
       ("(0)"     nil nil eclector.reader:complex-part-expected)
@@ -728,6 +729,7 @@
       ("(foo . 1)"      nil nil eclector.reader:invalid-context-for-consing-dot)
 
       ("("              nil nil eclector.reader:end-of-input-before-structure-type-name)
+      (" (foo)"         nil nil eclector.reader:non-list-following-sharpsign-s) ; unclear in the spec. we do not allow it
       ("()"             nil nil eclector.reader:no-structure-type-name-found)
       ("(1)"            nil nil eclector.reader:structure-type-name-is-not-a-symbol)
 
@@ -744,7 +746,6 @@
       ("(foo :bar ,1)"  nil nil eclector.reader:unquote-in-invalid-context)
       ;; Valid
       ("(foo)"          nil nil (foo))
-      (" (foo)"         nil nil (foo)) ; unclear in the spec, but we allow it
       ("(foo #:bar 1)"  nil nil (foo #:bar 1))
       ("(foo :bar 1)"   nil nil (foo :bar 1))
       ("(foo bar 1)"    nil nil (foo bar 1))

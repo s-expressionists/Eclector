@@ -49,27 +49,43 @@
 
 ;;; Reading lists
 
+;;; Skip over whitespace and comments until either CLOSE-CHAR is
+;;; encountered or an object can be read.
+(defun %read-list-element (client stream close-char)
+  ;; Note that calling PEEK-CHAR this way skips over whitespace but
+  ;; not comments.
+  (loop for char = (peek-char t stream t nil)
+        if (eql char close-char)
+        do (read-char stream)
+           (signal-end-of-list char)
+        else
+        do (multiple-value-bind (object what)
+               (read-maybe-nothing client stream t nil)
+             (unless (eq what :skip) ; Skip over comments
+               (return object)))))
+
 ;;; Read a list terminated by CLOSE-CHAR from STREAM. For each
 ;;; encountered list element as well the end of the list (or premature
 ;;; end of input) call FUNCTION with two arguments: 1) an element kind
 ;;; indicator which is one of :PROPER, :TAIL and :END 2) the read
 ;;; element, EOL-VALUE or EOF-VALUE.
 (defun %read-list-elements (stream function eol-value eof-value
-                            close-char recursive-p consing-dot-allowed-p)
-  (let ((state :proper))
+                            close-char consing-dot-allowed-p)
+  (let ((client *client*)
+        (state :proper))
     (handler-case
         (loop with *consing-dot-allowed-p* = consing-dot-allowed-p
               for object = (let ((*consing-dot-allowed-p* nil))
-                             (read stream t nil recursive-p))
-              then (read stream t nil recursive-p)
+                             (%read-list-element client stream close-char))
+              then (%read-list-element client stream close-char)
               if (eq object *consing-dot*)
               do (setf *consing-dot-allowed-p* nil
                        state :tail)
-                 (funcall function :tail (read stream t nil recursive-p))
+                 (funcall function :tail (read stream t nil t))
                  (setf state :end)
                  ;; This call to read must not return (it has to signal
                  ;; END-OF-LIST).
-                 (read stream t nil recursive-p)
+                 (read stream t nil t)
                  (%recoverable-reader-error
                   stream 'multiple-objects-following-consing-dot
                   :report 'ignore-object)
@@ -77,7 +93,7 @@
               do (funcall function state object))
       (end-of-list (condition)
         (let ((char (%character condition)))
-          (unless (char= close-char char)
+          (unless (char= char close-char)
             (%recoverable-reader-error
              stream 'invalid-context-for-right-parenthesis
              :expected-character close-char :found-character char
@@ -102,7 +118,7 @@
                 :stream-position (stream-position condition)
                 :delimiter close-char :report 'use-partial-list)))))))
 
-(defun %read-delimited-list (stream close-char recursive-p)
+(defun %read-delimited-list (stream close-char)
   (alexandria:when-let ((list-reader *list-reader*))
     (return-from %read-delimited-list
       (funcall list-reader stream close-char)))
@@ -113,8 +129,20 @@
              (case state
                (:proper (push value reversed-result))
                (:tail (setf tail value)))))
-      (%read-list-elements stream #'element nil nil close-char recursive-p t))
+      (%read-list-elements stream #'element nil nil close-char t))
     (nreconc reversed-result tail)))
 
 (defun read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
-  (%read-delimited-list input-stream char recursive-p))
+  (if recursive-p
+      (%read-delimited-list input-stream char)
+      (flet ((do-it ()
+               (%read-delimited-list input-stream char)))
+        (declare (dynamic-extent #'do-it))
+        (call-as-top-level-read *client* #'do-it input-stream nil nil t))))
+
+(define-compiler-macro read-delimited-list (&whole form
+                                            char &optional input-stream recursive-p)
+  (if (and (constantp recursive-p)
+           (eval recursive-p))
+      `(%read-delimited-list ,input-stream ,char)
+      form))

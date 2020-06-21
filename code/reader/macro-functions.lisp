@@ -297,7 +297,7 @@
 
 (defun left-parenthesis (stream char)
   (declare (ignore char))
-  (%read-delimited-list stream #\) t))
+  (%read-delimited-list stream #\)))
 
 (defun right-parenthesis (stream char)
   ;; If the call to SIGNAL returns, then there is no handler for this
@@ -991,12 +991,20 @@
              (read-parts (stream char)
                (setf listp t)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'part '#1# '#2# char t nil))
-               nil))
+                 (%read-list-elements stream #'part '#1# '#2# char nil))))
       (handler-case
+          ;; Instead of READ we call %READ-MAYBE-NOTHING which will
+          ;; - not skip whitespace or comments (the spec is not clear
+          ;;   about whether #C<skippable things>(...) is valid syntax)
+          ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
+          ;;   initiate reading a list
+          ;; - not behave like a full READ call in terms of e.g. parse
+          ;;   result construction so (1 2) will not appear as a list
+          ;;   result with two atom result children.
+          ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
           (with-forbidden-quasiquotation ('sharpsign-c)
             (let ((*list-reader* #'read-parts))
-              (read stream t nil t)))
+              (%read-maybe-nothing *client* stream t nil)))
         ((and end-of-file (not incomplete-construct)) (condition)
           (%recoverable-reader-error
            stream 'end-of-input-after-sharpsign-c
@@ -1105,11 +1113,20 @@
                (setf *quasiquote-forbidden* 'sharpsign-s-type
                      *unquote-forbidden* 'sharpsign-s-type)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'element '#1# '#2# char t nil))))
+                 (%read-list-elements stream #'element '#1# '#2# char nil))))
       (handler-case
+          ;; Instead of READ we call %READ-MAYBE-NOTHING which will
+          ;; - not skip whitespace or comments (the spec is not clear
+          ;;   about whether #S<skippable things>(...) is valid syntax)
+          ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
+          ;;   initiate reading a list
+          ;; - not behave like a full READ call in terms of e.g. parse
+          ;;   result construction so (foo :bar 2) will not appear as
+          ;;   a list result with three atom result children.
+          ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
           (with-forbidden-quasiquotation ('sharpsign-s)
             (let ((*list-reader* #'read-constructor))
-              (read stream t nil t)))
+              (%read-maybe-nothing *client* stream t nil)))
         ((and end-of-file (not incomplete-construct)) (condition)
           (%recoverable-reader-error
            stream 'end-of-input-after-sharpsign-s

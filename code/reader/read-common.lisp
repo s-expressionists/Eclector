@@ -63,10 +63,10 @@
               (return (apply #'values value rest)))
              ((:whitespace :skip)))))
 
-(defmethod read-maybe-nothing (client input-stream eof-error-p eof-value)
+(defun %read-maybe-nothing (client input-stream eof-error-p eof-value)
   (let ((char (read-char input-stream eof-error-p)))
     (when (null char)
-      (return-from read-maybe-nothing (values eof-value :eof)))
+      (return-from %read-maybe-nothing (values eof-value :eof)))
     (let ((readtable *readtable*))
       (case (eclector.readtable:syntax-type readtable char)
         (:whitespace
@@ -99,3 +99,6 @@
          (let* ((*skip-reason* nil)
                 (object (read-token client input-stream eof-error-p eof-value)))
            (values object (if *read-suppress* :suppress :object))))))))
+
+(defmethod read-maybe-nothing (client input-stream eof-error-p eof-value)
+  (%read-maybe-nothing client input-stream eof-error-p eof-value))
