@@ -67,6 +67,7 @@
 
   ;; Client protocol
   (:export
+   #:call-as-top-level-read
    #:read-common
 
    #:read-token

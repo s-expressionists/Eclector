@@ -2,6 +2,9 @@
 
 ;;; Establishing context
 
+(defgeneric call-as-top-level-read (client thunk input-stream
+                                    eof-error-p eof-value preserve-whitespace-p))
+
 (defgeneric read-common (client input-stream eof-error-p eof-value))
 
 ;;; Reading tokens
