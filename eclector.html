@@ -1,0 +1,1847 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2010 - 2028 Robert Strandh
+Copyright (C) 2018 - 2020 Jan Moringen -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Eclector User&rsquo;s Manual</title>
+
+<meta name="description" content="Eclector User&rsquo;s Manual">
+<meta name="keywords" content="Eclector User&rsquo;s Manual">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="#Top" rel="start" title="Top">
+<link href="#Concept-index" rel="index" title="Concept index">
+<link href="#SEC_Contents" rel="contents" title="Table of Contents">
+<style type="text/css">
+<!--
+/*
+ * Based on version 1.0.1 of the texinfo-css stylesheet published by
+ * sirgazil (https://bitbucket.org/sirgazil/texinfo-css).
+ *
+ * Public domain 2016 sirgazil. All rights waived.
+*/
+
+/* NATIVE ELEMENTS */
+
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+a:link,
+a:visited {
+    color: #1E90FF;
+    text-decoration: none;
+}
+
+a:active,
+a:focus,
+a:hover {
+    text-decoration: underline;
+}
+
+abbr,
+acronym {
+    cursor: help;
+}
+
+blockquote {
+    color: #555753;
+    font-style: oblique;
+    margin: 30px 0px;
+    padding-left: 3em;
+}
+
+body {
+    background-color: white;
+    box-shadow: 0 0 2px gray;
+    box-sizing: border-box;
+    color: #333;
+    font-family: sans-serif;
+    font-size: 16px;
+    margin: 50px auto;
+    max-width: 80%;
+    padding: 50px;
+}
+
+code,
+samp,
+tt,
+var {
+    color: purple;
+    font-size: 0.8em;
+}
+
+kbd {
+    padding-left: .25em;
+    padding-right: .25em;
+    border: solid 1px #C2C2C2;
+    border-radius: 4px;
+    background-color: #F0F0F0;
+    box-shadow: 1px 1px silver;
+}
+
+div.example,
+div.lisp {
+    margin: 0px;
+}
+
+dl {
+    margin: 3em 0em;
+}
+
+dl dl {
+    margin: 0em;
+}
+
+dt {
+    background-color: #F5F5F5;
+    padding: 0.5em;
+}
+
+h1,
+h2,
+h2.contents-heading,
+h3,
+h4 {
+    padding: 20px 0px 0px 0px;
+    font-weight: normal;
+}
+
+h1 {
+    font-size: 2.4em;
+}
+
+h2 {
+    font-size: 2.2em;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 1.8em;
+}
+
+h4 {
+    font-size: 1.4em;
+}
+
+hr {
+    background-color: silver;
+    border-style: none;
+    height: 1px;
+    margin: 0px;
+}
+
+html {
+    background-color: #F5F5F5;
+}
+
+img {
+    max-width: 80%;
+}
+
+li {
+    padding: 5px;
+}
+
+div.display,
+div.example,
+div.format,
+div.lisp,
+div.verbatim {
+    overflow: auto;
+}
+
+div.example,
+div.lisp,
+div.verbatim {
+    background-color: #F5F5F5;
+    font-size: smaller;
+    padding: 1em;
+
+    /* border with rounded corner */
+    border-color: #000;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: thin;
+}
+
+pre {
+    padding: 0;
+    margin: 0 0 1em 0;
+}
+pre:last-of-type {
+    margin: 0 0 0 0;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 40px 0px;
+}
+
+table.index-cp *,
+table.index-fn *,
+table.index-ky *,
+table.index-pg *,
+table.index-tp *,
+table.index-vr * {
+    background-color: inherit;
+    border-style: none;
+}
+
+td,
+th {
+    border-color: silver;
+    border-style: solid;
+    border-width: thin;
+    padding: 10px;
+}
+
+th {
+    background-color: #F5F5F5;
+}
+/* END NATIVE ELEMENTS */
+
+
+
+/* CLASSES */
+.contents {
+    margin-bottom: 4em;
+}
+
+/* Restrict TOC to depth 3 */
+.contents > ul ul ul ul {
+    display: none;
+}
+
+.float {
+    margin: 3em 0em;
+}
+
+.float-caption {
+    font-size: smaller;
+    text-align: center;
+}
+
+.float > img {
+    display: block;
+    margin: auto;
+}
+
+.footnote {
+    font-size: smaller;
+    margin: 5em 0em;
+}
+
+.footnote h3 {
+    display: inline;
+    font-size: small;
+}
+
+.key {
+    color: purple;
+    font-size: 0.8em;
+}
+
+/* END CLASSES */
+.header {
+    display: none;
+}
+
+.menu {
+    display: none;
+}
+
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">Eclector User&rsquo;s Manual</h1>
+
+
+
+
+
+<span id="SEC_Contents"></span>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+
+<ul class="no-bullet">
+  <li><a id="toc-Introduction-1" href="#Introduction">1 Introduction</a></li>
+  <li><a id="toc-External-protocols-1" href="#External-protocols">2 External protocols</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Packages-1" href="#Packages">2.1 Packages</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Package-for-ordinary-reader-features-1" href="#Package-for-ordinary-reader-features">2.1.1 Package for ordinary reader features</a></li>
+      <li><a id="toc-Package-for-readtable-features-1" href="#Package-for-readtable-features">2.1.2 Package for readtable features</a></li>
+      <li><a id="toc-Package-for-parse-result-construction-features-1" href="#Package-for-parse-result-construction-features">2.1.3 Package for parse result construction features</a></li>
+      <li><a id="toc-Package-for-CST-features-1" href="#Package-for-CST-features">2.1.4 Package for CST features</a></li>
+    </ul></li>
+    <li><a id="toc-Ordinary-reader-features-1" href="#Ordinary-reader-features">2.2 Ordinary reader features</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Common-Lisp-reader-compatible-interface-1" href="#Common-Lisp-reader-compatible-interface">2.2.1 Common Lisp reader compatible interface</a></li>
+      <li><a id="toc-Reader-behavior-protocol-1" href="#Reader-behavior-protocol">2.2.2 Reader behavior protocol</a></li>
+      <li><a id="toc-Quotation-and-quasiquotation-1" href="#Quotation-and-quasiquotation">2.2.3 Quotation and quasiquotation</a></li>
+      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.2.4 Readtable initialization</a></li>
+    </ul></li>
+    <li><a id="toc-Readtable-features-1" href="#Readtable-features">2.3 Readtable features</a></li>
+    <li><a id="toc-Parse-result-construction-features-1" href="#Parse-result-construction-features">2.4 Parse result construction features</a></li>
+    <li><a id="toc-CST-reader-features-1" href="#CST-reader-features">2.5 CST reader features</a></li>
+  </ul></li>
+  <li><a id="toc-Recovering-from-errors-1" href="#Recovering-from-errors">3 Recovering from errors</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Error-recovery-features-1" href="#Error-recovery-features">3.1 Error recovery features</a></li>
+    <li><a id="toc-Recoverable-errors-1" href="#Recoverable-errors">3.2 Recoverable errors</a></li>
+    <li><a id="toc-Potential-problems-1" href="#Potential-problems">3.3 Potential problems</a></li>
+  </ul></li>
+  <li><a id="toc-Side-effects-1" href="#Side-effects">4 Side effects</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Potential-side-effects-for-the-default-client-1" href="#Potential-side-effects-for-the-default-client">4.1 Potential side effects for the default client</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Symbols-and-packages-_0028default-client_0029-1" href="#Symbols-and-packages-_0028default-client_0029">4.1.1 Symbols and packages (default client)</a></li>
+      <li><a id="toc-Read_002dtime-evaluation-_0028default-client_0029-1" href="#Read_002dtime-evaluation-_0028default-client_0029">4.1.2 Read-time evaluation (default client)</a></li>
+      <li><a id="toc-Standard-reader-macros-_0028default-client_0029-1" href="#Standard-reader-macros-_0028default-client_0029">4.1.3 Standard reader macros (default client)</a></li>
+    </ul></li>
+    <li><a id="toc-Potential-side-effects-for-non_002ddefault-clients-1" href="#Potential-side-effects-for-non_002ddefault-clients">4.2 Potential side effects for non-default clients</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Symbols-and-packages-1" href="#Symbols-and-packages">4.2.1 Symbols and packages</a></li>
+      <li><a id="toc-Read_002dtime-evaluation-1" href="#Read_002dtime-evaluation">4.2.2 Read-time evaluation</a></li>
+      <li><a id="toc-Structure-instance-creation-1" href="#Structure-instance-creation">4.2.3 Structure instance creation</a></li>
+      <li><a id="toc-Circular-structure-1" href="#Circular-structure">4.2.4 Circular structure</a></li>
+      <li><a id="toc-Standard-reader-macros-1" href="#Standard-reader-macros">4.2.5 Standard reader macros</a></li>
+    </ul></li>
+  </ul></li>
+  <li><a id="toc-Concept-index-1" href="#Concept-index" rel="index">Concept index</a></li>
+  <li><a id="toc-Function-and-macro-and-variable-and-type-index-1" href="#Function-and-macro-and-variable-and-type-index" rel="index">Function and macro and variable and type index</a></li>
+</ul>
+</div>
+
+
+<span id="Top"></span><div class="header">
+<p>
+Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Eclector-User_0027s-Manual"></span><h1 class="top">Eclector User&rsquo;s Manual</h1>
+
+<p>This manual is for Eclector version TODO.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#External-protocols" accesskey="2">External protocols</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Recovering-from-errors" accesskey="3">Recovering from errors</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Side-effects" accesskey="4">Side effects</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Concept-index" rel="index" accesskey="5">Concept index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Function-and-macro-and-variable-and-type-index" rel="index" accesskey="6">Function and macro and variable and type index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Introduction"></span><div class="header">
+<p>
+Next: <a href="#External-protocols" accesskey="n" rel="next">External protocols</a>, Previous: <a href="#Top" accesskey="p" rel="prev">Top</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Introduction-1"></span><h2 class="chapter">1 Introduction</h2>
+
+<span id="index-source-tracking"></span>
+<span id="index-parse-result"></span>
+<span id="index-concrete-syntax-tree"></span>
+
+<p>Eclector is a portable, implementation-independent version of the
+Common Lisp function <tt>read</tt>, a corresponding readtable and a
+quasiquotation facility.  As opposed to existing implementation-specific
+versions of <tt>read</tt>, Eclector uses generic functions to allow clients
+to customize the exact behavior, such as the interpretation of tokens.
+</p>
+<p>Another unusual feature of Eclector is its ability to, at the discretion
+of the client, recover from many syntax errors, continue reading and
+return a result that somewhat resembles what would have been returned in
+case the syntax had been valid.
+</p>
+<p>Furthermore, Eclector can be used as a <em>source tracking</em>
+reader, which is accomplished through a mode of operation that
+produces <em>parse results</em> which wrap the Common Lisp expressions
+in objects that can also contain information about the positions in
+the source code of those expressions.  One example of such parse
+results are <em>concrete syntax trees</em>
+<a id="DOCF1" href="#FOOT1"><sup>1</sup></a>.
+</p><hr>
+<span id="External-protocols"></span><div class="header">
+<p>
+Next: <a href="#Recovering-from-errors" accesskey="n" rel="next">Recovering from errors</a>, Previous: <a href="#Introduction" accesskey="p" rel="prev">Introduction</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="External-protocols-1"></span><h2 class="chapter">2 External protocols</h2>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Packages" accesskey="1">Packages</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Ordinary-reader-features" accesskey="2">Ordinary reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Readtable-features" accesskey="3">Readtable features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Parse-result-construction-features" accesskey="4">Parse result construction features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#CST-reader-features" accesskey="5">CST reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Packages"></span><div class="header">
+<p>
+Next: <a href="#Ordinary-reader-features" accesskey="n" rel="next">Ordinary reader features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Packages-1"></span><h3 class="section">2.1 Packages</h3>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-ordinary-reader-features" accesskey="1">Package for ordinary reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-readtable-features" accesskey="2">Package for readtable features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-parse-result-construction-features" accesskey="3">Package for parse result construction features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-CST-features" accesskey="4">Package for CST features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Package-for-ordinary-reader-features"></span><div class="header">
+<p>
+Next: <a href="#Package-for-readtable-features" accesskey="n" rel="next">Package for readtable features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Package-for-ordinary-reader-features-1"></span><h4 class="subsection">2.1.1 Package for ordinary reader features</h4>
+
+<p>The package for ordinary reader features is named
+<tt>eclector.reader</tt>.  To use features of this package, we
+recommend the use of explicit package prefixes, simply because this
+package shadows and exports names that are also exported from the
+<tt>common-lisp</tt> package.  Importing this package will likely
+cause conflicts with the <tt>common-lisp</tt> package otherwise.
+</p>
+<hr>
+<span id="Package-for-readtable-features"></span><div class="header">
+<p>
+Next: <a href="#Package-for-parse-result-construction-features" accesskey="n" rel="next">Package for parse result construction features</a>, Previous: <a href="#Package-for-ordinary-reader-features" accesskey="p" rel="prev">Package for ordinary reader features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Package-for-readtable-features-1"></span><h4 class="subsection">2.1.2 Package for readtable features</h4>
+
+<span id="index-readtable"></span>
+
+<p>The package for readtable-related features is named
+<tt>eclector.readtable</tt>.  To use features of this package, we
+recommend the use of explicit package prefixes, simply because this
+package shadows and exports names that are also exported from the
+<tt>common-lisp</tt> package.  Importing this package will likely
+cause conflicts with the <tt>common-lisp</tt> package otherwise.
+</p>
+<hr>
+<span id="Package-for-parse-result-construction-features"></span><div class="header">
+<p>
+Next: <a href="#Package-for-CST-features" accesskey="n" rel="next">Package for CST features</a>, Previous: <a href="#Package-for-readtable-features" accesskey="p" rel="prev">Package for readtable features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Package-for-parse-result-construction-features-1"></span><h4 class="subsection">2.1.3 Package for parse result construction features</h4>
+
+<span id="index-parse-result-1"></span>
+
+<p>The package for features related to the creation of client-defined
+parse results is named <tt>eclector.parse-result</tt>.  Although this
+package does not shadow any symbol in the <tt>common-lisp</tt>
+package, we still recommend the use of explicit package prefixes to
+refer to symbols in this package.
+</p>
+<hr>
+<span id="Package-for-CST-features"></span><div class="header">
+<p>
+Previous: <a href="#Package-for-parse-result-construction-features" accesskey="p" rel="prev">Package for parse result construction features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Package-for-CST-features-1"></span><h4 class="subsection">2.1.4 Package for CST features</h4>
+
+<span id="index-parse-result-2"></span>
+<span id="index-concrete-syntax-tree-1"></span>
+
+<p>The package for features related to the creation of concrete syntax
+trees is named <tt>eclector.concrete-syntax-tree</tt>.  Although this
+package does not shadow any symbol in the <tt>common-lisp</tt>
+package, we still recommend the use of explicit package prefixes to
+refer to symbols in this package.
+</p>
+<hr>
+<span id="Ordinary-reader-features"></span><div class="header">
+<p>
+Next: <a href="#Readtable-features" accesskey="n" rel="next">Readtable features</a>, Previous: <a href="#Packages" accesskey="p" rel="prev">Packages</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Ordinary-reader-features-1"></span><h3 class="section">2.2 Ordinary reader features</h3>
+
+<span id="index-client"></span>
+<span id="index-parse-result-3"></span>
+<span id="index-source-tracking-1"></span>
+
+<p>In this section, symbols written without package marker are in the
+<tt>eclector.reader</tt> package
+(see <a href="#Package-for-ordinary-reader-features">Package for ordinary reader features</a>)
+</p>
+<p>The features provided in this package fall into two categories:
+</p><ul>
+<li> The functions <tt>read</tt>, <tt>read-preserving-whitespace</tt>,
+<tt>read-from-string</tt> and <tt>read-delimited-list</tt> which, together with
+standard special variables, replicate the interface of the standard
+Common Lisp reader (except functions related to readtables which Eclector
+provides separately, see <a href="#Readtable-features">Readtable features</a>).  These functions are
+discussed in the section <a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a>.
+
+</li><li> The second category is comprised of the <tt>*client*</tt> special variable
+and a collection of protocols which allow customizing the behavior of
+the reader by defining methods specialized to a particular client on the
+generic functions of the protocols.
+</li></ul>
+
+<div class="float"><span id="fig_003aread_002dcall_002dsequence_002dordinary"></span>
+<img src="read-call-sequence-ordinary.png" alt="read-call-sequence-ordinary">
+
+<div class="float-caption"><p><strong>Figure 2.1: </strong>Functions and typical function call sequences.  Solid arrows
+represent calls, dashed arrows represent returns from function calls.
+Labels above arrows represent arguments and return values.</p></div></div>
+<p><a href="#fig_003aread_002dcall_002dsequence_002dordinary">Figure 2.1</a> illustrates the categorization
+into the Common Lisp reader compatible interface and the extensible
+behavior protocol as well as typical function call patterns that arise
+when the functions
+<tt>read{,-preserving-whitespace,-from-string,-delimited-list}</tt> are
+called by client code.
+</p>
+<dl>
+<dt id="index-_002aclient_002a">Variable: <strong>*client*</strong></dt>
+<dd><p>This variable is used by several generic functions called by
+<tt>read</tt>.  The default value of the variable is <tt>nil</tt>.
+Client code that wants to override or extend the default behavior of
+some generic function of Eclector should bind this variable to some
+standard object and provide a method on that generic function,
+specialized to the class of that standard object.
+</p></dd></dl>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Common-Lisp-reader-compatible-interface" accesskey="1">Common Lisp reader compatible interface</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Reader-behavior-protocol" accesskey="2">Reader behavior protocol</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Quotation-and-quasiquotation" accesskey="3">Quotation and quasiquotation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Readtable-initialization" accesskey="4">Readtable initialization</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Common-Lisp-reader-compatible-interface"></span><div class="header">
+<p>
+Next: <a href="#Reader-behavior-protocol" accesskey="n" rel="next">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Common-Lisp-reader-compatible-interface-1"></span><h4 class="subsection">2.2.1 Common Lisp reader compatible interface</h4>
+
+<p>The following functions are like their standarad Common Lisp
+counterparts with the two differences that their names are symbols in
+the <tt>eclector.reader</tt> package and that their behavior can deviate from
+that of the standard reader depending on the value of the <tt>*client*</tt>
+variable.
+</p>
+<dl>
+<dt id="index-read">Function: <strong>read</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is the main entry point for the ordinary reader.  It is
+entirely compatible with the standard Common Lisp function with the same
+name.
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002dpreserving_002dwhitespace">Function: <strong>read-preserving-whitespace</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is entirely compatible with the standard Common Lisp
+function with the same name.
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002dfrom_002dstring">Function: <strong>read-from-string</strong> <em>string <tt>&amp;optional</tt>  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  <tt>&amp;key</tt>  (start <tt>0</tt>)  (end <tt>nil</tt>)  (preserve-whitespace <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is entirely compatible with the standard Common Lisp
+function with the same name.
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002ddelimited_002dlist">Function: <strong>read-delimited-list</strong> <em>char <tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is entirely compatible with the standard Common Lisp
+function with the same name.
+</p></dd></dl>
+
+<hr>
+<span id="Reader-behavior-protocol"></span><div class="header">
+<p>
+Next: <a href="#Quotation-and-quasiquotation" accesskey="n" rel="next">Quotation and quasiquotation</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Reader-behavior-protocol-1"></span><h4 class="subsection">2.2.2 Reader behavior protocol</h4>
+
+<p>By defining methods on the generic functions of this protocol, clients
+can customize the high-level behavior of the reader.
+</p>
+<dl>
+<dt id="index-call_002das_002dtop_002dlevel_002dread">Defgeneric: <strong>call-as-top-level-read</strong> <em>client thunk input-streameof-error-p eof-value preserve-whitespace-p</em></dt>
+<dd>
+<p>This generic function is called by <tt>read</tt>, if <tt>read</tt> is called with
+a true value for the <var>recursive-p</var> parameter.  It calls <var>thunk</var>
+with the necessary context for a global <tt>read</tt> call.  <var>thunk</var>
+should read and return an object without consuming any whitespace
+following the object.  If <var>preserve-whitespace-p</var> is false, this
+function reads up to one character of whitespace after <var>thunk</var>
+returns.  This function returns the object or <var>eof-value</var> returned
+by <var>thunk</var> as its first value.  It may return additional values.
+</p>
+<p>The default method on this generic function performs two tasks:
+</p><ol>
+<li> It establishes a context in which labels (<tt>#N=</tt>) and references
+(<tt>#N#</tt>) work.
+
+</li><li> It realizes the requested <var>preserve-whitespace-p</var> behavior.
+</li></ol>
+</dd></dl>
+
+<dl>
+<dt id="index-read_002dcommon">Defgeneric: <strong>read-common</strong> <em>client input-stream eof-error-p eof-value</em></dt>
+<dd>
+<p>This generic function is called by <tt>read</tt>, passing it the value of the
+variable <tt>*client*</tt> and the corresponding parameters.  Client code can
+add methods on this function, specializing them to the client class of
+its choice.  The actions that <tt>read</tt> needs to take for different values
+of the parameter <var>recursive-p</var> have already been taken before
+<tt>read</tt> calls this generic function.
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002dmaybe_002dnothing">Defgeneric: <strong>read-maybe-nothing</strong> <em>client input-stream eof-error-p  eof-value</em></dt>
+<dd>
+<p>This generic function can be called directly by the client or by the
+generic function <tt>read-common</tt> to read an object or consume input
+without returning an object.  If called directly by the client, the call
+has to be in the dynamic scope of a <tt>call-as-top-level-read</tt> call.
+The function <tt>read-maybe-nothing</tt> either
+</p>
+<ul>
+<li> encounters the end of input on <var>input-stream</var> and, depending on
+<var>eof-error-p</var> either signals an error or returns the values
+<var>eof-value</var> and <tt>:eof</tt>
+
+</li><li> or reads one or more whitespace characters an returns the values <tt>nil</tt>
+and <tt>:whitespace</tt>
+
+</li><li> or reads an object.  If <tt>*read-suppress*</tt> is true, the function
+returns nil and <tt>:suppress</tt>.  Otherwise it returns the object and
+<tt>:object</tt>.
+
+</li><li> or consumes a macro character and the characters consumed by the
+associated reader macro function if that reader macro function does not
+return a value.  In this case the function returns <tt>nil</tt> and
+<tt>:skip</tt>.
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt id="index-note_002dskipped_002dinput">Defgeneric: <strong>note-skipped-input</strong> <em>client input-stream reason</em></dt>
+<dd>
+<p>This generic function is called whenever the reader skips some input
+such as a comment or a form that must be skipped because of a reader
+conditional.  It is called with the value of the variable
+<tt>*client*</tt>, the input stream from which the input is being read
+and an object indicating the reason for skipping the input.  The
+default method on this generic function does nothing.  Client code can
+supply a method that specializes to the client class of its choice.
+</p>
+<p>When this function is called, the stream is positioned immediately
+<em>after</em> the skipped input.  Client code that wants to know both
+the beginning and the end of the skipped input must remember the
+stream position before the call to <tt>read</tt> was made as well as
+the stream position when the call to this function is made.
+</p></dd></dl>
+
+<dl>
+<dt id="index-_002askip_002dreason_002a">Variable: <strong>*skip-reason*</strong></dt>
+<dd>
+<p>This variable is used by the reader to determine why a range of input
+characters has been skipped.  To this end, internal functions of the
+reader as well as reader macros can set this variable to a suitable
+value before skipping over some input.  Then, after the input has been
+skipped, the generic function <tt>note-skipped-input</tt> is called
+with the value of the variable as its <var>reason</var> argument.
+</p>
+<p>As an example, the method on <tt>note-skipped-input</tt> specialized to
+<tt>eclector.parse-result:parse-result-client</tt> relays the reason and
+position information to the client by calling the
+<tt>eclector.parse-result:make-skipped-input-result</tt> generic function
+(see <a href="#Parse-result-construction-features">Parse result construction features</a>).
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002dtoken">Defgeneric: <strong>read-token</strong> <em>client input-stream eof-error-p eof-value</em></dt>
+<dd>
+<p>This generic function is called by <tt>read-common</tt> when it has
+been detected that a token should be read.  This function is
+responsible for accumulating the characters of the token and then
+calling <tt>interpret-token</tt> (see below) in order to create and
+return a token.
+</p></dd></dl>
+
+<dl>
+<dt id="index-interpret_002dtoken">Defgeneric: <strong>interpret-token</strong> <em>client input-stream token escape-ranges</em></dt>
+<dd>
+<p>This generic function is called by <tt>read-token</tt> in order to
+create a token from accumulated token characters.  The parameter
+<var>token</var> is a string containing the characters that make up the
+token.  The parameter <var>escape-ranges</var> indicates ranges of
+characters read from <var>input-stream</var> and preceded by a character
+with single-escape syntax or delimited by characters with
+multiple-escape syntax.  Values of <var>escape-ranges</var> are lists of
+elements of the form <tt>(<var>start</var>\ .\ <var>end</var>)</tt> where
+<tt><var>start</var></tt> is the index of the first escaped character
+and <tt><var>end</var></tt> is the index <em>following</em> the last
+escaped character.  Note that <tt><var>start</var></tt> and
+<tt><var>var</var></tt> can be identical indicating no escaped
+characters.  This can happen in cases like <tt>a||b</tt>.  The
+information conveyed by the <var>escape-ranges</var> parameter is used
+to convert the characters in <var>token</var> according to the
+<em>readtable case</em> of the current readtable before a token is
+constructed.
+</p></dd></dl>
+
+<dl>
+<dt id="index-interpret_002dsymbol_002dtoken">Defgeneric: <strong>interpret-symbol-token</strong> <em>client input-stream token  position-package-marker-1 position-package-marker-2</em></dt>
+<dd>
+<p>This generic function is called by the default method on
+<tt>interpret-token</tt> when the syntax of the token corresponds to
+that of a valid symbol.  The parameter <var>input-stream</var> is the
+input stream from which the characters were read.  The parameter
+<var>token</var> is a string that contains all the characters of the
+token.  The parameter <var>position-package-marker-1</var> contains the
+index into <var>token</var> of the first package marker, or <tt>nil</tt>
+if the token contains no package markers.  The parameter
+<var>position-package-marker-2</var> contains the index into
+<var>token</var> of the second package marker, or <tt>nil</tt> if the
+token contains no package markers or only a single package marker.
+</p>
+<p>The default method on this generic function calls
+<tt>interpret-symbol</tt> (see below) with a symbol name string and a
+package indicator.
+</p></dd></dl>
+
+<dl>
+<dt id="index-interpret_002dsymbol">Defgeneric: <strong>interpret-symbol</strong> <em>client input-stream package-indicator  symbol-name internp</em></dt>
+<dd>
+<p>This generic function is called by the default method on
+<tt>interpret-symbol-token</tt> as well as the default
+<tt>#:</tt> reader macro function to resolve a symbol name string and
+a package indicator to a representation of the designated symbol.  The
+parameter <var>input-stream</var> is the input stream from which
+<var>package-indicator</var> and <var>symbol-name</var> were read.  The
+parameter <var>package-indicator</var> is a either
+</p>
+<ul>
+<li> a string designating the package of that name
+
+</li><li> the keyword <tt>:current</tt> designating the current package
+
+</li><li> the keyword <tt>:keyword</tt> designating the keyword package
+
+</li><li> <tt>nil</tt> to indicate that an uninterned symbol should be created
+</li></ul>
+
+<p>The <var>symbol-name</var> is the name of the desired symbol.
+</p>
+<p>The default method uses <tt>cl:find-package</tt> (or
+<tt>cl:*package*</tt> when <var>package-indicator</var> is
+<tt>:current</tt>) to resolve <var>package-indicator</var> followed by
+<tt>cl:find-symbol</tt> or <tt>cl:intern</tt>, depending on
+<var>internp</var>, to resolve <var>symbol-name</var>.
+</p>
+<p>A second method which is specialized on <var>package-indicator</var>
+being <tt>nil</tt> uses <tt>cl:make-symbol</tt> to create uninterned
+symbols.
+</p></dd></dl>
+
+<dl>
+<dt id="index-call_002dreader_002dmacro">Defgeneric: <strong>call-reader-macro</strong> <em>client input-stream char readtable</em></dt>
+<dd>
+<p>This generic function is called when the reader has determined that
+some character is associated with a reader macro.  The parameter
+<var>char</var> has to be used in conjunction with the
+<var>readtable</var> parameter to obtain the macro function that is
+associated with the macro character.  The parameter
+<var>input-stream</var> is the input stream from which the reader macro
+function will read additional input to accomplish its task.
+</p>
+<p>The default method on this generic function simply obtains the reader
+macro function for <var>char</var> from <var>readtable</var> and calls it,
+passing <var>input-stream</var> and <var>char</var> as arguments.  The
+default method therefore does the same thing that the standard
+Common Lisp reader does.
+</p></dd></dl>
+
+<dl>
+<dt id="index-find_002dcharacter">Defgeneric: <strong>find-character</strong> <em>client name</em></dt>
+<dd>
+<p>This generic function is called by the default
+<tt>#\</tt> reader macro function to find a character by
+name.  <var>name</var> is the name that has been read converted to upper
+case.  The function has to either return the character designated by
+<var>name</var> or <tt>nil</tt> if no such character exists.
+</p></dd></dl>
+
+<dl>
+<dt id="index-make_002dstructure_002dinstance">Defgeneric: <strong>make-structure-instance</strong> <em>client name initargs</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>\#S</tt> reader
+macro function to construct structure instances.  <var>name</var> is a
+symbol naming the structure type of which an instance should be
+constructed.  <var>initargs</var> is a list the elements of which
+alternate between string designators naming structure slots and values
+for those slots.
+</p>
+<p>It is the responsibility of the client to coerce the string
+designators to symbols as if by
+<code>(intern (string slot-name) (find-package 'keyword))</code>
+as described in the Common Lisp specification.
+</p>
+<p>There is no default method on this generic function since there is no
+portable way to construct structure instances given only the name of
+the structure type.
+</p></dd></dl>
+
+<dl>
+<dt id="index-call_002dwith_002dcurrent_002dpackage">Defgeneric: <strong>call-with-current-package</strong> <em>client thunk  package-designator</em></dt>
+<dd>
+<p>This generic function is called by the reader when input has to be
+read with a particular current package.  This is currently only the
+case in the <tt>#+</tt> and <tt>#-</tt> reader macro functions which
+read feature expressions in the keyword package.  <var>thunk</var> is a
+function that should be called without arguments.
+<var>package-designator</var> designates the package that should be the
+current package around the call to <var>thunk</var>.
+</p>
+<p>The default method on this generic function simply binds
+<tt>cl:*package*</tt> to the result of
+<code>(cl:find-package <var>package-designator</var>)</code>
+around calling <var>thunk</var>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-evaluate_002dexpression">Defgeneric: <strong>evaluate-expression</strong> <em>client expression</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>#.</tt> reader
+macro function to perform read-time evaluation.  <var>expression</var>
+is the expression that should be evaluated as it was returned by a
+recursive <tt>read</tt> call and potentially influenced by
+<var>client</var>.  The function has to either return the result of
+evaluating <var>expression</var> or signal an error.
+</p>
+<p>The default method on this generic function simply returns the result
+of <code>(cl:eval <var>expression</var>)</code>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-check_002dfeature_002dexpression">Defgeneric: <strong>check-feature-expression</strong> <em>client feature-expression</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>#+</tt> and
+<tt>#-</tt> reader macro functions to check the well-formedness of
+<var>feature-expression</var> which has been read from the input stream
+before evaluating it.  For compound expressions, only the outermost
+expression is checked regarding the atom in operator position and its
+shape &ndash; child expressions are not checked.  The function returns an
+unspecified value if <var>feature-expression</var> is well-formed and
+signals an error otherwise.
+</p>
+<p>The default method on this generic function accepts standard
+Common Lisp feature expression, i.e. expressions recursively
+composed of symbols, <tt>:not</tt>-expressions,
+<tt>:and</tt>-expressions and <tt>:or</tt>-expressions.
+</p></dd></dl>
+
+<dl>
+<dt id="index-evaluate_002dfeature_002dexpression">Defgeneric: <strong>evaluate-feature-expression</strong> <em>client feature-expression</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>#+</tt> and
+<tt>#-</tt> reader macro functions to evaluate
+<var>feature-expression</var> which has been read from the input stream.
+The function returns either true or false if
+<var>feature-expression</var> is well-formed and signals an error
+otherwise.
+</p>
+<p>For compound feature expressions, the well-formedness of child
+expressions is not checked immediately but lazily, just before the
+child expression in question is evaluated in a subsequent
+<tt>evaluate-feature-expression</tt> call.  This allows feature
+expressions like
+<code>#+(and my-cl-implementation (special-feature a b))</code>
+to succeed when the <tt>:my-cl-implementation</tt> feature is absent.
+</p>
+<p>The default method on this generic function first calls
+<tt>check-feature-expression</tt> to check the well-formedness of
+<var>feature-expression</var>.  It then evaluates
+<var>feature-expression</var> according to standard Common Lisp
+semantics for feature expressions.
+</p></dd></dl>
+
+<dl>
+<dt id="index-fixup">Defgeneric: <strong>fixup</strong> <em>client object seen-objects mapping</em></dt>
+<dd>
+<p>This generic function is potentially called to apply
+circularity-related changes to the object constructed by the reader
+before it is returned to the caller.  <var>object</var> is the object
+that should be modified.  <var>seen-objects</var> is a <tt>eq</tt>-hash
+table used to track already processed objects (see below).
+<var>mapping</var> is a hash table of substitutions, mapping marker
+objects to replacement objects.  A method specialized on a class,
+instances of which consists of parts, should modify <var>object</var> by
+scanning its parts for marker objects, replacing found markers with
+replacement object and recursively calling <tt>fixup</tt> for all
+parts.  <tt>fixup</tt> is called for side effects &ndash; its return value
+is ignored.
+</p>
+<p>Default methods specializing on the <var>object</var> parameter for
+<tt>cons</tt>, <tt>array</tt>, <tt>standard-object</tt> and
+<tt>hash-table</tt> process instances of those classes in the obvious
+way.
+</p>
+<p>An unspecialized <tt>:around</tt> method queries and updates
+<var>seen-objects</var> to ensure that each object is processed exactly
+once.
+</p></dd></dl>
+
+<hr>
+<span id="Quotation-and-quasiquotation"></span><div class="header">
+<p>
+Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable initialization</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Quotation-and-quasiquotation-1"></span><h4 class="subsection">2.2.3 Quotation and quasiquotation</h4>
+
+<span id="index-quasiquotation"></span>
+
+<p>The following generic functions allow clients to construct
+representations of quoted and quasiquoted forms.
+</p>
+<dl>
+<dt id="index-wrap_002din_002dquote">Defgeneric: <strong>wrap-in-quote</strong> <em>client material</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>'</tt>-reader macro
+function to construct a quotation form in which <var>material</var> is
+the quoted material.
+</p>
+<p>The default method on this generic function returns a result
+equivalent to <code>(list 'common-lisp:quote <var>material</var>)</code>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-wrap_002din_002dquasiquote">Defgeneric: <strong>wrap-in-quasiquote</strong> <em>client form</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>`</tt>-reader macro
+function to construct a quasiquotation form in which <var>form</var> is
+the quasiquoted material.
+</p>
+<p>The default method on this generic function returns a result
+equivalent to <code>(list 'eclector.reader:quasiquote <var>form</var>)</code>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-wrap_002din_002dunquote">Defgeneric: <strong>wrap-in-unquote</strong> <em>client form</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>,</tt>-reader macro
+function to construct an unquote form in which <var>form</var> is the
+unquoted material.
+</p>
+<p>The default method on this generic function returns a result
+equivalent to <code>(list 'eclector.reader:unquote <var>form</var>)</code>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-wrap_002din_002dunquote_002dsplicing">Defgeneric: <strong>wrap-in-unquote-splicing</strong> <em>client form</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>,@</tt>-reader macro
+function to construct a splicing unquote form in which <var>form</var> is the
+unquoted material.
+</p>
+<p>The default method on this generic function returns a result
+equivalent to
+<code>(list 'eclector.reader:unquote-splicing <var>form</var>)</code>.
+</p></dd></dl>
+
+<p>Backquote and unquote syntax is forbidden in some contexts such as
+multi-dimensional array literals (<tt>#A</tt>) and structure literals
+(<tt>#S</tt>) thus Eclector has a mechanism for controlling whether
+backquote, unquote or both should be allowed in a given context.
+Since custom reader macros may also have to control this aspect,
+Eclector provides an external protocol:
+</p>
+<dl>
+<dt id="index-with_002dforbidden_002dquasiquotation">Defmacro: <strong>with-forbidden-quasiquotation</strong> <em>context  <tt>&amp;optional</tt>  (quasiquote-forbidden-p <tt>t</tt>)  (unquote-forbidden-p <tt>t</tt>)  <tt>&amp;body</tt> body</em></dt>
+<dd>
+<p>Disallow backquote syntax, unquote syntax or both in <tt>read</tt>
+functions called during the execution of <var>body</var>.
+<var>context</var> is a symbol identifying the current context which is
+used for error reporting.  A typical value is the name of the reader
+macro function in which this macro is used.
+<var>quasiquote-forbidden-p</var> controls whether backquote syntax
+should be forbidden.  The value <tt>:keep</tt> causes the binding to
+remain unchanged.  <var>unquote-forbidden-p</var> controls whether
+unquote syntax should be forbidden.  The value <tt>:keep</tt> causes
+the binding to remain unchanged.
+</p></dd></dl>
+
+<hr>
+<span id="Readtable-initialization"></span><div class="header">
+<p>
+Previous: <a href="#Quotation-and-quasiquotation" accesskey="p" rel="prev">Quotation and quasiquotation</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Readtable-initialization-1"></span><h4 class="subsection">2.2.4 Readtable initialization</h4>
+
+<span id="index-readtable-1"></span>
+
+<p>The standard syntax types and macro character associations used by the
+ordinary reader can be set up for any readtable object implementing the
+readtable protocol (see <a href="#Readtable-features">Readtable features</a>).  The
+following functions are provided for this purpose:
+</p>
+<dl>
+<dt id="index-set_002dstandard_002dsyntax_002dtypes">Function: <strong>set-standard-syntax-types</strong> <em>readtable</em></dt>
+<dd>
+<p>This function sets the standard syntax types in <var>readtable</var>
+(See HyperSpec section 2.1.4.)
+</p></dd></dl>
+
+<dl>
+<dt id="index-set_002dstandard_002dmacro_002dcharacters">Function: <strong>set-standard-macro-characters</strong> <em>readtable</em></dt>
+<dd>
+<p>This function sets the standard macro characters in <var>readtable</var>
+(See HyperSpec section 2.4.)
+</p></dd></dl>
+
+<dl>
+<dt id="index-set_002dstandard_002ddispatch_002dmacro_002dcharacters">Function: <strong>set-standard-dispatch-macro-characters</strong> <em>readtable</em></dt>
+<dd>
+<p>This function sets the standard dispatch macro characters, that is
+sharpsign and its sub-characters, in <var>readtable</var> (See HyperSpec
+section 2.4.8.)
+</p></dd></dl>
+
+<dl>
+<dt id="index-set_002dstandard_002dsyntax_002dand_002dmacros">Function: <strong>set-standard-syntax-and-macros</strong> <em>readtable</em></dt>
+<dd>
+<p>This function sets the standard syntax types and macro characters in
+<var>readtable</var> by calling the above three functions.
+</p></dd></dl>
+
+<hr>
+<span id="Readtable-features"></span><div class="header">
+<p>
+Next: <a href="#Parse-result-construction-features" accesskey="n" rel="next">Parse result construction features</a>, Previous: <a href="#Ordinary-reader-features" accesskey="p" rel="prev">Ordinary reader features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Readtable-features-1"></span><h3 class="section">2.3 Readtable features</h3>
+
+<span id="index-readtable-2"></span>
+
+<p>In this section, symbols written without package marker are in the
+<tt>eclector.readtable</tt> package (see <a href="#Package-for-readtable-features">Package for readtable features</a>).
+</p>
+<p>This package exports two kinds of symbols:
+</p>
+<ol>
+<li> Symbols the names of which correspond to the names of symbols in the
+<tt>common-lisp</tt> package.  The functions bound to these symbols are
+generic versions of the corresponding standard Common Lisp functions.
+Clients can define custom readtables by defining methods on these
+generic functions.
+
+</li><li> Symbols bound to additional functions and condition types.
+</li></ol>
+
+<dl>
+<dt id="index-readtablep">Defgeneric: <strong>readtablep</strong> <em>object</em></dt>
+<dd>
+<p>This function is the generic version of the standard Common Lisp
+function <tt>cl:readtablep</tt>.  The function returns true if
+<var>object</var> can be used as a readtable in Eclector via the
+protocol functions in the <tt>ecelctor.readtable</tt> package.  The
+default method returns <tt>nil</tt>.
+</p></dd></dl>
+
+<p>TODO
+</p>
+<hr>
+<span id="Parse-result-construction-features"></span><div class="header">
+<p>
+Next: <a href="#CST-reader-features" accesskey="n" rel="next">CST reader features</a>, Previous: <a href="#Readtable-features" accesskey="p" rel="prev">Readtable features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Parse-result-construction-features-1"></span><h3 class="section">2.4 Parse result construction features</h3>
+
+<span id="index-client-1"></span>
+<span id="index-parse-result-4"></span>
+
+<p>In this section, symbols written without package marker are in the
+<tt>eclector.parse-result</tt> package (see <a href="#Package-for-parse-result-construction-features">Package for parse result construction features</a>).
+</p>
+<p>This package provides clients with a reader that behaves similarly to
+<tt>cl:read</tt> but returns custom parse result objects controlled by
+the client.  Some parse results correspond to things like symbols,
+numbers and lists that <tt>cl:read</tt> would return, while others, if
+the client chooses, represent comments and other kinds of input that
+<tt>cl:read</tt> would discard.  Furthermore, clients can associate
+source location information with parse results.
+</p>
+<p>Clients using this package pass a &ldquo;client&rdquo; instance for which
+methods on the generic functions described below are applicable to
+<tt>read</tt>, <tt>read-preserving-whitespace</tt> or
+<tt>read-from-string</tt>.  Suitable client classes can be constructed
+by using <tt>parse-result-client</tt> as a superclass and at least
+defining a method on the generic function
+<tt>make-expression-result</tt>.
+</p>
+<div class="float"><span id="fig_003aread_002dcall_002dsequence_002dparse_002dresult"></span>
+<img src="read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result">
+
+<div class="float-caption"><p><strong>Figure 2.2: </strong>Functions and typical function call sequences.  Solid arrows
+represent calls, dashed arrows represent returns from function calls.
+Labels above arrows represent arguments and return values.  Differences
+from the non-parse result version are highlighted with bold text.</p></div></div>
+<p><a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.2</a> shows typical function call
+patterns that arise when the functions
+<tt>read{,-preserving-whitespace,-from-string,-delimited-list}</tt> are
+called by client code.
+</p>
+<dl>
+<dt id="index-read-1">Function: <strong>read</strong> <em>client <tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is the main entry point for this variant of the reader.
+It is in many ways similar to the standard Common Lisp function
+<tt>cl:read</tt>.  The differences are:
+</p>
+<ul>
+<li> A client instance must be supplied as the first argument.
+
+</li><li> The first return value, unless <var>eof-value</var> is returned, is an
+arbitrary parse result object created by the client, not generally the
+read object.
+
+</li><li> The second return value, unless <var>eof-value</var> is returned, is a list
+of &ldquo;orphan&rdquo; results.  These results are return values of
+<tt>make-skipped-input-result</tt> and arise when skipping input at the
+toplevel such as comments which are not lexically contained in lists:
+<tt>#|orphan|# (#|not orphan|#)</tt>.
+
+</li><li> The function does not accept a <var>recursive</var> parameter since it sets
+up a dynamic environment in which calls to <tt>eclector.reader:read</tt>
+behave suitably.
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt id="index-read_002dpreserving_002dwhitespace-1">Function: <strong>read-preserving-whitespace</strong> <em>client  <tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is similar to the standard Common Lisp function
+<tt>cl:read-preserving-whitespace</tt>.  The differences are the same
+as described above for <tt>read</tt> compared to <tt>cl:read</tt>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002dfrom_002dstring-1">Function: <strong>read-from-string</strong> <em>client string <tt>&amp;optional</tt>  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  <tt>&amp;key</tt>  (start <tt>0</tt>)  (end <tt>nil</tt>)  (preserve-whitespace <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is similar to the standard Common Lisp function
+<tt>cl:read-from-string</tt>.  The differences are:
+</p>
+<ul>
+<li> A client instance must be supplied as the first argument.
+
+</li><li> The first return value, unless <var>eof-value</var> is returned, is an
+arbitrary parse result object created by the client, not generally the
+read object.
+
+</li><li> The <em>third</em> return value, unless <var>eof-value</var> is returned, is a
+list of &ldquo;orphan&rdquo; results (Described above).
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt id="index-parse_002dresult_002dclient">Class: <strong>parse-result-client</strong></dt>
+<dd>
+<p>This class should generally be used as a superclass for client classes
+using this package.
+</p></dd></dl>
+
+<dl>
+<dt id="index-source_002dposition">Defgeneric: <strong>source-position</strong> <em>client stream</em></dt>
+<dd>
+<p>This generic function is called in order to determine the current
+position in <var>stream</var>.  The default method calls
+<tt>cl:file-position</tt>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-make_002dsource_002drange">Defgeneric: <strong>make-source-range</strong> <em>client start end</em></dt>
+<dd>
+<p>This generic function is called in order to turn the source positions
+<var>start</var> and <var>end</var> into a range representation suitable
+for <var>client</var>.  The returned representation designates the range
+of input characters from and including the character at position
+<var>start</var> to but not including the character at position
+<var>end</var>.  The default method returns
+<code>(cons <var>start</var> <var>end</var>)</code>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-make_002dexpression_002dresult">Defgeneric: <strong>make-expression-result</strong> <em>client result children source</em></dt>
+<dd>
+<p>This generic function is called in order to construct a parse result
+object.  The value of the <var>result</var> parameter is the raw object
+read.  The value of the <var>children</var> parameter is a list of
+already constructed parse result objects representing objects read by
+recursive <tt>read</tt> calls.  The value of the <var>source</var>
+parameter is a source range, as returned by <tt>make-source-range</tt>
+and <tt>source-position</tt> delimiting the range of characters from
+which <var>result</var> has been read.
+</p>
+<p>This generic function does not have a default method since the purpose
+of the package is the construction of <var>custom</var> parse results.
+Thus, a client must define a method on this generic function.
+</p></dd></dl>
+
+<dl>
+<dt id="index-make_002dskipped_002dinput_002dresult">Defgeneric: <strong>make-skipped-input-result</strong> <em>client stream reason source</em></dt>
+<dd>
+<p>This generic function is called after the reader skipped over a range
+of characters in <var>stream</var>.  It returns either <tt>nil</tt> if
+the skipped input should not be represented or a client-specific
+representation of the skipped input.  The value of the <var>source</var>
+parameter designates the skipped range using a source range
+representation obtained via <tt>make-source-range</tt> and
+<tt>source-position</tt>.
+</p>
+<p>Reasons for skipping input include comments, the <tt>#+</tt> and
+<tt>#-</tt> reader macros and <tt>*read-suppress*</tt>.  The
+aforementioned reasons are reflected by the value of the
+<var>reason</var> parameter as follows:
+</p>
+<table>
+<thead><tr><th width="50%">Input</th><th width="50%">Value of the <var>reason</var> parameter</th></tr></thead>
+<tr><td width="50%">Comment starting with <tt>;</tt></td><td width="50%"><tt>(:line-comment . 1)</tt></td></tr>
+<tr><td width="50%">Comment starting with <tt>;;</tt></td><td width="50%"><tt>(:line-comment . 2)</tt></td></tr>
+<tr><td width="50%">Comment starting with <em>n</em> <tt>;</tt></td><td width="50%"><tt>(:line-comment . <em>n</em>)</tt></td></tr>
+<tr><td width="50%">Comment delimited by <tt>#|</tt> <tt>|#</tt></td><td width="50%"><tt>:block-comment</tt></td></tr>
+<tr><td width="50%"><tt>#+<em>false-expression</em></tt></td><td width="50%"><tt>(:sharpsign-plus . <em>false-expression</em>)</tt></td></tr>
+<tr><td width="50%"><tt>#-<em>true-expression</em></tt></td><td width="50%"><tt>(:sharpsign-minus . <em>true-expression</em>)</tt></td></tr>
+<tr><td width="50%"><tt>*read-suppress*</tt> is true</td><td width="50%"><tt>*read-suppress*</tt></td></tr>
+<tr><td width="50%">A reader macro returns no values</td><td width="50%"><tt>:reader-macro</tt></td></tr>
+</table>
+
+<p>The default method returns <tt>nil</tt>, that is the skipped input is
+not represented as a parse result.
+</p></dd></dl>
+
+<hr>
+<span id="CST-reader-features"></span><div class="header">
+<p>
+Previous: <a href="#Parse-result-construction-features" accesskey="p" rel="prev">Parse result construction features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="CST-reader-features-1"></span><h3 class="section">2.5 CST reader features</h3>
+
+<span id="index-parse-result-5"></span>
+<span id="index-concrete-syntax-tree-2"></span>
+
+<p>In this section, symbols written without package marker are in the
+<tt>eclector.concrete-syntax-tree</tt> package (see <a href="#Package-for-CST-features">Package for CST features</a>).
+</p>
+<dl>
+<dt id="index-read-2">Function: <strong>read</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is the main entry point for the CST reader.  It is
+mostly compatible with the standard Common Lisp function
+<tt>cl:read</tt>.  The differences are:
+</p>
+<ul>
+<li> The return value, unless <var>eof-value</var> is returned, is an instance of
+a subclass of <tt>concrete-syntax-tree:cst</tt>.
+
+</li><li> The function does not accept a <var>recursive</var> parameter since it sets
+up a dynamic environment in which calls to <tt>eclector.reader:read</tt>
+behave suitably.
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt id="index-read_002dpreserving_002dwhitespace-2">function: <strong>read-preserving-whitespace</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is similar to the standard Common Lisp function
+<tt>cl:read-preserving-whitespace</tt>.  The differences are the same
+as described above for <tt>read</tt> compared to <tt>cl:read</tt>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-read_002dfrom_002dstring-2">Function: <strong>read-from-string</strong> <em>string <tt>&amp;optional</tt>  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  <tt>&amp;key</tt>  (start <tt>0</tt>)  (end <tt>nil</tt>)  (preserve-whitespace <tt>nil</tt>)</em></dt>
+<dd>
+<p>This function is similar to the standard Common Lisp function
+<tt>cl:read-from-string</tt>.  The differences are the same as
+described above for <tt>read</tt> compared to <tt>cl:read</tt>.
+</p></dd></dl>
+<hr>
+<span id="Recovering-from-errors"></span><div class="header">
+<p>
+Next: <a href="#Side-effects" accesskey="n" rel="next">Side effects</a>, Previous: <a href="#External-protocols" accesskey="p" rel="prev">External protocols</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Recovering-from-errors-1"></span><h2 class="chapter">3 Recovering from errors</h2>
+
+<span id="index-error"></span>
+<span id="index-recovery"></span>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Error-recovery-features" accesskey="1">Error recovery features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Recoverable-errors" accesskey="2">Recoverable errors</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Potential-problems" accesskey="3">Potential problems</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Error-recovery-features"></span><div class="header">
+<p>
+Next: <a href="#Recoverable-errors" accesskey="n" rel="next">Recoverable errors</a>, Up: <a href="#Recovering-from-errors" accesskey="u" rel="up">Recovering from errors</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Error-recovery-features-1"></span><h3 class="section">3.1 Error recovery features</h3>
+
+<p>Eclector offers extensive support for recovering from many syntax
+errors, continuing to read from the input stream and return a result
+that somewhat resembles what would have been returned in case the
+syntax had been valid.  To this end, a restart named
+<tt>eclector.reader:recover</tt> is established when recoverable
+errors are signaled.  Like the standard Common Lisp restart
+<tt>cl:continue</tt>, this restart can be invoked by a function of the
+same name:
+</p>
+<dl>
+<dt id="index-recover">Function: <strong>recover</strong> <em><tt>&amp;optional</tt> condition</em></dt>
+<dd>
+<p>This function recovers from an error by invoking the most recently
+established applicable restart named <tt>eclector.reader:recover</tt>.  If no
+such restart is currently established, it returns <tt>nil</tt>.  If
+<var>condition</var> is non-<tt>nil</tt>, only restarts that are either explicitly
+associated with <var>condition</var>, or not associated with any condition
+are considered.
+</p></dd></dl>
+
+<p>When a <tt>read</tt> call during which error recovery has been
+performed returns, Eclector tries to return an object that is
+similar in terms of type, numeric value, sequence length, etc. to what
+would have been returned in case the input had been well-formed.  For
+example, recovering after encountering the invalid digit in
+<tt>#b11311</tt> returns either the number <tt>#b11011</tt> or the
+number <tt>#b11111</tt>.
+</p>
+<hr>
+<span id="Recoverable-errors"></span><div class="header">
+<p>
+Next: <a href="#Potential-problems" accesskey="n" rel="next">Potential problems</a>, Previous: <a href="#Error-recovery-features" accesskey="p" rel="prev">Error recovery features</a>, Up: <a href="#Recovering-from-errors" accesskey="u" rel="up">Recovering from errors</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Recoverable-errors-1"></span><h3 class="section">3.2 Recoverable errors</h3>
+
+<p>A syntax error and a corresponding recovery strategy are characterized
+by the type of the signaled condition and the report of the
+established <tt>eclector.reader:recover</tt> restart respectively.
+Attempting to list and describe all examples of both would provide
+little insight.  Instead, this section describes different classes of
+errors and corresponding recovery strategies in broad terms:
+</p>
+
+<ul>
+<li> Replace a missing numeric macro parameter or ignore an invalid numeric
+macro parameter.  Examples: <tt>#=1</tt> ⟶ <tt>1</tt>,
+<tt>#5P&quot;.&quot;</tt> ⟶ <tt>#P&quot;.&quot;</tt>
+
+</li><li> Add a missing closing delimiter.  Examples:
+<tt>&quot;foo</tt> ⟶ <tt>&quot;foo&quot;</tt>, <tt>(1 2</tt> ⟶ <tt>(1 2)</tt>,
+<tt>#(1 2</tt> ⟶ <tt>#(1 2)</tt>, <tt>#C(1 2</tt> ⟶ <tt>#C(1 2)</tt>
+
+</li><li> Replace an invalid digit or an invalid number with a valid one.  This
+includes digits which are invalid for a given base but also things like
+<em>0</em> denominator.  Examples: <tt>#12rc</tt> ⟶ <tt>1</tt>,
+<tt>1/0</tt> ⟶ <tt>1</tt>, <tt>#C(1 :foo)</tt> ⟶ <tt>#C(1 1)</tt>
+
+</li><li> Replace an invalid character with a valid one.  Example:
+<tt>#\foo</tt> ⟶ <tt>\#?</tt>
+
+</li><li> Invalid constructs can sometimes be ignored.  Examples:
+<tt>(,1)</tt> ⟶ <tt>(1)</tt>, <tt>#S(foo :bar 1 2 3)</tt> ⟶ <tt>#S(foo
+:bar 1)</tt>
+
+</li><li> Excess parts can often be ignored.  Examples: <tt>#C(1 2
+  3)</tt> ⟶ <tt>#C(1 2)</tt>, <tt>#2(1 2 3)</tt> ⟶ <tt>#2(1 2)</tt>
+
+</li><li> Replace an entire construct by some fallback value.  Example:
+<tt>#S(5)</tt> ⟶ <tt>nil</tt>, <tt>(#1=)</tt> ⟶ <tt>(nil)</tt>
+</li></ul>
+
+<hr>
+<span id="Potential-problems"></span><div class="header">
+<p>
+Previous: <a href="#Recoverable-errors" accesskey="p" rel="prev">Recoverable errors</a>, Up: <a href="#Recovering-from-errors" accesskey="u" rel="up">Recovering from errors</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Potential-problems-1"></span><h3 class="section">3.3 Potential problems</h3>
+
+<p>Note that attempting to recover from syntax errors may lead to apparent
+success in the sense that the <tt>read</tt> call returns an object, but this
+object may not be what the caller wanted.  For example, recovering from
+the missing closing <tt>&quot;</tt> in the following example
+</p>
+<div class="lisp">
+<pre class="lisp">(defun foo (x y)
+  &quot;My documentation string
+  (+ x y))
+</pre></div>
+
+<p>results in <code>(DEFUN FOO (X Y) &quot;My documentation string&lt;newline&gt;  (+ x y))&quot;)</code>,
+not <code>(DEFUN FOO (X Y) &quot;My documentation string&quot; (+ x y))</code>.
+</p><hr>
+<span id="Side-effects"></span><div class="header">
+<p>
+Next: <a href="#Concept-index" accesskey="n" rel="next">Concept index</a>, Previous: <a href="#Recovering-from-errors" accesskey="p" rel="prev">Recovering from errors</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Side-effects-1"></span><h2 class="chapter">4 Side effects</h2>
+
+<span id="index-side-effects"></span>
+
+<p>This chapter describes potential side effects of calling
+<tt>eclector.reader:read</tt>,
+<tt>eclector.reader:read-preserving-whitespace</tt> or
+<tt>eclector.reader:read-from-string</tt> for different kinds of
+clients.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Potential-side-effects-for-the-default-client" accesskey="1">Potential side effects for the default client</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="2">Potential side effects for non-default clients</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Potential-side-effects-for-the-default-client"></span><div class="header">
+<p>
+Next: <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="n" rel="next">Potential side effects for non-default clients</a>, Up: <a href="#Side-effects" accesskey="u" rel="up">Side effects</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Potential-side-effects-for-the-default-client-1"></span><h3 class="section">4.1 Potential side effects for the default client</h3>
+
+<p>The following destructive modifications are considered uninteresting
+and ignored in the remainder of this section:
+</p>
+<ul>
+<li> Changes to the state of streams passed to the functions mentioned above.
+
+</li><li> Changes to objects within expressions currently being read.
+
+</li></ul>
+
+<p>Furthermore, the remainder of this section is written under the
+following assumptions:
+</p>
+<ul>
+<li> The stream object passed to <tt>eclector.reader:read</tt> does not cause
+additional side effects on its own.
+
+</li><li> The variable <tt>eclector.reader:*client*</tt> is bound to an object for
+which there are no custom applicable methods on generic functions
+belonging to protocols provided by Eclector that introduce additional
+side effects.
+
+</li><li> The variable <tt>eclector.readtable:*readtabe*</tt> is bound to an object for
+which
+
+<ul>
+<li> there are no custom applicable methods on generic functions belonging to
+protocols provided by Eclector that introduce additional side effects
+
+</li><li> no non-default macro functions have been installed
+
+</li></ul>
+
+</li></ul>
+
+<p>If any of the above assumptions does not hold, &ldquo;all bets are off&rdquo; in
+the sense that arbitrary side effects other than the ones described
+below are possible.  For notes regarding non-default clients,
+See <a href="#Potential-side-effects-for-non_002ddefault-clients">Potential side effects for non-default clients</a>.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Symbols-and-packages-_0028default-client_0029" accesskey="1">Symbols and packages (default client)</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Read_002dtime-evaluation-_0028default-client_0029" accesskey="2">Read-time evaluation (default client)</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Standard-reader-macros-_0028default-client_0029" accesskey="3">Standard reader macros (default client)</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Symbols-and-packages-_0028default-client_0029"></span><div class="header">
+<p>
+Next: <a href="#Read_002dtime-evaluation-_0028default-client_0029" accesskey="n" rel="next">Read-time evaluation (default client)</a>, Up: <a href="#Potential-side-effects-for-the-default-client" accesskey="u" rel="up">Potential side effects for the default client</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Symbols-and-packages-_0028default-client_0029-1"></span><h4 class="subsection">4.1.1 Symbols and packages (default client)</h4>
+
+<p>The default method on the generic function
+<tt>eclector.reader:interpret-symbol</tt> may create and intern
+symbols, thereby modifying the package system.
+</p>
+<hr>
+<span id="Read_002dtime-evaluation-_0028default-client_0029"></span><div class="header">
+<p>
+Next: <a href="#Standard-reader-macros-_0028default-client_0029" accesskey="n" rel="next">Standard reader macros (default client)</a>, Previous: <a href="#Symbols-and-packages-_0028default-client_0029" accesskey="p" rel="prev">Symbols and packages (default client)</a>, Up: <a href="#Potential-side-effects-for-the-default-client" accesskey="u" rel="up">Potential side effects for the default client</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Read_002dtime-evaluation-_0028default-client_0029-1"></span><h4 class="subsection">4.1.2 Read-time evaluation (default client)</h4>
+
+<p>The default method on the generic function
+<tt>eclector.reader:evaluate-expression</tt> uses <tt>cl:eval</tt> to
+evaluate arbitrary expressions, potentially causing side effects.
+With the default readtable, the generic function is only called by the
+macro function of the <tt>#.</tt> reader macro.
+</p>
+<hr>
+<span id="Standard-reader-macros-_0028default-client_0029"></span><div class="header">
+<p>
+Previous: <a href="#Read_002dtime-evaluation-_0028default-client_0029" accesskey="p" rel="prev">Read-time evaluation (default client)</a>, Up: <a href="#Potential-side-effects-for-the-default-client" accesskey="u" rel="up">Potential side effects for the default client</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Standard-reader-macros-_0028default-client_0029-1"></span><h4 class="subsection">4.1.3 Standard reader macros (default client)</h4>
+
+<p>The default method on the generic function
+<tt>eclector.reader:call-reader-macro</tt> can cause side effects by
+calling macro functions that cause side effects.  The following
+standard reader macros potentially cause side-effects:
+</p>
+<ul>
+<li> <tt>#.</tt> as described in <a href="#Read_002dtime-evaluation-_0028default-client_0029">Read-time evaluation (default client)</a>.
+</li></ul>
+
+<hr>
+<span id="Potential-side-effects-for-non_002ddefault-clients"></span><div class="header">
+<p>
+Previous: <a href="#Potential-side-effects-for-the-default-client" accesskey="p" rel="prev">Potential side effects for the default client</a>, Up: <a href="#Side-effects" accesskey="u" rel="up">Side effects</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Potential-side-effects-for-non_002ddefault-clients-1"></span><h3 class="section">4.2 Potential side effects for non-default clients</h3>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Symbols-and-packages" accesskey="1">Symbols and packages</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Read_002dtime-evaluation" accesskey="2">Read-time evaluation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Structure-instance-creation" accesskey="3">Structure instance creation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Circular-structure" accesskey="4">Circular structure</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Standard-reader-macros" accesskey="5">Standard reader macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Symbols-and-packages"></span><div class="header">
+<p>
+Next: <a href="#Read_002dtime-evaluation" accesskey="n" rel="next">Read-time evaluation</a>, Up: <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="u" rel="up">Potential side effects for non-default clients</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Symbols-and-packages-1"></span><h4 class="subsection">4.2.1 Symbols and packages</h4>
+
+<p>In addition to the potential side effects described in <a href="#Symbols-and-packages-_0028default-client_0029">Symbols and packages (default client)</a>, strings passed as the third argument of
+<tt>eclector.reader:interpret-token</tt> are potentially destructively
+modified during conversion to the current readtable case.
+</p>
+<hr>
+<span id="Read_002dtime-evaluation"></span><div class="header">
+<p>
+Next: <a href="#Structure-instance-creation" accesskey="n" rel="next">Structure instance creation</a>, Previous: <a href="#Symbols-and-packages" accesskey="p" rel="prev">Symbols and packages</a>, Up: <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="u" rel="up">Potential side effects for non-default clients</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Read_002dtime-evaluation-1"></span><h4 class="subsection">4.2.2 Read-time evaluation</h4>
+
+<p>The same considerations as in <a href="#Read_002dtime-evaluation-_0028default-client_0029">Read-time evaluation (default client)</a> apply.
+</p>
+<hr>
+<span id="Structure-instance-creation"></span><div class="header">
+<p>
+Next: <a href="#Circular-structure" accesskey="n" rel="next">Circular structure</a>, Previous: <a href="#Read_002dtime-evaluation" accesskey="p" rel="prev">Read-time evaluation</a>, Up: <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="u" rel="up">Potential side effects for non-default clients</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Structure-instance-creation-1"></span><h4 class="subsection">4.2.3 Structure instance creation</h4>
+
+<p>Clients defining methods on
+<tt>eclector.reader:make-structure-instance</tt> which implement the
+standard behavior of calling the default constructor (if any) of the
+named structure should consider side effects caused by slot initforms
+of the structure.  The following example illustrates this problem:
+</p><div class="lisp">
+<pre class="lisp">  (defvar *counter* 0)
+  (defstruct foo (bar (incf *counter*)))
+  #S(foo)
+  *counter* ; =&gt; 1
+  #S(foo)
+  *counter* ; =&gt; 2
+</pre></div>
+
+<hr>
+<span id="Circular-structure"></span><div class="header">
+<p>
+Next: <a href="#Standard-reader-macros" accesskey="n" rel="next">Standard reader macros</a>, Previous: <a href="#Structure-instance-creation" accesskey="p" rel="prev">Structure instance creation</a>, Up: <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="u" rel="up">Potential side effects for non-default clients</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Circular-structure-1"></span><h4 class="subsection">4.2.4 Circular structure</h4>
+
+<p>The <tt>fixup</tt> generic function potentially modifies its second
+argument destructively.  Clients that define methods on
+<tt>eclector.reader:make-structure-instance</tt> should be aware of
+this potential modification in cases like <tt>#1=#S(foo :bar
+  #1#)</tt>.  Similar considerations apply for other ways of
+constructing compound objects such as <tt>#1=(t . #1#)</tt>.
+</p>
+<hr>
+<span id="Standard-reader-macros"></span><div class="header">
+<p>
+Previous: <a href="#Circular-structure" accesskey="p" rel="prev">Circular structure</a>, Up: <a href="#Potential-side-effects-for-non_002ddefault-clients" accesskey="u" rel="up">Potential side effects for non-default clients</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Standard-reader-macros-1"></span><h4 class="subsection">4.2.5 Standard reader macros</h4>
+
+<p>The following standard reader macros could cause or be affected by
+side effects when combined with a non-standard client:
+</p>
+<ul>
+<li> <tt>#.</tt> as described in <a href="#Read_002dtime-evaluation-_0028default-client_0029">Read-time evaluation (default client)</a>.
+
+</li><li> <tt>#S</tt> as described in <a href="#Structure-instance-creation">Structure instance creation</a>.
+
+</li><li> <tt>(</tt>, <tt>#(</tt> and <tt>#S</tt> as described in <a href="#Circular-structure">Circular structure</a>.
+
+</li><li> The <tt>,.</tt> (i.e. destructively splicing) variant of the <tt>,</tt> reader
+macro does not currently destructively modify the surrounding object,
+but clients should not rely on this fact.  This consideration applies to
+clients that install non-standard macro functions for the <tt>(</tt> and
+<tt>#(</tt> reader macros.
+
+</li></ul>
+
+<hr>
+<span id="Concept-index"></span><div class="header">
+<p>
+Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" rel="next">Function and macro and variable and type index</a>, Previous: <a href="#Side-effects" accesskey="p" rel="prev">Side effects</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Concept-index-1"></span><h2 class="unnumbered">Concept index</h2>
+
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-Q"><b>Q</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-S"><b>S</b></a>
+ &nbsp; 
+</td></tr></table>
+<table class="index-cp" border="0">
+<tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-C">C</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-client">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-client-1">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree-1">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-CST-features">Package for CST features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree-2">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-E">E</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-error">error</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Recovering-from-errors">Recovering from errors</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-P">P</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse-result">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse-result-1">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-parse-result-construction-features">Package for parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse-result-2">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-CST-features">Package for CST features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse-result-3">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse-result-4">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse-result-5">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-Q">Q</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-quasiquotation">quasiquotation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-R">R</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-readtable">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-readtable-features">Package for readtable features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-readtable-1">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-readtable-2">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-features">Readtable features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-recovery">recovery</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Recovering-from-errors">Recovering from errors</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-S">S</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-side-effects">side effects</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Side-effects">Side effects</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-source-tracking">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-source-tracking-1">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+</table>
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-Q"><b>Q</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-S"><b>S</b></a>
+ &nbsp; 
+</td></tr></table>
+
+<hr>
+<span id="Function-and-macro-and-variable-and-type-index"></span><div class="header">
+<p>
+Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Function-and-macro-and-variable-and-type-index-1"></span><h2 class="unnumbered">Function and macro and variable and type index</h2>
+
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_symbol-1"><b>*</b></a>
+ &nbsp; 
+<br>
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-F"><b>F</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-I"><b>I</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-M"><b>M</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-N"><b>N</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+<table class="index-fn" border="0">
+<tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_symbol-1">*</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_002aclient_002a"><code>*client*</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_002askip_002dreason_002a"><code>*skip-reason*</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-C">C</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-call_002das_002dtop_002dlevel_002dread"><code>call-as-top-level-read</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-call_002dreader_002dmacro"><code>call-reader-macro</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-call_002dwith_002dcurrent_002dpackage"><code>call-with-current-package</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-check_002dfeature_002dexpression"><code>check-feature-expression</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-E">E</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-evaluate_002dexpression"><code>evaluate-expression</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-evaluate_002dfeature_002dexpression"><code>evaluate-feature-expression</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-F">F</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-find_002dcharacter"><code>find-character</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-fixup"><code>fixup</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-I">I</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-interpret_002dsymbol"><code>interpret-symbol</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-interpret_002dsymbol_002dtoken"><code>interpret-symbol-token</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-interpret_002dtoken"><code>interpret-token</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-M">M</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-make_002dexpression_002dresult"><code>make-expression-result</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-make_002dskipped_002dinput_002dresult"><code>make-skipped-input-result</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-make_002dsource_002drange"><code>make-source-range</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-make_002dstructure_002dinstance"><code>make-structure-instance</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-N">N</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-note_002dskipped_002dinput"><code>note-skipped-input</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-P">P</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-parse_002dresult_002dclient"><code>parse-result-client</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-R">R</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read"><code>read</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-1"><code>read</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-2"><code>read</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dcommon"><code>read-common</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002ddelimited_002dlist"><code>read-delimited-list</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dfrom_002dstring"><code>read-from-string</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dfrom_002dstring-1"><code>read-from-string</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dfrom_002dstring-2"><code>read-from-string</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dmaybe_002dnothing"><code>read-maybe-nothing</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dpreserving_002dwhitespace"><code>read-preserving-whitespace</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dpreserving_002dwhitespace-1"><code>read-preserving-whitespace</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dpreserving_002dwhitespace-2"><code>read-preserving-whitespace</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read_002dtoken"><code>read-token</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-readtablep"><code>readtablep</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-features">Readtable features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-recover"><code>recover</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Error-recovery-features">Error recovery features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-S">S</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-set_002dstandard_002ddispatch_002dmacro_002dcharacters"><code>set-standard-dispatch-macro-characters</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dmacro_002dcharacters"><code>set-standard-macro-characters</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dand_002dmacros"><code>set-standard-syntax-and-macros</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dtypes"><code>set-standard-syntax-types</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-source_002dposition"><code>source-position</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-W">W</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-with_002dforbidden_002dquasiquotation"><code>with-forbidden-quasiquotation</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dquasiquote"><code>wrap-in-quasiquote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dquote"><code>wrap-in-quote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dunquote"><code>wrap-in-unquote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dunquote_002dsplicing"><code>wrap-in-unquote-splicing</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+</table>
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_symbol-1"><b>*</b></a>
+ &nbsp; 
+<br>
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-F"><b>F</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-I"><b>I</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-M"><b>M</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-N"><b>N</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT1" href="#DOCF1">(1)</a></h3>
+<p>See: <a href="https://github.com/s-expressionists/Concrete-Syntax-Tree">https://github.com/s-expressionists/Concrete-Syntax-Tree</a></p>
+</div>
+<hr>
+
+
+
+</body>
+</html>
