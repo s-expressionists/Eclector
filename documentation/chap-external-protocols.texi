@@ -75,6 +75,62 @@ In this section, symbols written without package marker are in the
 @t{eclector.reader} package
 (@pxref{Package for ordinary reader features})
 
+The features provided in this package fall into two categories:
+@itemize
+@item
+The functions @t{read}, @t{read-preserving-whitespace},
+@t{read-from-string} and @t{read-delimited-list} which, together with
+standard special variables, replicate the interface of the standard
+@commonlisp{} reader (except functions related to readtables which @sysname{}
+provides separately, @pxref{Readtable features}).  These functions are
+discussed in the section @ref{@commonlisp{} reader compatible interface}.
+
+@item
+The second category is comprised of the @t{*client*} special variable
+and a collection of protocols which allow customizing the behavior of
+the reader by defining methods specialized to a particular client on the
+generic functions of the protocols.
+@end itemize
+
+@float Figure,fig:read-call-sequence-ordinary
+@image{read-call-sequence-ordinary}
+@caption{Functions and typical function call sequences.  Solid arrows
+represent calls, dashed arrows represent returns from function calls.
+Labels above arrows represent arguments and return values.}
+@end float
+
+@ref{fig:read-call-sequence-ordinary} illustrates the categorization
+into the @commonlisp{} reader compatible interface and the extensible
+behavior protocol as well as typical function call patterns that arise
+when the functions
+@t{read@{,-preserving-whitespace,-from-string,-delimited-list@}} are
+called by client code.
+
+@defvar {*client*}
+This variable is used by several generic functions called by
+@t{read}.  The default value of the variable is @t{nil}.
+Client code that wants to override or extend the default behavior of
+some generic function of @sysname{} should bind this variable to some
+standard object and provide a method on that generic function,
+specialized to the class of that standard object.
+@end defvar
+
+@menu
+* @commonlisp{} reader compatible interface::
+* Reader behavior protocol::
+* Quotation and quasiquotation::
+* Readtable initialization::
+@end menu
+
+@node @commonlisp{} reader compatible interface
+@subsection @commonlisp{} reader compatible interface
+
+The following functions are like their standarad @commonlisp{}
+counterparts with the two differences that their names are symbols in
+the @t{eclector.reader} package and that their behavior can deviate from
+that of the standard reader depending on the value of the @t{*client*}
+variable.
+
 @deffn {Function} {read} @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
@@ -113,15 +169,11 @@ This function is entirely compatible with the standard @commonlisp{}
 function with the same name.
 @end deffn
 
-@defvar {*client*}
+@node Reader behavior protocol
+@subsection Reader behavior protocol
 
-This variable is used by several generic functions called by
-@t{read}.  The default value of the variable is @t{nil}.
-Client code that wants to override or extend the default behavior of
-some generic function of @sysname{} should bind this variable to some
-standard object and provide a method on that generic function,
-specialized to the class of that standard object.
-@end defvar
+By defining methods on the generic functions of this protocol, clients
+can customize the high-level behavior of the reader.
 
 @deffn {Defgeneric} {call-as-top-level-read} client thunk input-stream@
 eof-error-p eof-value preserve-whitespace-p
@@ -450,11 +502,6 @@ An unspecialized @t{:around} method queries and updates
 once.
 @end deffn
 
-@menu
-* Quotation and quasiquotation::
-* Readtable initialization::
-@end menu
-
 @node Quotation and quasiquotation
 @subsection Quotation and quasiquotation
 
@@ -622,6 +669,19 @@ methods on the generic functions described below are applicable to
 by using @t{parse-result-client} as a superclass and at least
 defining a method on the generic function
 @t{make-expression-result}.
+
+@float Figure,fig:read-call-sequence-parse-result
+@image{read-call-sequence-parse-result}
+@caption{Functions and typical function call sequences.  Solid arrows
+represent calls, dashed arrows represent returns from function calls.
+Labels above arrows represent arguments and return values.  Differences
+from the non-parse result version are highlighted with bold text.}
+@end float
+
+@ref{fig:read-call-sequence-parse-result} shows typical function call
+patterns that arise when the functions
+@t{read@{,-preserving-whitespace,-from-string,-delimited-list@}} are
+called by client code.
 
 @deffn {Function} {read} client @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
