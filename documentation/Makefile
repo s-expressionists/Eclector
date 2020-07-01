@@ -1,36 +1,23 @@
 NAME=eclector
 
-TEXFILES=$(NAME).tex $(shell ./tex-dependencies $(NAME).tex)
-BIBFILES=$(NAME).bib
-PDF_T=$(shell ./strip-dependence inputfig $(TEXFILES))
-VERBATIM=$(shell ./strip-dependence verbatimtabinput $(TEXFILES))
-CODEFILES=$(shell ./strip-dependence inputcode $(TEXFILES))
-PDF=$(subst .pdf_t,.pdf,$(PDF_T))
+SOURCES=$(NAME).texi $(wildcard chap-*.texi)
 
-all : $(NAME).pdf
+.PHONY: all clean
 
-%.pdf: %.fig
-	fig2dev -Lpdftex -m 0.75  $< $@
+all : $(NAME).info $(NAME).pdf $(NAME).html
 
-%.pdf_t: %.fig %.pdf
-	fig2dev -Lpdftex_t -m 0.75 -p $(basename $<).pdf $< $@
+$(NAME).info: $(SOURCES)
+	makeinfo --output $@ $(NAME).texi
 
-%.code: %.lisp
-	./codify $<
+$(NAME).pdf: $(SOURCES)
+	texi2pdf $(NAME).texi
 
-$(NAME).pdf: $(TEXFILES) $(PDF) $(PDF_T) $(VERBATIM) $(CODEFILES) $(BIBFILES)
-	pdflatex $<
-	makeindex $(NAME)
-#	bibtex $(NAME)
-	pdflatex $<
-	pdflatex $<
-
-view: $(NAME).pdf
-	xpdf $<
+$(NAME).html: $(SOURCES) $(wildcard *.css)
+	makeinfo --html --no-split \
+	         --css-include=style-common.css --css-include=style-single.css \
+	         $(NAME).texi
 
 clean:
-	rm -f *.aux *.log *~ *.pdf *.pdf *.pdf_t *.bbl *.blg
-
-spotless: clean
-	rm -f *.ps *.dvi *.pdf *.pdf_t *.toc *.idx *.ilg *.ind *.fig.bak
-	rm -f *.cb *.cb2
+	rm -f *.cp *.cps *.fn *.fns \
+	      *.aux *.toc *.log \
+	      $(NAME).info $(NAME).pdf $(NAME).html

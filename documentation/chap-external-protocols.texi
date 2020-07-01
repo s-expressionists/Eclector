@@ -1,0 +1,814 @@
+@node External protocols
+@chapter External protocols
+
+@menu
+* Packages::
+* Ordinary reader features::
+* Readtable features::
+* Parse result construction features::
+* CST reader features::
+@end menu
+
+@node Packages
+@section Packages
+
+@menu
+* Package for ordinary reader features::
+* Package for readtable features::
+* Package for parse result construction features::
+* Package for CST features::
+@end menu
+
+@node Package for ordinary reader features
+@subsection Package for ordinary reader features
+
+The package for ordinary reader features is named
+@t{eclector.reader}.  To use features of this package, we
+recommend the use of explicit package prefixes, simply because this
+package shadows and exports names that are also exported from the
+@t{common-lisp} package.  Importing this package will likely
+cause conflicts with the @t{common-lisp} package otherwise.
+
+@node Package for readtable features
+@subsection Package for readtable features
+
+@cindex readtable
+
+The package for readtable-related features is named
+@t{eclector.readtable}.  To use features of this package, we
+recommend the use of explicit package prefixes, simply because this
+package shadows and exports names that are also exported from the
+@t{common-lisp} package.  Importing this package will likely
+cause conflicts with the @t{common-lisp} package otherwise.
+
+@node Package for parse result construction features
+@subsection Package for parse result construction features
+
+@cindex parse result
+
+The package for features related to the creation of client-defined
+parse results is named @t{eclector.parse-result}.  Although this
+package does not shadow any symbol in the @t{common-lisp}
+package, we still recommend the use of explicit package prefixes to
+refer to symbols in this package.
+
+@node Package for CST features
+@subsection Package for CST features
+
+@cindex parse result
+@cindex concrete syntax tree
+
+The package for features related to the creation of concrete syntax
+trees is named @t{eclector.concrete-syntax-tree}.  Although this
+package does not shadow any symbol in the @t{common-lisp}
+package, we still recommend the use of explicit package prefixes to
+refer to symbols in this package.
+
+@node Ordinary reader features
+@section Ordinary reader features
+
+@cindex client
+@cindex parse result
+@cindex source tracking
+
+In this section, symbols written without package marker are in the
+@t{eclector.reader} package
+(@pxref{Package for ordinary reader features})
+
+@deffn {Function} {read} @optional (input-stream @t{*standard-input*})@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})@
+  (recursive-p @t{nil})
+
+This function is the main entry point for the ordinary reader.  It is
+entirely compatible with the standard @commonlisp{} function with the same
+name.
+@end deffn
+
+@deffn {Function} {read-preserving-whitespace} @optional (input-stream @t{*standard-input*})@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})@
+  (recursive-p @t{nil})
+
+This function is entirely compatible with the standard @commonlisp{}
+function with the same name.
+@end deffn
+
+@deffn {Function} {read-from-string} string @optional@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})@
+  @pkey@
+  (start @t{0})@
+  (end @t{nil})@
+  (preserve-whitespace @t{nil})
+
+This function is entirely compatible with the standard @commonlisp{}
+function with the same name.
+@end deffn
+
+@deffn {Function} {read-delimited-list} char @optional (input-stream @t{*standard-input*})@
+  (recursive-p @t{nil})
+
+This function is entirely compatible with the standard @commonlisp{}
+function with the same name.
+@end deffn
+
+@defvar {*client*}
+
+This variable is used by several generic functions called by
+@t{read}.  The default value of the variable is @t{nil}.
+Client code that wants to override or extend the default behavior of
+some generic function of @sysname{} should bind this variable to some
+standard object and provide a method on that generic function,
+specialized to the class of that standard object.
+@end defvar
+
+@deffn {Defgeneric} {call-as-top-level-read} client thunk input-stream@
+eof-error-p eof-value preserve-whitespace-p
+
+This generic function is called by @t{read}, if @t{read} is called with
+a true value for the @var{recursive-p} parameter.  It calls @var{thunk}
+with the necessary context for a global @t{read} call.  @var{thunk}
+should read and return an object without consuming any whitespace
+following the object.  If @var{preserve-whitespace-p} is false, this
+function reads up to one character of whitespace after @var{thunk}
+returns.  This function returns the object or @var{eof-value} returned
+by @var{thunk} as its first value.  It may return additional values.
+
+The default method on this generic function performs two tasks:
+@enumerate
+@item
+It establishes a context in which labels (@t{#N=}) and references
+(@t{#N#}) work.
+
+@item
+It realizes the requested @var{preserve-whitespace-p} behavior.
+@end enumerate
+@end deffn
+
+@deffn {Defgeneric} {read-common} client input-stream eof-error-p eof-value
+
+This generic function is called by @t{read}, passing it the value of the
+variable @t{*client*} and the corresponding parameters.  Client code can
+add methods on this function, specializing them to the client class of
+its choice.  The actions that @t{read} needs to take for different values
+of the parameter @var{recursive-p} have already been taken before
+@t{read} calls this generic function.
+@end deffn
+
+@deffn {Defgeneric} {read-maybe-nothing} client input-stream eof-error-p@
+  eof-value
+
+This generic function can be called directly by the client or by the
+generic function @t{read-common} to read an object or consume input
+without returning an object.  If called directly by the client, the call
+has to be in the dynamic scope of a @t{call-as-top-level-read} call.
+The function @t{read-maybe-nothing} either
+
+@itemize
+@item
+encounters the end of input on @var{input-stream} and, depending on
+@var{eof-error-p} either signals an error or returns the values
+@var{eof-value} and @t{:eof}
+
+@item
+or reads one or more whitespace characters an returns the values @t{nil}
+and @t{:whitespace}
+
+@item
+or reads an object.  If @t{*read-suppress*} is true, the function
+returns nil and @t{:suppress}.  Otherwise it returns the object and
+@t{:object}.
+
+@item
+or consumes a macro character and the characters consumed by the
+associated reader macro function if that reader macro function does not
+return a value.  In this case the function returns @t{nil} and
+@t{:skip}.
+@end itemize
+@end deffn
+
+@deffn {Defgeneric} {note-skipped-input} client input-stream reason
+
+This generic function is called whenever the reader skips some input
+such as a comment or a form that must be skipped because of a reader
+conditional.  It is called with the value of the variable
+@t{*client*}, the input stream from which the input is being read
+and an object indicating the reason for skipping the input.  The
+default method on this generic function does nothing.  Client code can
+supply a method that specializes to the client class of its choice.
+
+When this function is called, the stream is positioned immediately
+@emph{after} the skipped input.  Client code that wants to know both
+the beginning and the end of the skipped input must remember the
+stream position before the call to @t{read} was made as well as
+the stream position when the call to this function is made.
+@end deffn
+
+@defvar {*skip-reason*}
+
+This variable is used by the reader to determine why a range of input
+characters has been skipped.  To this end, internal functions of the
+reader as well as reader macros can set this variable to a suitable
+value before skipping over some input.  Then, after the input has been
+skipped, the generic function @t{note-skipped-input} is called
+with the value of the variable as its @var{reason} argument.
+
+As an example, the method on @t{note-skipped-input} specialized to
+@t{eclector.parse-result:parse-result-client} relays the reason and
+position information to the client by calling the
+@t{eclector.parse-result:make-skipped-input-result} generic function
+(@pxref{Parse result construction features}).
+@end defvar
+
+@deffn {Defgeneric} {read-token} client input-stream eof-error-p eof-value
+
+This generic function is called by @t{read-common} when it has
+been detected that a token should be read.  This function is
+responsible for accumulating the characters of the token and then
+calling @t{interpret-token} (see below) in order to create and
+return a token.
+@end deffn
+
+@deffn {Defgeneric} {interpret-token} client input-stream token escape-ranges
+
+This generic function is called by @t{read-token} in order to
+create a token from accumulated token characters.  The parameter
+@var{token} is a string containing the characters that make up the
+token.  The parameter @var{escape-ranges} indicates ranges of
+characters read from @var{input-stream} and preceded by a character
+with single-escape syntax or delimited by characters with
+multiple-escape syntax.  Values of @var{escape-ranges} are lists of
+elements of the form @t{(@var{start}\ .\ @var{end})} where
+@t{@var{start}} is the index of the first escaped character
+and @t{@var{end}} is the index @emph{following} the last
+escaped character.  Note that @t{@var{start}} and
+@t{@var{var}} can be identical indicating no escaped
+characters.  This can happen in cases like @t{a||b}.  The
+information conveyed by the @var{escape-ranges} parameter is used
+to convert the characters in @var{token} according to the
+@emph{readtable case} of the current readtable before a token is
+constructed.
+@end deffn
+
+@deffn {Defgeneric} {interpret-symbol-token} client input-stream token@
+  position-package-marker-1 position-package-marker-2
+
+This generic function is called by the default method on
+@t{interpret-token} when the syntax of the token corresponds to
+that of a valid symbol.  The parameter @var{input-stream} is the
+input stream from which the characters were read.  The parameter
+@var{token} is a string that contains all the characters of the
+token.  The parameter @var{position-package-marker-1} contains the
+index into @var{token} of the first package marker, or @t{nil}
+if the token contains no package markers.  The parameter
+@var{position-package-marker-2} contains the index into
+@var{token} of the second package marker, or @t{nil} if the
+token contains no package markers or only a single package marker.
+
+The default method on this generic function calls
+@t{interpret-symbol} (see below) with a symbol name string and a
+package indicator.
+@end deffn
+
+@deffn {Defgeneric} interpret-symbol client input-stream package-indicator@
+  symbol-name internp
+
+This generic function is called by the default method on
+@t{interpret-symbol-token} as well as the default
+@t{#:} reader macro function to resolve a symbol name string and
+a package indicator to a representation of the designated symbol.  The
+parameter @var{input-stream} is the input stream from which
+@var{package-indicator} and @var{symbol-name} were read.  The
+parameter @var{package-indicator} is a either
+
+@itemize
+@item
+a string designating the package of that name
+
+@item
+the keyword @t{:current} designating the current package
+
+@item
+the keyword @t{:keyword} designating the keyword package
+
+@item
+@t{nil} to indicate that an uninterned symbol should be created
+@end itemize
+
+The @var{symbol-name} is the name of the desired symbol.
+
+The default method uses @t{cl:find-package} (or
+@t{cl:*package*} when @var{package-indicator} is
+@t{:current}) to resolve @var{package-indicator} followed by
+@t{cl:find-symbol} or @t{cl:intern}, depending on
+@var{internp}, to resolve @var{symbol-name}.
+
+A second method which is specialized on @var{package-indicator}
+being @t{nil} uses @t{cl:make-symbol} to create uninterned
+symbols.
+@end deffn
+
+@deffn {Defgeneric} {call-reader-macro} client input-stream char readtable
+
+This generic function is called when the reader has determined that
+some character is associated with a reader macro.  The parameter
+@var{char} has to be used in conjunction with the
+@var{readtable} parameter to obtain the macro function that is
+associated with the macro character.  The parameter
+@var{input-stream} is the input stream from which the reader macro
+function will read additional input to accomplish its task.
+
+The default method on this generic function simply obtains the reader
+macro function for @var{char} from @var{readtable} and calls it,
+passing @var{input-stream} and @var{char} as arguments.  The
+default method therefore does the same thing that the standard
+@commonlisp{} reader does.
+@end deffn
+
+@deffn {Defgeneric} {find-character} client name
+
+This generic function is called by the default
+@t{#\} reader macro function to find a character by
+name.  @var{name} is the name that has been read converted to upper
+case.  The function has to either return the character designated by
+@var{name} or @t{nil} if no such character exists.
+@end deffn
+
+@deffn {Defgeneric} {make-structure-instance} client name initargs
+
+This generic function is called by the default @t{\#S} reader
+macro function to construct structure instances.  @var{name} is a
+symbol naming the structure type of which an instance should be
+constructed.  @var{initargs} is a list the elements of which
+alternate between string designators naming structure slots and values
+for those slots.
+
+It is the responsibility of the client to coerce the string
+designators to symbols as if by
+@code{(intern (string slot-name) (find-package 'keyword))}
+as described in the @commonlisp{} specification.
+
+There is no default method on this generic function since there is no
+portable way to construct structure instances given only the name of
+the structure type.
+@end deffn
+
+@deffn {Defgeneric} {call-with-current-package} client thunk@
+  package-designator
+
+This generic function is called by the reader when input has to be
+read with a particular current package.  This is currently only the
+case in the @t{#+} and @t{#-} reader macro functions which
+read feature expressions in the keyword package.  @var{thunk} is a
+function that should be called without arguments.
+@var{package-designator} designates the package that should be the
+current package around the call to @var{thunk}.
+
+The default method on this generic function simply binds
+@t{cl:*package*} to the result of
+@code{(cl:find-package @var{package-designator})}
+around calling @var{thunk}.
+@end deffn
+
+@deffn {Defgeneric} {evaluate-expression} client expression
+
+This generic function is called by the default @t{#.} reader
+macro function to perform read-time evaluation.  @var{expression}
+is the expression that should be evaluated as it was returned by a
+recursive @t{read} call and potentially influenced by
+@var{client}.  The function has to either return the result of
+evaluating @var{expression} or signal an error.
+
+The default method on this generic function simply returns the result
+of @code{(cl:eval @var{expression})}.
+@end deffn
+
+@deffn {Defgeneric} {check-feature-expression} client feature-expression
+
+This generic function is called by the default @t{#+} and
+@t{#-} reader macro functions to check the well-formedness of
+@var{feature-expression} which has been read from the input stream
+before evaluating it.  For compound expressions, only the outermost
+expression is checked regarding the atom in operator position and its
+shape -- child expressions are not checked.  The function returns an
+unspecified value if @var{feature-expression} is well-formed and
+signals an error otherwise.
+
+The default method on this generic function accepts standard
+@commonlisp{} feature expression, i.e. expressions recursively
+composed of symbols, @t{:not}-expressions,
+@t{:and}-expressions and @t{:or}-expressions.
+@end deffn
+
+@deffn {Defgeneric} {evaluate-feature-expression} client feature-expression
+
+This generic function is called by the default @t{#+} and
+@t{#-} reader macro functions to evaluate
+@var{feature-expression} which has been read from the input stream.
+The function returns either true or false if
+@var{feature-expression} is well-formed and signals an error
+otherwise.
+
+For compound feature expressions, the well-formedness of child
+expressions is not checked immediately but lazily, just before the
+child expression in question is evaluated in a subsequent
+@t{evaluate-feature-expression} call.  This allows feature
+expressions like
+@code{#+(and my-cl-implementation (special-feature a b))}
+to succeed when the @t{:my-cl-implementation} feature is absent.
+
+The default method on this generic function first calls
+@t{check-feature-expression} to check the well-formedness of
+@var{feature-expression}.  It then evaluates
+@var{feature-expression} according to standard @commonlisp{}
+semantics for feature expressions.
+@end deffn
+
+@deffn {Defgeneric} {fixup} client object seen-objects mapping
+
+This generic function is potentially called to apply
+circularity-related changes to the object constructed by the reader
+before it is returned to the caller.  @var{object} is the object
+that should be modified.  @var{seen-objects} is a @t{eq}-hash
+table used to track already processed objects (see below).
+@var{mapping} is a hash table of substitutions, mapping marker
+objects to replacement objects.  A method specialized on a class,
+instances of which consists of parts, should modify @var{object} by
+scanning its parts for marker objects, replacing found markers with
+replacement object and recursively calling @t{fixup} for all
+parts.  @t{fixup} is called for side effects -- its return value
+is ignored.
+
+Default methods specializing on the @var{object} parameter for
+@t{cons}, @t{array}, @t{standard-object} and
+@t{hash-table} process instances of those classes in the obvious
+way.
+
+An unspecialized @t{:around} method queries and updates
+@var{seen-objects} to ensure that each object is processed exactly
+once.
+@end deffn
+
+@menu
+* Quotation and quasiquotation::
+* Readtable initialization::
+@end menu
+
+@node Quotation and quasiquotation
+@subsection Quotation and quasiquotation
+
+@cindex quasiquotation
+
+The following generic functions allow clients to construct
+representations of quoted and quasiquoted forms.
+
+@deffn {Defgeneric} {wrap-in-quote} client material
+
+This generic function is called by the default @t{'}-reader macro
+function to construct a quotation form in which @var{material} is
+the quoted material.
+
+The default method on this generic function returns a result
+equivalent to @code{(list 'common-lisp:quote @var{material})}.
+@end deffn
+
+@deffn {Defgeneric} {wrap-in-quasiquote} client form
+
+This generic function is called by the default @t{`}-reader macro
+function to construct a quasiquotation form in which @var{form} is
+the quasiquoted material.
+
+The default method on this generic function returns a result
+equivalent to @code{(list 'eclector.reader:quasiquote @var{form})}.
+@end deffn
+
+@deffn {Defgeneric} {wrap-in-unquote} client form
+
+This generic function is called by the default @t{,}-reader macro
+function to construct an unquote form in which @var{form} is the
+unquoted material.
+
+The default method on this generic function returns a result
+equivalent to @code{(list 'eclector.reader:unquote @var{form})}.
+@end deffn
+
+@deffn {Defgeneric} {wrap-in-unquote-splicing} client form
+
+This generic function is called by the default @t{,@@}-reader macro
+function to construct a splicing unquote form in which @var{form} is the
+unquoted material.
+
+The default method on this generic function returns a result
+equivalent to
+@code{(list 'eclector.reader:unquote-splicing @var{form})}.
+@end deffn
+
+Backquote and unquote syntax is forbidden in some contexts such as
+multi-dimensional array literals (@t{#A}) and structure literals
+(@t{#S}) thus @sysname{} has a mechanism for controlling whether
+backquote, unquote or both should be allowed in a given context.
+Since custom reader macros may also have to control this aspect,
+@sysname{} provides an external protocol:
+
+@deffn {Defmacro} {with-forbidden-quasiquotation} context@
+  @optional@
+  (quasiquote-forbidden-p @t{t})@
+  (unquote-forbidden-p @t{t})@
+  @pbody body
+
+Disallow backquote syntax, unquote syntax or both in @t{read}
+functions called during the execution of @var{body}.
+@var{context} is a symbol identifying the current context which is
+used for error reporting.  A typical value is the name of the reader
+macro function in which this macro is used.
+@var{quasiquote-forbidden-p} controls whether backquote syntax
+should be forbidden.  The value @t{:keep} causes the binding to
+remain unchanged.  @var{unquote-forbidden-p} controls whether
+unquote syntax should be forbidden.  The value @t{:keep} causes
+the binding to remain unchanged.
+@end deffn
+
+@node Readtable initialization
+@subsection Readtable initialization
+
+@cindex readtable
+
+The standard syntax types and macro character associations used by the
+ordinary reader can be set up for any readtable object implementing the
+readtable protocol (@pxref{Readtable features}).  The
+following functions are provided for this purpose:
+
+@deffn {Function} {set-standard-syntax-types} readtable
+
+This function sets the standard syntax types in @var{readtable}
+(See HyperSpec section 2.1.4.)
+@end deffn
+
+@deffn {Function} {set-standard-macro-characters} readtable
+
+This function sets the standard macro characters in @var{readtable}
+(See HyperSpec section 2.4.)
+@end deffn
+
+@deffn {Function} {set-standard-dispatch-macro-characters} readtable
+
+This function sets the standard dispatch macro characters, that is
+sharpsign and its sub-characters, in @var{readtable} (See HyperSpec
+section 2.4.8.)
+@end deffn
+
+@deffn {Function} {set-standard-syntax-and-macros} readtable
+
+This function sets the standard syntax types and macro characters in
+@var{readtable} by calling the above three functions.
+@end deffn
+
+@node Readtable features
+@section Readtable features
+
+@cindex readtable
+
+In this section, symbols written without package marker are in the
+@t{eclector.readtable} package (@pxref{Package for readtable features}).
+
+This package exports two kinds of symbols:
+
+@enumerate
+@item
+Symbols the names of which correspond to the names of symbols in the
+@t{common-lisp} package.  The functions bound to these symbols are
+generic versions of the corresponding standard @commonlisp{} functions.
+Clients can define custom readtables by defining methods on these
+generic functions.
+
+@item
+Symbols bound to additional functions and condition types.
+@end enumerate
+
+@deffn {Defgeneric} {readtablep} object
+
+This function is the generic version of the standard @commonlisp{}
+function @t{cl:readtablep}.  The function returns true if
+@var{object} can be used as a readtable in @sysname{} via the
+protocol functions in the @t{ecelctor.readtable} package.  The
+default method returns @t{nil}.
+@end deffn
+
+TODO
+
+@node Parse result construction features
+@section Parse result construction features
+
+@cindex client
+@cindex parse result
+
+In this section, symbols written without package marker are in the
+@t{eclector.parse-result} package (@pxref{Package for parse
+result construction features}).
+
+This package provides clients with a reader that behaves similarly to
+@t{cl:read} but returns custom parse result objects controlled by
+the client.  Some parse results correspond to things like symbols,
+numbers and lists that @t{cl:read} would return, while others, if
+the client chooses, represent comments and other kinds of input that
+@t{cl:read} would discard.  Furthermore, clients can associate
+source location information with parse results.
+
+Clients using this package pass a ``client'' instance for which
+methods on the generic functions described below are applicable to
+@t{read}, @t{read-preserving-whitespace} or
+@t{read-from-string}.  Suitable client classes can be constructed
+by using @t{parse-result-client} as a superclass and at least
+defining a method on the generic function
+@t{make-expression-result}.
+
+@deffn {Function} {read} client @optional (input-stream @t{*standard-input*})@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})
+
+This function is the main entry point for this variant of the reader.
+It is in many ways similar to the standard @commonlisp{} function
+@t{cl:read}.  The differences are:
+
+@itemize
+@item
+A client instance must be supplied as the first argument.
+
+@item
+The first return value, unless @var{eof-value} is returned, is an
+arbitrary parse result object created by the client, not generally the
+read object.
+
+@item
+The second return value, unless @var{eof-value} is returned, is a list
+of ``orphan'' results.  These results are return values of
+@t{make-skipped-input-result} and arise when skipping input at the
+toplevel such as comments which are not lexically contained in lists:
+@t{#|orphan|# (#|not orphan|#)}.
+
+@item
+The function does not accept a @var{recursive} parameter since it sets
+up a dynamic environment in which calls to @t{eclector.reader:read}
+behave suitably.
+@end itemize
+@end deffn
+
+@deffn {Function} {read-preserving-whitespace} client@
+  @optional (input-stream @t{*standard-input*})@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})
+
+This function is similar to the standard @commonlisp{} function
+@t{cl:read-preserving-whitespace}.  The differences are the same
+as described above for @t{read} compared to @t{cl:read}.
+@end deffn
+
+@deffn {Function} {read-from-string} client string @optional@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})@
+  @pkey@
+  (start @t{0})@
+  (end @t{nil})@
+  (preserve-whitespace @t{nil})
+
+This function is similar to the standard @commonlisp{} function
+@t{cl:read-from-string}.  The differences are:
+
+@itemize
+@item
+A client instance must be supplied as the first argument.
+
+@item
+The first return value, unless @var{eof-value} is returned, is an
+arbitrary parse result object created by the client, not generally the
+read object.
+
+@item
+The @emph{third} return value, unless @var{eof-value} is returned, is a
+list of ``orphan'' results (Described above).
+@end itemize
+@end deffn
+
+@deftp {Class} {parse-result-client}
+
+This class should generally be used as a superclass for client classes
+using this package.
+@end deftp
+
+@deffn {Defgeneric} {source-position} client stream
+
+This generic function is called in order to determine the current
+position in @var{stream}.  The default method calls
+@t{cl:file-position}.
+@end deffn
+
+@deffn {Defgeneric} {make-source-range} client start end
+
+This generic function is called in order to turn the source positions
+@var{start} and @var{end} into a range representation suitable
+for @var{client}.  The returned representation designates the range
+of input characters from and including the character at position
+@var{start} to but not including the character at position
+@var{end}.  The default method returns
+@code{(cons @var{start} @var{end})}.
+@end deffn
+
+@deffn {Defgeneric} {make-expression-result} client result children source
+
+This generic function is called in order to construct a parse result
+object.  The value of the @var{result} parameter is the raw object
+read.  The value of the @var{children} parameter is a list of
+already constructed parse result objects representing objects read by
+recursive @t{read} calls.  The value of the @var{source}
+parameter is a source range, as returned by @t{make-source-range}
+and @t{source-position} delimiting the range of characters from
+which @var{result} has been read.
+
+This generic function does not have a default method since the purpose
+of the package is the construction of @var{custom} parse results.
+Thus, a client must define a method on this generic function.
+@end deffn
+
+@deffn {Defgeneric} {make-skipped-input-result} client stream reason source
+
+This generic function is called after the reader skipped over a range
+of characters in @var{stream}.  It returns either @t{nil} if
+the skipped input should not be represented or a client-specific
+representation of the skipped input.  The value of the @var{source}
+parameter designates the skipped range using a source range
+representation obtained via @t{make-source-range} and
+@t{source-position}.
+
+Reasons for skipping input include comments, the @t{#+} and
+@t{#-} reader macros and @t{*read-suppress*}.  The
+aforementioned reasons are reflected by the value of the
+@var{reason} parameter as follows:
+
+@multitable @columnfractions .5 .5
+@headitem Input                            @tab Value of the @var{reason} parameter
+@item Comment starting with @t{;}          @tab @t{(:line-comment . 1)}
+@item Comment starting with @t{;;}         @tab @t{(:line-comment . 2)}
+@item Comment starting with @math{n} @t{;} @tab @t{(:line-comment . @math{n})}
+@item Comment delimited by @t{#|} @t{|#}   @tab @t{:block-comment}
+@item @t{#+@emph{false-expression}}        @tab @t{(:sharpsign-plus . @emph{false-expression})}
+@item @t{#-@emph{true-expression}}         @tab @t{(:sharpsign-minus . @emph{true-expression})}
+@item @t{*read-suppress*} is true          @tab @t{*read-suppress*}
+@item A reader macro returns no values     @tab @t{:reader-macro}
+@end multitable
+
+The default method returns @t{nil}, that is the skipped input is
+not represented as a parse result.
+@end deffn
+
+@node CST reader features
+@section CST reader features
+
+@cindex parse result
+@cindex concrete syntax tree
+
+In this section, symbols written without package marker are in the
+@t{eclector.concrete-syntax-tree} package (@pxref{Package for CST
+features}).
+
+@deffn {Function} {read} @optional (input-stream @t{*standard-input*})@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})
+
+This function is the main entry point for the CST reader.  It is
+mostly compatible with the standard @commonlisp{} function
+@t{cl:read}.  The differences are:
+
+@itemize
+@item
+The return value, unless @var{eof-value} is returned, is an instance of
+a subclass of @t{concrete-syntax-tree:cst}.
+
+@item
+The function does not accept a @var{recursive} parameter since it sets
+up a dynamic environment in which calls to @t{eclector.reader:read}
+behave suitably.
+@end itemize
+@end deffn
+
+@deffn {function} read-preserving-whitespace @optional (input-stream @t{*standard-input*})@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})
+
+This function is similar to the standard @commonlisp{} function
+@t{cl:read-preserving-whitespace}.  The differences are the same
+as described above for @t{read} compared to @t{cl:read}.
+@end deffn
+
+@deffn {Function} {read-from-string} string @optional@
+  (eof-error-p @t{t})@
+  (eof-value @t{nil})@
+  @pkey@
+  (start @t{0})@
+  (end @t{nil})@
+  (preserve-whitespace @t{nil})
+
+This function is similar to the standard @commonlisp{} function
+@t{cl:read-from-string}.  The differences are the same as
+described above for @t{read} compared to @t{cl:read}.
+@end deffn
