@@ -73,7 +73,7 @@ includes digits which are invalid for a given base but also things like
 
 @item
 Replace an invalid character with a valid one.  Example:
-@RecoverExample{#\foo,\#?}
+@RecoverExample{#\foo,#\?}
 
 @item
 Invalid constructs can sometimes be ignored.  Examples:

@@ -389,7 +389,7 @@ case.  The function has to either return the character designated by
 
 @deffn {Defgeneric} {make-structure-instance} client name initargs
 
-This generic function is called by the default @t{\#S} reader
+This generic function is called by the default @t{#S} reader
 macro function to construct structure instances.  @var{name} is a
 symbol naming the structure type of which an instance should be
 constructed.  @var{initargs} is a list the elements of which
@@ -786,7 +786,7 @@ and @t{source-position} delimiting the range of characters from
 which @var{result} has been read.
 
 This generic function does not have a default method since the purpose
-of the package is the construction of @var{custom} parse results.
+of the package is the construction of @emph{custom} parse results.
 Thus, a client must define a method on this generic function.
 @end deffn
 
