@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.reader)
 
-;;; We have provide our own PEEK-CHAR function because CL:PEEK-CHAR
+;;; We have to provide our own PEEK-CHAR function because CL:PEEK-CHAR
 ;;; obviously does not use Eclector's readtable.
 
 (defun peek-char (&optional peek-type
