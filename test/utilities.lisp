@@ -5,7 +5,8 @@
 (defun wrap-in-expect (input-var form)
   `(macrolet ((expect (label test)
                 `(is ,test
-                     ,(format nil "For input ~~S, expected ~A ~~S but got ~~S."
+                     ,(format nil "~~@<For input ~~S, expected ~A ~
+                                   ~~S but got ~~S~~@:>"
                               label)
                      ,',input-var ,(second test) ,(third test))))
      ,form))
