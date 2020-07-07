@@ -414,9 +414,11 @@
     '(;; Errors
       (""     nil nil eclector.reader:end-of-input-before-digit)
       ("1/"   nil nil eclector.reader:end-of-input-before-digit)
+      (" "    nil nil eclector.reader:digit-expected)
       ("2"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
+      ("#b1"  nil nil eclector.reader:digit-expected)
       ("1/0"  nil nil eclector.reader:zero-denominator)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid binary rationals
@@ -432,9 +434,11 @@
     '(;; Errors
       (""     nil nil eclector.reader:end-of-input-before-digit)
       ("1/"   nil nil eclector.reader:end-of-input-before-digit)
+      (" "    nil nil eclector.reader:digit-expected)
       ("8"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
+      ("#o1"  nil nil eclector.reader:digit-expected)
       ("1/0"  nil nil eclector.reader:zero-denominator)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid octal rationals
@@ -450,9 +454,11 @@
     '(;; Errors
       (""     nil nil eclector.reader:end-of-input-before-digit)
       ("1/"   nil nil eclector.reader:end-of-input-before-digit)
+      (" "    nil nil eclector.reader:digit-expected)
       ("g"    nil nil eclector.reader:digit-expected)
       ("x"    nil nil eclector.reader:digit-expected)
       ("1."   nil nil eclector.reader:digit-expected)
+      ("#x1"  nil nil eclector.reader:digit-expected)
       ("1/0"  nil nil eclector.reader:zero-denominator)
       ("1"    1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
       ;; Valid hexadecimal rationals
@@ -468,9 +474,11 @@
     '(;; Errors
       (""     17  nil eclector.reader:end-of-input-before-digit)
       ("1/"   17  nil eclector.reader:end-of-input-before-digit)
+      (" "    17  nil eclector.reader:digit-expected)
       ("h"    17  nil eclector.reader:digit-expected)
       ("x"    17  nil eclector.reader:digit-expected)
       ("1."   17  nil eclector.reader:digit-expected)
+      ("#2R1" 17  nil eclector.reader:digit-expected)
       ("1/0"  17  nil eclector.reader:zero-denominator)
       ("1"    nil nil eclector.reader:numeric-parameter-not-supplied-but-required)
       ("1"    0   nil eclector.reader:invalid-radix)
