@@ -31,7 +31,7 @@ Common Lisp
 @set ECLECTORVERSION 0.6
 
 @copying
-Copyright @copyright{} 2010 - 2028 Robert Strandh
+Copyright @copyright{} 2010 - 2018 Robert Strandh
 Copyright @copyright{} 2018 - 2020 Jan Moringen
 @end copying
 
