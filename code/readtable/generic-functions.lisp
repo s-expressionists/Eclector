@@ -57,7 +57,8 @@
 (defun set-syntax-from-char (to-char from-char &optional
                                                (to-readtable *readtable*)
                                                (from-readtable *readtable*))
-  (setf (syntax-from-char to-char to-readtable from-readtable) from-char))
+  (setf (syntax-from-char to-char to-readtable from-readtable) from-char)
+  t)
 
 ;;; This function returns the syntax type of the character CHAR in
 ;;; READTABLE.  The syntax type is one of :WHITESPACE,

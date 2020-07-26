@@ -87,7 +87,8 @@
                  :pathname "test/readtable"
                  :depends-on ("test")
                  :serial t
-                 :components ((:file "package")))
+                 :components ((:file "package")
+                              (:file "generic-functions")))
 
                 (:module "simple-readtable"
                  :pathname "test/readtable/simple"
