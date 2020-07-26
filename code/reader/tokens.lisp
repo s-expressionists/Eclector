@@ -200,8 +200,8 @@
        :token token :report 'treat-as-escaped)
       (setf position-package-marker-1 nil
             position-package-marker-2 nil))
-    (flet ((interpret (package symbol count)
-             (interpret-symbol client input-stream package symbol count)))
+    (flet ((interpret (package symbol internp)
+             (interpret-symbol client input-stream package symbol internp)))
       (cond ((null position-package-marker-1)
              (interpret :current token t))
             ((zerop position-package-marker-1)
