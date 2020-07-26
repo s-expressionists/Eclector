@@ -427,6 +427,10 @@
       ("1/10" nil nil 1/2)
       ;; With *READ-SUPPRESS* bound to T
       ("1"    1   t   nil)
+      (""     nil t   nil)
+      ("-"    nil t   nil)
+      ("/#!"  nil t   nil)
+      ("-/#!" nil t   nil)
       ("2"    nil t   nil)
       ("1."   nil t   nil)))
 
@@ -447,6 +451,10 @@
       ("1/10" nil nil 1/8)
       ;; With *READ-SUPPRESS* bound to T
       ("1"    1   t   nil)
+      (""     nil t   nil)
+      ("-"    nil t   nil)
+      ("/#!"  nil t   nil)
+      ("-/#!" nil t   nil)
       ("8"    nil t   nil)
       ("1."   nil t   nil)))
 
@@ -467,6 +475,10 @@
       ("1/10" nil nil 1/16)
       ;; With *READ-SUPPRESS* bound to T
       ("1"    1   t   nil)
+      (""     nil t   nil)
+      ("-"    nil t   nil)
+      ("/#!"  nil t   nil)
+      ("-/#!" nil t   nil)
       ("g"    nil t   nil)
       ("1."   nil t   nil)))
 
@@ -494,6 +506,10 @@
       ("h"    17  t   nil)
       ("x"    17  t   nil)
       ("1."   17  t   nil)
+      (""     nil t   nil)
+      ("-"    nil t   nil)
+      ("/#!"  nil t   nil)
+      ("-/#!" nil t   nil)
       ("1"    nil t   nil)
       ("1"    0   t   nil)
       ("1"    1   t   nil)

@@ -535,7 +535,7 @@
                  (cond ((not (null char))
                         (values char (eclector.readtable:syntax-type
                                       readtable char)))
-                       (eof-error-p
+                       ((and eof-error-p (not read-suppress))
                         (%recoverable-reader-error
                          stream 'end-of-input-before-digit
                          :base base :report 'replace-invalid-digit)
@@ -552,14 +552,14 @@
                recover-value)
              (ensure-digit (char type)
                (let ((value (digit-char-p char base)))
-                 (cond (value)
-                       (read-suppress
-                        0)
-                       (t
-                        (digit-expected char type 1)))))
+                 (if (null value)
+                     (digit-expected char type 1)
+                     value)))
              (maybe-sign ()
                (multiple-value-bind (char type) (next-char t)
-                 (cond ((not (eq type :constituent))
+                 (cond (read-suppress
+                        (values 1 0))
+                       ((not (eq type :constituent))
                         (digit-expected char type nil))
                        ((char= char #\-)
                         (values -1 0))
@@ -568,7 +568,7 @@
              (integer (empty-allowed /-allowed initial-value)
                (let ((value initial-value))
                  (tagbody
-                    (when empty-allowed (go rest))
+                    (when empty-allowed (go rest)) ; also when READ-SUPPRESS
                     (multiple-value-bind (char type) (next-char t)
                       (case type
                         (:constituent
@@ -589,14 +589,20 @@
                          (return-from integer value))
                         ((:non-terminating-macro
                           :single-escape :multiple-escape)
-                         (digit-expected char type nil)
-                         (return-from integer value))
+                         (cond (read-suppress
+                                (go rest))
+                               (t
+                                (digit-expected char type nil)
+                                (return-from integer value))))
                         (:constituent
-                         (if (and /-allowed (eql char #\/))
-                             (return-from integer (values value t))
-                             (setf value (+ (* base (or value 0))
-                                            (ensure-digit char type))))
-                         (go rest)))))))
+                         (cond (read-suppress
+                                (go rest))
+                               ((and /-allowed (eql char #\/))
+                                (return-from integer (values value t)))
+                               (t
+                                (setf value (+ (* base (or value 0))
+                                               (ensure-digit char type)))
+                                (go rest)))))))))
              (read-denominator ()
                (let ((value (integer nil nil nil)))
                  (cond ((eql value 0)
@@ -610,8 +616,8 @@
             0
             (multiple-value-bind (numerator slashp)
                 (integer (= sign 1) t numerator)
-              (let ((denominator (when slashp (read-denominator))))
-                (unless read-suppress
+              (unless read-suppress ; When READ-SUPPRESS, / has been consumed
+                (let ((denominator (when slashp (read-denominator))))
                   (* sign (if denominator
                               (/ numerator denominator)
                               numerator))))))))))
