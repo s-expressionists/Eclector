@@ -15,9 +15,9 @@
       (expect "values"   (equal expected          result))
       (expect "position" (eql   expected-position position)))
     '((""    ())
-      ("~%"  () 0)
+      ("~%"  () 1)
       (";"   ())
-      (";~%" () 1))))
+      (";~%" () 2))))
 
 (test single-quote/smoke
   "Smoke test for the SINGLE-QUOTE reader macro function."

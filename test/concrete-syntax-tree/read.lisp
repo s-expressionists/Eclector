@@ -247,9 +247,9 @@
       ("1"             nil ())
       ;; Comments
       ("#||# 1"        nil ((:block-comment (0 . 4))))
-      ("; test~% 1"    nil (((:line-comment . 1) (0 . 6))))
-      (";; test~% 1"   nil (((:line-comment . 2) (0 . 7))))
-      (";;; test~% 1"  nil (((:line-comment . 3) (0 . 8))))
+      ("; test~% 1"    nil (((:line-comment . 1) (0 . 7))))
+      (";; test~% 1"   nil (((:line-comment . 2) (0 . 8))))
+      (";;; test~% 1"  nil (((:line-comment . 3) (0 . 9))))
       ;; Reader conditionals
       ("#+(or) 1 2"    nil ((*read-suppress* (7 . 8))
                             ((:sharpsign-plus . (:or)) (0 . 8))))

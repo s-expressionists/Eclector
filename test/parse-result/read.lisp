@@ -367,9 +367,9 @@
       ("#||# 1"           nil 1                          ((:block-comment (0 . 4))))
       ("#||# 1"           t   (*read-suppress* (5 . 6))  ((:block-comment (0 . 4))))
       ("; test"           nil :eof                       (((:line-comment . 1) (0 . 6))))
-      ("; test~% 1"       nil 1                          (((:line-comment . 1) (0 . 6))))
-      (";; test~% 1"      nil 1                          (((:line-comment . 2) (0 . 7))))
-      (";;; test~% 1"     nil 1                          (((:line-comment . 3) (0 . 8))))
+      ("; test~% 1"       nil 1                          (((:line-comment . 1) (0 . 7))))
+      (";; test~% 1"      nil 1                          (((:line-comment . 2) (0 . 8))))
+      (";;; test~% 1"     nil 1                          (((:line-comment . 3) (0 . 9))))
       ;; Toplevel reader conditionals
       ("#+(or) 1 2"       nil 2                          (((:sharpsign-plus . (:or)) (0 . 8))))
       ("#-(and) 1 2"      nil 2                          (((:sharpsign-minus . (:and)) (0 . 9))))
@@ -377,11 +377,11 @@
       ;; Non-toplevel comments
       ("(#||# 1)"         nil ((1) . ((:block-comment (1 . 5))
                                       1)))
-      ("(~%; test~% 1)"   nil ((1) . (((:line-comment . 1) (2 . 8))
+      ("(~%; test~% 1)"   nil ((1) . (((:line-comment . 1) (2 . 9))
                                       1)))
-      ("(~%;; test~% 1)"  nil ((1) . (((:line-comment . 2) (2 . 9))
+      ("(~%;; test~% 1)"  nil ((1) . (((:line-comment . 2) (2 . 10))
                                       1)))
-      ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) (2 . 10))
+      ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) (2 . 11))
                                       1)))
       ;; Non-toplevel reader conditionals
       ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 9)) 2)))
