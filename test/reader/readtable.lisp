@@ -28,12 +28,14 @@
      (,(lambda (readtable)
          (setf (eclector.readtable:syntax-from-char #\7 readtable readtable) #\;)
          readtable)
-      ("123456789" 123456 6))
+      ("123456789" 123456 6)
+      ("7~%123"    123    5))
      ;; And using the standard function
      (,(lambda (readtable)
          (eclector.readtable:set-syntax-from-char #\7 #\; readtable readtable)
          readtable)
-      ("123456789" 123456 6))
+      ("123456789" 123456 6)
+      ("7~%123"    123    5))
 
      ;; Change syntax from whitespace to (invalid) constituent
      (,(lambda (readtable)

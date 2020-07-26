@@ -51,7 +51,13 @@
 (defgeneric (setf syntax-from-char)
     (from-char to-char to-readtable from-readtable)
   (:method (from-char to-char to-readtable from-readtable)
-    (setf (syntax-type to-readtable to-char) (syntax-type from-readtable from-char))
+    (setf (syntax-type to-readtable to-char)
+          (syntax-type from-readtable from-char))
+    (multiple-value-bind (macro-function non-terminating-p)
+        (get-macro-character from-readtable from-char)
+      (when (not (null macro-function))
+        (set-macro-character
+         to-readtable to-char macro-function non-terminating-p)))
     from-char))
 
 (defun set-syntax-from-char (to-char from-char &optional
