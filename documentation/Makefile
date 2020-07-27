@@ -45,9 +45,14 @@ $(NAME).pdf: $(INPUTS) $(PNGS) $(GENERATED_PDFS)
 	texi2pdf $(NAME).texi
 
 $(NAME).html: $(INPUTS) $(PNGS) $(GENERATED_PNGS) $(wildcard *.css)
-	makeinfo --html --no-split --no-headers                                \
-                 --css-include=style-common.css --css-include=style-single.css \
+	makeinfo --html --no-split --no-headers \
+                 --css-include=syntax.css       \
+                 --css-include=style-common.css \
+                 --css-include=style-single.css \
                  $(NAME).texi
+	$(SBCL) --noinform --disable-debugger --no-sysinit --no-userinit \
+                --load highlight-listings.lisp                           \
+                --quit
 
 clean:
 	rm -f *.cp *.cps *.fn *.fns                 \
