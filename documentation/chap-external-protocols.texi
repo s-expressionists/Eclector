@@ -463,12 +463,12 @@ The function returns either true or false if
 otherwise.
 
 For compound feature expressions, the well-formedness of child
-expressions is not checked immediately but lazily, just before the
-child expression in question is evaluated in a subsequent
-@t{evaluate-feature-expression} call.  This allows feature
-expressions like
-@code{#+(and my-cl-implementation (special-feature a b))}
-to succeed when the @t{:my-cl-implementation} feature is absent.
+expressions is not checked immediately but lazily, just before the child
+expression in question is evaluated in a subsequent
+@t{evaluate-feature-expression} call.  This allows expressions like
+@code{#+(and my-cl-implementation (special-feature a b)) @var{form}} to
+be read without error when the @t{:my-cl-implementation} feature is
+absent.
 
 The default method on this generic function first calls
 @t{check-feature-expression} to check the well-formedness of
