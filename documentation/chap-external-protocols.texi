@@ -118,7 +118,7 @@ specialized to the class of that standard object.
 @menu
 * @commonlisp{} reader compatible interface::
 * Reader behavior protocol::
-* Quotation and quasiquotation::
+* S-expression creation and quasiquotation::
 * Readtable initialization::
 @end menu
 
@@ -502,10 +502,10 @@ An unspecialized @t{:around} method queries and updates
 once.
 @end deffn
 
-@node Quotation and quasiquotation
-@subsection Quotation and quasiquotation
+@node S-expression creation and quasiquotation
+@subsection S-expression creation and quasiquotation
 
-@cindex quasiquotation
+@cindex quotation
 
 The following generic functions allow clients to construct
 representations of quoted and quasiquoted forms.
@@ -519,6 +519,8 @@ the quoted material.
 The default method on this generic function returns a result
 equivalent to @code{(list 'common-lisp:quote @var{material})}.
 @end deffn
+
+@cindex quasiquotation
 
 @deffn {Defgeneric} {wrap-in-quasiquote} client form
 
@@ -574,6 +576,18 @@ should be forbidden.  The value @t{:keep} causes the binding to
 remain unchanged.  @var{unquote-forbidden-p} controls whether
 unquote syntax should be forbidden.  The value @t{:keep} causes
 the binding to remain unchanged.
+@end deffn
+
+@cindex function
+
+@deffn {Defgeneric} {wrap-in-function} client name
+
+This generic function is called by the default @t{#'}-reader macro
+function to construct a form that applies the @t{function} special
+operator to the @var{name} expression.
+
+The default method on this generic function returns a result equivalent
+to @code{(list 'common-lisp:function @var{form})}.
 @end deffn
 
 @node Readtable initialization

@@ -89,13 +89,15 @@
 
    #:fixup)
 
-  ;; Quote and backquote customization.
+  ;; S-expression creation protocol
   (:export
    #:wrap-in-quote
 
    #:wrap-in-quasiquote
    #:wrap-in-unquote
-   #:wrap-in-unquote-splicing)
+   #:wrap-in-unquote-splicing
+
+   #:wrap-in-function)
 
   ;; Conditions related to symbol and end-of-input.
   (:export
