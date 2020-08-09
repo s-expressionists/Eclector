@@ -102,9 +102,9 @@ Labels above arrows represent arguments and return values.}
 @ref{fig:read-call-sequence-ordinary} illustrates the categorization
 into the @commonlisp{} reader compatible interface and the extensible
 behavior protocol as well as typical function call patterns that arise
-when the functions
-@t{read@{,-preserving-whitespace,-from-string,-delimited-list@}} are
-called by client code.
+when the functions @t{read}, @t{read-preserving-whitespace},
+@t{read-from-string} and @t{read-delimited-list} are called by client
+code.
 
 @defvar {*client*}
 This variable is used by several generic functions called by
@@ -693,9 +693,9 @@ from the non-parse result version are highlighted with bold text.}
 @end float
 
 @ref{fig:read-call-sequence-parse-result} shows typical function call
-patterns that arise when the functions
-@t{read@{,-preserving-whitespace,-from-string,-delimited-list@}} are
-called by client code.
+patterns that arise when the functions @t{read},
+@t{read-preserving-whitespace}, @t{read-from-string} and
+@t{read-delimited-list} are called by client code.
 
 @deffn {Function} {read} client @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
