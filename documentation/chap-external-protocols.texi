@@ -193,8 +193,8 @@ of input characters from and including the character at position
 @cindex parse result
 @cindex source tracking
 
-In this section, symbols written without package marker are in the
-@t{@readerpackage} package
+In this section, symbols written without package marker
+are in the @t{@readerpackage{}} package
 (@pxref{Package for ordinary reader features})
 
 The features provided in this package fall into two categories:
@@ -1550,8 +1550,9 @@ This function sets the standard syntax types and macro characters in
 
 @cindex readtable
 
-In this section, symbols written without package marker are in the
-@t{@rtpackage{}} package (@pxref{Package for readtable features}).
+In this section, symbols written without package marker
+are in the @t{@rtpackage{}} package
+(@pxref{Package for readtable features}).
 
 This package exports two kinds of symbols:
 
@@ -1584,9 +1585,9 @@ TODO
 @cindex client
 @cindex parse result
 
-In this section, symbols written without package marker are in the
-@t{@prpackage{}} package (@pxref{Package for parse
-result construction features}).
+In this section, symbols written without package marker
+are in the @t{@prpackage{}} package
+(@pxref{Package for parse result construction features}).
 
 This package provides clients with a reader that behaves similarly to
 @speclink{f,read} but returns custom parse result objects controlled by
@@ -1789,8 +1790,9 @@ not represented as a parse result.
 @cindex parse result
 @cindex concrete syntax tree
 
-In this section, symbols written without package marker are in the
-@t{@cstpackage{}} package (@pxref{Package for CST features}).
+In this section, symbols written without package marker
+are in the @t{@cstpackage{}} package
+(@pxref{Package for CST features}).
 
 @deffuna {read,@cstpackage{}} @optional@
   (input-stream @t{*standard-input*})@
