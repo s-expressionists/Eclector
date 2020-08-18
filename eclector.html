@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<!-- Copyright (C) 2010 - 2028 Robert Strandh
+<!-- Copyright (C) 2010 - 2018 Robert Strandh
 Copyright (C) 2018 - 2020 Jan Moringen -->
 <!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
 <head>
@@ -297,7 +297,7 @@ th {
     <ul class="no-bullet">
       <li><a id="toc-Common-Lisp-reader-compatible-interface-1" href="#Common-Lisp-reader-compatible-interface">2.2.1 Common Lisp reader compatible interface</a></li>
       <li><a id="toc-Reader-behavior-protocol-1" href="#Reader-behavior-protocol">2.2.2 Reader behavior protocol</a></li>
-      <li><a id="toc-Quotation-and-quasiquotation-1" href="#Quotation-and-quasiquotation">2.2.3 Quotation and quasiquotation</a></li>
+      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.2.3 S-expression creation and quasiquotation</a></li>
       <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.2.4 Readtable initialization</a></li>
     </ul></li>
     <li><a id="toc-Readtable-features-1" href="#Readtable-features">2.3 Readtable features</a></li>
@@ -542,7 +542,7 @@ specialized to the class of that standard object.
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#Reader-behavior-protocol" accesskey="2">Reader behavior protocol</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Quotation-and-quasiquotation" accesskey="3">Quotation and quasiquotation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="3">S-expression creation and quasiquotation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#Readtable-initialization" accesskey="4">Readtable initialization</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
@@ -593,7 +593,7 @@ function with the same name.
 <hr>
 <span id="Reader-behavior-protocol"></span><div class="header">
 <p>
-Next: <a href="#Quotation-and-quasiquotation" accesskey="n" rel="next">Quotation and quasiquotation</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel="next">S-expression creation and quasiquotation</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Reader-behavior-protocol-1"></span><h4 class="subsection">2.2.2 Reader behavior protocol</h4>
 
@@ -812,7 +812,7 @@ case.  The function has to either return the character designated by
 <dl>
 <dt id="index-make_002dstructure_002dinstance">Defgeneric: <strong>make-structure-instance</strong> <em>client name initargs</em></dt>
 <dd>
-<p>This generic function is called by the default <tt>\#S</tt> reader
+<p>This generic function is called by the default <tt>#S</tt> reader
 macro function to construct structure instances.  <var>name</var> is a
 symbol naming the structure type of which an instance should be
 constructed.  <var>initargs</var> is a list the elements of which
@@ -889,12 +889,12 @@ The function returns either true or false if
 otherwise.
 </p>
 <p>For compound feature expressions, the well-formedness of child
-expressions is not checked immediately but lazily, just before the
-child expression in question is evaluated in a subsequent
-<tt>evaluate-feature-expression</tt> call.  This allows feature
-expressions like
-<code>#+(and my-cl-implementation (special-feature a b))</code>
-to succeed when the <tt>:my-cl-implementation</tt> feature is absent.
+expressions is not checked immediately but lazily, just before the child
+expression in question is evaluated in a subsequent
+<tt>evaluate-feature-expression</tt> call.  This allows expressions like
+<code>#+(and my-cl-implementation (special-feature a b)) <var>form</var></code> to
+be read without error when the <tt>:my-cl-implementation</tt> feature is
+absent.
 </p>
 <p>The default method on this generic function first calls
 <tt>check-feature-expression</tt> to check the well-formedness of
@@ -930,13 +930,13 @@ once.
 </p></dd></dl>
 
 <hr>
-<span id="Quotation-and-quasiquotation"></span><div class="header">
+<span id="S_002dexpression-creation-and-quasiquotation"></span><div class="header">
 <p>
 Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable initialization</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Quotation-and-quasiquotation-1"></span><h4 class="subsection">2.2.3 Quotation and quasiquotation</h4>
+<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.2.3 S-expression creation and quasiquotation</h4>
 
-<span id="index-quasiquotation"></span>
+<span id="index-quotation"></span>
 
 <p>The following generic functions allow clients to construct
 representations of quoted and quasiquoted forms.
@@ -951,6 +951,8 @@ the quoted material.
 <p>The default method on this generic function returns a result
 equivalent to <code>(list 'common-lisp:quote <var>material</var>)</code>.
 </p></dd></dl>
+
+<span id="index-quasiquotation"></span>
 
 <dl>
 <dt id="index-wrap_002din_002dquasiquote">Defgeneric: <strong>wrap-in-quasiquote</strong> <em>client form</em></dt>
@@ -1008,10 +1010,23 @@ unquote syntax should be forbidden.  The value <tt>:keep</tt> causes
 the binding to remain unchanged.
 </p></dd></dl>
 
+<span id="index-function"></span>
+
+<dl>
+<dt id="index-wrap_002din_002dfunction">Defgeneric: <strong>wrap-in-function</strong> <em>client name</em></dt>
+<dd>
+<p>This generic function is called by the default <tt>#'</tt>-reader macro
+function to construct a form that applies the <tt>function</tt> special
+operator to the <var>name</var> expression.
+</p>
+<p>The default method on this generic function returns a result equivalent
+to <code>(list 'common-lisp:function <var>form</var>)</code>.
+</p></dd></dl>
+
 <hr>
 <span id="Readtable-initialization"></span><div class="header">
 <p>
-Previous: <a href="#Quotation-and-quasiquotation" accesskey="p" rel="prev">Quotation and quasiquotation</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Previous: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="p" rel="prev">S-expression creation and quasiquotation</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Readtable-initialization-1"></span><h4 class="subsection">2.2.4 Readtable initialization</h4>
 
@@ -1220,7 +1235,7 @@ and <tt>source-position</tt> delimiting the range of characters from
 which <var>result</var> has been read.
 </p>
 <p>This generic function does not have a default method since the purpose
-of the package is the construction of <var>custom</var> parse results.
+of the package is the construction of <em>custom</em> parse results.
 Thus, a client must define a method on this generic function.
 </p></dd></dl>
 
@@ -1385,7 +1400,7 @@ includes digits which are invalid for a given base but also things like
 <tt>1/0</tt> ⟶ <tt>1</tt>, <tt>#C(1 :foo)</tt> ⟶ <tt>#C(1 1)</tt>
 
 </li><li> Replace an invalid character with a valid one.  Example:
-<tt>#\foo</tt> ⟶ <tt>\#?</tt>
+<tt>#\foo</tt> ⟶ <tt>#\?</tt>
 
 </li><li> Invalid constructs can sometimes be ignored.  Examples:
 <tt>(,1)</tt> ⟶ <tt>(1)</tt>, <tt>#S(foo :bar 1 2 3)</tt> ⟶ <tt>#S(foo
@@ -1647,6 +1662,8 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-E"><b>E</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-F"><b>F</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-P"><b>P</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-Q"><b>Q</b></a>
@@ -1669,6 +1686,9 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><th id="Concept-index_cp_letter-E">E</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-error">error</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Recovering-from-errors">Recovering from errors</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-F">F</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-function">function</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-P">P</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-parse-result">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-parse-result-1">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-parse-result-construction-features">Package for parse result construction features</a></td></tr>
@@ -1678,7 +1698,8 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td></td><td valign="top"><a href="#index-parse-result-5">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-Q">Q</th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-quasiquotation">quasiquotation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-quasiquotation">quasiquotation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-quotation">quotation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-R">R</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-readtable-features">Package for readtable features</a></td></tr>
@@ -1695,6 +1716,8 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-F"><b>F</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-P"><b>P</b></a>
  &nbsp; 
@@ -1800,11 +1823,12 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-source_002dposition"><code>source-position</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-W">W</th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-with_002dforbidden_002dquasiquotation"><code>with-forbidden-quasiquotation</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dquasiquote"><code>wrap-in-quasiquote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dquote"><code>wrap-in-quote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dunquote"><code>wrap-in-unquote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dunquote_002dsplicing"><code>wrap-in-unquote-splicing</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Quotation-and-quasiquotation">Quotation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-with_002dforbidden_002dquasiquotation"><code>with-forbidden-quasiquotation</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dfunction"><code>wrap-in-function</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dquasiquote"><code>wrap-in-quasiquote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dquote"><code>wrap-in-quote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dunquote"><code>wrap-in-unquote</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-wrap_002din_002dunquote_002dsplicing"><code>wrap-in-unquote-splicing</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 </table>
 <table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_symbol-1"><b>*</b></a>
