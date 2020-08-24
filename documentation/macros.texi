@@ -1,0 +1,16 @@
+@macro sysname
+Eclector
+@end macro
+@macro commonlisp
+Common Lisp
+@end macro
+
+@macro optional
+@t{&optional}
+@end macro
+@macro pkey
+@t{&key}
+@end macro
+@macro pbody
+@t{&body}
+@end macro
