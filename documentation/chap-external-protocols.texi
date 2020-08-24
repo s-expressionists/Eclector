@@ -106,7 +106,7 @@ when the functions @t{read}, @t{read-preserving-whitespace},
 @t{read-from-string} and @t{read-delimited-list} are called by client
 code.
 
-@defvar {*client*}
+@defvara {*client*,eclector.reader}
 This variable is used by several generic functions called by
 @t{read}.  The default value of the variable is @t{nil}.
 Client code that wants to override or extend the default behavior of
@@ -131,7 +131,7 @@ the @t{eclector.reader} package and that their behavior can deviate from
 that of the standard reader depending on the value of the @t{*client*}
 variable.
 
-@deffn {Function} {read} @optional (input-stream @t{*standard-input*})@
+@deffuna {read,eclector.reader} @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
   (recursive-p @t{nil})
@@ -141,7 +141,7 @@ entirely compatible with the standard @commonlisp{} function with the same
 name.
 @end deffn
 
-@deffn {Function} {read-preserving-whitespace} @optional (input-stream @t{*standard-input*})@
+@deffuna {read-preserving-whitespace,eclector.reader} @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
   (recursive-p @t{nil})
@@ -150,7 +150,7 @@ This function is entirely compatible with the standard @commonlisp{}
 function with the same name.
 @end deffn
 
-@deffn {Function} {read-from-string} string @optional@
+@deffuna {read-from-string,eclector.reader} string @optional@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
   @pkey@
@@ -162,7 +162,8 @@ This function is entirely compatible with the standard @commonlisp{}
 function with the same name.
 @end deffn
 
-@deffn {Function} {read-delimited-list} char @optional (input-stream @t{*standard-input*})@
+@deffuna {read-delimited-list,eclector.reader} char @optional@
+  (input-stream @t{*standard-input*})@
   (recursive-p @t{nil})
 
 This function is entirely compatible with the standard @commonlisp{}
@@ -175,8 +176,8 @@ function with the same name.
 By defining methods on the generic functions of this protocol, clients
 can customize the high-level behavior of the reader.
 
-@deffn {Defgeneric} {call-as-top-level-read} client thunk input-stream@
-eof-error-p eof-value preserve-whitespace-p
+@defgena {call-as-top-level-read,eclector.reader} {client thunk input-stream@
+eof-error-p eof-value preserve-whitespace-p}
 
 This generic function is called by @t{read}, if @t{read} is called with
 a true value for the @var{recursive-p} parameter.  It calls @var{thunk}
@@ -198,7 +199,7 @@ It realizes the requested @var{preserve-whitespace-p} behavior.
 @end enumerate
 @end deffn
 
-@deffn {Defgeneric} {read-common} client input-stream eof-error-p eof-value
+@defgena {read-common,eclector.reader} client input-stream eof-error-p eof-value
 
 This generic function is called by @t{read}, passing it the value of the
 variable @t{*client*} and the corresponding parameters.  Client code can
@@ -208,8 +209,8 @@ of the parameter @var{recursive-p} have already been taken before
 @t{read} calls this generic function.
 @end deffn
 
-@deffn {Defgeneric} {read-maybe-nothing} client input-stream eof-error-p@
-  eof-value
+@defgena {read-maybe-nothing,eclector.reader} client input-stream@
+  eof-error-p eof-value
 
 This generic function can be called directly by the client or by the
 generic function @t{read-common} to read an object or consume input
@@ -240,7 +241,7 @@ return a value.  In this case the function returns @t{nil} and
 @end itemize
 @end deffn
 
-@deffn {Defgeneric} {note-skipped-input} client input-stream reason
+@defgena {note-skipped-input,eclector.reader} client input-stream reason
 
 This generic function is called whenever the reader skips some input
 such as a comment or a form that must be skipped because of a reader
@@ -257,7 +258,7 @@ stream position before the call to @t{read} was made as well as
 the stream position when the call to this function is made.
 @end deffn
 
-@defvar {*skip-reason*}
+@defvara {*skip-reason*,eclector.reader}
 
 This variable is used by the reader to determine why a range of input
 characters has been skipped.  To this end, internal functions of the
@@ -273,7 +274,8 @@ position information to the client by calling the
 (@pxref{Parse result construction features}).
 @end defvar
 
-@deffn {Defgeneric} {read-token} client input-stream eof-error-p eof-value
+@defgena {read-token,eclector.reader} client input-stream eof-error-p@
+  eof-value
 
 This generic function is called by @t{read-common} when it has
 been detected that a token should be read.  This function is
@@ -282,7 +284,8 @@ calling @t{interpret-token} (see below) in order to create and
 return a token.
 @end deffn
 
-@deffn {Defgeneric} {interpret-token} client input-stream token escape-ranges
+@defgena {interpret-token,eclector.reader} client input-stream token@
+  escape-ranges
 
 This generic function is called by @t{read-token} in order to
 create a token from accumulated token characters.  The parameter
@@ -303,8 +306,9 @@ to convert the characters in @var{token} according to the
 constructed.
 @end deffn
 
-@deffn {Defgeneric} {interpret-symbol-token} client input-stream token@
-  position-package-marker-1 position-package-marker-2
+@defgena {interpret-symbol-token,eclector.reader} client@
+  input-stream token position-package-marker-1@
+  position-package-marker-2
 
 This generic function is called by the default method on
 @t{interpret-token} when the syntax of the token corresponds to
@@ -323,8 +327,8 @@ The default method on this generic function calls
 package indicator.
 @end deffn
 
-@deffn {Defgeneric} interpret-symbol client input-stream package-indicator@
-  symbol-name internp
+@defgena {interpret-symbol,eclector.reader} client input-stream@
+  package-indicator symbol-name internp
 
 This generic function is called by the default method on
 @t{interpret-symbol-token} as well as the default
@@ -361,7 +365,8 @@ being @t{nil} uses @t{cl:make-symbol} to create uninterned
 symbols.
 @end deffn
 
-@deffn {Defgeneric} {call-reader-macro} client input-stream char readtable
+@defgena {call-reader-macro,eclector.reader} client input-stream char@
+  readtable
 
 This generic function is called when the reader has determined that
 some character is associated with a reader macro.  The parameter
@@ -378,7 +383,7 @@ default method therefore does the same thing that the standard
 @commonlisp{} reader does.
 @end deffn
 
-@deffn {Defgeneric} {find-character} client name
+@defgena {find-character,eclector.reader} client name
 
 This generic function is called by the default
 @t{#\} reader macro function to find a character by
@@ -387,7 +392,7 @@ case.  The function has to either return the character designated by
 @var{name} or @t{nil} if no such character exists.
 @end deffn
 
-@deffn {Defgeneric} {make-structure-instance} client name initargs
+@defgena {make-structure-instance,eclector.reader} client name initargs
 
 This generic function is called by the default @t{#S} reader
 macro function to construct structure instances.  @var{name} is a
@@ -406,7 +411,7 @@ portable way to construct structure instances given only the name of
 the structure type.
 @end deffn
 
-@deffn {Defgeneric} {call-with-current-package} client thunk@
+@defgena {call-with-current-package,eclector.reader} client thunk@
   package-designator
 
 This generic function is called by the reader when input has to be
@@ -423,7 +428,7 @@ The default method on this generic function simply binds
 around calling @var{thunk}.
 @end deffn
 
-@deffn {Defgeneric} {evaluate-expression} client expression
+@defgena {evaluate-expression,eclector.reader} client expression
 
 This generic function is called by the default @t{#.} reader
 macro function to perform read-time evaluation.  @var{expression}
@@ -436,7 +441,8 @@ The default method on this generic function simply returns the result
 of @code{(cl:eval @var{expression})}.
 @end deffn
 
-@deffn {Defgeneric} {check-feature-expression} client feature-expression
+@defgena {check-feature-expression,eclector.reader} client@
+  feature-expression
 
 This generic function is called by the default @t{#+} and
 @t{#-} reader macro functions to check the well-formedness of
@@ -453,7 +459,8 @@ composed of symbols, @t{:not}-expressions,
 @t{:and}-expressions and @t{:or}-expressions.
 @end deffn
 
-@deffn {Defgeneric} {evaluate-feature-expression} client feature-expression
+@defgena {evaluate-feature-expression,eclector.reader} client@
+ feature-expression
 
 This generic function is called by the default @t{#+} and
 @t{#-} reader macro functions to evaluate
@@ -477,7 +484,7 @@ The default method on this generic function first calls
 semantics for feature expressions.
 @end deffn
 
-@deffn {Defgeneric} {fixup} client object seen-objects mapping
+@defgena {fixup,eclector.reader} client object seen-objects mapping
 
 This generic function is potentially called to apply
 circularity-related changes to the object constructed by the reader
@@ -510,7 +517,7 @@ once.
 The following generic functions allow clients to construct
 representations of quoted and quasiquoted forms.
 
-@deffn {Defgeneric} {wrap-in-quote} client material
+@defgena {wrap-in-quote,eclector.reader} client material
 
 This generic function is called by the default @t{'}-reader macro
 function to construct a quotation form in which @var{material} is
@@ -522,7 +529,7 @@ equivalent to @code{(list 'common-lisp:quote @var{material})}.
 
 @cindex quasiquotation
 
-@deffn {Defgeneric} {wrap-in-quasiquote} client form
+@defgena {wrap-in-quasiquote,eclector.reader} client form
 
 This generic function is called by the default @t{`}-reader macro
 function to construct a quasiquotation form in which @var{form} is
@@ -532,7 +539,7 @@ The default method on this generic function returns a result
 equivalent to @code{(list 'eclector.reader:quasiquote @var{form})}.
 @end deffn
 
-@deffn {Defgeneric} {wrap-in-unquote} client form
+@defgena {wrap-in-unquote,eclector.reader} client form
 
 This generic function is called by the default @t{,}-reader macro
 function to construct an unquote form in which @var{form} is the
@@ -542,7 +549,7 @@ The default method on this generic function returns a result
 equivalent to @code{(list 'eclector.reader:unquote @var{form})}.
 @end deffn
 
-@deffn {Defgeneric} {wrap-in-unquote-splicing} client form
+@defgena {wrap-in-unquote-splicing,eclector.reader} client form
 
 This generic function is called by the default @t{,@@}-reader macro
 function to construct a splicing unquote form in which @var{form} is the
@@ -560,7 +567,7 @@ backquote, unquote or both should be allowed in a given context.
 Since custom reader macros may also have to control this aspect,
 @sysname{} provides an external protocol:
 
-@deffn {Defmacro} {with-forbidden-quasiquotation} context@
+@defmaca {with-forbidden-quasiquotation,eclector.reader} context@
   @optional@
   (quasiquote-forbidden-p @t{t})@
   (unquote-forbidden-p @t{t})@
@@ -580,7 +587,7 @@ the binding to remain unchanged.
 
 @cindex function
 
-@deffn {Defgeneric} {wrap-in-function} client name
+@defgena {wrap-in-function,eclector.reader} client name
 
 This generic function is called by the default @t{#'}-reader macro
 function to construct a form that applies the @t{function} special
@@ -600,26 +607,27 @@ ordinary reader can be set up for any readtable object implementing the
 readtable protocol (@pxref{Readtable features}).  The
 following functions are provided for this purpose:
 
-@deffn {Function} {set-standard-syntax-types} readtable
+@deffuna {set-standard-syntax-types,eclector.reader} readtable
 
 This function sets the standard syntax types in @var{readtable}
 (See HyperSpec section 2.1.4.)
 @end deffn
 
-@deffn {Function} {set-standard-macro-characters} readtable
+@deffuna {set-standard-macro-characters,eclector.reader} readtable
 
 This function sets the standard macro characters in @var{readtable}
 (See HyperSpec section 2.4.)
 @end deffn
 
-@deffn {Function} {set-standard-dispatch-macro-characters} readtable
+@deffuna {set-standard-dispatch-macro-characters,eclector.reader}@
+  readtable
 
 This function sets the standard dispatch macro characters, that is
 sharpsign and its sub-characters, in @var{readtable} (See HyperSpec
 section 2.4.8.)
 @end deffn
 
-@deffn {Function} {set-standard-syntax-and-macros} readtable
+@deffuna {set-standard-syntax-and-macros,eclector.reader} readtable
 
 This function sets the standard syntax types and macro characters in
 @var{readtable} by calling the above three functions.
@@ -647,7 +655,7 @@ generic functions.
 Symbols bound to additional functions and condition types.
 @end enumerate
 
-@deffn {Defgeneric} {readtablep} object
+@defgena {readtablep,eclector.readtable} object
 
 This function is the generic version of the standard @commonlisp{}
 function @t{cl:readtablep}.  The function returns true if
@@ -697,7 +705,8 @@ patterns that arise when the functions @t{read},
 @t{read-preserving-whitespace}, @t{read-from-string} and
 @t{read-delimited-list} are called by client code.
 
-@deffn {Function} {read} client @optional (input-stream @t{*standard-input*})@
+@deffuna {read,eclector.parse-result} client @optional@
+  (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
   (eof-value @t{nil})
 
@@ -728,7 +737,7 @@ behave suitably.
 @end itemize
 @end deffn
 
-@deffn {Function} {read-preserving-whitespace} client@
+@deffuna {read-preserving-whitespace,eclector.parse-result} client@
   @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
   (eof-value @t{nil})
@@ -738,7 +747,8 @@ This function is similar to the standard @commonlisp{} function
 as described above for @t{read} compared to @t{cl:read}.
 @end deffn
 
-@deffn {Function} {read-from-string} client string @optional@
+@deffuna {read-from-string,eclector.parse-result} client string@
+   @optional@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
   @pkey@
@@ -764,20 +774,20 @@ list of ``orphan'' results (Described above).
 @end itemize
 @end deffn
 
-@deftp {Class} {parse-result-client}
+@defclassa {parse-result-client,eclector.parse-result}
 
 This class should generally be used as a superclass for client classes
 using this package.
 @end deftp
 
-@deffn {Defgeneric} {source-position} client stream
+@defgena {source-position,eclector.parse.result} client stream
 
 This generic function is called in order to determine the current
 position in @var{stream}.  The default method calls
 @t{cl:file-position}.
 @end deffn
 
-@deffn {Defgeneric} {make-source-range} client start end
+@defgena {make-source-range,eclector.parse-result} client start end
 
 This generic function is called in order to turn the source positions
 @var{start} and @var{end} into a range representation suitable
@@ -788,7 +798,8 @@ of input characters from and including the character at position
 @code{(cons @var{start} @var{end})}.
 @end deffn
 
-@deffn {Defgeneric} {make-expression-result} client result children source
+@defgena {make-expression-result,eclector.parse-result} client result@
+  children source
 
 This generic function is called in order to construct a parse result
 object.  The value of the @var{result} parameter is the raw object
@@ -804,7 +815,8 @@ of the package is the construction of @emph{custom} parse results.
 Thus, a client must define a method on this generic function.
 @end deffn
 
-@deffn {Defgeneric} {make-skipped-input-result} client stream reason source
+@defgena {make-skipped-input-result,eclector.parse-result} client@
+  stream reason source
 
 This generic function is called after the reader skipped over a range
 of characters in @var{stream}.  It returns either @t{nil} if
@@ -845,7 +857,8 @@ In this section, symbols written without package marker are in the
 @t{eclector.concrete-syntax-tree} package (@pxref{Package for CST
 features}).
 
-@deffn {Function} {read} @optional (input-stream @t{*standard-input*})@
+@deffuna {read,eclector.concrete-syntax-tree} @optional@
+  (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
   (eof-value @t{nil})
 
@@ -865,8 +878,8 @@ behave suitably.
 @end itemize
 @end deffn
 
-@deffn {function} read-preserving-whitespace @optional (input-stream @t{*standard-input*})@
-  (eof-error-p @t{t})@
+@deffuna {read-preserving-whitespace,eclector.concrete-syntax-tree}@
+  @optional (input-stream @t{*standard-input*}) (eof-error-p @t{t})@
   (eof-value @t{nil})
 
 This function is similar to the standard @commonlisp{} function
@@ -874,7 +887,8 @@ This function is similar to the standard @commonlisp{} function
 as described above for @t{read} compared to @t{cl:read}.
 @end deffn
 
-@deffn {Function} {read-from-string} string @optional@
+@deffuna {read-from-string,eclector.concrete-syntax-tree} string@
+  @optional@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
   @pkey@

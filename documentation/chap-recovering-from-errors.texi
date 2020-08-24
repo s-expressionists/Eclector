@@ -22,7 +22,7 @@ errors are signaled.  Like the standard @commonlisp{} restart
 @t{cl:continue}, this restart can be invoked by a function of the
 same name:
 
-@deffn {Function} {recover} @optional condition
+@deffuna {recover,eclector.reader} @optional condition
 
 This function recovers from an error by invoking the most recently
 established applicable restart named @t{eclector.reader:recover}.  If no

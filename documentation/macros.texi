@@ -1,9 +1,17 @@
+@c ===================================================================
+@c Abbreviations
+@c ===================================================================
+
 @macro sysname
 Eclector
 @end macro
 @macro commonlisp
 Common Lisp
 @end macro
+
+@c ===================================================================
+@c Lambda list keywords
+@c ===================================================================
 
 @macro optional
 @t{&optional}
@@ -13,4 +21,48 @@ Common Lisp
 @end macro
 @macro pbody
 @t{&body}
+@end macro
+
+@c ===================================================================
+@c Semantic markup and references
+@c ===================================================================
+
+@macro setf{NAME}
+(setf \NAME\)
+@end macro
+
+@iftex
+@macro symbol{NAME,PACKAGE}
+\NAME\ @smallertt [\PACKAGE\]
+@end macro
+@end iftex
+@ifnottex
+@macro symbol{NAME,PACKAGE}
+\NAME\ [\PACKAGE\]
+@end macro
+@end ifnottex
+
+@macro defvara{NAME,PACKAGE}
+@anchor{Variable \PACKAGE\:\NAME\}
+@defvar {@symbol{\NAME\,\PACKAGE\}}
+@end macro
+
+@macro deffuna{NAME,PACKAGE}
+@anchor{Function \PACKAGE\:\NAME\}
+@deffn {Function} {@symbol{\NAME\,\PACKAGE\}}
+@end macro
+
+@macro defgena{NAME,PACKAGE}
+@anchor{Generic-Function \PACKAGE\:\NAME\}
+@deffn {Generic Function} {@symbol{\NAME\,\PACKAGE\}}
+@end macro
+
+@macro defmaca{NAME,PACKAGE}
+@anchor{Macro \PACKAGE\:\NAME\}
+@deffn {Macro} {@symbol{\NAME\,\PACKAGE\}}
+@end macro
+
+@macro defclassa{NAME,PACKAGE}
+@anchor{Class \PACKAGE\:\NAME\}
+@deftp {Class} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
