@@ -9,7 +9,8 @@
                            :adjustable t
                            :fill-pointer 0))
         (escape-ranges '())
-        (escape-char))
+        (escape-char)
+        result)
     (labels ((push-char (char)
                (vector-push-extend char token)
                char)
@@ -30,34 +31,41 @@
                          :escape-char escape-char
                          :report 'use-partial-symbol)
                         (end-escape)
-                        (terminate-token))
+                        (terminate-token)
+                        nil)
                        ((eq context :multiple-escape)
                         (%recoverable-reader-error
                          input-stream 'unterminated-multiple-escape-in-symbol
                          :delimiter escape-char
                          :report 'use-partial-symbol)
                         (end-escape)
-                        (terminate-token))
-                       (t
-                        (terminate-token)))))
-             (terminate-token ()
-               (return-from read-token
-                 (cond (*read-suppress*
-                        (note-skipped-input client input-stream
-                                            (or *skip-reason* '*read-suppress*))
+                        (terminate-token)
                         nil)
                        (t
-                        (unless (null escape-ranges)
-                          (setf escape-ranges (nreverse escape-ranges)))
-                        (interpret-token client input-stream token escape-ranges))))))
+                        (terminate-token)
+                        nil))))
+             (terminate-token ()
+               (cond (*read-suppress*
+                      (note-skipped-input client input-stream
+                                          (or *skip-reason* '*read-suppress*))
+                      (setf result nil))
+                     (t
+                      (unless (null escape-ranges)
+                        (setf escape-ranges (nreverse escape-ranges)))
+                      (setf result (interpret-token client input-stream token escape-ranges))))))
       (tagbody
          ;; This function is only called when a character is available
          ;; in INPUT-STREAM.
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
            (ecase syntax-type
+             ((nil)
+              (go end))
              (:single-escape
               (start-escape char)
-              (push-char (read-char-handling-eof syntax-type))
+              (let ((char (read-char-handling-eof syntax-type)))
+                (unless char
+                  (go end))
+                (push-char char))
               (end-escape)
               (go even-escapes))
              (:multiple-escape
@@ -69,12 +77,17 @@
        even-escapes
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
            (ecase syntax-type
+             ((nil)
+              (go end))
              ((:constituent :non-terminating-macro)
               (push-char char)
               (go even-escapes))
              (:single-escape
               (start-escape char)
-              (push-char (read-char-handling-eof syntax-type))
+              (let ((char (read-char-handling-eof syntax-type)))
+                (unless char
+                  (go end))
+                (push-char char))
               (end-escape)
               (go even-escapes))
              (:multiple-escape
@@ -82,24 +95,33 @@
               (go odd-escapes))
              (:terminating-macro
               (unread-char char input-stream)
-              (terminate-token))
+              (terminate-token)
+              (go end))
              (:whitespace
               (unread-char char input-stream)
-              (terminate-token))))
+              (terminate-token)
+              (go end))))
        odd-escapes
          (multiple-value-bind (char syntax-type)
              (read-char-handling-eof :multiple-escape)
            (ecase syntax-type
+             ((nil)
+              (go end))
              ((:constituent :terminating-macro
                :non-terminating-macro :whitespace)
               (push-char char)
               (go odd-escapes))
              (:single-escape
-              (push-char (read-char-handling-eof syntax-type))
+              (let ((char (read-char-handling-eof syntax-type)))
+                (unless char
+                  (go end))
+                (push-char char))
               (go odd-escapes))
              (:multiple-escape
               (end-escape)
-              (go even-escapes))))))))
+              (go even-escapes))))
+       end)
+      result)))
 
 ;;; Constituent traits
 ;;;
