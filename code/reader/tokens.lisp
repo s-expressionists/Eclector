@@ -324,7 +324,8 @@
          (exponent-marker nil)
          (position-package-marker-1 nil)
          (position-package-marker-2 nil)
-         (index -1))
+         (index -1)
+         result)
     ;; The NEXT function and the NEXT-COND macro handle fetching the
     ;; next character and returning a symbol and going to tag SYMBOL
     ;; in case of an escape and as the default successor state.
@@ -364,8 +365,7 @@
                                    (if exponentp
                                        (expt 10 (* exponent-sign (funcall exponent)))
                                        1))))
-                 (return-from interpret-token
-                   (* sign (coerce magnitude type)))))))
+                 (setf result (* sign (coerce magnitude type)))))))
       (macrolet ((next-cond ((char-var &optional
                                        return-symbol-if-eoi
                                        (colon-go-symbol t))
@@ -375,7 +375,8 @@
                         (cond
                           ,@(when return-symbol-if-eoi
                               `(((null ,char-var)
-                                 (return-from interpret-token (symbol)))))
+                                 (setf result (symbol))
+                                 (go done))))
                           ((and ,char-var
                                 (not ,escapep-var)
                                 (char-invalid-p ,char-var))
@@ -423,10 +424,11 @@
            (next-cond (char)
              ((not char)
               (cond ((not (null escape-ranges))
-                     (return-from interpret-token (symbol)))
+                     (setf result (symbol))
+                     (go done))
                     (*consing-dot-allowed-p*
-                     (return-from interpret-token
-                       *consing-dot*))
+                     (setf result *consing-dot*)
+                     (go done))
                     (t
                      (%reader-error input-stream 'invalid-context-for-consing-dot))))
              ((eql char #\.)
@@ -457,10 +459,10 @@
          decimal-integer                ; [sign] decimal-digit+
            (next-cond (char)
              ((not char)
-              (return-from interpret-token
-                (alexandria:if-let ((value (funcall numerator)))
-                  (* sign value)
-                  (symbol))))
+              (setf result (alexandria:if-let ((value (funcall numerator)))
+                             (* sign value)
+                             (symbol)))
+              (go done))
              ((eql char #\.)
               (go decimal-integer-final))
              ((funcall decimal-mantissa char)
@@ -476,8 +478,8 @@
          decimal-integer-final   ; [sign] decimal-digit+ decimal-point
            (next-cond (char)
              ((not char)
-              (return-from interpret-token
-                (* sign (funcall decimal-mantissa))))
+              (setf result (* sign (funcall decimal-mantissa)))
+              (go done))
              ((funcall fraction-numerator char)
               (setf fraction-denominator
                     (* fraction-denominator 10))
@@ -489,8 +491,8 @@
            ;; At least one digit is not decimal.
            (next-cond (char)
              ((not char)
-              (return-from interpret-token
-                (* sign (funcall numerator))))
+              (setf result (* sign (funcall numerator)))
+              (go done))
              ((funcall numerator char)
               (go integer))
              ((eql char #\/)
@@ -502,23 +504,24 @@
          ratio                          ; [sign] digit+ / digit+
            (next-cond (char)
              ((not char)
-              (return-from interpret-token
-                (alexandria:if-let ((numerator (funcall numerator)))
-                  (let ((denominator (funcall denominator)))
-                    (when (zerop denominator)
-                      (%recoverable-reader-error
-                       input-stream 'zero-denominator
-                       :report 'replace-invalid-digit)
-                      (setf denominator 1))
-                    (* sign (/ numerator denominator)))
-                  (symbol))))
+              (setf result (alexandria:if-let ((numerator (funcall numerator)))
+                             (let ((denominator (funcall denominator)))
+                               (when (zerop denominator)
+                                 (%recoverable-reader-error
+                                  input-stream 'zero-denominator
+                                  :report 'replace-invalid-digit)
+                                 (setf denominator 1))
+                               (* sign (/ numerator denominator)))
+                             (symbol)))
+              (go done))
              ((funcall denominator char)
               (go ratio)))
          float-no-exponent
            ;; [sign] decimal-digit* decimal-point decimal-digit+
            (next-cond (char)
              ((not char)
-              (return-float))
+              (return-float)
+              (go done))
              ((funcall fraction-numerator char)
               (setf fraction-denominator
                     (* fraction-denominator 10))
@@ -552,7 +555,8 @@
            ;; exponent-marker [sign] digit+
            (next-cond (char)
              ((not char)
-              (return-float t))
+              (return-float t)
+              (go done))
              ((funcall exponent char)
               (go float-exponent)))
          symbol
@@ -579,4 +583,6 @@
                      (%recoverable-reader-error
                       input-stream 'symbol-can-have-at-most-two-package-markers
                       :token token :report 'treat-as-escaped)))
-              (go symbol))))))))
+              (go symbol)))
+         done))
+      result)))
