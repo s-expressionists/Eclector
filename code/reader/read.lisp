@@ -1,6 +1,16 @@
 (cl:in-package #:eclector.reader)
 
 ;;; Entry points
+;;;
+;;; READ and READ-PRESERVING-WHITESPACE are the main entry points to
+;;; the reader. These functions behave pretty differently depending on
+;;; whether they are called recursively or not. Furthermore, a given
+;;; call site almost always only requests one of the two behaviors.
+;;; Thus, to avoid the overhead of selecting the correct behavior at
+;;; runtime for the recursive case, compiler macros for the two
+;;; functions transform recursive calls into the effectively resulting
+;;; READ-COMMON calls saving full calls to
+;;; READ[-PRESERVING-WHITESPACE] and READ-AUX.
 
 (defun read-aux
     (input-stream eof-error-p eof-value recursive-p preserve-whitespace-p)
