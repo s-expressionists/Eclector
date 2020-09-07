@@ -601,10 +601,10 @@ Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel=
 can customize the high-level behavior of the reader.
 </p>
 <span id="Generic_002dFunction-eclector_002ereader_003acall_002das_002dtop_002dlevel_002dread"></span><dl>
-<dt id="index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d">Generic Function: <strong>call-as-top-level-read [eclector.reader]</strong> <em>client thunk input-streameof-error-p eof-value preserve-whitespace-p</em></dt>
+<dt id="index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d">Generic Function: <strong>call-as-top-level-read [eclector.reader]</strong> <em>client thunk input-stream  eof-error-p eof-value preserve-whitespace-p</em></dt>
 <dd>
-<p>This generic function is called by <tt>read</tt>, if <tt>read</tt> is called with
-a true value for the <var>recursive-p</var> parameter.  It calls <var>thunk</var>
+<p>This generic function is called by <tt>read</tt> if <tt>read</tt> is called with
+a false value for the <var>recursive-p</var> parameter.  It calls <var>thunk</var>
 with the necessary context for a global <tt>read</tt> call.  <var>thunk</var>
 should read and return an object without consuming any whitespace
 following the object.  If <var>preserve-whitespace-p</var> is false, this
@@ -1484,7 +1484,7 @@ which there are no custom applicable methods on generic functions
 belonging to protocols provided by Eclector that introduce additional
 side effects.
 
-</li><li> The variable <tt>eclector.readtable:*readtabe*</tt> is bound to an object for
+</li><li> The variable <tt>eclector.readtable:*readtable*</tt> is bound to an object for
 which
 
 <ul>
