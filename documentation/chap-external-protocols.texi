@@ -179,8 +179,8 @@ can customize the high-level behavior of the reader.
 @defgena {call-as-top-level-read,eclector.reader} {client thunk input-stream@
 eof-error-p eof-value preserve-whitespace-p}
 
-This generic function is called by @t{read}, if @t{read} is called with
-a true value for the @var{recursive-p} parameter.  It calls @var{thunk}
+This generic function is called by @t{read} if @t{read} is called with
+a false value for the @var{recursive-p} parameter.  It calls @var{thunk}
 with the necessary context for a global @t{read} call.  @var{thunk}
 should read and return an object without consuming any whitespace
 following the object.  If @var{preserve-whitespace-p} is false, this
