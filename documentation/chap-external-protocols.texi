@@ -177,7 +177,7 @@ By defining methods on the generic functions of this protocol, clients
 can customize the high-level behavior of the reader.
 
 @defgena {call-as-top-level-read,eclector.reader} {client thunk input-stream@
-eof-error-p eof-value preserve-whitespace-p}
+  eof-error-p eof-value preserve-whitespace-p}
 
 This generic function is called by @t{read} if @t{read} is called with
 a false value for the @var{recursive-p} parameter.  It calls @var{thunk}
