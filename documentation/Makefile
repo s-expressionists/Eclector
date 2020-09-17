@@ -36,7 +36,7 @@ $(NAME).pdf: $(INPUTS) $(FIGURES)
 
 $(NAME).html: $(INPUTS) $(FIGURES) $(wildcard *.css)
 	makeinfo --html --no-split --no-headers \
-	         --css-include=syntax.css       \
+	         --css-include=style-syntax.css \
 	         --css-include=style-common.css \
 	         --css-include=style-single.css \
 	         $(NAME).texi
