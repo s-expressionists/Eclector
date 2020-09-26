@@ -600,6 +600,20 @@ Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel=
 <p>By defining methods on the generic functions of this protocol, clients
 can customize the high-level behavior of the reader.
 </p>
+<div class="float"><span id="fig_003aread_002dcall_002dsequence_002dcustomization"></span>
+<img src="read-call-sequence-customization.png" alt="read-call-sequence-customization">
+
+<div class="float-caption"><p><strong>Figure 2.2: </strong>Functions and typical function call sequences terminating on
+the right hand side of the diagram at customizable generic functions
+which implement aspects of the reader algorithm and standard reader
+macros.  Solid arrows represent calls, dashed arrows represent returns
+from function calls.  Labels above arrows represent arguments and return
+values.</p></div></div>
+<p><a href="#fig_003aread_002dcall_002dsequence_002dcustomization">Figure 2.2</a> illustrates how the
+customizable generic functions described in this section are called
+through the client interface and the implementation of the reader
+algorithm.
+</p>
 <span id="Generic_002dFunction-eclector_002ereader_003acall_002das_002dtop_002dlevel_002dread"></span><dl>
 <dt id="index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d">Generic Function: <strong>call-as-top-level-read [eclector.reader]</strong> <em>client thunk input-stream  eof-error-p eof-value preserve-whitespace-p</em></dt>
 <dd>
@@ -1134,11 +1148,11 @@ defining a method on the generic function
 <div class="float"><span id="fig_003aread_002dcall_002dsequence_002dparse_002dresult"></span>
 <img src="read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result">
 
-<div class="float-caption"><p><strong>Figure 2.2: </strong>Functions and typical function call sequences.  Solid arrows
+<div class="float-caption"><p><strong>Figure 2.3: </strong>Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.  Differences
 from the non-parse result version are highlighted with bold text.</p></div></div>
-<p><a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.2</a> shows typical function call
+<p><a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.3</a> shows typical function call
 patterns that arise when the functions <tt>read</tt>,
 <tt>read-preserving-whitespace</tt>, <tt>read-from-string</tt> and
 <tt>read-delimited-list</tt> are called by client code.
