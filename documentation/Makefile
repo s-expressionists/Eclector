@@ -2,17 +2,19 @@ NAME=eclector
 
 SOURCES=$(NAME).texi $(wildcard chap-*.texi)
 
+FIGURES=$(wildcard *.png)
+
 .PHONY: all clean
 
 all : $(NAME).info $(NAME).pdf $(NAME).html
 
-$(NAME).info: $(SOURCES)
+$(NAME).info: $(SOURCES) $(FIGURES)
 	makeinfo --output $@ $(NAME).texi
 
-$(NAME).pdf: $(SOURCES)
+$(NAME).pdf: $(SOURCES) $(FIGURES)
 	texi2pdf $(NAME).texi
 
-$(NAME).html: $(SOURCES) $(wildcard *.css)
+$(NAME).html: $(SOURCES) $(FIGURES) $(wildcard *.css)
 	makeinfo --html --no-split \
 	         --css-include=style-common.css --css-include=style-single.css \
 	         $(NAME).texi
