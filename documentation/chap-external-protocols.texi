@@ -176,6 +176,21 @@ function with the same name.
 By defining methods on the generic functions of this protocol, clients
 can customize the high-level behavior of the reader.
 
+@float Figure,fig:read-call-sequence-customization
+@image{read-call-sequence-customization}
+@caption{Functions and typical function call sequences terminating on
+the right hand side of the diagram at customizable generic functions
+which implement aspects of the reader algorithm and standard reader
+macros.  Solid arrows represent calls, dashed arrows represent returns
+from function calls.  Labels above arrows represent arguments and return
+values.}
+@end float
+
+@ref{fig:read-call-sequence-customization} illustrates how the
+customizable generic functions described in this section are called
+through the client interface and the implementation of the reader
+algorithm.
+
 @defgena {call-as-top-level-read,eclector.reader} {client thunk input-stream@
   eof-error-p eof-value preserve-whitespace-p}
 
