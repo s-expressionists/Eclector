@@ -14,7 +14,7 @@
                         (let ((expected-condition (pop remaining-conditions)))
                           (is (typep condition expected-condition)
                               "~@<For input ~S, expected a condition ~
-                               of type ~S but got ~S~@;>"
+                               of type ~S but got ~S~@:>"
                               input expected-condition condition))
                         (let ((restart (find-restart 'eclector.reader:recover)))
                           (is-true (typep restart 'restart)
