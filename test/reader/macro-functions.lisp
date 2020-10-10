@@ -698,33 +698,34 @@
            (expect "position" (equal length   position))))))
 
     '(;; Errors
-      (""        nil nil eclector.reader:end-of-input-after-sharpsign-c)
-      (")"       nil nil eclector.reader:complex-parts-must-follow-sharpsign-c)
-      ("\"foo\"" nil nil eclector.reader:non-list-following-sharpsign-c)
-      ("("       nil nil eclector.reader:end-of-input-before-complex-part)
-      (" (0 1)"  nil nil eclector.reader:non-list-following-sharpsign-c) ; unclear in the spec. we do not allow it
-      ("()"      nil nil eclector.reader:complex-part-expected)
-      ("(0"      nil nil eclector.reader:end-of-input-before-complex-part)
-      ("(0)"     nil nil eclector.reader:complex-part-expected)
-      ("(0 0"    nil nil eclector.reader:unterminated-list)
-      ("(0 0 0)" nil nil eclector.reader:too-many-complex-parts)
-      ("#(0 0)"  nil nil eclector.reader:non-list-following-sharpsign-c)
-      ("(:a 0)"  nil nil eclector.reader:read-object-type-error)
-      ("(0 :a)"  nil nil eclector.reader:read-object-type-error)
-      ("(0 0)"   1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
-      ("(`,0 0)" nil nil eclector.reader:backquote-in-invalid-context)
-      ("(,0 0)"  nil nil eclector.reader:unquote-in-invalid-context)
+      (""              nil nil eclector.reader:end-of-input-after-sharpsign-c)
+      (")"             nil nil eclector.reader:complex-parts-must-follow-sharpsign-c)
+      ("\"foo\""       nil nil eclector.reader:non-list-following-sharpsign-c)
+      ("("             nil nil eclector.reader:end-of-input-before-complex-part)
+      (" (0 1)"        nil nil eclector.reader:non-list-following-sharpsign-c) ; unclear in the spec. we do not allow it
+      ("()"            nil nil eclector.reader:complex-part-expected)
+      ("(0"            nil nil eclector.reader:end-of-input-before-complex-part)
+      ("(0)"           nil nil eclector.reader:complex-part-expected)
+      ("(0 0"          nil nil eclector.reader:unterminated-list)
+      ("(0 0 0)"       nil nil eclector.reader:too-many-complex-parts)
+      ("#(0 0)"        nil nil eclector.reader:non-list-following-sharpsign-c)
+      ("(:a 0)"        nil nil eclector.reader:read-object-type-error)
+      ("(0 :a)"        nil nil eclector.reader:read-object-type-error)
+      ("(0 0)"         1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+      ("(`,0 0)"       nil nil eclector.reader:backquote-in-invalid-context)
+      ("(,0 0)"        nil nil eclector.reader:unquote-in-invalid-context)
       ;; Valid
-      ("(0 1)"   nil nil #C(0 1))
-      ("(-1 1)"  nil nil #C(-1 1))
-      ("(0 1/2)" nil nil #C(0 1/2))
+      ("(0 1)"         nil nil #C(0 1))
+      ("(-1 1)"        nil nil #C(-1 1))
+      ("(0 1/2)"       nil nil #C(0 1/2))
+      ("(0 #.(+ 1 2))" nil nil #C(0 3)) ; since we bind *LIST-READER*
       ;; With *READ-SUPPRESS* bound to T
-      ("(0)"     nil t   nil)
-      ("(0 0 0)" nil t   nil)
-      ("#(0 0)"  nil t   nil)
-      ("(:a 0)"  nil t   nil)
-      ("(0 :a)"  nil t   nil)
-      ("(0 0)"   nil t   nil))))
+      ("(0)"           nil t   nil)
+      ("(0 0 0)"       nil t   nil)
+      ("#(0 0)"        nil t   nil)
+      ("(:a 0)"        nil t   nil)
+      ("(0 :a)"        nil t   nil)
+      ("(0 0)"         nil t   nil))))
 
 (test sharpsign-s/smoke
   "Smoke test for the SHARPSIGN-S reader macro function."
@@ -744,44 +745,45 @@
            (expect "value"    (relaxed-equalp expected value))
            (expect "position" (equal          length   position))))))
     '(;; Errors
-      ("(foo)"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
+      ("(foo)"           1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
 
-      (""               nil nil eclector.reader:end-of-input-after-sharpsign-s)
-      ("1"              nil nil eclector.reader:non-list-following-sharpsign-s)
-      (")"              nil nil eclector.reader:structure-constructor-must-follow-sharpsign-s)
-      ("`"              nil nil eclector.reader:backquote-in-invalid-context)
-      ("(foo . 1)"      nil nil eclector.reader:invalid-context-for-consing-dot)
+      (""                nil nil eclector.reader:end-of-input-after-sharpsign-s)
+      ("1"               nil nil eclector.reader:non-list-following-sharpsign-s)
+      (")"               nil nil eclector.reader:structure-constructor-must-follow-sharpsign-s)
+      ("`"               nil nil eclector.reader:backquote-in-invalid-context)
+      ("(foo . 1)"       nil nil eclector.reader:invalid-context-for-consing-dot)
 
-      ("("              nil nil eclector.reader:end-of-input-before-structure-type-name)
-      (" (foo)"         nil nil eclector.reader:non-list-following-sharpsign-s) ; unclear in the spec. we do not allow it
-      ("()"             nil nil eclector.reader:no-structure-type-name-found)
-      ("(1)"            nil nil eclector.reader:structure-type-name-is-not-a-symbol)
+      ("("               nil nil eclector.reader:end-of-input-before-structure-type-name)
+      (" (foo)"          nil nil eclector.reader:non-list-following-sharpsign-s) ; unclear in the spec. we do not allow it
+      ("()"              nil nil eclector.reader:no-structure-type-name-found)
+      ("(1)"             nil nil eclector.reader:structure-type-name-is-not-a-symbol)
 
-      ("(foo"           nil nil eclector.reader:end-of-input-before-slot-name)
-      ("(foo 1 2)"      nil nil eclector.reader:slot-name-is-not-a-string-designator)
-      ("(foo :bar"      nil nil eclector.reader:end-of-input-before-slot-value)
-      ("(foo :bar)"     nil nil eclector.reader:no-slot-value-found)
-      ("(foo :bar 1"    nil nil eclector.reader:end-of-input-before-slot-name)
+      ("(foo"            nil nil eclector.reader:end-of-input-before-slot-name)
+      ("(foo 1 2)"       nil nil eclector.reader:slot-name-is-not-a-string-designator)
+      ("(foo :bar"       nil nil eclector.reader:end-of-input-before-slot-value)
+      ("(foo :bar)"      nil nil eclector.reader:no-slot-value-found)
+      ("(foo :bar 1"     nil nil eclector.reader:end-of-input-before-slot-name)
 
-      ("(`,foo :bar 1)" nil nil eclector.reader:backquote-in-invalid-context)
-      ("(,foo :bar 1)"  nil nil eclector.reader:unquote-in-invalid-context)
-      ("(foo `,:bar 1)" nil nil eclector.reader:backquote-in-invalid-context)
-      ("(foo ,:bar 1)"  nil nil eclector.reader:unquote-in-invalid-context)
-      ("(foo :bar ,1)"  nil nil eclector.reader:unquote-in-invalid-context)
+      ("(`,foo :bar 1)"  nil nil eclector.reader:backquote-in-invalid-context)
+      ("(,foo :bar 1)"   nil nil eclector.reader:unquote-in-invalid-context)
+      ("(foo `,:bar 1)"  nil nil eclector.reader:backquote-in-invalid-context)
+      ("(foo ,:bar 1)"   nil nil eclector.reader:unquote-in-invalid-context)
+      ("(foo :bar ,1)"   nil nil eclector.reader:unquote-in-invalid-context)
       ;; Valid
-      ("(foo)"          nil nil (foo))
-      ("(foo #:bar 1)"  nil nil (foo #:bar 1))
-      ("(foo :bar 1)"   nil nil (foo :bar 1))
-      ("(foo bar 1)"    nil nil (foo bar 1))
-      ("(foo \"bar\" 1)"nil nil (foo "bar" 1))
-      ("(foo #\\b 1)"   nil nil (foo #\b 1))
-      ("(foo :bar `,1)" nil nil (foo :bar (eclector.reader:quasiquote
-                                           (eclector.reader:unquote 1))))
+      ("(foo)"           nil nil (foo))
+      ("(foo #:bar 1)"   nil nil (foo #:bar 1))
+      ("(foo :bar 1)"    nil nil (foo :bar 1))
+      ("(foo bar 1)"     nil nil (foo bar 1))
+      ("(foo \"bar\" 1)" nil nil (foo "bar" 1))
+      ("(foo #\\b 1)"    nil nil (foo #\b 1))
+      ("(foo :bar `,1)"  nil nil (foo :bar (eclector.reader:quasiquote
+                                            (eclector.reader:unquote 1))))
+      ("(#.(quote foo))" nil nil (foo)) ; since we bind *LIST-READER*
       ;; With *READ-SUPPRESS* bound to T
-      ("(foo)"          nil t   nil)
-      ("(foo 1 2)"      nil t   nil)
-      ("(foo :bar)"     nil t   nil)
-      ("(foo)"          1   t   nil))))
+      ("(foo)"           nil t   nil)
+      ("(foo 1 2)"       nil t   nil)
+      ("(foo :bar)"      nil t   nil)
+      ("(foo)"           1   t   nil))))
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
