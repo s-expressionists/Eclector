@@ -1,0 +1,76 @@
+@node Interpretation of Unclear Parts of the Specifications
+@chapter Interpretation of Unclear Parts of the Specifications
+
+@cindex specification interpretation
+
+This chapter describes @sysname{}'s interpretation of passages in the
+@commonlisp{} specification that do not describe the behavior of a
+conforming reader completely unambiguously.
+
+@menu
+* Interpretation of Sharpsign C and Sharpsign S::
+@end menu
+
+@node Interpretation of Sharpsign C and Sharpsign S
+@section Interpretation of Sharpsign C and Sharpsign S
+
+@cindex reader macro
+@cindex complex literal
+@cindex structure literal
+
+At first glance, Sharpsign C and Sharpsign S seem to follow the same
+syntactic structure: the dispatch macro character followed by the
+sub-character followed by a list of a specific structure.  However, the
+actual descriptions of the respective syntax is different.  For
+Sharpsign C, the specification states:
+
+@quotation
+@t{#C} reads a following object, which must be a list of length two
+whose elements are both reals.
+@end quotation
+
+For Sharpsign S, on the other hand, the specification describes the
+syntax as:
+
+@quotation
+@t{#s(@var{name} @var{slot1} @var{value1} @var{slot2} @var{value2} ...)} denotes a structure.
+@end quotation
+
+Note how the description for Sharpsign C relies on a recursive @t{read}
+invocation while the description for Sharpsign S gives a character-level
+pattern with meta-syntactic variables.  It is possible that this is an
+oversight and the syntax was intended to be uniform between the two
+reader macros.  Whatever the case may be, in order to provide conforming
+behavior, @sysname{} is forced to implement Sharpsign C with a recursive
+@t{read} invocation and Sharpsign S with a stricter enforcement of the
+specified syntax.
+
+More concretely, @sysname{} behaves as summarized in the following table:
+
+@multitable @columnfractions .5 .5
+@headitem Input                                        @tab Behavior
+@item @t{#C(1 2)}                                      @tab Read as @t{#C(1 2)}
+@item @t{#C (1 2)}                                     @tab Read as @t{#C(1 2)}
+@item @t{#C#||#(1 2)}                                  @tab Read as @t{#C(1 2)}
+@item @t{#C#.(list 1 (+ 2 3))}                         @tab Read as @t{#C(1 5)}
+@item @t{#C[1 2]} for left-parenthesis syntax on @t{[} @tab Read as @t{#C(1 2)}
+
+@item @t{#S(foo)}                                      @tab Read as @t{#S(foo)}
+@item @t{#S (foo)}                                     @tab Rejected
+@item @t{#S#||#(foo)}                                  @tab Rejected
+@item @t{#S#.(list 'foo)}                              @tab Rejected
+@item @t{#S[foo]} for left-parenthesis syntax on @t{[} @tab Rejected
+@end multitable
+
+@sysname{} provides a strict version of the Sharpsign C macro function
+under the name @t{eclector.reader::strict-sharpsign-c} which behaves as
+follows:
+
+@multitable @columnfractions .5 .5
+@headitem Input                                        @tab Behavior
+@item @t{#C(1 2)}                                      @tab Read as @t{#C(1 2)}
+@item @t{#C (1 2)}                                     @tab Rejected
+@item @t{#C#||#(1 2)}                                  @tab Rejected
+@item @t{#C#.(list 1 (+ 2 3))}                         @tab Rejected
+@item @t{#C[1 2]} for left-parenthesis syntax on @t{[} @tab Read as @t{#C(1 2)}
+@end multitable
