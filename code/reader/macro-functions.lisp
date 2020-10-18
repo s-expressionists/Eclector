@@ -993,6 +993,13 @@
                        (setf part :past-end))
                      t)))))
              (read-parts (stream char)
+               ;; If this is called, the input started with "#C(" (or,
+               ;; generally, "#C" followed by any input resulting in a
+               ;; LEFT-PARENTHESIS call).  We record that fact (for
+               ;; error reporting) by setting LISTP.  We reset
+               ;; *LIST-READER* so lists appearing in the complex
+               ;; parts are processed normally instead of with
+               ;; READ-PARTS.
                (setf listp t)
                (let ((*list-reader* nil))
                  (%read-list-elements stream #'part '#1# '#2# char nil))))
@@ -1005,7 +1012,7 @@
           ;; - not behave like a full READ call in terms of e.g. parse
           ;;   result construction so (1 2) will not appear as a list
           ;;   result with two atom result children.
-          ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
+          ;; We bind *LIST-READER* to use READ-PARTS for reading lists.
           (with-forbidden-quasiquotation ('sharpsign-c)
             (let ((*list-reader* #'read-parts))
               (%read-maybe-nothing *client* stream t nil)))
@@ -1113,6 +1120,13 @@
                         *unquote-forbidden* 'sharpsign-s-slot-name
                         element :name))))
              (read-constructor (stream char)
+               ;; If this is called, the input started with "#S(" (or,
+               ;; generally, "#S" followed by any input resulting in a
+               ;; LEFT-PARENTHESIS call).  We record that fact (for
+               ;; error reporting) by setting LISTP.  We reset
+               ;; *LIST-READER* so lists appearing in the constructor
+               ;; parts are processed normally instead of with
+               ;; READ-CONSTRUCTOR.
                (setf listp t)
                (setf *quasiquote-forbidden* 'sharpsign-s-type
                      *unquote-forbidden* 'sharpsign-s-type)
