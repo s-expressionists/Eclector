@@ -932,13 +932,13 @@
 ;;;
 ;;; Reader macro for sharpsign C.
 
-(defun sharpsign-c (stream char parameter)
+(defun %sharpsign-c (stream char parameter allow-non-list)
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-c parameter))
   (when *read-suppress*
     (read stream t nil t)
-    (return-from sharpsign-c nil))
+    (return-from %sharpsign-c nil))
   ;; When we get here, we have to read a list of the form
   ;; (REAL-PART-REAL-NUMBER-LITERAL IMAGINARY-PART-REAL-NUMBER) that
   ;; is, a list of exactly two elements of type REAL.
@@ -1003,9 +1003,11 @@
                ;; READ-PARTS.
                (setf listp t)
                (let ((*list-reader* nil))
-                 (%read-list-elements stream #'part '#1# '#2# char nil))))
+                 (%read-list-elements stream #'part '#1# '#2# char nil))
+               nil)) ; unused, but must not return (values)
       (handler-case
-          ;; Instead of READ we call %READ-MAYBE-NOTHING which will
+          ;; Depending on ALLOW-NON-LIST, we call either READ or
+          ;; %READ-MAYBE-NOTHING.  Calling %READ-MAYBE-NOTHING will:
           ;; - not skip whitespace or comments (the spec is not clear
           ;;   about whether #C<skippable things>(...) is valid syntax)
           ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
@@ -1016,24 +1018,41 @@
           ;; We bind *LIST-READER* to use READ-PARTS for reading lists.
           (with-forbidden-quasiquotation ('sharpsign-c)
             (let ((*list-reader* #'read-parts))
-              (%read-maybe-nothing *client* stream t nil)))
+              (values (if allow-non-list
+                          (read stream t nil t)
+                          (%read-maybe-nothing *client* stream t nil)))))
         ((and end-of-file (not incomplete-construct)) (condition)
           (%recoverable-reader-error
            stream 'end-of-input-after-sharpsign-c
            :stream-position (stream-position condition)
            :report 'use-replacement-part))
-        (end-of-list (condition)
+        (end-of-list (condition) ; (... #C)
           (%recoverable-reader-error
            stream 'complex-parts-must-follow-sharpsign-c
            :report 'use-partial-complex)
           (unread-char (%character condition) stream))
-        (:no-error (&rest values)
-          (declare (ignore values))
-          (unless listp
-            (%recoverable-reader-error
-             stream 'non-list-following-sharpsign-c
-             :report 'use-replacement-part))))
+        (:no-error (object)
+          ;; If we got here, we managed to read an object.
+          (cond (listp)
+                ((or (not allow-non-list) (not (typep object 'cons)))
+                 (%recoverable-reader-error
+                  stream 'non-list-following-sharpsign-c
+                  :report 'use-replacement-part))
+                ((typep object #3='(cons real (cons real null)))
+                 (setf real (first object)
+                       imaginary (second object)))
+                (t
+                 (%recoverable-reader-error
+                  stream 'read-object-type-error
+                  :datum object :expected-type #3#
+                  :report 'use-replacement-part)))))
       (complex real imaginary))))
+
+(defun sharpsign-c (stream char parameter)
+  (%sharpsign-c stream char parameter t))
+
+(defun strict-sharpsign-c (stream char parameter)
+  (%sharpsign-c stream char parameter nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
