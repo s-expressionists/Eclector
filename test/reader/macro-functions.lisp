@@ -755,6 +755,7 @@
 
       ("("               nil nil eclector.reader:end-of-input-before-structure-type-name)
       (" (foo)"          nil nil eclector.reader:non-list-following-sharpsign-s) ; unclear in the spec. we do not allow it
+      ("#.(list 'foo)"   nil nil eclector.reader:non-list-following-sharpsign-s) ; same
       ("()"              nil nil eclector.reader:no-structure-type-name-found)
       ("(1)"             nil nil eclector.reader:structure-type-name-is-not-a-symbol)
 

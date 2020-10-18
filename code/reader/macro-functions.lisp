@@ -404,20 +404,21 @@
          (read stream t nil t))
         (t
          (let ((expression (with-forbidden-quasiquotation (nil nil nil)
-                             (handler-case
-                                 (read stream t nil t)
-                               ((and end-of-file (not incomplete-construct)) (condition)
-                                 (%recoverable-reader-error
-                                  stream 'end-of-input-after-sharpsign-dot
-                                  :stream-position (stream-position condition)
-                                  :report 'inject-nil)
-                                 nil)
-                               (end-of-list (condition)
-                                 (%recoverable-reader-error
-                                  stream 'object-must-follow-sharpsign-dot
-                                  :report 'inject-nil)
-                                 (unread-char (%character condition) stream)
-                                 nil)))))
+                             (let ((*list-reader* nil))
+                               (handler-case
+                                   (read stream t nil t)
+                                 ((and end-of-file (not incomplete-construct)) (condition)
+                                   (%recoverable-reader-error
+                                    stream 'end-of-input-after-sharpsign-dot
+                                    :stream-position (stream-position condition)
+                                    :report 'inject-nil)
+                                   nil)
+                                 (end-of-list (condition)
+                                   (%recoverable-reader-error
+                                    stream 'object-must-follow-sharpsign-dot
+                                    :report 'inject-nil)
+                                   (unread-char (%character condition) stream)
+                                   nil))))))
            (handler-case
                (evaluate-expression *client* expression)
              (error (condition)
