@@ -63,6 +63,8 @@
           (":foo:bar"                         (eclector.reader:two-package-markers-must-be-adjacent)         :foo|:|bar)
           ("::foo"                            (eclector.reader:two-package-markers-must-not-be-first)        :foo)
           ("eclector.reader.test:::foo"       (eclector.reader:symbol-can-have-at-most-two-package-markers)  |:|foo)
+          (".."                               (eclector.reader:too-many-dots)                                |..|)
+          ("..."                              (eclector.reader:too-many-dots)                                |...|)
 
           ;; Recover from invalid number tokens.
           ("3/0" (eclector.reader:zero-denominator) 3)

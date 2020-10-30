@@ -421,7 +421,10 @@
            ;; one dot, no escapes) is illegal.
            (next-cond (char)
              ((not char)
-              (%reader-error input-stream 'too-many-dots))
+              (%recoverable-reader-error input-stream 'too-many-dots
+                                         :report 'treat-as-escaped)
+              (push (cons 0 (length token)) escape-ranges)
+              (return-from interpret-token (symbol)))
              ((eql char #\.)
               (go maybe-too-many-dots)))
          sign-dot                       ; sign decimal-point
