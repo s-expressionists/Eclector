@@ -205,6 +205,18 @@
       ("5"               nil t   nil)
       ("X"               1   t   nil))))
 
+(test sharpsign-single-quote/relaxed
+  "Test the \"relaxed\" variant of the SHARPSIGN-SINGLE-QUOTE read
+macro function. "
+
+  (let ((eclector.reader:*readtable* (eclector.readtable:copy-readtable eclector.reader:*readtable*)))
+    (eclector.readtable:set-dispatch-macro-character
+     eclector.reader:*readtable* #\# #\'
+     'eclector.reader:sharpsign-single-quote/relaxed)
+    (is (equal '(eclector.reader:quasiquote
+                 (function (eclector.reader:unquote (foo))))
+               (eclector.reader:read-from-string "`#',(foo)")))))
+
 (test sharpsign-left-parenthesis/smoke
   "Smoke test for the SHARPSIGN-LEFT-PARENTHESIS reader macro function."
 
