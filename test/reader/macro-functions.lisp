@@ -686,29 +686,20 @@
 
   (do-stream-input-cases ((length) parameter read-suppress
                           expected-relaxed &optional (expected-strict expected-relaxed))
-    (flet ((relaxed ()
-             (with-stream (stream)
-               (let ((*read-suppress* read-suppress)
-                     (eclector.reader::*backquote-depth* 1))
-                 (eclector.reader::sharpsign-c stream #\C parameter))))
-           (strict ()
-             (with-stream (stream)
-               (let ((*read-suppress* read-suppress)
-                     (eclector.reader::*backquote-depth* 1))
-                 (eclector.reader::strict-sharpsign-c stream #\C parameter)))))
-      (error-case expected-relaxed
-        (error (relaxed))
-        (t
-         (multiple-value-bind (value position) (relaxed)
-           (expect "value"    (equal expected-relaxed value))
-           (expect "position" (equal length           position)))))
-      (error-case expected-strict
-        (error (strict))
-        (t
-         (multiple-value-bind (value position) (strict)
-           (expect "value"    (equal expected-strict value))
-           (expect "position" (equal length          position))))))
-
+    (labels ((do-call (function)
+               (with-stream (stream)
+                 (let ((*read-suppress* read-suppress)
+                       (eclector.reader::*backquote-depth* 1))
+                   (funcall function stream #\C parameter))))
+             (do-variant (function expected)
+               (error-case expected
+                 (error (do-call function))
+                 (t
+                  (multiple-value-bind (value position) (do-call function)
+                    (expect "value"    (equal expected value))
+                    (expect "position" (equal length   position)))))))
+      (do-variant 'eclector.reader::sharpsign-c       expected-relaxed)
+      (do-variant 'eclector.reader:strict-sharpsign-c expected-strict))
     '(;; Errors
       (""               nil nil eclector.reader:end-of-input-after-sharpsign-c)
       (")"              nil nil eclector.reader:complex-parts-must-follow-sharpsign-c)
