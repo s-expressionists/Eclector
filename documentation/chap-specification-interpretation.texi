@@ -63,7 +63,7 @@ More concretely, @sysname{} behaves as summarized in the following table:
 @end multitable
 
 @sysname{} provides a strict version of the Sharpsign C macro function
-under the name @t{eclector.reader::strict-sharpsign-c} which behaves as
+under the name @t{eclector.reader:strict-sharpsign-c} which behaves as
 follows:
 
 @multitable @columnfractions .5 .5
