@@ -9,6 +9,7 @@ conforming reader completely unambiguously.
 
 @menu
 * Interpretation of Sharpsign C and Sharpsign S::
+* Interpretation of Backquote and Sharpsign Single Quote::
 @end menu
 
 @node Interpretation of Sharpsign C and Sharpsign S
@@ -74,3 +75,25 @@ follows:
 @item @t{#C#.(list 1 (+ 2 3))}                         @tab Rejected
 @item @t{#C[1 2]} for left-parenthesis syntax on @t{[} @tab Read as @t{#C(1 2)}
 @end multitable
+
+@node Interpretation of Backquote and Sharpsign Single Quote
+@section Interpretation of Backquote and Sharpsign Single Quote
+
+@cindex reader macro
+@cindex quasiquote
+@cindex function
+
+The @commonlisp{} specification is very specific about the contexts in
+which the quasiquotation mechanism can be used.  Explicit descriptions
+of the behavior of the quasiquotation mechanism are given for
+expressions which @emph{are} lists or vectors and it is implied that
+unquote is not allowed in other expressions.  From this description, it
+is clear that @t{`#S(foo :bar ,x)} is not valid syntax, for example.
+However, whether @t{`#',foo} is valid syntax depends on whether
+@t{#'@var{thing}} is considered to @emph{be} a list.  Since @t{`#',foo}
+is a relatively common idiom, @sysname{} accepts it by default.
+
+@sysname{} provides a strict version of the Sharpsign Single Quote macro
+function under the name
+@t{eclector.reader:strict-sharpsign-single-quote} which does not accept
+unquote in the function name.
