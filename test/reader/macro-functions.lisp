@@ -169,29 +169,38 @@
       (eclector.reader::right-parenthesis stream #\)))))
 
 (test sharpsign-single-quote/smoke
-  "Smoke test for the SHARPSIGN-SINGLE-QUOTE reader macro function."
+  "Smoke test for the SHARPSIGN-SINGLE-QUOTE reader macro function.
+
+Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
+\"strict\" variant, that is STRICT-SHARPSIGN-SINGLE-QUOTE."
 
   (do-stream-input-cases ((length) parameter read-suppress
-                          expected &optional (expected-position length))
-    (flet ((do-it ()
-             (with-stream (stream)
-               (let ((*read-suppress* read-suppress)
-                     (eclector.reader::*backquote-depth* 1))
-                 (eclector.reader::sharpsign-single-quote
-                  stream #\' parameter)))))
-      (error-case expected
-        (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+                          expected-relaxed
+                          &optional (expected-strict expected-relaxed)
+                                    (expected-position length))
+    (labels ((do-call (function)
+               (with-stream (stream)
+                 (let ((*read-suppress* read-suppress)
+                       (eclector.reader::*backquote-depth* 1))
+                   (funcall function stream #\' parameter))))
+             (do-variant (function expected)
+               (error-case expected
+                 (error (do-call function))
+                 (t
+                  (multiple-value-bind (result position) (do-call function)
+                    (expect "result"   (equal expected          result))
+                    (expect "position" (eql   expected-position position)))))))
+      (do-variant 'eclector.reader::sharpsign-single-quote       expected-relaxed)
+      (do-variant 'eclector.reader:strict-sharpsign-single-quote expected-strict))
     '(;; Errors
       (""                nil nil eclector.reader:end-of-input-after-sharpsign-single-quote)
       (")"               nil nil eclector.reader:object-must-follow-sharpsign-single-quote)
       ("5"               nil nil (function 5))
       ("X"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored)
-      (",foo"            nil nil eclector.reader:unquote-in-invalid-context)
-      ("(lambda () ,1)"  nil nil eclector.reader:unquote-in-invalid-context)
+      (",foo"            nil nil (function (eclector.reader:unquote foo))
+                                 eclector.reader:unquote-in-invalid-context)
+      ("(lambda () ,1)"  nil nil (function (lambda () (eclector.reader:unquote 1)))
+                                 eclector.reader:unquote-in-invalid-context)
       ;; Valid
       ("X"               nil nil (function X))
       ("CL-USER::X"      nil nil (function cl-user::x))
@@ -199,11 +208,23 @@
       ("(lambda () `,1)" nil nil (function (lambda ()
                                    (eclector.reader:quasiquote
                                     (eclector.reader:unquote 1)))))
-      ("X "              nil nil (function X) 1)
+      ("X "              nil nil (function x) (function x) 1)
       ;; With *READ-SUPPRESS* bound to T
       ("X"               nil t   nil)
       ("5"               nil t   nil)
       ("X"               1   t   nil))))
+
+(test sharpsign-single-quote/switch-to-strict
+  "Test switching to the \"strict\" variant of the
+SHARPSIGN-SINGLE-QUOTE reader macro function."
+
+  (let ((eclector.reader:*readtable* (eclector.readtable:copy-readtable
+                                      eclector.reader:*readtable*)))
+    (eclector.readtable:set-dispatch-macro-character
+     eclector.reader:*readtable* #\# #\'
+     'eclector.reader:strict-sharpsign-single-quote)
+    (signals eclector.reader:unquote-in-invalid-context
+      (eclector.reader:read-from-string "`#',(foo)"))))
 
 (test sharpsign-left-parenthesis/smoke
   "Smoke test for the SHARPSIGN-LEFT-PARENTHESIS reader macro function."

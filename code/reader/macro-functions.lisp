@@ -310,11 +310,12 @@
 ;;;
 ;;; Reader macro for sharpsign single quote.
 
-(defun sharpsign-single-quote (stream char parameter)
+(defun %sharpsign-single-quote (stream char parameter allow-unquote)
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-single-quote parameter))
-  (let ((name (with-forbidden-quasiquotation ('sharpsign-single-quote :keep t)
+  (let ((name (with-forbidden-quasiquotation
+                  ('sharpsign-single-quote :keep (if allow-unquote :keep t))
                 (handler-case
                     (read stream t nil t)
                   ((and end-of-file (not incomplete-construct)) (condition)
@@ -335,6 +336,22 @@
            nil)
           (t
            (wrap-in-function *client* name)))))
+
+;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
+;;; that is `#',(foo) is read as
+;;;
+;;;   (quasiquote (function (unquote (foo))))
+;;;
+;;; .  It is not clear that this behavior is supported by
+;;; specification, but it is widely relied upon and thus the default
+;;; behavior.
+(defun sharpsign-single-quote (stream char parameter)
+  (%sharpsign-single-quote stream char parameter t))
+
+;;; This variation of SHARPSIGN-SINGLE-QUOTE does not allow unquote
+;;; within #'.
+(defun strict-sharpsign-single-quote (stream char parameter)
+  (%sharpsign-single-quote stream char parameter nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
