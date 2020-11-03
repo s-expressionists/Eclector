@@ -327,6 +327,11 @@ th {
       <li><a id="toc-Standard-reader-macros-1" href="#Standard-reader-macros">4.2.5 Standard reader macros</a></li>
     </ul></li>
   </ul></li>
+  <li><a id="toc-Interpretation-of-Unclear-Parts-of-the-Specifications-1" href="#Interpretation-of-Unclear-Parts-of-the-Specifications">5 Interpretation of Unclear Parts of the Specifications</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Interpretation-of-Sharpsign-C-and-Sharpsign-S-1" href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">5.1 Interpretation of Sharpsign C and Sharpsign S</a></li>
+    <li><a id="toc-Interpretation-of-Backquote-and-Sharpsign-Single-Quote-1" href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">5.2 Interpretation of Backquote and Sharpsign Single Quote</a></li>
+  </ul></li>
   <li><a id="toc-Concept-index-1" href="#Concept-index" rel="index">Concept index</a></li>
   <li><a id="toc-Function-and-macro-and-variable-and-type-index-1" href="#Function-and-macro-and-variable-and-type-index" rel="index">Function and macro and variable and type index</a></li>
 </ul>
@@ -350,9 +355,11 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#Side-effects" accesskey="4">Side effects</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Concept-index" rel="index" accesskey="5">Concept index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="5">Interpretation of Unclear Parts of the Specifications</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Function-and-macro-and-variable-and-type-index" rel="index" accesskey="6">Function and macro and variable and type index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Concept-index" rel="index" accesskey="6">Concept index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Function-and-macro-and-variable-and-type-index" rel="index" accesskey="7">Function and macro and variable and type index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
@@ -1450,7 +1457,7 @@ not <code>(DEFUN FOO (X Y) &quot;My documentation string&quot; (+ x y))</code>.
 </p><hr>
 <span id="Side-effects"></span><div class="header">
 <p>
-Next: <a href="#Concept-index" accesskey="n" rel="next">Concept index</a>, Previous: <a href="#Recovering-from-errors" accesskey="p" rel="prev">Recovering from errors</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="n" rel="next">Interpretation of Unclear Parts of the Specifications</a>, Previous: <a href="#Recovering-from-errors" accesskey="p" rel="prev">Recovering from errors</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Side-effects-1"></span><h2 class="chapter">4 Side effects</h2>
 
@@ -1664,11 +1671,123 @@ clients that install non-standard macro functions for the <tt>(</tt> and
 <tt>#(</tt> reader macros.
 
 </li></ul>
+<hr>
+<span id="Interpretation-of-Unclear-Parts-of-the-Specifications"></span><div class="header">
+<p>
+Next: <a href="#Concept-index" accesskey="n" rel="next">Concept index</a>, Previous: <a href="#Side-effects" accesskey="p" rel="prev">Side effects</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Interpretation-of-Unclear-Parts-of-the-Specifications-1"></span><h2 class="chapter">5 Interpretation of Unclear Parts of the Specifications</h2>
 
+<span id="index-specification-interpretation"></span>
+
+<p>This chapter describes Eclector&rsquo;s interpretation of passages in the
+Common Lisp specification that do not describe the behavior of a
+conforming reader completely unambiguously.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S" accesskey="1">Interpretation of Sharpsign C and Sharpsign S</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote" accesskey="2">Interpretation of Backquote and Sharpsign Single Quote</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<span id="Interpretation-of-Sharpsign-C-and-Sharpsign-S"></span><div class="header">
+<p>
+Next: <a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote" accesskey="n" rel="next">Interpretation of Backquote and Sharpsign Single Quote</a>, Up: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="u" rel="up">Interpretation of Unclear Parts of the Specifications</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Interpretation-of-Sharpsign-C-and-Sharpsign-S-1"></span><h3 class="section">5.1 Interpretation of Sharpsign C and Sharpsign S</h3>
+
+<span id="index-reader-macro"></span>
+<span id="index-complex-literal"></span>
+<span id="index-structure-literal"></span>
+
+<p>At first glance, Sharpsign C and Sharpsign S seem to follow the same
+syntactic structure: the dispatch macro character followed by the
+sub-character followed by a list of a specific structure.  However, the
+actual descriptions of the respective syntax is different.  For
+Sharpsign C, the specification states:
+</p>
+<blockquote>
+<p><tt>#C</tt> reads a following object, which must be a list of length two
+whose elements are both reals.
+</p></blockquote>
+
+<p>For Sharpsign S, on the other hand, the specification describes the
+syntax as:
+</p>
+<blockquote>
+<p><tt>#s(<var>name</var> <var>slot1</var> <var>value1</var> <var>slot2</var> <var>value2</var> ...)</tt> denotes a structure.
+</p></blockquote>
+
+<p>Note how the description for Sharpsign C relies on a recursive <tt>read</tt>
+invocation while the description for Sharpsign S gives a character-level
+pattern with meta-syntactic variables.  It is possible that this is an
+oversight and the syntax was intended to be uniform between the two
+reader macros.  Whatever the case may be, in order to provide conforming
+behavior, Eclector is forced to implement Sharpsign C with a recursive
+<tt>read</tt> invocation and Sharpsign S with a stricter enforcement of the
+specified syntax.
+</p>
+<p>More concretely, Eclector behaves as summarized in the following table:
+</p>
+<table>
+<thead><tr><th width="50%">Input</th><th width="50%">Behavior</th></tr></thead>
+<tr><td width="50%"><tt>#C(1 2)</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+<tr><td width="50%"><tt>#C (1 2)</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+<tr><td width="50%"><tt>#C#||#(1 2)</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+<tr><td width="50%"><tt>#C#.(list 1 (+ 2 3))</tt></td><td width="50%">Read as <tt>#C(1 5)</tt></td></tr>
+<tr><td width="50%"><tt>#C[1 2]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+<tr><td width="50%"><tt>#S(foo)</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
+<tr><td width="50%"><tt>#S (foo)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S#||#(foo)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S#.(list 'foo)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S[foo]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Rejected</td></tr>
+</table>
+
+<p>Eclector provides a strict version of the Sharpsign C macro function
+under the name <tt>eclector.reader:strict-sharpsign-c</tt> which behaves as
+follows:
+</p>
+<table>
+<thead><tr><th width="50%">Input</th><th width="50%">Behavior</th></tr></thead>
+<tr><td width="50%"><tt>#C(1 2)</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+<tr><td width="50%"><tt>#C (1 2)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#C#||#(1 2)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#C#.(list 1 (+ 2 3))</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#C[1 2]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+</table>
+
+<hr>
+<span id="Interpretation-of-Backquote-and-Sharpsign-Single-Quote"></span><div class="header">
+<p>
+Previous: <a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S" accesskey="p" rel="prev">Interpretation of Sharpsign C and Sharpsign S</a>, Up: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="u" rel="up">Interpretation of Unclear Parts of the Specifications</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Interpretation-of-Backquote-and-Sharpsign-Single-Quote-1"></span><h3 class="section">5.2 Interpretation of Backquote and Sharpsign Single Quote</h3>
+
+<span id="index-reader-macro-1"></span>
+<span id="index-quasiquote"></span>
+<span id="index-function-1"></span>
+
+<p>The Common Lisp specification is very specific about the contexts in
+which the quasiquotation mechanism can be used.  Explicit descriptions
+of the behavior of the quasiquotation mechanism are given for
+expressions which <em>are</em> lists or vectors and it is implied that
+unquote is not allowed in other expressions.  From this description, it
+is clear that <tt>`#S(foo :bar ,x)</tt> is not valid syntax, for example.
+However, whether <tt>`#',foo</tt> is valid syntax depends on whether
+<tt>#'<var>thing</var></tt> is considered to <em>be</em> a list.  Since <tt>`#',foo</tt>
+is a relatively common idiom, Eclector accepts it by default.
+</p>
+<p>Eclector provides a strict version of the Sharpsign Single Quote macro
+function under the name
+<tt>eclector.reader:strict-sharpsign-single-quote</tt> which does not accept
+unquote in the function name.
+</p>
 <hr>
 <span id="Concept-index"></span><div class="header">
 <p>
-Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" rel="next">Function and macro and variable and type index</a>, Previous: <a href="#Side-effects" accesskey="p" rel="prev">Side effects</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" rel="next">Function and macro and variable and type index</a>, Previous: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="p" rel="prev">Interpretation of Unclear Parts of the Specifications</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Concept-index-1"></span><h2 class="unnumbered">Concept index</h2>
 
@@ -1693,6 +1812,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><th id="Concept-index_cp_letter-C">C</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-client">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-client-1">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-complex-literal">complex literal</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree-1">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-CST-features">Package for CST features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree-2">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
@@ -1702,6 +1822,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-F">F</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-function">function</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-function-1">function</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">Interpretation of Backquote and Sharpsign Single Quote</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-P">P</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-parse-result">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
@@ -1713,9 +1834,12 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-Q">Q</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-quasiquotation">quasiquotation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-quasiquote">quasiquote</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">Interpretation of Backquote and Sharpsign Single Quote</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-quotation">quotation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-R">R</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-reader-macro">reader macro</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-reader-macro-1">reader macro</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">Interpretation of Backquote and Sharpsign Single Quote</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-readtable-features">Package for readtable features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable-1">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable-2">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-features">Readtable features</a></td></tr>
@@ -1725,6 +1849,8 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td></td><td valign="top"><a href="#index-side-effects">side effects</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Side-effects">Side effects</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source-tracking">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source-tracking-1">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-specification-interpretation">specification interpretation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Unclear-Parts-of-the-Specifications">Interpretation of Unclear Parts of the Specifications</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-structure-literal">structure literal</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 </table>
 <table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
