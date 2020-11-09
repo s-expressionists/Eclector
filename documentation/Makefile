@@ -34,7 +34,7 @@ $(NAME).info: $(INPUTS) $(FIGURES)
 $(NAME).pdf: $(INPUTS) $(FIGURES)
 	texi2pdf $(NAME).texi
 
-$(NAME).html: $(INPUTS) $(FIGURES) $(wildcard *.css)
+$(NAME).html: $(INPUTS) $(FIGURES) $(wildcard *.css) highlight-listings.lisp
 	makeinfo --html --no-split --no-headers \
 	         --css-include=style-syntax.css \
 	         --css-include=style-common.css \
