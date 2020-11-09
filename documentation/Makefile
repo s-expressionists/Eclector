@@ -44,7 +44,7 @@ $(NAME).info: $(INPUTS) $(PNGS) $(GENERATED_PNGS)
 $(NAME).pdf: $(INPUTS) $(PNGS) $(GENERATED_PDFS)
 	texi2pdf $(NAME).texi
 
-$(NAME).html: $(INPUTS) $(PNGS) $(GENERATED_PNGS) $(wildcard *.css)
+$(NAME).html: $(INPUTS) $(PNGS) $(GENERATED_PNGS) $(wildcard *.css) highlight-listings.lisp
 	makeinfo --html --no-split --no-headers \
                  --css-include=style-syntax.css \
                  --css-include=style-common.css \
