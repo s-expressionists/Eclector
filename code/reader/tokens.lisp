@@ -350,26 +350,25 @@
                              &body clauses)
                    (alexandria:with-unique-names (escapep-var)
                      `(multiple-value-bind (,char-var ,escapep-var) (next)
-                        (cond
-                          ,@(when return-symbol-if-eoi
-                              `(((null ,char-var)
-                                 (return-from interpret-token (symbol)))))
-                          ((and ,char-var
-                                (not ,escapep-var)
-                                (char-invalid-p ,char-var))
-                           (%recoverable-reader-error
-                            input-stream 'invalid-constituent-character
-                            :token (string ,char-var)
-                            :report 'replace-invalid-character)
-                           (setf (aref token index) #\_)
-                           (go symbol))
-                          (,escapep-var (go symbol))
-                          ,@(when colon-go-symbol
-                              `(((eql ,char-var #\:)
-                                 (setf position-package-marker-1 index)
-                                 (go symbol))))
-                          ,@clauses
-                          (t (go symbol)))))))
+                        (cond ,@(when return-symbol-if-eoi
+                                  `(((null ,char-var)
+                                     (return-from interpret-token (symbol)))))
+                              ((and ,char-var
+                                    (not ,escapep-var)
+                                    (char-invalid-p ,char-var))
+                               (%recoverable-reader-error
+                                input-stream 'invalid-constituent-character
+                                :token (string ,char-var)
+                                :report 'replace-invalid-character)
+                               (setf (aref token index) #\_)
+                               (go symbol))
+                              (,escapep-var (go symbol))
+                              ,@(when colon-go-symbol
+                                  `(((eql ,char-var #\:)
+                                     (setf position-package-marker-1 index)
+                                     (go symbol))))
+                              ,@clauses
+                              (t (go symbol)))))))
         (tagbody
          start
            ;; If we have a token of length 0, it must be a symbol in

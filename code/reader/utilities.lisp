@@ -4,6 +4,9 @@
 
 (defmacro update-escape-ranges
     (index escape-range-place remaining-escape-ranges-place)
+  ;; Set ESCAPE-RANGE-PLACE to the escape range which contains INDEX
+  ;; or NIL. If necessary, pop ranges off of
+  ;; REMAINING-ESCAPE-RANGES-PLACE that are completely before INDEX.
   (alexandria:once-only (index)
     `(loop while (and (not (null ,escape-range-place))
                       (>= ,index (cdr ,escape-range-place)))
