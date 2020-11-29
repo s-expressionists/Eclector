@@ -61,7 +61,7 @@
       ("\\a||"                          t   nil |a|)
       ("\\a||b"                         t   nil |aB|))))
 
-(test interpet-symbol-token/smoke
+(test interpret-symbol-token/smoke
   "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
 
   (mapc (lambda (arguments-package-expected)
