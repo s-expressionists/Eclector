@@ -516,14 +516,18 @@
                                position-package-marker-1
                                position-package-marker-2)
   (let ((length (length token)))
-    (cond ;; This signals an error for ":" but accepts ":||". "::" is
+    (cond ;; This signals an error for ":" and "::" but accepts ":||". "::" is
           ;; handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
-          ((and (= length 1)
-                (not escape-ranges)
-                (eql position-package-marker-1 0))
-           (%reader-error
+          ((and (not escape-ranges)
+                (eql position-package-marker-1 0)
+                (or (= length 1)
+                    (and (= length 2)
+                         (eql position-package-marker-2 1))))
+           (%recoverable-reader-error
             input-stream 'symbol-name-must-not-be-only-package-markers
-            :token token))
+            :token token :report 'treat-as-escaped)
+           (setf position-package-marker-1 nil
+                 position-package-marker-2 nil))
           ;; When there are two package markers, they must be adjacent and not
           ;; at the beginning of the token.
           ((and position-package-marker-2

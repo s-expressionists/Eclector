@@ -56,6 +56,8 @@
 
   (mapc #'do-recover-test-case
         `(;; Recover from invalid syntax in symbols.
+          (":"                                (eclector.reader:symbol-name-must-not-be-only-package-markers) |:|)
+          ("::"                               (eclector.reader:symbol-name-must-not-be-only-package-markers) |::|)
           (,(format nil ":foo~C" #\Backspace) (eclector.reader:invalid-constituent-character)                :foo_)
           (":fo\\"                            (eclector.reader:unterminated-single-escape-in-symbol)         :fo)
           (":fo|o"                            (eclector.reader:unterminated-multiple-escape-in-symbol)       :fo|o|)

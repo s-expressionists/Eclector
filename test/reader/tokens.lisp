@@ -133,7 +133,7 @@
           ("CL:NIL"                         ()        2   nil nil)
           ("ECLECTOR.READER.TEST:INTERNAL"  ()        20  nil nil)
 
-          ("::"                             ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first)
+          ("::"                             ()        0   1   nil eclector.reader:symbol-name-must-not-be-only-package-markers)
           ("::"                             ((2 . 2)) 0   1   nil eclector.reader:two-package-markers-must-not-be-first)
           ("::A"                            ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first)
           ("CL::NIL"                        ()        2   3   nil)
@@ -298,7 +298,7 @@
             (":"          ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers)
             (":"          ((1 . 1))         10 :upcase   :||)
             (":"          ((0 . 1))         10 :upcase   |:|)
-            ("::"         ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first)
+            ("::"         ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers)
             ("a:"         ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
             ("a:"         ((1 . 2))         10 :upcase   |A:|)
             ("a::"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
