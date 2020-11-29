@@ -61,7 +61,7 @@
       ("|"                                       nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
       ("cl-user::|"                              nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
       ("||"                                      t   nil ||)
-      #+broken ("cl-user::||"                             t   nil cl-user::||)
+      ("cl-user::||"                             t   nil cl-user::||)
       ("||a"                                     t   nil |A|)
       ("cl-user::||a"                            t   nil cl-user::|A|)
       ("|a|"                                     t   nil |a|)
@@ -127,12 +127,14 @@
 
           (":"                              ()        nil nil nil)
           (":"                              ()        0   nil nil eclector.reader:symbol-name-must-not-be-only-package-markers)
+          (":"                              ((1 . 1)) 0   nil nil)
           (":a"                             ()        0   nil nil)
           (":A"                             ()        0   nil nil)
           ("CL:NIL"                         ()        2   nil nil)
           ("ECLECTOR.READER.TEST:INTERNAL"  ()        20  nil nil)
 
           ("::"                             ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first)
+          ("::"                             ((2 . 2)) 0   1   nil eclector.reader:two-package-markers-must-not-be-first)
           ("::A"                            ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first)
           ("CL::NIL"                        ()        2   3   nil)
           ("ECLECTOR.READER.TEST::INTERNAL" ()        20  21  nil))))

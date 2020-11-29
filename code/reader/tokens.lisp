@@ -543,8 +543,8 @@
           ((let ((package-markers-end (or position-package-marker-2
                                           position-package-marker-1)))
              (and package-markers-end
-                  (> length 1)
-                  (= package-markers-end (1- length))))
+                  (= package-markers-end (1- length))
+                  (not (find length escape-ranges :test #'= :key #'car))))
            (%recoverable-reader-error
             input-stream 'symbol-name-must-not-end-with-package-marker
             :token token :report 'treat-as-escaped)
