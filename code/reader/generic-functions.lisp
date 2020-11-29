@@ -9,13 +9,13 @@
 
 (defgeneric read-maybe-nothing (client input-stream eof-error-p eof-value))
 
-;;; Reading tokens
-
-(defgeneric read-token (client input-stream eof-error-p eof-value))
-
 (defgeneric note-skipped-input (client input-stream reason)
   (:method ((client t) (input-stream t) (reason t))
     (declare (ignore client input-stream reason))))
+
+;;; Reading tokens
+
+(defgeneric read-token (client input-stream eof-error-p eof-value))
 
 (defgeneric interpret-token (client input-stream token escape-ranges))
 

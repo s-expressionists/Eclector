@@ -70,9 +70,9 @@
    #:call-as-top-level-read
    #:read-common
    #:read-maybe-nothing
+   #:note-skipped-input
 
    #:read-token
-   #:note-skipped-input
    #:interpret-token
    #:interpret-symbol-token
    #:interpret-symbol

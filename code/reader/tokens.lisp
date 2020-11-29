@@ -185,68 +185,6 @@
 
 ;;; Token interpretation
 
-(defmethod interpret-symbol-token (client input-stream
-                                   token
-                                   position-package-marker-1
-                                   position-package-marker-2)
-  (let ((package-markers-end (or position-package-marker-2
-                                 position-package-marker-1))
-        (length (length token)))
-    (when (and package-markers-end
-               (> length 1)
-               (= package-markers-end (1- length)))
-      (%recoverable-reader-error
-       input-stream 'symbol-name-must-not-end-with-package-marker
-       :token token :report 'treat-as-escaped)
-      (setf position-package-marker-1 nil
-            position-package-marker-2 nil))
-    (flet ((interpret (package symbol internp)
-             (interpret-symbol client input-stream package symbol internp)))
-      (cond ((null position-package-marker-1)
-             (interpret :current token t))
-            ((zerop position-package-marker-1)
-             ;; We use PACKAGE-MARKERS-END so we can handle ::foo
-             ;; which can happen when recovering from errors.
-             (interpret :keyword
-                        (subseq token (1+ package-markers-end))
-                        t))
-            ((not (null position-package-marker-2))
-             (interpret (subseq token 0 position-package-marker-1)
-                        (subseq token (1+ position-package-marker-2))
-                        t))
-            (t
-             (interpret (subseq token 0 position-package-marker-1)
-                        (subseq token (1+ position-package-marker-1))
-                        nil))))))
-
-(defmethod interpret-symbol (client input-stream
-                             (package-indicator null) symbol-name internp)
-  (make-symbol symbol-name))
-
-(defmethod interpret-symbol (client input-stream
-                             package-indicator symbol-name internp)
-  (let ((package (case package-indicator
-                   (:current *package*)
-                   (:keyword (find-package "KEYWORD"))
-                   (t        (or (find-package package-indicator)
-                                 (%reader-error
-                                  input-stream 'package-does-not-exist
-                                  :package-name package-indicator))))))
-    (if internp
-        (intern symbol-name package)
-        (multiple-value-bind (symbol status)
-            (find-symbol symbol-name package)
-          (cond ((null status)
-                 (%reader-error input-stream 'symbol-does-not-exist
-                                :package package
-                                :symbol-name symbol-name))
-                ((eq status :internal)
-                 (%reader-error input-stream 'symbol-is-not-external
-                                :package package
-                                :symbol-name symbol-name))
-                (t
-                 symbol))))))
-
 (declaim (inline reader-float-format))
 (defun reader-float-format (&optional exponent-marker)
   (ecase exponent-marker
@@ -344,9 +282,8 @@
                                        1))))
                  (return-from interpret-token
                    (* sign (coerce magnitude type)))))))
-      (macrolet ((next-cond ((char-var &optional
-                                       return-symbol-if-eoi
-                                       (colon-go-symbol t))
+      (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
+                                                 (colon-go-symbol t))
                              &body clauses)
                    (alexandria:with-unique-names (escapep-var)
                      `(multiple-value-bind (,char-var ,escapep-var) (next)
@@ -386,7 +323,7 @@
               (go integer))
              ((eql char #\.)
               (go dot)))
-         sign             ; We have a sign, i.e., #\+ or #\-.
+         sign ; We have a sign, i.e., #\+ or #\-.
            ;; If a sign is all we have, it is a symbol.
            (next-cond (char t)
              ((funcall decimal-mantissa char)
@@ -426,7 +363,7 @@
               (return-from interpret-token (symbol)))
              ((eql char #\.)
               (go maybe-too-many-dots)))
-         sign-dot                       ; sign decimal-point
+         sign-dot ; sign decimal-point
            ;; If all we have is a sign followed by a dot, it must be a
            ;; symbol in the current package.
            (next-cond (char t)
@@ -434,7 +371,7 @@
               (setf fraction-denominator
                     (* fraction-denominator 10))
               (go float-no-exponent)))
-         decimal-integer                ; [sign] decimal-digit+
+         decimal-integer ; [sign] decimal-digit+
            (next-cond (char)
              ((not char)
               (return-from interpret-token
@@ -453,7 +390,7 @@
              ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
               (go float-exponent-start)))
-         decimal-integer-final   ; [sign] decimal-digit+ decimal-point
+         decimal-integer-final ; [sign] decimal-digit+ decimal-point
            (next-cond (char)
              ((not char)
               (return-from interpret-token
@@ -465,8 +402,7 @@
              ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
               (go float-exponent-start)))
-         integer                 ; [sign] digit+
-           ;; At least one digit is not decimal.
+         integer ; [sign] digit+ (At least one digit is not decimal)
            (next-cond (char)
              ((not char)
               (return-from interpret-token
@@ -475,11 +411,11 @@
               (go integer))
              ((eql char #\/)
               (go ratio-start)))
-         ratio-start                    ; [sign] digit+ /
+         ratio-start ; [sign] digit+ /
            (next-cond (char t)
              ((funcall denominator char)
               (go ratio)))
-         ratio                          ; [sign] digit+ / digit+
+         ratio ; [sign] digit+ / digit+
            (next-cond (char)
              ((not char)
               (return-from interpret-token
@@ -560,3 +496,67 @@
                       input-stream 'symbol-can-have-at-most-two-package-markers
                       :token token :report 'treat-as-escaped)))
               (go symbol))))))))
+
+;;; Symbol token interpretation
+
+(defmethod interpret-symbol-token (client input-stream
+                                   token
+                                   position-package-marker-1
+                                   position-package-marker-2)
+  (let ((package-markers-end (or position-package-marker-2
+                                 position-package-marker-1))
+        (length (length token)))
+    (when (and package-markers-end
+               (> length 1)
+               (= package-markers-end (1- length)))
+      (%recoverable-reader-error
+       input-stream 'symbol-name-must-not-end-with-package-marker
+       :token token :report 'treat-as-escaped)
+      (setf position-package-marker-1 nil
+            position-package-marker-2 nil))
+    (flet ((interpret (package symbol internp)
+             (interpret-symbol client input-stream package symbol internp)))
+      (cond ((null position-package-marker-1)
+             (interpret :current token t))
+            ((zerop position-package-marker-1)
+             ;; We use PACKAGE-MARKERS-END so we can handle ::foo
+             ;; which can happen when recovering from errors.
+             (interpret :keyword
+                        (subseq token (1+ package-markers-end))
+                        t))
+            ((not (null position-package-marker-2))
+             (interpret (subseq token 0 position-package-marker-1)
+                        (subseq token (1+ position-package-marker-2))
+                        t))
+            (t
+             (interpret (subseq token 0 position-package-marker-1)
+                        (subseq token (1+ position-package-marker-1))
+                        nil))))))
+
+(defmethod interpret-symbol (client input-stream
+                             (package-indicator null) symbol-name internp)
+  (make-symbol symbol-name))
+
+(defmethod interpret-symbol (client input-stream
+                             package-indicator symbol-name internp)
+  (let ((package (case package-indicator
+                   (:current *package*)
+                   (:keyword (find-package "KEYWORD"))
+                   (t        (or (find-package package-indicator)
+                                 (%reader-error
+                                  input-stream 'package-does-not-exist
+                                  :package-name package-indicator))))))
+    (if internp
+        (intern symbol-name package)
+        (multiple-value-bind (symbol status)
+            (find-symbol symbol-name package)
+          (cond ((null status)
+                 (%reader-error input-stream 'symbol-does-not-exist
+                                :package package
+                                :symbol-name symbol-name))
+                ((eq status :internal)
+                 (%reader-error input-stream 'symbol-is-not-external
+                                :package package
+                                :symbol-name symbol-name))
+                (t
+                 symbol))))))
