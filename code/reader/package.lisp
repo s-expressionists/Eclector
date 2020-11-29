@@ -74,6 +74,7 @@
 
    #:read-token
    #:interpret-token
+   #:check-symbol-token
    #:interpret-symbol-token
    #:interpret-symbol
 

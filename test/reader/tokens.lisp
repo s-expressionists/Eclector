@@ -99,6 +99,44 @@
       ("\\a||b"                                  t   nil |aB|)
       ("cl-user::\\a||b"                         t   nil cl-user::|aB|))))
 
+(test check-symbol-token/smoke
+  "Smoke test for the default method on CHECK-SYMBOL-TOKEN."
+
+  (mapc (lambda (arguments-package-expected)
+          (destructuring-bind (token escape-ranges marker1 marker2 package
+                               &optional signals)
+              arguments-package-expected
+            (let ((*package* (or package *package*)))
+              (flet ((do-it ()
+                       (with-input-from-string (stream "")
+                         (eclector.reader:check-symbol-token
+                          nil stream token escape-ranges marker1 marker2))))
+                (error-case signals
+                  (error (do-it))
+                  (t
+                   (multiple-value-bind (new-token new-marker1 new-marker2)
+                       (do-it)
+                     (is (equal token new-token))
+                     (is (eql   marker1 new-marker1))
+                     (is (eql   marker2 new-marker2)))))))))
+        '((""                               ()        nil nil nil)
+          ("a"                              ()        nil nil nil)
+          ("A"                              ()        nil nil nil)
+          ("A:"                             ()        1   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+          ("A::"                            ()        2   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
+
+          (":"                              ()        nil nil nil)
+          (":"                              ()        0   nil nil eclector.reader:symbol-name-must-not-be-only-package-markers)
+          (":a"                             ()        0   nil nil)
+          (":A"                             ()        0   nil nil)
+          ("CL:NIL"                         ()        2   nil nil)
+          ("ECLECTOR.READER.TEST:INTERNAL"  ()        20  nil nil)
+
+          ("::"                             ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first)
+          ("::A"                            ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first)
+          ("CL::NIL"                        ()        2   3   nil)
+          ("ECLECTOR.READER.TEST::INTERNAL" ()        20  21  nil))))
+
 (test interpret-symbol-token/smoke
   "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
 
@@ -117,8 +155,6 @@
         '((""                               nil nil nil ||)
           ("a"                              nil nil nil |a|)
           ("A"                              nil nil nil a)
-          ("A:"                             1   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
-          ("A::"                            2   nil nil eclector.reader:symbol-name-must-not-end-with-package-marker)
 
           (":"                              nil nil nil |:|)
           (":"                              0   nil nil :||)
@@ -130,7 +166,6 @@
           ("CL:NIL"                         2   nil nil nil)
           ("CL:ABS"                         2   nil nil abs)
 
-          ("::"                             0   1   nil eclector.reader:symbol-name-must-not-end-with-package-marker)
           ("NP::NIX"                        2   3   nil eclector.reader:package-does-not-exist)
           ("ECLECTOR.READER.TEST::INTERNAL" 20  21  nil internal)
           ("CL::NIL"                        2   3   nil nil)

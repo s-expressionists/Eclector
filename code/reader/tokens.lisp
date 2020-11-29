@@ -252,18 +252,15 @@
                          (update-escape-ranges
                           index escape-range remaining-escape-ranges))))
            (symbol ()
-             ;; This signals an error for ":" but accepts ":||". "::"
-             ;; is handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
-             (when (and (not escape-ranges)
-                        (and (eql position-package-marker-1 0)
-                             (= index 1)))
-               (%reader-error
-                input-stream 'symbol-name-must-not-be-only-package-markers
-                :token token))
-             (values (interpret-symbol-token
-                      client input-stream token
-                      position-package-marker-1
-                      position-package-marker-2)))
+             (multiple-value-bind (token
+                                   position-package-marker-1
+                                   position-package-marker-2)
+                 (check-symbol-token client input-stream token escape-ranges
+                                     position-package-marker-1
+                                     position-package-marker-2)
+               (values (interpret-symbol-token client input-stream token
+                                               position-package-marker-1
+                                               position-package-marker-2))))
            (return-float (&optional exponentp)
              (multiple-value-bind (type default-format)
                  (reader-float-format exponent-marker)
@@ -480,17 +477,7 @@
               (cond ((null position-package-marker-1)
                      (setf position-package-marker-1 index))
                     ((null position-package-marker-2)
-                     (cond ((/= position-package-marker-1 (1- index))
-                            (%recoverable-reader-error
-                             input-stream 'two-package-markers-must-be-adjacent
-                             :token token :report 'treat-as-escaped))
-                           ((= position-package-marker-1 0)
-                            (%recoverable-reader-error
-                             input-stream 'two-package-markers-must-not-be-first
-                             :token token :report 'treat-as-escaped)
-                            (setf position-package-marker-2 index))
-                           (t
-                            (setf position-package-marker-2 index))))
+                     (setf position-package-marker-2 index))
                     (t
                      (%recoverable-reader-error
                       input-stream 'symbol-can-have-at-most-two-package-markers
@@ -504,16 +491,7 @@
                                    position-package-marker-1
                                    position-package-marker-2)
   (let ((package-markers-end (or position-package-marker-2
-                                 position-package-marker-1))
-        (length (length token)))
-    (when (and package-markers-end
-               (> length 1)
-               (= package-markers-end (1- length)))
-      (%recoverable-reader-error
-       input-stream 'symbol-name-must-not-end-with-package-marker
-       :token token :report 'treat-as-escaped)
-      (setf position-package-marker-1 nil
-            position-package-marker-2 nil))
+                                 position-package-marker-1)))
     (flet ((interpret (package symbol internp)
              (interpret-symbol client input-stream package symbol internp)))
       (cond ((null position-package-marker-1)
@@ -532,6 +510,47 @@
              (interpret (subseq token 0 position-package-marker-1)
                         (subseq token (1+ position-package-marker-1))
                         nil))))))
+
+(defmethod check-symbol-token (client input-stream
+                               token escape-ranges
+                               position-package-marker-1
+                               position-package-marker-2)
+  (let ((length (length token)))
+    (cond ;; This signals an error for ":" but accepts ":||". "::" is
+          ;; handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
+          ((and (= length 1)
+                (not escape-ranges)
+                (eql position-package-marker-1 0))
+           (%reader-error
+            input-stream 'symbol-name-must-not-be-only-package-markers
+            :token token))
+          ;; When there are two package markers, they must be adjacent and not
+          ;; at the beginning of the token.
+          ((and position-package-marker-2
+                (/= position-package-marker-1
+                    (1- position-package-marker-2)))
+           (%recoverable-reader-error
+            input-stream 'two-package-markers-must-be-adjacent
+            :token token :report 'treat-as-escaped)
+           (setf position-package-marker-2 nil))
+          ((and position-package-marker-2
+                (= position-package-marker-1 0))
+           (%recoverable-reader-error
+            input-stream 'two-package-markers-must-not-be-first
+            :token token :report 'treat-as-escaped))
+          ;; The symbol token must not end with a package marker (or
+          ;; two package markers).
+          ((let ((package-markers-end (or position-package-marker-2
+                                          position-package-marker-1)))
+             (and package-markers-end
+                  (> length 1)
+                  (= package-markers-end (1- length))))
+           (%recoverable-reader-error
+            input-stream 'symbol-name-must-not-end-with-package-marker
+            :token token :report 'treat-as-escaped)
+           (setf position-package-marker-1 nil
+                 position-package-marker-2 nil))))
+  (values token position-package-marker-1 position-package-marker-2))
 
 (defmethod interpret-symbol (client input-stream
                              (package-indicator null) symbol-name internp)

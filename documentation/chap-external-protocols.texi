@@ -321,6 +321,47 @@ to convert the characters in @var{token} according to the
 constructed.
 @end deffn
 
+@defgena {check-symbol-token,eclector.reader} client@
+  input-stream token escape-ranges@
+  position-package-marker-1 position-package-marker-2
+
+This generic function is called by the default method on
+@t{interpret-token} when the syntax of the token corresponds to that of
+a symbol.  This function checks the syntactic validity of the symbol
+token and signals an error in case of a syntax error.  If there are no
+syntax errors (or error recovery has been performed, @pxref{Recovering
+from errors}), this function returns three values:
+@enumerate
+@item
+@var{token} or a value derived from @var{token} by error recovery
+operations.
+
+@item
+@var{position-package-marker-1} or a value derived from
+@var{position-package-marker-1} by error recovery operations.
+
+@item
+@var{position-package-marker-2} or a value derived from
+@var{position-package-marker-2} by error recovery operations.
+@end enumerate
+
+The parameter @var{input-stream} is the input stream from which the
+characters were read.  The parameter @var{token} is a string that
+contains all the characters of the token.  The parameter
+@var{escape-ranges} indicates ranges within @var{token} that were
+preceded by a character with single-escape syntax or delimited by
+characters with multiple-escape syntax.  The parameter
+@var{position-package-marker-1} contains the index into @var{token} of
+the first package marker, or @t{nil} if the token contains no package
+markers.  The parameter @var{position-package-marker-2} contains the
+index into @var{token} of the second package marker, or @t{nil} if the
+token contains no package markers or only a single package marker.
+
+The default method on this generic function checks the positions of the
+package markers taking into account escape ranges.  The method signals
+errors and allows error recovery as described above.
+@end deffn
+
 @defgena {interpret-symbol-token,eclector.reader} client@
   input-stream token position-package-marker-1@
   position-package-marker-2
