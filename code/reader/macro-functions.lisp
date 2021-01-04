@@ -1034,7 +1034,8 @@
   ;; or the end of input. The variable ELEMENT keeps track of the
   ;; currently expected ELEMENT which can be :TYPE, :SLOT-NAME, or
   ;; :SLOT-VALUE.
-  (let ((old-quasiquote-forbidden *quasiquote-forbidden*)
+  (let ((client *client*)
+        (old-quasiquote-forbidden *quasiquote-forbidden*)
         (listp nil)
         (element :type)
         (type)
@@ -1044,38 +1045,36 @@
                (declare (ignore kind))
                (case element
                  (:type
-                  (typecase value
-                    ((eql #1=#.(gensym "END-OF-LIST"))
-                     (%recoverable-reader-error
-                      stream 'no-structure-type-name-found
-                      :position-offset -1 :report 'inject-nil))
-                    ((eql #2=#.(gensym "END-OF-INPUT"))
-                     (%recoverable-reader-error
-                      stream 'end-of-input-before-structure-type-name
-                      :report 'inject-nil))
-                    (symbol
-                     (setf type value))
-                    (t
-                     (%recoverable-reader-error
-                      stream 'structure-type-name-is-not-a-symbol
-                      :position-offset -1 :datum value :report 'inject-nil)))
+                  (cond ((eq value '#1=#.(gensym "END-OF-LIST"))
+                         (%recoverable-reader-error
+                          stream 'no-structure-type-name-found
+                          :position-offset -1 :report 'inject-nil))
+                        ((eq value '#2=#.(gensym "END-OF-INPUT"))
+                         (%recoverable-reader-error
+                          stream 'end-of-input-before-structure-type-name
+                          :report 'inject-nil))
+                        ((valid-symbol-p client value :structure-type-name)
+                         (setf type value))
+                        (t
+                         (%recoverable-reader-error
+                          stream 'structure-type-name-is-not-a-symbol
+                          :position-offset -1 :datum value :report 'inject-nil)))
                   (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
                         *unquote-forbidden* 'sharpsign-s-slot-name
                         element :name))
                  (:name
-                  (typecase value
-                    ((eql #1#))
-                    ((eql #2#)
-                     (%recoverable-reader-error
-                      stream 'end-of-input-before-slot-name
-                      :report 'use-partial-initargs))
-                    (alexandria:string-designator
-                     (setf slot-name value))
-                    (t
-                     (%recoverable-reader-error
-                      stream 'slot-name-is-not-a-string-designator
-                      :position-offset -1 :datum value :report 'skip-slot)
-                     (setf slot-name value)))
+                  (cond ((eq value '#1#))
+                        ((eq value '#2#)
+                         (%recoverable-reader-error
+                          stream 'end-of-input-before-slot-name
+                          :report 'use-partial-initargs))
+                        ((valid-symbol-p client value :structure-slot-name)
+                         (setf slot-name value))
+                        (t
+                         (%recoverable-reader-error
+                          stream 'slot-name-is-not-a-string-designator
+                          :position-offset -1 :datum value :report 'skip-slot)
+                         (setf slot-name value)))
                   (setf *quasiquote-forbidden* old-quasiquote-forbidden
                         *unquote-forbidden* 'sharpsign-s-slot-value
                         element :object))
@@ -1121,7 +1120,7 @@
           ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
           (with-forbidden-quasiquotation ('sharpsign-s)
             (let ((*list-reader* #'read-constructor))
-              (%read-maybe-nothing *client* stream t nil)))
+              (%read-maybe-nothing client stream t nil)))
         ((and end-of-file (not incomplete-construct)) (condition)
           (%recoverable-reader-error
            stream 'end-of-input-after-sharpsign-s
@@ -1139,7 +1138,7 @@
              stream 'non-list-following-sharpsign-s
              :position-offset -1 :report 'inject-nil))))
       (if (not (null type))
-          (make-structure-instance *client* type (nreverse initargs))
+          (make-structure-instance client type (nreverse initargs))
           nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
