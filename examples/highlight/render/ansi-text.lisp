@@ -21,6 +21,8 @@
    (%background :initarg :background
                 :type    basic-color
                 :reader  background)
+   (%italicp    :initarg :italicp
+                :reader  italicp)
    (%boldp      :initarg :boldp
                 :reader  boldp)
    (%underlinep :initarg :underlinep
@@ -28,28 +30,34 @@
 
 (defmethod print-object ((object style) stream)
   (print-unreadable-object (object stream :identity t :type t)
-    (format stream "~A ~A~:[~; underline~]~:[~; bold~]"
+    (format stream "~A ~A~:[~; italic~]~:[~; bold~]~:[~; underline~]"
             (foreground object) (background object)
-            (boldp object) (underlinep object))))
+            (italicp object) (boldp object) (underlinep object))))
 
-(defun make-style (foreground background boldp underlinep)
+(defun make-style (foreground background italicp boldp underlinep)
   (make-instance 'style :foreground foreground
                         :background background
+                        :italicp    italicp
                         :boldp      boldp
                         :underlinep underlinep))
 
 (defun change-style (current &key foreground
                                   background
+                                  (italicp    nil italicp-suppliedp)
                                   (boldp      nil boldp-suppliedp)
                                   (underlinep nil underlinep-suppliedp))
   (let* ((current-foreground (foreground current))
          (current-background (background current))
+         (current-italic     (italicp current))
          (current-bold       (boldp current))
          (current-underline  (underlinep current))
          (new-foreground     (or foreground
                                  current-foreground))
          (new-background     (or background
                                  current-background))
+         (new-italic         (if italicp-suppliedp
+                                 italicp
+                                 current-italic))
          (new-bold           (if boldp-suppliedp
                                  boldp
                                  current-bold))
@@ -58,10 +66,11 @@
                                  current-underline)))
     (if (and (eql new-foreground current-foreground)
              (eql new-background current-background)
+             (eql new-italic current-italic)
              (eql new-bold current-bold)
              (eql new-underline current-underline))
         current
-        (make-style new-foreground new-background new-bold new-underline))))
+        (make-style new-foreground new-background new-italic new-bold new-underline))))
 
 ;;; Default theme
 ;;;
@@ -97,7 +106,7 @@
 
     (feature-expression         . (:background :yellow))
 
-    (function                   . (:background :blue))
+    (function                   . (:italicp t))
     (quote                      . (:background :gray))
     (quasiquote                 . (:background :black))
     (unquote                    . (:background :default))
@@ -133,7 +142,7 @@
                  :initform *default-theme*)
    ;; State
    (%style-stack :accessor style-stack
-                 :initform (list (make-style :default :default nil nil))
+                 :initform (list (make-style :default :default nil nil nil))
                  :documentation
                  "A stack of (complete) `style' instances."))
   (:default-initargs
@@ -152,7 +161,7 @@
 
 (defmethod apply-style ((client ansi-text-client))
   (let ((style (style client)))
-    (format (stream client) "~C[~D;~D;~:[22~;1~];~:[24~;4~]m"
+    (format (stream client) "~C[~D;~D;~:[23~;3~];~:[22~;1~];~:[24~;4~]m"
             #\Escape
             (ecase (background style)
               (:black    40)
@@ -180,6 +189,7 @@
               (:bright-green  92)
               (:bright-yellow 93)
               (:bright-white  97))
+            (italicp style)
             (boldp style)
             (underlinep style))))
 
