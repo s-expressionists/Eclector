@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.base)
 
-;;;; Utilities
+;;; Utilities
 
 (defun describe-character-english (stream character &optional colon at-sign)
   (declare (ignore colon at-sign))
@@ -8,7 +8,7 @@
           (and (not (char= character #\Space)) (graphic-char-p character))
           (char-name character) character))
 
-;;;; Condition reports
+;;; Condition reports
 
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var)

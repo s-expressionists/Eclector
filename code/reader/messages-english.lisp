@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.reader)
 
-;;;; Recovery strategy descriptions
+;;; Recovery strategy descriptions
 
 (macrolet ((define-description (strategy description)
              `(defmethod recovery-description ((strategy (eql ',strategy))
@@ -48,7 +48,7 @@
 
   (define-description ignore-label                 "Read the following object as is if there was no label."))
 
-;;;; Contexts and condition reporters
+;;; Contexts and condition reporters
 
 (macrolet
     ((define-reporter (((condition-var condition-specializer) stream-var
