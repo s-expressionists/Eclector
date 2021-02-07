@@ -19,6 +19,11 @@
 
 (defgeneric interpret-token (client input-stream token escape-ranges))
 
+(defgeneric check-symbol-token (client input-stream
+                                token escape-ranges
+                                position-package-marker-1
+                                position-package-marker-2))
+
 (defgeneric interpret-symbol-token (client input-stream
                                     token
                                     position-package-marker-1
