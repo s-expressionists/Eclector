@@ -112,16 +112,16 @@
     (unquote                    . (:background :default))
 
     ;; Matching
-    ((open  1)                  . (:foreground :blue))
-    ((open  2)                  . (:foreground :magenta))
-    ((open  3)                  . (:foreground :green))
-    ((open  4)                  . (:foreground :yellow))
-    ((open  5)                  . (:foreground :cyan))
-    ((close 1)                  . (:foreground :blue))
-    ((close 2)                  . (:foreground :magenta))
-    ((close 3)                  . (:foreground :green))
-    ((close 4)                  . (:foreground :yellow))
-    ((close 5)                  . (:foreground :cyan))
+    ((open  1)                  . (:foreground :blue :underlinep t))
+    ((open  2)                  . (:foreground :magenta :underlinep t))
+    ((open  3)                  . (:foreground :green :underlinep t))
+    ((open  4)                  . (:foreground :yellow :underlinep t))
+    ((open  5)                  . (:foreground :cyan :underlinep t))
+    ((close 1)                  . (:foreground :blue :underlinep t))
+    ((close 2)                  . (:foreground :magenta :underlinep t))
+    ((close 3)                  . (:foreground :green :underlinep t))
+    ((close 4)                  . (:foreground :yellow :underlinep t))
+    ((close 5)                  . (:foreground :cyan :underlinep t))
 
     ;; Error
     (error                      . (:foreground :red :underlinep t))))
