@@ -242,6 +242,7 @@
             ("a"          ((0 . 1))         10 :upcase   |a|)
             ("-"          ()                10 :upcase   -)
             ("+"          ()                10 :upcase   +)
+            ("+1"         ((2 . 2))         10 :upcase   |+1|)
 
             ("-a"         ((1 . 2))         10 :upcase   |-a|)
             ("-."         ()                10 :upcase   -.)
@@ -256,6 +257,7 @@
             ("-.:"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
             ("-.a"        ()                10 :upcase   -.a)
 
+            ("1"          ((1 . 1))         10 :upcase   |1|)
             ("1a"         ()                10 :upcase   1a)
             ("1a"         ((1 . 2))         10 :upcase   |1a|)
             ("1:"         ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
@@ -264,6 +266,7 @@
             ("1.a"        ()                10 :upcase   1.a)
 
             ("1/"         ()                10 :upcase   1/)
+            ("1/1"        ((3 . 3))         10 :upcase   |1/1|)
             ("1/a"        ((2 . 3))         10 :upcase   |1/a|)
             ("1/:"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
             ("1/a"        ()                10 :upcase   1/a)
@@ -272,11 +275,13 @@
             ("1/2:"       ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
             ("1/2a"       ()                10 :upcase   1/2a)
 
+            (".1"         ((2 . 2))         10 :upcase   |.1|)
             (".1a"        ((2 . 3))         10 :upcase   |.1a|)
             (".1:"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
             (".1a"        ()                10 :upcase   .1a)
 
             (".1e"        ()                10 :upcase   .1e)
+            (".1e1"       ((4 . 4))         10 :upcase   |.1E1|)
             (".1ea"       ((3 . 4))         10 :upcase   |.1Ea|)
             (".1e:"       ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker)
             (".1ea"       ()                10 :upcase   .1ea)
