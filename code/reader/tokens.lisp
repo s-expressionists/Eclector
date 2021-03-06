@@ -378,6 +378,13 @@
            ;; If we have a token of length 0, it must be a symbol in
            ;; the current package.
            (next-cond (char t)
+             ((eql char #\.)
+              (go dot))
+             ((not (null escape-ranges))
+              ;; Cannot be a potential number according to HyperSpec
+              ;; section 2.3.1.1.1 (Escape Characters and Potential
+              ;; Numbers).
+              (go symbol))
              ((eql char #\+)
               (go sign))
              ((eql char #\-)
@@ -390,7 +397,7 @@
               (go integer))
              ((eql char #\.)
               (go dot)))
-         sign             ; We have a sign, i.e., #\+ or #\-.
+         sign ; We have a sign, i.e., #\+ or #\-.
            ;; If a sign is all we have, it is a symbol.
            (next-cond (char t)
              ((funcall decimal-mantissa char)
@@ -410,10 +417,13 @@
                        *consing-dot*))
                     (t
                      (%reader-error input-stream 'invalid-context-for-consing-dot))))
+             ((not (null escape-ranges))
+              ;; Cannot be a potential number according to HyperSpec
+              ;; section 2.3.1.1.1 (Escape Characters and Potential
+              ;; Numbers).
+              (go symbol))
              ((eql char #\.)
-              (if (null escape-ranges)
-                  (go maybe-too-many-dots)
-                  (go symbol)))
+              (go maybe-too-many-dots))
              ((funcall fraction-numerator char)
               (setf fraction-denominator
                     (* fraction-denominator 10))
