@@ -15,6 +15,14 @@
 
 (defgeneric recovery-description-using-language (strategy language))
 
+(defun format-recovery-report (stream strategy &rest args)
+  (labels ((resolve (report)
+             (etypecase report
+               (symbol (resolve (recovery-description strategy)))
+               (string (apply #'format stream report args))
+               (function (apply report stream args)))))
+    (resolve strategy)))
+
 (defun %recoverable-reader-error (stream datum &rest arguments
                                                &key report &allow-other-keys)
   (restart-case
@@ -22,12 +30,7 @@
              (alexandria:remove-from-plist arguments :report))
     (recover ()
       :report (lambda (stream)
-                (labels ((resolve (report)
-                           (etypecase report
-                             (symbol (resolve (recovery-description report)))
-                             (string (format stream report))
-                             (function (funcall report stream)))))
-                  (resolve report)))
+                (format-recovery-report stream report))
       (values))))
 
 (defun recover (&optional condition)

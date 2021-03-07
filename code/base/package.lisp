@@ -33,6 +33,7 @@
 
    #:recovery-description
    #:recovery-description-using-language
+   #:format-recovery-report
 
    #:read-char-or-error
    #:read-char-or-recoverable-error))
