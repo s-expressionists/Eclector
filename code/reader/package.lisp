@@ -25,6 +25,7 @@
 
    #:%recoverable-reader-error
    #:recovery-description
+   #:recovery-description-using-language
 
    #:stream-position-reader-error
    #:stream-position

@@ -31,5 +31,8 @@
    #:%reader-error
    #:%recoverable-reader-error
 
+   #:recovery-description
+   #:recovery-description-using-language
+
    #:read-char-or-error
    #:read-char-or-recoverable-error))

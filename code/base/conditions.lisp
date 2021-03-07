@@ -8,7 +8,12 @@
   (apply #'error datum :stream stream :stream-position stream-position
          (alexandria:remove-from-plist arguments :stream-position)))
 
-(defgeneric recovery-description (strategy language))
+(defgeneric recovery-description (strategy &key language)
+  (:method ((strategy t) &key (language (acclimation:language
+                                         acclimation:*locale*)))
+    (recovery-description-using-language strategy language)))
+
+(defgeneric recovery-description-using-language (strategy language))
 
 (defun %recoverable-reader-error (stream datum &rest arguments
                                                &key report &allow-other-keys)
@@ -19,10 +24,7 @@
       :report (lambda (stream)
                 (labels ((resolve (report)
                            (etypecase report
-                             (symbol (let ((language (acclimation:language
-                                                      acclimation:*locale*)))
-                                       (resolve (recovery-description
-                                                 report language))))
+                             (symbol (resolve (recovery-description report)))
                              (string (format stream report))
                              (function (funcall report stream)))))
                   (resolve report)))

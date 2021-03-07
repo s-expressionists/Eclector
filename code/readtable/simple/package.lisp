@@ -6,7 +6,7 @@
    . #1=(#:readtable))
 
   (:import-from #:eclector.base
-   #:recovery-description)
+   #:recovery-description-using-language)
 
   (:export
    . #1#))

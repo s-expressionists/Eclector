@@ -1324,9 +1324,7 @@
                 '#:keyword)))
         (if (alexandria:xor
              (with-simple-restart
-                 (recover (recovery-description
-                           'treat-as-false (acclimation:language
-                                            acclimation:*locale*)))
+                 (recover (recovery-description 'treat-as-false))
                (let ((*input-stream* stream))
                  (evaluate-feature-expression client feature-expression)))
              invertp)
