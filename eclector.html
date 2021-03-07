@@ -748,6 +748,42 @@ to convert the characters in <var>token</var> according to the
 constructed.
 </p></dd></dl>
 
+<span id="Generic_002dFunction-eclector_002ereader_003acheck_002dsymbol_002dtoken"></span><dl>
+<dt id="index-check_002dsymbol_002dtoken-_005beclector_002ereader_005d">Generic Function: <strong>check-symbol-token [eclector.reader]</strong> <em>client  input-stream token escape-ranges  position-package-marker-1 position-package-marker-2</em></dt>
+<dd>
+<p>This generic function is called by the default method on
+<tt>interpret-token</tt> when the syntax of the token corresponds to that of
+a symbol.  This function checks the syntactic validity of the symbol
+token and signals an error in case of a syntax error.  If there are no
+syntax errors (or error recovery has been performed, see <a href="#Recovering-from-errors">Recovering from errors</a>), this function returns three values:
+</p><ol>
+<li> <var>token</var> or a value derived from <var>token</var> by error recovery
+operations.
+
+</li><li> <var>position-package-marker-1</var> or a value derived from
+<var>position-package-marker-1</var> by error recovery operations.
+
+</li><li> <var>position-package-marker-2</var> or a value derived from
+<var>position-package-marker-2</var> by error recovery operations.
+</li></ol>
+
+<p>The parameter <var>input-stream</var> is the input stream from which the
+characters were read.  The parameter <var>token</var> is a string that
+contains all the characters of the token.  The parameter
+<var>escape-ranges</var> indicates ranges within <var>token</var> that were
+preceded by a character with single-escape syntax or delimited by
+characters with multiple-escape syntax.  The parameter
+<var>position-package-marker-1</var> contains the index into <var>token</var> of
+the first package marker, or <tt>nil</tt> if the token contains no package
+markers.  The parameter <var>position-package-marker-2</var> contains the
+index into <var>token</var> of the second package marker, or <tt>nil</tt> if the
+token contains no package markers or only a single package marker.
+</p>
+<p>The default method on this generic function checks the positions of the
+package markers taking into account escape ranges.  The method signals
+errors and allows error recovery as described above.
+</p></dd></dl>
+
 <span id="Generic_002dFunction-eclector_002ereader_003ainterpret_002dsymbol_002dtoken"></span><dl>
 <dt id="index-interpret_002dsymbol_002dtoken-_005beclector_002ereader_005d">Generic Function: <strong>interpret-symbol-token [eclector.reader]</strong> <em>client  input-stream token position-package-marker-1  position-package-marker-2</em></dt>
 <dd>
@@ -1912,6 +1948,7 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-call_002dreader_002dmacro-_005beclector_002ereader_005d"><code>call-reader-macro [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-call_002dwith_002dcurrent_002dpackage-_005beclector_002ereader_005d"><code>call-with-current-package [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-check_002dfeature_002dexpression-_005beclector_002ereader_005d"><code>check-feature-expression [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-check_002dsymbol_002dtoken-_005beclector_002ereader_005d"><code>check-symbol-token [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-E">E</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-evaluate_002dexpression-_005beclector_002ereader_005d"><code>evaluate-expression [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
