@@ -9,26 +9,26 @@
                 ,@body)))
 
   (define-reporter ((condition unterminated-dispatch-macro) stream)
-    (format stream "While reading dispatching macro character ~:c, ~
-                    expected a sub-character when input ended."
+    (format stream "~@<While reading dispatching macro character ~:C, ~
+                    expected a sub-character when input ended.~@:>"
             (disp-char condition)))
 
   (define-reporter ((condition sub-char-must-not-be-a-decimal-digit) stream)
-    (format stream "The ~/eclector.base::describe-character-english/ ~
+    (format stream "~@<The ~/eclector.base::describe-character-english/ ~
                     cannot be defined as a dispatch macro ~
-                    sub-character, as it is a decimal digit."
+                    sub-character, as it is a decimal digit.~@:>"
             (sub-char condition)))
 
   (define-reporter ((condition char-must-be-a-dispatching-character) stream)
-    (format stream "The ~/eclector.base::describe-character-english/ ~
+    (format stream "~@<The ~/eclector.base::describe-character-english/ ~
                     cannot have a dispatch macro set for it, as it has ~
                     not been defined as a dispatch macro~@
-                    (as by ~a)"
+                    (as by ~A)~@:>"
             (disp-char condition) 'cl:make-dispatch-macro-character))
 
   (define-reporter ((condition unknown-macro-sub-character) stream)
-    (format stream "No dispatch function is defined for the ~
+    (format stream "~@<No dispatch function is defined for the ~
                     ~/eclector.base::describe-character-english/ as a ~
                     sub-character of the dispatch macro ~
-                    ~/eclector.base::describe-character-english/."
+                    ~/eclector.base::describe-character-english/.~@:>"
             (sub-char condition) (disp-char condition))))
