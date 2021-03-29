@@ -26,6 +26,7 @@
    #:%recoverable-reader-error
    #:recovery-description
    #:recovery-description-using-language
+   #:format-recovery-report
 
    #:stream-position-reader-error
    #:stream-position

@@ -9,6 +9,21 @@
   (define-description use-partial-symbol           "Return a symbol named by the already read characters.")
   (define-description replace-invalid-character    "Replace the invalid character with a valid one.")
   (define-description treat-as-escaped             "Treat the character as if it had been escaped.")
+  (define-description use-replacement-package      (lambda (stream package-name)
+                                                     (format stream "Specify a package to use in place of the ~
+                                                                     non-existent \"~A\" package."
+                                                             package-name)))
+  (define-description use-replacement-symbol       (lambda (stream package symbol-name)
+                                                     (format stream "Specify a symbol to use in place of the ~
+                                                                     non-existent \"~A\" in package ~A."
+                                                             symbol-name package)))
+  (define-description intern                       (lambda (stream package symbol-name)
+                                                     (format stream "Intern a symbol named \"~A\" in package ~A."
+                                                             symbol-name package)))
+  (define-description use-anyway                   (lambda (stream package symbol-name)
+                                                     (format stream "Use the unexported symbol named \"~A\" in ~
+                                                                     package ~A anyway."
+                                                             symbol-name package)))
 
   (define-description replace-invalid-digit        "Use a suitable digit in place of the invalid digit.")
   (define-description use-replacement-radix        "Use a suitable radix in place of the invalid radix.")

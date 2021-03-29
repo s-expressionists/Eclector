@@ -568,26 +568,116 @@
                              (package-indicator null) symbol-name internp)
   (make-symbol symbol-name))
 
+;;; INTERPRET-SYMBOL for interned symbols
+;;;
+;;; Since many things can go wrong here, reporting of and recovering
+;;; from individual errors is handled in separate functions.
+
+(defun accept-symbol ()
+  (declare (notinline read))
+  (let ((stream *query-io*))
+    (format stream "Enter symbol (not evaluated): ")
+    (finish-output stream)
+    (list (read stream))))
+
+(defun accept-package-name ()
+  (let ((stream *query-io*))
+    (format stream "Enter package name (case-sensitive, not evaluated): ")
+    (finish-output stream)
+    (list (read-line stream))))
+
+(defun package-does-not-exist (input-stream package-indicator symbol-name)
+  (restart-case
+      (%reader-error input-stream 'package-does-not-exist
+                     :package-name package-indicator)
+    (recover ()
+      :report (lambda (stream)
+                (format-recovery-report stream 'inject-nil))
+      (values nil 'symbol))
+    (use-value (symbol)
+      :report (lambda (stream)
+                (format-recovery-report stream 'use-replacement-symbol
+                                        package-indicator symbol-name))
+      :interactive accept-symbol
+      (values symbol 'symbol))
+    (use-package (package)
+      :report (lambda (stream)
+                (format-recovery-report stream 'use-replacement-package
+                                        package-indicator))
+      :interactive accept-package-name
+      (values package (if (stringp package) :package-name 'package)))))
+
+(defun symbol-does-not-exist (input-stream package symbol-name)
+  (restart-case
+      (%reader-error input-stream 'symbol-does-not-exist
+                     :package package :symbol-name symbol-name)
+    (recover ()
+      :report (lambda (stream)
+                (format-recovery-report stream 'inject-nil))
+      nil)
+    (use-value (symbol)
+      :report (lambda (stream)
+                (format-recovery-report stream 'use-replacement-symbol
+                                        package symbol-name))
+      :interactive accept-symbol
+      symbol)
+    (intern ()
+      :report (lambda (stream)
+                (format-recovery-report stream 'intern package symbol-name))
+      (intern symbol-name package))))
+
+(defun symbol-is-not-external (input-stream package symbol-name symbol)
+  (restart-case
+      (%reader-error input-stream 'symbol-is-not-external
+                     :package package :symbol-name symbol-name)
+    (recover ()
+      :report (lambda (stream)
+                (format-recovery-report stream 'use-anyway
+                                        package symbol-name))
+      symbol)
+    (use-value (symbol)
+      :report (lambda (stream)
+                (format-recovery-report stream 'use-replacement-symbol
+                                        package symbol-name))
+      :interactive accept-symbol
+      symbol)
+    (use-anyway ()
+      :report (lambda (stream)
+                (format-recovery-report stream 'use-anyway
+                                        package symbol-name))
+      symbol)))
+
 (defmethod interpret-symbol (client input-stream
                              package-indicator symbol-name internp)
-  (let ((package (case package-indicator
-                   (:current *package*)
-                   (:keyword (find-package "KEYWORD"))
-                   (t        (or (find-package package-indicator)
-                                 (%reader-error
-                                  input-stream 'package-does-not-exist
-                                  :package-name package-indicator))))))
-    (if internp
-        (intern symbol-name package)
-        (multiple-value-bind (symbol status)
-            (find-symbol symbol-name package)
-          (cond ((null status)
-                 (%reader-error input-stream 'symbol-does-not-exist
-                                :package package
-                                :symbol-name symbol-name))
-                ((eq status :internal)
-                 (%reader-error input-stream 'symbol-is-not-external
-                                :package package
-                                :symbol-name symbol-name))
-                (t
-                 symbol))))))
+  (prog (package symbol)
+   package
+     (setf package (case package-indicator
+                     (:current *package*)
+                     (:keyword (find-package "KEYWORD"))
+                     (t        (or (find-package package-indicator)
+                                   (multiple-value-bind (value kind)
+                                       (package-does-not-exist
+                                        input-stream package-indicator symbol-name)
+                                     (ecase kind
+                                       (symbol
+                                        (return value))
+                                       (package
+                                        value)
+                                       (:package-name
+                                        (setf package-indicator value)
+                                        (go package))))))))
+   symbol
+     (setf symbol (if internp
+                      (intern symbol-name package)
+                      (multiple-value-bind (symbol status)
+                          (find-symbol symbol-name package)
+                        (cond ((null status)
+                               (symbol-does-not-exist
+                                input-stream package symbol-name))
+                              ((eq status :internal)
+                               (symbol-is-not-external
+                                input-stream package symbol-name symbol))
+                              (t
+                               symbol)))))
+   done
+     (return symbol)))

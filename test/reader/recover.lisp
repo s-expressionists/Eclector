@@ -68,6 +68,11 @@
           (".."                               (eclector.reader:too-many-dots)                                |..|)
           ("..."                              (eclector.reader:too-many-dots)                                |...|)
 
+          ;; Recover from problems with syntactically valid symbols.
+          ("no-such-package::symbol"             (eclector.reader:package-does-not-exist) nil)
+          ("eclector.reader.test:internal"       (eclector.reader:symbol-is-not-external) internal)
+          ("eclector.reader.test:no-such-symbol" (eclector.reader:symbol-does-not-exist)  nil)
+
           ;; Recover from invalid number tokens.
           ("3/0" (eclector.reader:zero-denominator) 3)
 
@@ -279,3 +284,94 @@
     (mapc #'do-recover-test-case
           '(("1.0" (eclector.reader:invalid-default-float-format) 1.0f0)
             ("1e0" (eclector.reader:invalid-default-float-format) 1.0f0)))))
+
+(test recover/package-problems
+  "Test recovering form non-existing packages, symbols and similar problems."
+
+  (labels ((check-restart (name)
+             (let* ((restart (find-restart name))
+                    (report (princ-to-string restart)))
+               (is-false (alexandria:emptyp report))))
+           (invoke-restart-interactively* (restart-name)
+             ;; CCL prints a message about invoke the restart to
+             ;; *ERROR-OUTPUT*.
+             (let ((*error-output* (make-broadcast-stream)))
+               (invoke-restart-interactively restart-name)))
+           (invoke-with-input (restart-name input)
+             (let* ((output (make-string-output-stream))
+                    (*query-io* (make-two-way-stream
+                                 (make-string-input-stream input) output)))
+               (invoke-restart-interactively* restart-name)
+               (is-false (alexandria:emptyp (get-output-stream-string output)))))
+           (test-restart1 (input condition-type expected handler)
+             (let ((result
+                     (handler-bind
+                         ((error (lambda (condition)
+                                   (is-true (typep condition condition-type))
+                                   (funcall handler))))
+                       (eclector.reader:read-from-string input))))
+               (etypecase expected
+                 (symbol
+                  (is (eq expected result)))
+                 (cons
+                  (destructuring-bind (expected-package expected-name) expected
+                    (is (string= expected-package
+                                 (package-name (symbol-package result))))
+                    (is (string= expected-name
+                                 (symbol-name result))))))))
+           (test-restart (input condition-type expected handler1 handler2)
+             (test-restart1 input condition-type expected handler1)
+             (test-restart1 input condition-type expected handler2)))
+    ;; For PACKAGE-DOES-NOT-EXIST, invoke USE-VALUE restart.
+    (test-restart
+     "no-such-package::symbol" 'eclector.reader:package-does-not-exist 'cl:symbol
+     (lambda ()
+       (check-restart 'use-value)
+       (invoke-restart 'use-value 'cl:symbol))
+     (lambda ()
+       (invoke-with-input 'use-value "cl:symbol")))
+    ;; For PACKAGE-DOES-NOT-EXIST, invoke USE-PACKAGE restart.
+    (test-restart
+     "no-such-package::symbol" 'eclector.reader:package-does-not-exist 'cl:symbol
+     (lambda ()
+       (check-restart 'use-package)
+       (invoke-restart 'use-package (find-package '#:cl)))
+     (lambda ()
+       (invoke-with-input 'use-package "CL")))
+    ;; For SYMBOL-DOES-NOT-EXIST, invoke USE-VALUE restart.
+    (test-restart
+     "eclector.reader.test:no-such-symbol" 'eclector.reader:symbol-does-not-exist
+     'cl:symbol
+     (lambda ()
+       (check-restart 'use-value)
+       (invoke-restart 'use-value 'cl:symbol))
+     (lambda ()
+       (invoke-with-input 'use-value "cl:symbol")))
+    (test-restart1
+     "eclector.reader.test:no-such-symbol" 'eclector.reader:symbol-does-not-exist
+     '("ECLECTOR.READER.TEST" "NO-SUCH-SYMBOL")
+     (lambda ()
+       (check-restart 'intern)
+       (invoke-restart 'intern)))
+    (multiple-value-bind (symbol status)
+        (find-symbol "NO-SUCH-SYMBOL" "ECLECTOR.READER.TEST")
+      (is (eq :internal status))
+      (unintern symbol (symbol-package symbol)))
+    ;; For SYMBOL-IS-NOT-EXTERNAL, invoke USE-VALUE restart.
+    (test-restart
+     "eclector.reader.test:test-restart" 'eclector.reader:symbol-is-not-external
+     'cl:symbol
+     (lambda ()
+       (check-restart 'use-value)
+       (invoke-restart 'use-value 'cl:symbol))
+     (lambda ()
+       (invoke-with-input 'use-value "cl:symbol")))
+    ;; For SYMBOL-IS-NOT-EXTERNAL, invoke USE-ANYWAY restart.
+    (test-restart
+     "eclector.reader.test:test-restart" 'eclector.reader:symbol-is-not-external
+     'test-restart
+     (lambda ()
+       (check-restart 'eclector.reader::use-anyway)
+       (invoke-restart 'eclector.reader::use-anyway))
+     (lambda ()
+       (invoke-restart-interactively* 'eclector.reader::use-anyway)))))
