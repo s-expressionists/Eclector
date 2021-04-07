@@ -9,6 +9,10 @@
   (define-description use-partial-symbol           "Return a symbol named by the already read characters.")
   (define-description replace-invalid-character    "Replace the invalid character with a valid one.")
   (define-description treat-as-escaped             "Treat the character as if it had been escaped.")
+  (define-description use-uninterned-symbol        (lambda (stream package-name symbol-name)
+                                                     (format stream "Use an uninterned symbol named \"~A\" and ~
+                                                                     ignore the non-existent \"~A\" package."
+                                                             symbol-name package-name)))
   (define-description use-replacement-package      (lambda (stream package-name)
                                                      (format stream "Specify a package to use in place of the ~
                                                                      non-existent \"~A\" package."

@@ -69,7 +69,7 @@
           ("..."                              (eclector.reader:too-many-dots)                                |...|)
 
           ;; Recover from problems with syntactically valid symbols.
-          ("no-such-package::symbol"             (eclector.reader:package-does-not-exist) nil)
+          ("no-such-package::symbol"             (eclector.reader:package-does-not-exist) #:symbol)
           ("eclector.reader.test:internal"       (eclector.reader:symbol-is-not-external) internal)
           ("eclector.reader.test:no-such-symbol" (eclector.reader:symbol-does-not-exist)  nil)
 

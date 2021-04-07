@@ -592,8 +592,9 @@
                      :package-name package-indicator)
     (recover ()
       :report (lambda (stream)
-                (format-recovery-report stream 'inject-nil))
-      (values nil 'symbol))
+                (format-recovery-report stream 'use-uninterned-symbol
+                                        package-indicator symbol-name))
+      (values (make-symbol symbol-name) 'symbol))
     (use-value (symbol)
       :report (lambda (stream)
                 (format-recovery-report stream 'use-replacement-symbol
