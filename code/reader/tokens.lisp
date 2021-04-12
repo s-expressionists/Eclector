@@ -114,8 +114,8 @@
 
 ;;; Token interpretation
 
-(declaim (inline reader-float-format))
-(defun reader-float-format (&optional exponent-marker)
+(declaim (inline standard-reader-float-format))
+(defun standard-reader-float-format (&optional exponent-marker)
   (ecase exponent-marker
     ((nil #\e #\E)
      (let ((default-format *read-default-float-format*))
@@ -134,6 +134,12 @@
     ((#\s #\S) 'short-float)
     ((#\d #\D) 'double-float)
     ((#\l #\L) 'long-float)))
+
+(defmethod current-float-format (client &optional exponent-marker) ; TODO maybe effective-float-format?
+  (standard-reader-float-format exponent-marker))
+
+(defmethod current-read-base (client)
+  *read-base*)
 
 (defmacro with-accumulators ((&rest specs) &body body)
   (loop for (name base) in specs
@@ -162,7 +168,7 @@
 (defmethod interpret-token (client input-stream token escape-ranges)
   (declare (type token-string token))
   (convert-according-to-readtable-case token escape-ranges)
-  (let* ((read-base *read-base*)
+  (let* ((read-base (current-read-base client))
          (length (length token))
          (remaining-escape-ranges escape-ranges)
          (escape-range (first remaining-escape-ranges))
@@ -199,7 +205,7 @@
                                                  position-package-marker-2))))
              (return-float (&optional exponentp)
                (multiple-value-bind (type default-format)
-                   (reader-float-format exponent-marker)
+                   (current-float-format client exponent-marker)
                  (when (null type)
                    (%recoverable-reader-error
                     input-stream 'invalid-default-float-format
