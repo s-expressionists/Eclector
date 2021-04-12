@@ -119,8 +119,8 @@
 
 ;;; Token interpretation
 
-(declaim (inline reader-float-format))
-(defun reader-float-format (client &optional exponent-marker)
+(declaim (inline standard-reader-float-format))
+(defun standard-reader-float-format (client &optional exponent-marker)
   (ecase exponent-marker
     ((nil #\e #\E)
      (let ((default-format (state-value client '*read-default-float-format*)))
@@ -139,6 +139,9 @@
     ((#\s #\S) 'short-float)
     ((#\d #\D) 'double-float)
     ((#\l #\L) 'long-float)))
+
+(defmethod current-float-format (client &optional exponent-marker) ; TODO maybe effective-float-format?
+  (standard-reader-float-format client exponent-marker))
 
 (defmacro with-accumulators ((&rest specs) &body body)
   (loop for (name base) in specs
@@ -205,7 +208,7 @@
                                                    position-package-marker-2))))
                (make-float (exponentp)
                  (multiple-value-bind (type default-format)
-                     (reader-float-format client exponent-marker)
+                     (current-float-format client exponent-marker)
                    (when (null type)
                      (multiple-value-bind (offset length)
                          (if exponentp
