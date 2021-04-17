@@ -73,6 +73,7 @@
 
 (defgeneric wrap-in-quote (client material)
   (:method (client material)
+    (declare (ignore client))
     (list 'quote material)))
 
 (defgeneric wrap-in-quasiquote (client form)

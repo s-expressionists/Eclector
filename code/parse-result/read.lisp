@@ -23,6 +23,7 @@
 (defmethod eclector.reader:call-as-top-level-read :around
     ((client parse-result-client) thunk input-stream
      eof-error-p eof-value preserve-whitespace-p)
+  (declare (ignore input-stream thunk preserve-whitespace-p))
   ;; We bind *CLIENT* here (instead of in, say, READ-AUX) to allow
   ;; (call-as-top-level-read
   ;;  client (lambda () ... (read-maybe-nothing client ...) ...) ...)
@@ -55,6 +56,7 @@
 
 (defmethod eclector.reader:read-maybe-nothing
     ((client parse-result-client) input-stream eof-error-p eof-value)
+  (declare (ignore eof-error-p eof-value))
   (let* ((stack (list* '() *stack*))
          (start (source-position client input-stream)))
     (multiple-value-bind (value what)

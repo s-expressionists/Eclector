@@ -3,6 +3,7 @@
 ;;; Token Reading
 
 (defmethod read-token (client input-stream eof-error-p eof-value)
+  (declare (ignore eof-error-p eof-value))
   (let ((readtable *readtable*)
         (token (make-array 10
                            :element-type 'character
@@ -523,6 +524,7 @@
                                token escape-ranges
                                position-package-marker-1
                                position-package-marker-2)
+  (declare (ignore client))
   (let ((length (length token)))
     (cond ;; This signals an error for ":" and "::" but accepts ":||". "::" is
           ;; handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
@@ -566,6 +568,7 @@
 
 (defmethod interpret-symbol (client input-stream
                              (package-indicator null) symbol-name internp)
+  (declare (ignore client input-stream internp))
   (make-symbol symbol-name))
 
 ;;; INTERPRET-SYMBOL for interned symbols
@@ -650,6 +653,7 @@
 
 (defmethod interpret-symbol (client input-stream
                              package-indicator symbol-name internp)
+  (declare (ignore client))
   (prog (package symbol)
    package
      (setf package (case package-indicator
