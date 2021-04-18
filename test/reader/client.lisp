@@ -43,6 +43,7 @@
 (defmethod eclector.reader:interpret-symbol
     ((client mock-symbol-client) input-stream
      (package-indicator null) symbol-name internp)
+  (declare (ignore input-stream internp))
   (%make-symbol symbol-name nil))
 
 (defmethod eclector.reader:interpret-symbol

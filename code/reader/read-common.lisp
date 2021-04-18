@@ -29,6 +29,7 @@
 
 (defmethod call-as-top-level-read (client thunk input-stream
                                    eof-error-p eof-value preserve-whitespace-p)
+  (declare (ignore eof-error-p eof-value))
   (let* ((labels (make-hash-table))
          (values (multiple-value-list
                   (let ((*labels* labels))
