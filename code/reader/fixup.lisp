@@ -1,12 +1,13 @@
 (cl:in-package #:eclector.reader)
 
 (defmethod fixup :around (client object seen-objects mapping)
+  (declare (ignore client mapping))
   (unless (gethash object seen-objects)
     (setf (gethash object seen-objects) t)
     (call-next-method)))
 
 (defmethod fixup (client object seen-objects mapping)
-  (declare (ignore seen-objects mapping))
+  (declare (ignore client object seen-objects mapping))
   nil)
 
 (macrolet ((fixup-place (place)

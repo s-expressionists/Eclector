@@ -3,6 +3,7 @@
 ;;; Token Reading
 
 (defmethod read-token (client input-stream eof-error-p eof-value)
+  (declare (ignore eof-error-p eof-value))
   (let ((readtable *readtable*)
         (token (make-array 10
                            :element-type 'character
@@ -221,10 +222,12 @@
 
 (defmethod interpret-symbol (client input-stream
                              (package-indicator null) symbol-name internp)
+  (declare (ignore client input-stream internp))
   (make-symbol symbol-name))
 
 (defmethod interpret-symbol (client input-stream
                              package-indicator symbol-name internp)
+  (declare (ignore client))
   (let ((package (case package-indicator
                    (:current *package*)
                    (:keyword (find-package "KEYWORD"))

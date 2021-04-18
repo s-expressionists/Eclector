@@ -314,6 +314,7 @@
   #+no (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
                              :found-character char
                              :report 'ignore-trailing-right-paren)
+  (declare (ignore stream))
   (if (char= char #\))
       **end-of-list**
       (make-condition 'end-of-list :character char)))

@@ -14,6 +14,7 @@
             :reader     kind)))
 
 (defmethod kind (thing)
+  (declare (ignore thing))
   nil)
 
 (defclass atom-result (parse-result)
