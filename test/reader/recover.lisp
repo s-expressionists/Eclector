@@ -119,10 +119,13 @@
           ("#1.1"           (eclector.reader:numeric-parameter-supplied-but-ignored) 1)
 
           ;; Recover from vector-related errors
-          ("#("        (eclector.reader:unterminated-vector) #())
-          ("#(1 2"     (eclector.reader:unterminated-vector) #(1 2))
-          ("#1()"      (eclector.reader:no-elements-found)   #())
-          ("#1(1 2)"   (eclector.reader:too-many-elements)   #(1))
+          ("#("        (eclector.reader:unterminated-vector)             #())
+          ("#(1 2"     (eclector.reader:unterminated-vector)             #(1 2))
+          ("#(.)"      (eclector.reader:invalid-context-for-consing-dot) #())
+          ("#(1 .)"    (eclector.reader:invalid-context-for-consing-dot) #(1))
+          ("#(1 . 2)"  (eclector.reader:invalid-context-for-consing-dot) #(1 2))
+          ("#1()"      (eclector.reader:no-elements-found)               #())
+          ("#1(1 2)"   (eclector.reader:too-many-elements)               #(1))
 
           ;; Recover from errors in SHARPSIGN-BACKSLASH
           ("#\\"         (eclector.reader:end-of-input-after-backslash)                   #\?)
@@ -219,6 +222,10 @@
           ("#S)"           (eclector.reader:structure-constructor-must-follow-sharpsign-s) nil 2)
           ("#S("           (eclector.reader:end-of-input-before-structure-type-name)       nil)
           ("#S()"          (eclector.reader:no-structure-type-name-found)                  nil)
+          ("#S(.)"         (eclector.reader:invalid-context-for-consing-dot
+                            eclector.reader:no-structure-type-name-found)
+                                                                                           nil)
+          ("#S(foo .)"     (eclector.reader:invalid-context-for-consing-dot)               (foo))
           ("#S(1)"         (eclector.reader:structure-type-name-is-not-a-symbol)           nil)
           ("#S(foo"        (eclector.reader:end-of-input-before-slot-name)                 (foo))
           ("#S(foo 1)"     (eclector.reader:slot-name-is-not-a-string-designator

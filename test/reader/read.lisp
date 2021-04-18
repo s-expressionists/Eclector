@@ -121,6 +121,7 @@
       ("(1 . 2)"                    nil (1 . 2))
       ("(1 .||)"                    nil (1 |.|))
       ("(1 .|| 2)"                  nil (1 |.| 2))
+      ("(1 #(.))"                   nil eclector.reader:invalid-context-for-consing-dot)
 
       ;; Interaction between *READ-SUPPRESS* and reader macros.
       ("#+(or) #|skipme|# 1 2"      nil 2)
@@ -279,12 +280,12 @@
       (error-case expected1
         (error (do-it t))
         (t
-         (expect "result1" (equal expected1 (do-it t)))))
+         (expect "result1" (relaxed-equalp expected1 (do-it t)))))
       ;; Test with #\] having constituent syntax type.
       (error-case expected2
         (error (do-it nil))
         (t
-         (expect "result2" (equal expected2 (do-it nil))))))
+         (expect "result2" (relaxed-equalp expected2 (do-it nil))))))
     '((""             #\] eclector.reader:unterminated-list)
       (")"            #\] eclector.reader:invalid-context-for-right-parenthesis)
       ("]"            #\] ())
@@ -294,6 +295,8 @@
       ("1 ]"          #\] (1))
       ("1 #|2|# ]"    #\] (1))
       ("1 #+(or) 2 ]" #\] (1))
+      ("1 #()]"       #\] (1 #()))
+      ("1 #(.)]"      #\] eclector.reader:invalid-context-for-consing-dot)
 
       ;; We call READ-DELIMITED-LIST with RECURSIVE-P being false, so
       ;; labels and references should work between and within list
