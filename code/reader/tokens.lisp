@@ -234,8 +234,7 @@
          (decimal-mantissa (make-integer-accumulator 10))
          (numerator (make-integer-accumulator *read-base*))
          (denominator (make-integer-accumulator *read-base*))
-         (fraction-numerator (make-integer-accumulator 10))
-         (fraction-denominator 1)
+         (decimal-exponent 0)
          (exponent-sign 1)
          (exponent (make-integer-accumulator 10))
          (exponent-marker nil)
@@ -272,12 +271,14 @@
                   :float-format default-format
                   :report 'use-replacement-float-format)
                  (setf type 'single-float))
-               (let ((magnitude (* (+ (funcall decimal-mantissa)
-                                      (/ (funcall fraction-numerator)
-                                         fraction-denominator))
-                                   (if exponentp
-                                       (expt 10 (* exponent-sign (funcall exponent)))
-                                       1))))
+               (let ((magnitude (* (+ (funcall decimal-mantissa))
+                                   (cond (exponentp
+                                          (expt 10 (- (* exponent-sign (funcall exponent))
+                                                      decimal-exponent)))
+                                         ((/= 0 decimal-exponent)
+                                          (expt 10 (- decimal-exponent)))
+                                         (t
+                                          1)))))
                  (return-from interpret-token
                    (* sign (coerce magnitude type)))))))
       (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
@@ -350,9 +351,8 @@
               (go symbol))
              ((eql char #\.)
               (go maybe-too-many-dots))
-             ((funcall fraction-numerator char)
-              (setf fraction-denominator
-                    (* fraction-denominator 10))
+             ((funcall decimal-mantissa char)
+              (incf decimal-exponent)
               (go float-no-exponent)))
          maybe-too-many-dots
            ;; According to HyperSpec section 2.3.3 (The Consing Dot),
@@ -370,9 +370,8 @@
            ;; If all we have is a sign followed by a dot, it must be a
            ;; symbol in the current package.
            (next-cond (char t)
-             ((funcall fraction-numerator char)
-              (setf fraction-denominator
-                    (* fraction-denominator 10))
+             ((funcall decimal-mantissa char)
+              (incf decimal-exponent)
               (go float-no-exponent)))
          decimal-integer ; [sign] decimal-digit+
            (next-cond (char)
@@ -398,9 +397,8 @@
              ((not char)
               (return-from interpret-token
                 (* sign (funcall decimal-mantissa))))
-             ((funcall fraction-numerator char)
-              (setf fraction-denominator
-                    (* fraction-denominator 10))
+             ((funcall decimal-mantissa char)
+              (incf decimal-exponent)
               (go float-no-exponent))
              ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
@@ -438,9 +436,8 @@
            (next-cond (char)
              ((not char)
               (return-float))
-             ((funcall fraction-numerator char)
-              (setf fraction-denominator
-                    (* fraction-denominator 10))
+             ((funcall decimal-mantissa char)
+              (incf decimal-exponent)
               (go float-no-exponent))
              ((char-float-exponent-marker-p char)
               (setf exponent-marker char)
