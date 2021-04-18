@@ -242,6 +242,7 @@
              (expect "position" (eql   expected-position position))))))
     '((""       (nil nil) :eof :eof       0)
       (""       (t   nil) eclector.reader:end-of-file)
+      ("."      (nil nil) eclector.reader:invalid-context-for-consing-dot)
 
       ("   "    (nil nil) nil :whitespace 3)
       ("   "    (nil nil) nil :whitespace 3)
@@ -256,7 +257,9 @@
       ("1"      (nil nil) 1   :object     1)
       ("1 "     (nil nil) 1   :object     1)
       ("1"      (nil t)   nil :suppress   1)
-      ("1 "     (nil t)   nil :suppress   1))))
+      ("1 "     (nil t)   nil :suppress   1)
+      ("."      (nil t)   nil :suppress   1)
+      (". "     (nil t)   nil :suppress   1))))
 
 (test read-delimited-list/smoke
   "Smoke test for the READ-DELIMITED-LIST function."

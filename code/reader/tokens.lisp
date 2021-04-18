@@ -339,13 +339,10 @@
          dot
            (next-cond (char)
              ((not char)
-              (cond ((not (null escape-ranges))
-                     (return-from interpret-token (symbol)))
-                    (*consing-dot-allowed-p*
-                     (return-from interpret-token
-                       *consing-dot*))
-                    (t
-                     (%reader-error input-stream 'invalid-context-for-consing-dot))))
+              (return-from interpret-token
+                (if (null escape-ranges)
+                    *consing-dot*
+                    (symbol))))
              ((not (null escape-ranges))
               ;; Cannot be a potential number according to HyperSpec
               ;; section 2.3.1.1.1 (Escape Characters and Potential

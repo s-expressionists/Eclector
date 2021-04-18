@@ -187,7 +187,9 @@
         (error-case expected
           (error (do-it))
           (t
-           (unless (or token-escapes (zerop (length token)))
+           (unless (or token-escapes
+                       (zerop (length token))
+                       (eq expected eclector.reader::*consing-dot*))
              (assert (equal expected
                             (let ((*readtable* (copy-readtable))
                                   (*read-default-float-format* 'single-float))
@@ -200,7 +202,7 @@
 
   (let ((*read-default-float-format* 'single-float))
     (mapc #'do-interpret-token-test-case
-          '(;; empty
+          `(;; empty
             (""           ()                10 :upcase   ||)
 
             ;; Empty escape ranges
@@ -213,7 +215,7 @@
             ("abc"        ((0 . 0) (1 . 2)) 10 :invert   |AbC|)
 
             ;; "consing dot"
-            ("."          ()                10 :upcase   eclector.reader:invalid-context-for-consing-dot)
+            ("."          ()                10 :upcase   ,eclector.reader::*consing-dot*)
             (".."         ((1 . 2))         10 :upcase   |..|) ; .\.
             (".."         ((1 . 1))         10 :upcase   |..|) ; .||.
             ("."          ((1 . 1))         10 :upcase   |.|)  ; .||

@@ -106,6 +106,7 @@
           ("(1 ."      (eclector.reader:end-of-input-after-consing-dot
                         eclector.reader:unterminated-list)
                                                                                 (1))
+          ("(.)"       (eclector.reader:invalid-context-for-consing-dot)        ())
           ("(1 .)"     (eclector.reader:object-must-follow-consing-dot)         (1))
           ("(1 . 2 3)" (eclector.reader:multiple-objects-following-consing-dot) (1 . 2))
           (")(1)"      (eclector.reader:invalid-context-for-right-parenthesis)  (1))
@@ -201,6 +202,12 @@
           ("#C(2 3"      (eclector.reader:unterminated-list)                      #C(2 3))
           ("#C(2 3 4)"   (eclector.reader:too-many-complex-parts)                 #C(2 3))
           ("#C(2 3 4 5)" (eclector.reader:too-many-complex-parts)                 #C(2 3))
+          ("#C(. 2 3)"   (eclector.reader:invalid-context-for-consing-dot)        #C(2 3))
+          ("#C(2 . 3)"   (eclector.reader:invalid-context-for-consing-dot)        #C(2 3))
+          ("#C(2 3 .)"   (eclector.reader:invalid-context-for-consing-dot)        #C(2 3))
+          ("#C(2 3 . 4)" (eclector.reader:invalid-context-for-consing-dot
+                          eclector.reader:too-many-complex-parts)
+                                                                                  #C(2 3))
           ("#C(#\\a 2)"  (eclector.reader:read-object-type-error)                 #C(1 2))
 
           ("#1C(2 3)"    (eclector.reader:numeric-parameter-supplied-but-ignored) #C(2 3))

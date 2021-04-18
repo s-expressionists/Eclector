@@ -6,6 +6,8 @@
              `(defmethod recovery-description-using-language
                   ((strategy (eql ',strategy)) (language acclimation:english))
                 ,description)))
+  (define-description skip-token                   "Skip the invalid token.")
+
   (define-description use-partial-symbol           "Return a symbol named by the already read characters.")
   (define-description replace-invalid-character    "Replace the invalid character with a valid one.")
   (define-description treat-as-escaped             "Treat the character as if it had been escaped.")
