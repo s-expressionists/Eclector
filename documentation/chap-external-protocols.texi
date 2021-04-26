@@ -836,7 +836,7 @@ This class should generally be used as a superclass for client classes
 using this package.
 @end deftp
 
-@defgena {source-position,eclector.parse.result} client stream
+@defgena {source-position,eclector.parse-result} client stream
 
 This generic function is called in order to determine the current
 position in @var{stream}.  The default method calls
