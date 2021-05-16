@@ -46,11 +46,12 @@ cause conflicts with the @t{common-lisp} package otherwise.
 
 @cindex parse result
 
-The package for features related to the creation of client-defined
-parse results is named @t{eclector.parse-result}.  Although this
-package does not shadow any symbol in the @t{common-lisp}
-package, we still recommend the use of explicit package prefixes to
-refer to symbols in this package.
+The package for features related to the creation of client-defined parse
+results is named @t{eclector.parse-result}.  To use features of this
+package, we recommend the use of explicit package prefixes, simply
+because this package shadows and exports names that are also exported
+from the @t{common-lisp} package.  Importing this package will likely
+cause conflicts with the @t{common-lisp} package otherwise.
 
 @node Package for CST features
 @subsection Package for CST features
@@ -59,10 +60,11 @@ refer to symbols in this package.
 @cindex concrete syntax tree
 
 The package for features related to the creation of concrete syntax
-trees is named @t{eclector.concrete-syntax-tree}.  Although this
-package does not shadow any symbol in the @t{common-lisp}
-package, we still recommend the use of explicit package prefixes to
-refer to symbols in this package.
+trees is named @t{eclector.concrete-syntax-tree}.  To use features of
+this package, we recommend the use of explicit package prefixes, simply
+because this package shadows and exports names that are also exported
+from the @t{common-lisp} package.  Importing this package will likely
+cause conflicts with the @t{common-lisp} package otherwise.
 
 @node Ordinary reader features
 @section Ordinary reader features
