@@ -8,7 +8,7 @@
    #:read-preserving-whitespace
    #:read-from-string)
 
-  ;; Source location protocol
+  ;; Source location protocol (deprecated, moved to base module)
   (:export
    #:source-position
    #:make-source-range)

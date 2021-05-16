@@ -1,7 +1,5 @@
 (cl:in-package #:eclector.reader)
 
-(defparameter *client* nil)
-
 (defvar *skip-reason*)
 
 ;;; Labels

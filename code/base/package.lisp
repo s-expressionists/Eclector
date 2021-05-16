@@ -26,8 +26,15 @@
   (:export
    #:recover) ; function and restart name
 
+  ;; Source location protocol
+  (:export
+   #:source-position
+   #:make-source-range)
+
   ;; Exported for eclector.reader, not public use.
   (:export
+   #:*client*
+
    #:%reader-error
    #:%recoverable-reader-error
 

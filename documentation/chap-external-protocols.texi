@@ -3,6 +3,7 @@
 
 @menu
 * Packages::
+* Basic features::
 * Ordinary reader features::
 * Readtable features::
 * Parse result construction features::
@@ -13,11 +14,20 @@
 @section Packages
 
 @menu
+* Package for basic features::
 * Package for ordinary reader features::
 * Package for readtable features::
 * Package for parse result construction features::
 * Package for CST features::
 @end menu
+
+@node Package for basic features
+@subsection Package for basic features
+
+The package for basic features such as customizable source location
+construction is named @t{eclector.base}.  Although this package does not
+shadow any symbol in the @t{common-lisp} package, we still recommend the
+use of explicit package prefixes to refer to symbols in this package.
 
 @node Package for ordinary reader features
 @subsection Package for ordinary reader features
@@ -66,10 +76,59 @@ because this package shadows and exports names that are also exported
 from the @t{common-lisp} package.  Importing this package will likely
 cause conflicts with the @t{common-lisp} package otherwise.
 
+@node Basic features
+@section Basic features
+
+@cindex client
+@cindex source location
+
+In this section, symbols written without package marker
+are in the @t{eclector.base} package
+(@pxref{Package for basic features}).
+
+This package provides the mechanism that enables clients to customize
+the behavior of the reader.  Furthermore this package provides a
+protocol for customizing a particular aspect of the behavior, namely the
+construction of source positions and source ranges.  @sysname{} uses
+source positions and source ranges in signaled conditions and parse
+results (@pxref{Parse result construction features}).
+
+@defvara {*client*,eclector.base}
+
+This variable is used by several generic functions which are called by
+@t{eclector.reader:read}.  The default value of the variable is @t{nil}.
+Clients that want to override or extend the default behavior of some
+generic function of @sysname{} should bind this variable to some
+standard object and provide a method on that generic function,
+specialized to the class of that standard object.
+@end defvar
+
+@defgena {source-position,eclector.base} client stream
+
+This generic function is called in order to determine the current
+position in @var{stream}.  @sysname{} does not inspect or manipulate the
+objects returned by this generic function beyond storing them in
+signaled conditions and passing them as arguments to the
+@t{make-source-range} generic function.  A client is therefore free to
+define methods on this generic function that return arbitrary objects.
+
+The default method on this generic function calls @t{cl:file-position}.
+@end deffn
+
+@defgena {make-source-range,eclector.base} client start end
+
+This generic function is called in order to turn the source positions
+@var{start} and @var{end} into a range representation suitable
+for @var{client}.  The returned representation designates the range
+of input characters from and including the character at position
+@var{start} to but not including the character at position
+@var{end}.  The default method returns
+@code{(cons @var{start} @var{end})}.
+@end deffn
+
 @node Ordinary reader features
 @section Ordinary reader features
 
-@cindex client
 @cindex parse result
 @cindex source tracking
 
@@ -88,10 +147,10 @@ provides separately, @pxref{Readtable features}).  These functions are
 discussed in the section @ref{@commonlisp{} reader compatible interface}.
 
 @item
-The second category is comprised of the @t{*client*} special variable
-and a collection of protocols which allow customizing the behavior of
-the reader by defining methods specialized to a particular client on the
-generic functions of the protocols.
+The second category is comprised of the @t{eclector.base:*client*}
+special variable and a collection of protocols which allow customizing
+the behavior of the reader by defining methods specialized to a
+particular client on the generic functions of the protocols.
 @end itemize
 
 @float Figure,fig:read-call-sequence-ordinary
@@ -108,15 +167,6 @@ when the functions @t{read}, @t{read-preserving-whitespace},
 @t{read-from-string} and @t{read-delimited-list} are called by client
 code.
 
-@defvara {*client*,eclector.reader}
-This variable is used by several generic functions called by
-@t{read}.  The default value of the variable is @t{nil}.
-Client code that wants to override or extend the default behavior of
-some generic function of @sysname{} should bind this variable to some
-standard object and provide a method on that generic function,
-specialized to the class of that standard object.
-@end defvar
-
 @menu
 * @commonlisp{} reader compatible interface::
 * Reader behavior protocol::
@@ -130,8 +180,8 @@ specialized to the class of that standard object.
 The following functions are like their standarad @commonlisp{}
 counterparts with the two differences that their names are symbols in
 the @t{eclector.reader} package and that their behavior can deviate from
-that of the standard reader depending on the value of the @t{*client*}
-variable.
+that of the standard reader depending on the value of the
+@t{eclector.base:*client*} variable.
 
 @deffuna {read,eclector.reader} @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
@@ -219,11 +269,11 @@ It realizes the requested @var{preserve-whitespace-p} behavior.
 @defgena {read-common,eclector.reader} client input-stream eof-error-p eof-value
 
 This generic function is called by @t{read}, passing it the value of the
-variable @t{*client*} and the corresponding parameters.  Client code can
-add methods on this function, specializing them to the client class of
-its choice.  The actions that @t{read} needs to take for different values
-of the parameter @var{recursive-p} have already been taken before
-@t{read} calls this generic function.
+variable @t{eclector.base:*client*} and the corresponding parameters.
+Client code can add methods on this function, specializing them to the
+client class of its choice.  The actions that @t{read} needs to take for
+different values of the parameter @var{recursive-p} have already been
+taken before @t{read} calls this generic function.
 @end deffn
 
 @defgena {read-maybe-nothing,eclector.reader} client input-stream@
@@ -263,10 +313,10 @@ return a value.  In this case the function returns @t{nil} and
 This generic function is called whenever the reader skips some input
 such as a comment or a form that must be skipped because of a reader
 conditional.  It is called with the value of the variable
-@t{*client*}, the input stream from which the input is being read
-and an object indicating the reason for skipping the input.  The
-default method on this generic function does nothing.  Client code can
-supply a method that specializes to the client class of its choice.
+@t{eclector.base:*client*}, the input stream from which the input is
+being read and an object indicating the reason for skipping the input.
+The default method on this generic function does nothing.  Client code
+can supply a method that specializes to the client class of its choice.
 
 When this function is called, the stream is positioned immediately
 @emph{after} the skipped input.  Client code that wants to know both
@@ -838,35 +888,17 @@ This class should generally be used as a superclass for client classes
 using this package.
 @end deftp
 
-@defgena {source-position,eclector.parse-result} client stream
-
-This generic function is called in order to determine the current
-position in @var{stream}.  The default method calls
-@t{cl:file-position}.
-@end deffn
-
-@defgena {make-source-range,eclector.parse-result} client start end
-
-This generic function is called in order to turn the source positions
-@var{start} and @var{end} into a range representation suitable
-for @var{client}.  The returned representation designates the range
-of input characters from and including the character at position
-@var{start} to but not including the character at position
-@var{end}.  The default method returns
-@code{(cons @var{start} @var{end})}.
-@end deffn
-
 @defgena {make-expression-result,eclector.parse-result} client result@
   children source
 
 This generic function is called in order to construct a parse result
-object.  The value of the @var{result} parameter is the raw object
-read.  The value of the @var{children} parameter is a list of
-already constructed parse result objects representing objects read by
-recursive @t{read} calls.  The value of the @var{source}
-parameter is a source range, as returned by @t{make-source-range}
-and @t{source-position} delimiting the range of characters from
-which @var{result} has been read.
+object.  The value of the @var{result} parameter is the raw object read.
+The value of the @var{children} parameter is a list of already
+constructed parse result objects representing objects read by recursive
+@t{read} calls.  The value of the @var{source} parameter is a source
+range, as returned by @t{eclector.base:make-source-range} and
+@t{eclector.base:source-position} delimiting the range of characters
+from which @var{result} has been read.
 
 This generic function does not have a default method since the purpose
 of the package is the construction of @emph{custom} parse results.

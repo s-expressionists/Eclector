@@ -21,6 +21,8 @@
    #:recover) ; Function and restart name
 
   (:import-from #:eclector.base
+   #:*client*
+
    #:%reader-error
 
    #:%recoverable-reader-error
@@ -53,9 +55,10 @@
    #:unknown-macro-sub-character)
 
   (:export
+   #:*client*
+
    #:*readtable*
 
-   #:*client*
    #:*skip-reason*
 
    #:read-char

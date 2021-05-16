@@ -13,6 +13,8 @@
   :components  ((:module "base"
                  :pathname "code/base"
                  :components ((:file "package")
+                              (:file "variables")
+                              (:file "generic-functions")
                               (:file "conditions")
                               (:file "read-char")
                               ;; Translatable messages
@@ -67,7 +69,8 @@
                  :components ((:file "package")
                               (:file "client")
                               (:file "generic-functions")
-                              (:file "read")))
+                              (:file "read")
+                              (:file "deprecation" :if-feature :sbcl)))
 
                 (:static-file "README.md")
                 (:static-file "LICENSE"))

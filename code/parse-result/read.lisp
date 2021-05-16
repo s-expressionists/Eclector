@@ -11,8 +11,8 @@
 (defmethod eclector.reader:note-skipped-input
     ((client parse-result-client) input-stream reason)
   (let* ((start *start*)
-         (end (source-position client input-stream))
-         (range (make-source-range client start end))
+         (end (eclector.base:source-position client input-stream))
+         (range (eclector.base:make-source-range client start end))
          (parse-result (make-skipped-input-result
                         client input-stream reason range)))
     (when parse-result
@@ -28,7 +28,7 @@
   ;; (call-as-top-level-read
   ;;  client (lambda () ... (read-maybe-nothing client ...) ...) ...)
   ;; to work without the user code explicitly binding the variable.
-  (let* ((eclector.reader:*client* client)
+  (let* ((eclector.base:*client* client)
          (stack (list '()))
          (*stack* stack)
          (values (multiple-value-list (call-next-method)))
@@ -58,7 +58,7 @@
     ((client parse-result-client) input-stream eof-error-p eof-value)
   (declare (ignore eof-error-p eof-value))
   (let* ((stack (list* '() *stack*))
-         (start (source-position client input-stream)))
+         (start (eclector.base:source-position client input-stream)))
     (multiple-value-bind (value what)
         (let ((*stack* stack)
               ;; *START* is used in NOTE-SKIPPED-INPUT to describe
@@ -69,8 +69,8 @@
       (case what
         (:object
          (let* ((children (reverse (first stack)))
-                (end (source-position client input-stream))
-                (source (make-source-range client start end))
+                (end (eclector.base:source-position client input-stream))
+                (source (eclector.base:make-source-range client start end))
                 (parse-result (make-expression-result
                                client value children source)))
            (push parse-result (second stack))
