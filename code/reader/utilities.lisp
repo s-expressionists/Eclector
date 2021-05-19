@@ -2,6 +2,21 @@
 
 ;;; Escapes and case conversion
 
+(deftype token-string ()
+  `(and (not (vector nil))
+        ;; Try to figure out whether BASE-STRING is the same as
+        ;; STRING.
+        ,@(multiple-value-bind (result certainp)
+              (subtypep 'character 'base-char)
+            (when (and (not result) certainp)
+              '((not base-string))))
+        ;; Try to figure out whether adjusting a simple array makes it
+        ;; non-simple.
+        ,(if (adjustable-array-p
+              (adjust-array (make-array 1 :element-type 'character) 2))
+             '(array character 1)
+             '(simple-array character 1))))
+
 (defmacro update-escape-ranges
     (index escape-range-place remaining-escape-ranges-place)
   ;; Set ESCAPE-RANGE-PLACE to the escape range which contains INDEX
@@ -9,13 +24,14 @@
   ;; REMAINING-ESCAPE-RANGES-PLACE that are completely before INDEX.
   (alexandria:once-only (index)
     `(loop while (and (not (null ,escape-range-place))
-                      (>= ,index (cdr ,escape-range-place)))
+                      (>= ,index (the array-index (cdr ,escape-range-place))))
            do (pop ,remaining-escape-ranges-place)
               (setf ,escape-range-place (first ,remaining-escape-ranges-place))
            finally (return (and (not (null ,escape-range-place))
-                                (<= (car ,escape-range-place) ,index))))))
+                                (<= (the array-index (car ,escape-range-place)) ,index))))))
 
 (defun convert-according-to-readtable-case (token escape-ranges)
+  (declare (type token-string token))
   (macrolet
       ((do-token ((index-var escapep-var) &body body)
          `(loop with remaining-escape-ranges = escape-ranges
@@ -26,21 +42,20 @@
                                     escape-range remaining-escape-ranges)
                 do (progn ,@body)))
        (change-case (string-function char-function)
-         `(cond
-            ;; First common and easy case: no escapes. Change the case
-            ;; of all characters in TOKEN at once.
-            ((null escape-ranges)
-             (setf token (,string-function token)))
-            ;; Second common and easy case: all characters are
-            ;; escaped. Just return TOKEN.
-            ((and (null (cdr escape-ranges))
-                  (zerop (car (first escape-ranges)))
-                  (= (length token) (cdr (first escape-ranges))))
-             nil)
-            (t
-             (do-token (i escapep)
-               (unless escapep
-                 (setf (aref token i) (,char-function (aref token i)))))))))
+         `(cond ;; First common and easy case: no escapes. Change the
+                ;; case of all characters in TOKEN at once.
+                ((null escape-ranges)
+                 (setf token (,string-function token)))
+                ;; Second common and easy case: all characters are
+                ;; escaped. Just return TOKEN.
+                ((and (null (cdr escape-ranges))
+                      (zerop (car (first escape-ranges)))
+                      (= (length token) (cdr (first escape-ranges))))
+                 nil)
+                (t
+                 (do-token (i escapep)
+                   (unless escapep
+                     (setf (aref token i) (,char-function (aref token i)))))))))
     (ecase (eclector.readtable:readtable-case *readtable*)
       (:upcase
        (change-case nstring-upcase char-upcase))

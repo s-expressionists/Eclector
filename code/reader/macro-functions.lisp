@@ -467,17 +467,19 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
-  (let ((char1 (read-char-or-recoverable-error
+  (let ((readtable *readtable*)
+        (token nil)
+        (index 2)
+        (char1 (read-char-or-recoverable-error
                 stream nil 'end-of-input-after-backslash
-                :report 'use-replacement-character))
-        (token nil))
+                :report 'use-replacement-character)))
     (when (null char1) ; can happen when recovering
       (return-from sharpsign-backslash #\?))
     (labels ((next-char (context)
                (let ((char (read-char stream nil nil t)))
                  (cond ((not (null char))
                         (values char (eclector.readtable:syntax-type
-                                      *readtable* char)))
+                                      readtable char)))
                        ((eq context :single-escape)
                         (%recoverable-reader-error
                          stream 'unterminated-single-escape-in-character-name
@@ -491,22 +493,29 @@
                        (t
                         (return-char)))))
              (push-char (char)
-               (cond (token (vector-push-extend char token))
-                     (t (setf token (make-array 10 :element-type 'character
-                                                   :adjustable t
-                                                   :fill-pointer 2)
-                              (aref token 0) char1
-                              (aref token 1) char))))
+               (cond ((null token)
+                      (setf token (make-array 10 :element-type 'character)
+                            (aref token 0) char1
+                            (aref token 1) char))
+                     (t
+                      (let ((length (length token)))
+                        (unless (< index length)
+                          (setf token (adjust-array token (* 2 length)))))
+                      (setf (aref token index) char)
+                      (incf index)))
+               char)
              (return-char ()
                (return-from sharpsign-backslash
                  (cond (*read-suppress* nil)
                        ((null token)
                         char1)
-                       ((find-character *client* (string-upcase token)))
+                       ((let ((name (nstring-upcase (subseq token 0 index))))
+                          (find-character *client* name)))
                        (t
                         (%recoverable-reader-error
                          stream 'unknown-character-name
-                         :name token :report 'use-replacement-character)
+                         :name (subseq token 0 index)
+                         :report 'use-replacement-character)
                         #\?)))))
       (tagbody
        even-escapes
@@ -859,25 +868,31 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-colon parameter))
   (let ((readtable *readtable*)
-        (token (make-array 10 :element-type 'character
-                              :adjustable t
-                              :fill-pointer 0))
+        (token (make-array 10 :element-type 'character))
+        (index 0)
         (escape-ranges '())
         (escape-char)
         (package-marker nil))
+    (declare (type token-string token)
+             (type array-index index))
     (labels ((push-char (char escapesp)
                (when (and (not escapesp)
                           (char= char #\:)
                           (not package-marker))
                  (setf package-marker (or (ignore-errors (file-position stream))
                                           t)))
-               (vector-push-extend char token))
+               (let ((length (length token)))
+                 (unless (< index length)
+                   (setf token (adjust-array token (* 2 length)))))
+               (setf (aref token index) char)
+               (incf index)
+               char)
              (start-escape (char)
                (setf escape-char char)
-               (push (cons (length token) nil) escape-ranges))
+               (push (cons index nil) escape-ranges))
              (end-escape ()
                (setf escape-char nil)
-               (setf (cdr (first escape-ranges)) (length token)))
+               (setf (cdr (first escape-ranges)) index))
              (read-char-handling-eof (context)
                (let ((char (read-char stream nil nil t)))
                  (cond ((not (null char))
@@ -903,7 +918,7 @@
                (when (not (null escape-ranges))
                  (setf escape-ranges (nreverse escape-ranges)))
                (return-from sharpsign-colon
-                 (symbol-from-token stream token escape-ranges package-marker))))
+                 (symbol-from-token stream (subseq token 0 index) escape-ranges package-marker))))
       (tagbody
        even-escapes
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)

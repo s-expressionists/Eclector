@@ -5,20 +5,25 @@
 (defmethod read-token (client input-stream eof-error-p eof-value)
   (declare (ignore eof-error-p eof-value))
   (let ((readtable *readtable*)
-        (token (make-array 10 :element-type 'character
-                              :adjustable t
-                              :fill-pointer 0))
+        (token (make-array 10 :element-type 'character))
+        (index 0)
         (escape-ranges '())
         (escape-char))
+    (declare (type token-string token)
+             (type array-index index))
     (labels ((push-char (char)
-               (vector-push-extend char token)
+               (let ((length (length token)))
+                 (unless (< index length)
+                   (setf token (adjust-array token (* 2 length)))))
+               (setf (aref token index) char)
+               (incf index)
                char)
              (start-escape (char)
                (setf escape-char char)
-               (push (cons (length token) nil) escape-ranges))
+               (push (cons index nil) escape-ranges))
              (end-escape ()
                (setf escape-char nil)
-               (setf (cdr (first escape-ranges)) (length token)))
+               (setf (cdr (first escape-ranges)) index))
              (read-char-handling-eof (context)
                (let ((char (read-char input-stream nil nil t)))
                  (cond ((not (null char))
@@ -49,7 +54,7 @@
                        (t
                         (unless (null escape-ranges)
                           (setf escape-ranges (nreverse escape-ranges)))
-                        (interpret-token client input-stream token escape-ranges))))))
+                        (interpret-token client input-stream (subseq token 0 index) escape-ranges))))))
       (tagbody
          ;; This function is only called when a character is available
          ;; in INPUT-STREAM.
@@ -227,6 +232,7 @@
                              ,@body)))))
 
 (defmethod interpret-token (client input-stream token escape-ranges)
+  (declare (type token-string token))
   (convert-according-to-readtable-case token escape-ranges)
   (let* ((read-base *read-base*)
          (length (length token))
@@ -239,6 +245,7 @@
          (position-package-marker-1 nil)
          (position-package-marker-2 nil)
          (index -1))
+    (declare (type (or (eql -1) array-index) index))
     (with-accumulators ((decimal-mantissa 10)
                         (numerator* read-base) (denominator* read-base)
                         (exponent 10))
@@ -248,7 +255,7 @@
       (flet ((next ()
                (incf index)
                (if (= length index)
-                   nil
+                   (values nil nil)
                    (values (aref token index)
                            (update-escape-ranges
                             index escape-range remaining-escape-ranges))))

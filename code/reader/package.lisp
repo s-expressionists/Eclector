@@ -13,6 +13,9 @@
    #:read-from-string
    #:read-delimited-list)
 
+  (:import-from #:alexandria
+   #:array-index)
+
   (:shadowing-import-from #:eclector.base
    #:end-of-file
 
