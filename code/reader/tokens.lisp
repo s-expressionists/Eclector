@@ -278,13 +278,10 @@
                     :report 'use-replacement-float-format)
                    (setf type 'single-float))
                  (let ((magnitude (* (decimal-mantissa)
-                                     (cond (exponentp
-                                            (expt 10 (- (* exponent-sign (exponent))
-                                                        decimal-exponent)))
-                                           ((/= 0 decimal-exponent)
-                                            (expt 10 (- decimal-exponent)))
-                                           (t
-                                            1)))))
+                                     (expt 10 (- (if exponentp
+                                                     (* exponent-sign (exponent))
+                                                     0)
+                                                 decimal-exponent)))))
                    (return-from interpret-token
                      (* sign (coerce magnitude type)))))))
         (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
