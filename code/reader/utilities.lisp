@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.reader)
 
-;;; Escapes and case conversion
+;;; Token utilities
 
 (deftype token-string ()
   `(and (not (vector nil))
@@ -17,12 +17,123 @@
              '(array character 1)
              '(simple-array character 1))))
 
+;;; This macro binds the names PUSH-CHAR, {START,END}-ESCAPE and
+;;; FINALIZE to local functions that perform the accumulation of token
+;;; characters and, optionally, escape ranges. If LAZY is true, the
+;;; array of token characters is allocated lazily.
+(defmacro with-token-info
+    ((push-char (&optional start-escape end-escape) finalize &key lazy)
+     &body body)
+  `(let ((token ,(if lazy
+                     'nil
+                     '(make-array 10 :element-type 'character)))
+         (index 0)
+         ,@(when start-escape
+             `((escape-ranges '()))))
+     (declare (type ,(if lazy '(or null token-string) 'token-string) token)
+              (type array-index index))
+     (labels ((,push-char (char)
+                (cond ,@(when lazy
+                          `(((null token)
+                             (setf token (make-array 10 :element-type 'character)))))
+                      ((let ((length (length token)))
+                         (unless (< index length)
+                           (setf token (adjust-array token (* 2 length)))))))
+                (setf (aref token index) char)
+                (incf index)
+                char)
+              ,@(when start-escape
+                  `((,start-escape (char)
+                      (declare (ignore char))
+                      (push (cons index nil) escape-ranges))))
+              ,@(when end-escape
+                  `((,end-escape ()
+                      (setf (cdr (first escape-ranges)) index))))
+              (,finalize ()
+                (values (if (= index (length token))
+                            token
+                            (subseq token 0 index))
+                        ,@(when start-escape
+                            `((if (null escape-ranges)
+                                  escape-ranges
+                                  (nreverse escape-ranges)))))))
+       ,@body)))
+
+;;; This macro generates a state machine for reading a token and in
+;;; particular handles single and multiple escapes and
+;;; termination. STREAM and READTABLE are expressions which must
+;;; evaluate to the stream and readtable respectively that will be
+;;; used to read the token. The other required arguments are names of
+;;; functions that will be called to handle certain situations.
+(defmacro token-state-machine
+    (stream readtable
+     handle-char start-escape end-escape
+     unterminated-single-escape unterminated-multiple-escape
+     terminate)
+  (once-only (stream readtable)
+    (flet ((start-escape (char)
+             `((setf escape-char ,char)
+               ,@(when start-escape `((,start-escape ,char)))))
+           (end-escape ()
+             `((setf escape-char nil)
+               ,@(when end-escape `((,end-escape))))))
+      `(let ((escape-char nil))
+         (flet ((read-char-handling-eof (context)
+                  (let ((char (read-char ,stream nil nil t)))
+                    (cond ((not (null char))
+                           (values char (eclector.readtable:syntax-type
+                                         ,readtable char)))
+                          ((eq context :single-escape)
+                           (,unterminated-single-escape escape-char)
+                           ,@(end-escape)
+                           (,terminate))
+                          ((eq context :multiple-escape)
+                           (,unterminated-multiple-escape escape-char)
+                           ,@(end-escape)
+                           (,terminate))
+                          (t
+                           (,terminate))))))
+           (tagbody
+            even-escapes
+              (multiple-value-bind (char syntax-type)
+                  (read-char-handling-eof nil)
+                (ecase syntax-type
+                  ((:whitespace :terminating-macro)
+                   (unread-char char ,stream)
+                   (,terminate))
+                  (:single-escape
+                   ,@(start-escape 'char)
+                   (,handle-char (read-char-handling-eof syntax-type) t)
+                   ,@(end-escape)
+                   (go even-escapes))
+                  (:multiple-escape
+                   ,@(start-escape 'char)
+                   (go odd-escapes))
+                  ((:constituent :non-terminating-macro)
+                   (,handle-char char nil)
+                   (go even-escapes))))
+            odd-escapes
+              (multiple-value-bind (char syntax-type)
+                  (read-char-handling-eof :multiple-escape)
+                (case syntax-type
+                  (:single-escape
+                   (,handle-char (read-char-handling-eof syntax-type) t)
+                   (go odd-escapes))
+                  (:multiple-escape
+                   ,@(end-escape)
+                   (go even-escapes))
+                  (t
+                   (,handle-char char t)
+                   (go odd-escapes))))))))))
+
+;;; Escapes and case conversion
+
 (defmacro update-escape-ranges
     (index escape-range-place remaining-escape-ranges-place)
   ;; Set ESCAPE-RANGE-PLACE to the escape range which contains INDEX
   ;; or NIL. If necessary, pop ranges off of
   ;; REMAINING-ESCAPE-RANGES-PLACE that are completely before INDEX.
-  (alexandria:once-only (index)
+  (once-only (index)
     `(loop while (and (not (null ,escape-range-place))
                       (>= ,index (the array-index (cdr ,escape-range-place))))
            do (pop ,remaining-escape-ranges-place)

@@ -14,7 +14,9 @@
    #:read-delimited-list)
 
   (:import-from #:alexandria
-   #:array-index)
+   #:array-index
+
+   #:once-only)
 
   (:shadowing-import-from #:eclector.base
    #:end-of-file

@@ -4,47 +4,18 @@
 
 (defmethod read-token (client input-stream eof-error-p eof-value)
   (declare (ignore eof-error-p eof-value))
-  (let ((readtable *readtable*)
-        (token (make-array 10 :element-type 'character))
-        (index 0)
-        (escape-ranges '())
-        (escape-char))
-    (declare (type token-string token)
-             (type array-index index))
-    (labels ((push-char (char)
-               (let ((length (length token)))
-                 (unless (< index length)
-                   (setf token (adjust-array token (* 2 length)))))
-               (setf (aref token index) char)
-               (incf index)
-               char)
-             (start-escape (char)
-               (setf escape-char char)
-               (push (cons index nil) escape-ranges))
-             (end-escape ()
-               (setf escape-char nil)
-               (setf (cdr (first escape-ranges)) index))
-             (read-char-handling-eof (context)
-               (let ((char (read-char input-stream nil nil t)))
-                 (cond ((not (null char))
-                        (values char (eclector.readtable:syntax-type
-                                      readtable char)))
-                       ((eq context :single-escape)
-                        (%recoverable-reader-error
-                         input-stream 'unterminated-single-escape-in-symbol
-                         :escape-char escape-char
-                         :report 'use-partial-symbol)
-                        (end-escape)
-                        (terminate-token))
-                       ((eq context :multiple-escape)
-                        (%recoverable-reader-error
-                         input-stream 'unterminated-multiple-escape-in-symbol
-                         :delimiter escape-char
-                         :report 'use-partial-symbol)
-                        (end-escape)
-                        (terminate-token))
-                       (t
-                        (terminate-token)))))
+  (with-token-info (push-char (start-escape end-escape) finalize)
+    (labels ((handle-char (char escapep)
+               (declare (ignore escapep))
+               (push-char char))
+             (unterminated-single-escape (escape-char)
+               (%recoverable-reader-error
+                input-stream 'unterminated-single-escape-in-symbol
+                :escape-char escape-char :report 'use-partial-symbol))
+             (unterminated-multiple-escape (delimiter)
+               (%recoverable-reader-error
+                input-stream 'unterminated-multiple-escape-in-symbol
+                :delimiter delimiter :report 'use-partial-symbol))
              (terminate-token ()
                (return-from read-token
                  (cond (*read-suppress*
@@ -52,55 +23,12 @@
                                             (or *skip-reason* '*read-suppress*))
                         nil)
                        (t
-                        (unless (null escape-ranges)
-                          (setf escape-ranges (nreverse escape-ranges)))
-                        (interpret-token client input-stream (subseq token 0 index) escape-ranges))))))
-      (tagbody
-         ;; This function is only called when a character is available
-         ;; in INPUT-STREAM.
-         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
-           (ecase syntax-type
-             (:single-escape
-              (start-escape char)
-              (push-char (read-char-handling-eof syntax-type))
-              (end-escape)
-              (go even-escapes))
-             (:multiple-escape
-              (start-escape char)
-              (go odd-escapes))
-             (:constituent
-              (push-char char)
-              (go even-escapes))))
-       even-escapes
-         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
-           (ecase syntax-type
-             ((:whitespace :terminating-macro)
-              (unread-char char input-stream)
-              (terminate-token))
-             (:single-escape
-              (start-escape char)
-              (push-char (read-char-handling-eof syntax-type))
-              (end-escape)
-              (go even-escapes))
-             (:multiple-escape
-              (start-escape char)
-              (go odd-escapes))
-             ((:constituent :non-terminating-macro)
-              (push-char char)
-              (go even-escapes))))
-       odd-escapes
-         (multiple-value-bind (char syntax-type)
-             (read-char-handling-eof :multiple-escape)
-           (case syntax-type
-             (:single-escape
-              (push-char (read-char-handling-eof syntax-type))
-              (go odd-escapes))
-             (:multiple-escape
-              (end-escape)
-              (go even-escapes))
-             (t
-              (push-char char)
-              (go odd-escapes))))))))
+                        (multiple-value-bind (token escape-ranges) (finalize)
+                          (interpret-token client input-stream token escape-ranges)))))))
+      (token-state-machine
+       input-stream *readtable* handle-char start-escape end-escape
+       unterminated-single-escape unterminated-multiple-escape
+       terminate-token))))
 
 ;;; Constituent traits
 ;;;

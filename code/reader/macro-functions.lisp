@@ -467,82 +467,42 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
-  (let ((readtable *readtable*)
-        (token nil)
-        (index 2)
-        (char1 (read-char-or-recoverable-error
+  (let ((char1 (read-char-or-recoverable-error
                 stream nil 'end-of-input-after-backslash
                 :report 'use-replacement-character)))
     (when (null char1) ; can happen when recovering
       (return-from sharpsign-backslash #\?))
-    (labels ((next-char (context)
-               (let ((char (read-char stream nil nil t)))
-                 (cond ((not (null char))
-                        (values char (eclector.readtable:syntax-type
-                                      readtable char)))
-                       ((eq context :single-escape)
-                        (%recoverable-reader-error
-                         stream 'unterminated-single-escape-in-character-name
-                         :escape-char #\\ :report 'use-partial-character-name)
-                        (return-char))
-                       ((eq context :multiple-escape)
-                        (%recoverable-reader-error
-                         stream 'unterminated-multiple-escape-in-character-name
-                         :delimiter #\| :report 'use-partial-character-name)
-                        (return-char))
-                       (t
-                        (return-char)))))
-             (push-char (char)
-               (cond ((null token)
-                      (setf token (make-array 10 :element-type 'character)
-                            (aref token 0) char1
-                            (aref token 1) char))
-                     (t
-                      (let ((length (length token)))
-                        (unless (< index length)
-                          (setf token (adjust-array token (* 2 length)))))
-                      (setf (aref token index) char)
-                      (incf index)))
-               char)
-             (return-char ()
+    (with-token-info (push-char () finalize :lazy t)
+      (flet ((handle-char (char escapep)
+               (declare (ignore escapep))
+               (when (not (null char1))
+                 (push-char char1)
+                 (setf char1 nil))
+               (push-char char))
+             (unterminated-single-escape (escape-char)
+               (%recoverable-reader-error
+                stream 'unterminated-single-escape-in-character-name
+                :escape-char escape-char :report 'use-partial-character-name))
+             (unterminated-multiple-escape (delimiter)
+               (%recoverable-reader-error
+                stream 'unterminated-multiple-escape-in-character-name
+                :delimiter delimiter :report 'use-partial-character-name))
+             (terminate-character ()
                (return-from sharpsign-backslash
                  (cond (*read-suppress* nil)
                        ((null token)
                         char1)
-                       ((let ((name (nstring-upcase (subseq token 0 index))))
-                          (find-character *client* name)))
+                       ((find-character *client* (nstring-upcase (finalize))))
                        (t
                         (%recoverable-reader-error
                          stream 'unknown-character-name
-                         :name (subseq token 0 index)
+                         :name (finalize)
                          :report 'use-replacement-character)
                         #\?)))))
-      (tagbody
-       even-escapes
-         (multiple-value-bind (char syntax-type) (next-char nil)
-           (ecase syntax-type
-             ((:whitespace :terminating-macro)
-              (unread-char char stream)
-              (return-char))
-             (:single-escape
-              (push-char (next-char syntax-type))
-              (go even-escapes))
-             (:multiple-escape
-              (go odd-escapes))
-             ((:constituent :non-terminating-macro)
-              (push-char char)
-              (go even-escapes))))
-       odd-escapes
-         (multiple-value-bind (char syntax-type) (next-char :multiple-escape)
-           (case syntax-type
-             (:single-escape
-              (push-char (next-char syntax-type))
-              (go odd-escapes))
-             (:multiple-escape
-              (go even-escapes))
-             (t
-              (push-char char)
-              (go odd-escapes))))))))
+        (token-state-machine
+         stream *readtable* handle-char nil nil
+         unterminated-single-escape unterminated-multiple-escape
+         terminate-character)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -867,89 +827,31 @@
   (declare (ignore char))
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-colon parameter))
-  (let ((readtable *readtable*)
-        (token (make-array 10 :element-type 'character))
-        (index 0)
-        (escape-ranges '())
-        (escape-char)
-        (package-marker nil))
-    (declare (type token-string token)
-             (type array-index index))
-    (labels ((push-char (char escapesp)
-               (when (and (not escapesp)
-                          (char= char #\:)
-                          (not package-marker))
-                 (setf package-marker (or (ignore-errors (file-position stream))
-                                          t)))
-               (let ((length (length token)))
-                 (unless (< index length)
-                   (setf token (adjust-array token (* 2 length)))))
-               (setf (aref token index) char)
-               (incf index)
-               char)
-             (start-escape (char)
-               (setf escape-char char)
-               (push (cons index nil) escape-ranges))
-             (end-escape ()
-               (setf escape-char nil)
-               (setf (cdr (first escape-ranges)) index))
-             (read-char-handling-eof (context)
-               (let ((char (read-char stream nil nil t)))
-                 (cond ((not (null char))
-                        (values char (eclector.readtable:syntax-type
-                                      readtable char)))
-                       ((eq context :single-escape)
-                        (%recoverable-reader-error
-                         stream 'unterminated-single-escape-in-symbol
-                         :escape-char escape-char
-                         :report 'use-partial-symbol)
-                        (end-escape)
-                        (return-symbol))
-                       ((eq context :multiple-escape)
-                        (%recoverable-reader-error
-                         stream 'unterminated-multiple-escape-in-symbol
-                         :delimiter escape-char
-                         :report 'use-partial-symbol)
-                        (end-escape)
-                        (return-symbol))
-                       (t
-                        (return-symbol)))))
-             (return-symbol ()
-               (when (not (null escape-ranges))
-                 (setf escape-ranges (nreverse escape-ranges)))
-               (return-from sharpsign-colon
-                 (symbol-from-token stream (subseq token 0 index) escape-ranges package-marker))))
-      (tagbody
-       even-escapes
-         (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
-           (ecase syntax-type
-             ((:whitespace :terminating-macro)
-              (unread-char char stream)
-              (return-symbol))
-             (:single-escape
-              (start-escape char)
-              (push-char (read-char-handling-eof syntax-type) t)
-              (end-escape)
-              (go even-escapes))
-             (:multiple-escape
-              (start-escape char)
-              (go odd-escapes))
-             ((:constituent :non-terminating-macro)
-              (push-char char nil)
-              (go even-escapes))))
-       odd-escapes
-         (multiple-value-bind (char syntax-type)
-             (read-char-handling-eof :multiple-escape)
-           (case syntax-type
-             (:single-escape
-              (push-char (read-char-handling-eof syntax-type) t)
-              (go odd-escapes))
-             (:multiple-escape
-              (end-escape)
-              (go even-escapes))
-             (t
-              (push-char char t)
-              (go odd-escapes))))))))
+  (with-token-info (push-char (start-escape end-escape) finalize)
+    (let ((package-marker nil))
+      (labels ((handle-char (char escapep)
+                 (when (and (not escapep)
+                            (char= char #\:)
+                            (not package-marker))
+                   (setf package-marker (or (ignore-errors (file-position stream))
+                                            t)))
+                 (push-char char))
+               (unterminated-single-escape (escape-char)
+                 (%recoverable-reader-error
+                  stream 'unterminated-single-escape-in-symbol
+                  :escape-char escape-char :report 'use-partial-symbol))
+               (unterminated-multiple-escape (delimiter)
+                 (%recoverable-reader-error
+                  stream 'unterminated-multiple-escape-in-symbol
+                  :delimiter delimiter :report 'use-partial-symbol))
+               (return-symbol ()
+                 (return-from sharpsign-colon
+                   (multiple-value-bind (token escape-ranges) (finalize)
+                     (symbol-from-token stream token escape-ranges package-marker)))))
+        (token-state-machine
+         stream *readtable* handle-char start-escape end-escape
+         unterminated-single-escape unterminated-multiple-escape
+         return-symbol)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
