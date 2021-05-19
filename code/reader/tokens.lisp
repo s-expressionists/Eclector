@@ -5,10 +5,9 @@
 (defmethod read-token (client input-stream eof-error-p eof-value)
   (declare (ignore eof-error-p eof-value))
   (let ((readtable *readtable*)
-        (token (make-array 10
-                           :element-type 'character
-                           :adjustable t
-                           :fill-pointer 0))
+        (token (make-array 10 :element-type 'character
+                              :adjustable t
+                              :fill-pointer 0))
         (escape-ranges '())
         (escape-char))
     (labels ((push-char (char)
@@ -70,9 +69,9 @@
        even-escapes
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
            (ecase syntax-type
-             ((:constituent :non-terminating-macro)
-              (push-char char)
-              (go even-escapes))
+             ((:whitespace :terminating-macro)
+              (unread-char char input-stream)
+              (terminate-token))
              (:single-escape
               (start-escape char)
               (push-char (read-char-handling-eof syntax-type))
@@ -81,26 +80,22 @@
              (:multiple-escape
               (start-escape char)
               (go odd-escapes))
-             (:terminating-macro
-              (unread-char char input-stream)
-              (terminate-token))
-             (:whitespace
-              (unread-char char input-stream)
-              (terminate-token))))
+             ((:constituent :non-terminating-macro)
+              (push-char char)
+              (go even-escapes))))
        odd-escapes
          (multiple-value-bind (char syntax-type)
              (read-char-handling-eof :multiple-escape)
-           (ecase syntax-type
-             ((:constituent :terminating-macro
-               :non-terminating-macro :whitespace)
-              (push-char char)
-              (go odd-escapes))
+           (case syntax-type
              (:single-escape
               (push-char (read-char-handling-eof syntax-type))
               (go odd-escapes))
              (:multiple-escape
               (end-escape)
-              (go even-escapes))))))))
+              (go even-escapes))
+             (t
+              (push-char char)
+              (go odd-escapes))))))))
 
 ;;; Constituent traits
 ;;;

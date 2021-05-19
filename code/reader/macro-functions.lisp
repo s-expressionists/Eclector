@@ -490,12 +490,11 @@
                         (return-char))
                        (t
                         (return-char)))))
-             (collect-char (char)
+             (push-char (char)
                (cond (token (vector-push-extend char token))
-                     (t (setf token (make-array 10
-                                                :element-type 'character
-                                                :adjustable t
-                                                :fill-pointer 2)
+                     (t (setf token (make-array 10 :element-type 'character
+                                                   :adjustable t
+                                                   :fill-pointer 2)
                               (aref token 0) char1
                               (aref token 1) char))))
              (return-char ()
@@ -513,30 +512,27 @@
        even-escapes
          (multiple-value-bind (char syntax-type) (next-char nil)
            (ecase syntax-type
-             ((:constituent :non-terminating-macro)
-              (collect-char char)
-              (go even-escapes))
+             ((:whitespace :terminating-macro)
+              (unread-char char stream)
+              (return-char))
              (:single-escape
-              (collect-char (next-char syntax-type))
+              (push-char (next-char syntax-type))
               (go even-escapes))
              (:multiple-escape
               (go odd-escapes))
-             (:terminating-macro
-              (unread-char char stream)
-              (return-char))
-             (:whitespace
-              (unread-char char stream)
-              (return-char))))
+             ((:constituent :non-terminating-macro)
+              (push-char char)
+              (go even-escapes))))
        odd-escapes
          (multiple-value-bind (char syntax-type) (next-char :multiple-escape)
            (case syntax-type
              (:single-escape
-              (collect-char (next-char syntax-type))
+              (push-char (next-char syntax-type))
               (go odd-escapes))
              (:multiple-escape
               (go even-escapes))
              (t
-              (collect-char char)
+              (push-char char)
               (go odd-escapes))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -863,13 +859,12 @@
   (unless (null parameter)
     (numeric-parameter-ignored stream 'sharpsign-colon parameter))
   (let ((readtable *readtable*)
-        (token (make-array 10
-                           :element-type 'character
-                           :adjustable t
-                           :fill-pointer 0))
+        (token (make-array 10 :element-type 'character
+                              :adjustable t
+                              :fill-pointer 0))
         (escape-ranges '())
-        (package-marker nil)
-        (escape-char))
+        (escape-char)
+        (package-marker nil))
     (labels ((push-char (char escapesp)
                (when (and (not escapesp)
                           (char= char #\:)
@@ -913,10 +908,7 @@
        even-escapes
          (multiple-value-bind (char syntax-type) (read-char-handling-eof nil)
            (ecase syntax-type
-             (:whitespace
-              (unread-char char stream)
-              (return-symbol))
-             (:terminating-macro
+             ((:whitespace :terminating-macro)
               (unread-char char stream)
               (return-symbol))
              (:single-escape
@@ -938,7 +930,6 @@
               (push-char (read-char-handling-eof syntax-type) t)
               (go odd-escapes))
              (:multiple-escape
-              (setf escape-char nil)
               (end-escape)
               (go even-escapes))
              (t
