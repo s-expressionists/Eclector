@@ -288,21 +288,23 @@ th {
   <ul class="no-bullet">
     <li><a id="toc-Packages-1" href="#Packages">2.1 Packages</a>
     <ul class="no-bullet">
-      <li><a id="toc-Package-for-ordinary-reader-features-1" href="#Package-for-ordinary-reader-features">2.1.1 Package for ordinary reader features</a></li>
-      <li><a id="toc-Package-for-readtable-features-1" href="#Package-for-readtable-features">2.1.2 Package for readtable features</a></li>
-      <li><a id="toc-Package-for-parse-result-construction-features-1" href="#Package-for-parse-result-construction-features">2.1.3 Package for parse result construction features</a></li>
-      <li><a id="toc-Package-for-CST-features-1" href="#Package-for-CST-features">2.1.4 Package for CST features</a></li>
+      <li><a id="toc-Package-for-basic-features-1" href="#Package-for-basic-features">2.1.1 Package for basic features</a></li>
+      <li><a id="toc-Package-for-ordinary-reader-features-1" href="#Package-for-ordinary-reader-features">2.1.2 Package for ordinary reader features</a></li>
+      <li><a id="toc-Package-for-readtable-features-1" href="#Package-for-readtable-features">2.1.3 Package for readtable features</a></li>
+      <li><a id="toc-Package-for-parse-result-construction-features-1" href="#Package-for-parse-result-construction-features">2.1.4 Package for parse result construction features</a></li>
+      <li><a id="toc-Package-for-CST-features-1" href="#Package-for-CST-features">2.1.5 Package for CST features</a></li>
     </ul></li>
-    <li><a id="toc-Ordinary-reader-features-1" href="#Ordinary-reader-features">2.2 Ordinary reader features</a>
+    <li><a id="toc-Basic-features-1" href="#Basic-features">2.2 Basic features</a></li>
+    <li><a id="toc-Ordinary-reader-features-1" href="#Ordinary-reader-features">2.3 Ordinary reader features</a>
     <ul class="no-bullet">
-      <li><a id="toc-Common-Lisp-reader-compatible-interface-1" href="#Common-Lisp-reader-compatible-interface">2.2.1 Common Lisp reader compatible interface</a></li>
-      <li><a id="toc-Reader-behavior-protocol-1" href="#Reader-behavior-protocol">2.2.2 Reader behavior protocol</a></li>
-      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.2.3 S-expression creation and quasiquotation</a></li>
-      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.2.4 Readtable initialization</a></li>
+      <li><a id="toc-Common-Lisp-reader-compatible-interface-1" href="#Common-Lisp-reader-compatible-interface">2.3.1 Common Lisp reader compatible interface</a></li>
+      <li><a id="toc-Reader-behavior-protocol-1" href="#Reader-behavior-protocol">2.3.2 Reader behavior protocol</a></li>
+      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.3.3 S-expression creation and quasiquotation</a></li>
+      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.3.4 Readtable initialization</a></li>
     </ul></li>
-    <li><a id="toc-Readtable-features-1" href="#Readtable-features">2.3 Readtable features</a></li>
-    <li><a id="toc-Parse-result-construction-features-1" href="#Parse-result-construction-features">2.4 Parse result construction features</a></li>
-    <li><a id="toc-CST-reader-features-1" href="#CST-reader-features">2.5 CST reader features</a></li>
+    <li><a id="toc-Readtable-features-1" href="#Readtable-features">2.4 Readtable features</a></li>
+    <li><a id="toc-Parse-result-construction-features-1" href="#Parse-result-construction-features">2.5 Parse result construction features</a></li>
+    <li><a id="toc-CST-reader-features-1" href="#CST-reader-features">2.6 CST reader features</a></li>
   </ul></li>
   <li><a id="toc-Recovering-from-errors-1" href="#Recovering-from-errors">3 Recovering from errors</a>
   <ul class="no-bullet">
@@ -402,40 +404,56 @@ Next: <a href="#Recovering-from-errors" accesskey="n" rel="next">Recovering from
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Packages" accesskey="1">Packages</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Ordinary-reader-features" accesskey="2">Ordinary reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Basic-features" accesskey="2">Basic features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Readtable-features" accesskey="3">Readtable features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Ordinary-reader-features" accesskey="3">Ordinary reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Parse-result-construction-features" accesskey="4">Parse result construction features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Readtable-features" accesskey="4">Readtable features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#CST-reader-features" accesskey="5">CST reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Parse-result-construction-features" accesskey="5">Parse result construction features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#CST-reader-features" accesskey="6">CST reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 <hr>
 <span id="Packages"></span><div class="header">
 <p>
-Next: <a href="#Ordinary-reader-features" accesskey="n" rel="next">Ordinary reader features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Basic-features" accesskey="n" rel="next">Basic features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Packages-1"></span><h3 class="section">2.1 Packages</h3>
 
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="#Package-for-ordinary-reader-features" accesskey="1">Package for ordinary reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-basic-features" accesskey="1">Package for basic features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Package-for-readtable-features" accesskey="2">Package for readtable features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-ordinary-reader-features" accesskey="2">Package for ordinary reader features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Package-for-parse-result-construction-features" accesskey="3">Package for parse result construction features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-readtable-features" accesskey="3">Package for readtable features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Package-for-CST-features" accesskey="4">Package for CST features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-parse-result-construction-features" accesskey="4">Package for parse result construction features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Package-for-CST-features" accesskey="5">Package for CST features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 <hr>
+<span id="Package-for-basic-features"></span><div class="header">
+<p>
+Next: <a href="#Package-for-ordinary-reader-features" accesskey="n" rel="next">Package for ordinary reader features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Package-for-basic-features-1"></span><h4 class="subsection">2.1.1 Package for basic features</h4>
+
+<p>The package for basic features such as customizable source location
+construction is named <tt>eclector.base</tt>.  Although this package does not
+shadow any symbol in the <tt>common-lisp</tt> package, we still recommend the
+use of explicit package prefixes to refer to symbols in this package.
+</p>
+<hr>
 <span id="Package-for-ordinary-reader-features"></span><div class="header">
 <p>
-Next: <a href="#Package-for-readtable-features" accesskey="n" rel="next">Package for readtable features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Package-for-readtable-features" accesskey="n" rel="next">Package for readtable features</a>, Previous: <a href="#Package-for-basic-features" accesskey="p" rel="prev">Package for basic features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Package-for-ordinary-reader-features-1"></span><h4 class="subsection">2.1.1 Package for ordinary reader features</h4>
+<span id="Package-for-ordinary-reader-features-1"></span><h4 class="subsection">2.1.2 Package for ordinary reader features</h4>
 
 <p>The package for ordinary reader features is named
 <tt>eclector.reader</tt>.  To use features of this package, we
@@ -449,7 +467,7 @@ cause conflicts with the <tt>common-lisp</tt> package otherwise.
 <p>
 Next: <a href="#Package-for-parse-result-construction-features" accesskey="n" rel="next">Package for parse result construction features</a>, Previous: <a href="#Package-for-ordinary-reader-features" accesskey="p" rel="prev">Package for ordinary reader features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Package-for-readtable-features-1"></span><h4 class="subsection">2.1.2 Package for readtable features</h4>
+<span id="Package-for-readtable-features-1"></span><h4 class="subsection">2.1.3 Package for readtable features</h4>
 
 <span id="index-readtable"></span>
 
@@ -465,40 +483,98 @@ cause conflicts with the <tt>common-lisp</tt> package otherwise.
 <p>
 Next: <a href="#Package-for-CST-features" accesskey="n" rel="next">Package for CST features</a>, Previous: <a href="#Package-for-readtable-features" accesskey="p" rel="prev">Package for readtable features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Package-for-parse-result-construction-features-1"></span><h4 class="subsection">2.1.3 Package for parse result construction features</h4>
+<span id="Package-for-parse-result-construction-features-1"></span><h4 class="subsection">2.1.4 Package for parse result construction features</h4>
 
 <span id="index-parse-result-1"></span>
 
-<p>The package for features related to the creation of client-defined
-parse results is named <tt>eclector.parse-result</tt>.  Although this
-package does not shadow any symbol in the <tt>common-lisp</tt>
-package, we still recommend the use of explicit package prefixes to
-refer to symbols in this package.
+<p>The package for features related to the creation of client-defined parse
+results is named <tt>eclector.parse-result</tt>.  To use features of this
+package, we recommend the use of explicit package prefixes, simply
+because this package shadows and exports names that are also exported
+from the <tt>common-lisp</tt> package.  Importing this package will likely
+cause conflicts with the <tt>common-lisp</tt> package otherwise.
 </p>
 <hr>
 <span id="Package-for-CST-features"></span><div class="header">
 <p>
 Previous: <a href="#Package-for-parse-result-construction-features" accesskey="p" rel="prev">Package for parse result construction features</a>, Up: <a href="#Packages" accesskey="u" rel="up">Packages</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Package-for-CST-features-1"></span><h4 class="subsection">2.1.4 Package for CST features</h4>
+<span id="Package-for-CST-features-1"></span><h4 class="subsection">2.1.5 Package for CST features</h4>
 
 <span id="index-parse-result-2"></span>
 <span id="index-concrete-syntax-tree-1"></span>
 
 <p>The package for features related to the creation of concrete syntax
-trees is named <tt>eclector.concrete-syntax-tree</tt>.  Although this
-package does not shadow any symbol in the <tt>common-lisp</tt>
-package, we still recommend the use of explicit package prefixes to
-refer to symbols in this package.
+trees is named <tt>eclector.concrete-syntax-tree</tt>.  To use features of
+this package, we recommend the use of explicit package prefixes, simply
+because this package shadows and exports names that are also exported
+from the <tt>common-lisp</tt> package.  Importing this package will likely
+cause conflicts with the <tt>common-lisp</tt> package otherwise.
 </p>
+<hr>
+<span id="Basic-features"></span><div class="header">
+<p>
+Next: <a href="#Ordinary-reader-features" accesskey="n" rel="next">Ordinary reader features</a>, Previous: <a href="#Packages" accesskey="p" rel="prev">Packages</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Basic-features-1"></span><h3 class="section">2.2 Basic features</h3>
+
+<span id="index-client"></span>
+<span id="index-source-location"></span>
+
+<p>In this section, symbols written without package marker
+are in the <tt>eclector.base</tt> package
+(see <a href="#Package-for-basic-features">Package for basic features</a>).
+</p>
+<p>This package provides the mechanism that enables clients to customize
+the behavior of the reader.  Furthermore this package provides a
+protocol for customizing a particular aspect of the behavior, namely the
+construction of source positions and source ranges.  Eclector uses
+source positions and source ranges in signaled conditions and parse
+results (see <a href="#Parse-result-construction-features">Parse result construction features</a>).
+</p>
+<span id="Variable-eclector_002ebase_003a_002aclient_002a"></span><dl>
+<dt id="index-_002aclient_002a-_005beclector_002ebase_005d">Variable: <strong>*client* [eclector.base]</strong></dt>
+<dd>
+<p>This variable is used by several generic functions which are called by
+<tt>eclector.reader:read</tt>.  The default value of the variable is <tt>nil</tt>.
+Clients that want to override or extend the default behavior of some
+generic function of Eclector should bind this variable to some
+standard object and provide a method on that generic function,
+specialized to the class of that standard object.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ebase_003asource_002dposition"></span><dl>
+<dt id="index-source_002dposition-_005beclector_002ebase_005d">Generic Function: <strong>source-position [eclector.base]</strong> <em>client stream</em></dt>
+<dd>
+<p>This generic function is called in order to determine the current
+position in <var>stream</var>.  Eclector does not inspect or manipulate the
+objects returned by this generic function beyond storing them in
+signaled conditions and passing them as arguments to the
+<tt>make-source-range</tt> generic function.  A client is therefore free to
+define methods on this generic function that return arbitrary objects.
+</p>
+<p>The default method on this generic function calls <tt>cl:file-position</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ebase_003amake_002dsource_002drange"></span><dl>
+<dt id="index-make_002dsource_002drange-_005beclector_002ebase_005d">Generic Function: <strong>make-source-range [eclector.base]</strong> <em>client start end</em></dt>
+<dd>
+<p>This generic function is called in order to turn the source positions
+<var>start</var> and <var>end</var> into a range representation suitable
+for <var>client</var>.  The returned representation designates the range
+of input characters from and including the character at position
+<var>start</var> to but not including the character at position
+<var>end</var>.  The default method returns
+<code>(cons <var>start</var> <var>end</var>)</code>.
+</p></dd></dl>
+
 <hr>
 <span id="Ordinary-reader-features"></span><div class="header">
 <p>
-Next: <a href="#Readtable-features" accesskey="n" rel="next">Readtable features</a>, Previous: <a href="#Packages" accesskey="p" rel="prev">Packages</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Readtable-features" accesskey="n" rel="next">Readtable features</a>, Previous: <a href="#Basic-features" accesskey="p" rel="prev">Basic features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Ordinary-reader-features-1"></span><h3 class="section">2.2 Ordinary reader features</h3>
+<span id="Ordinary-reader-features-1"></span><h3 class="section">2.3 Ordinary reader features</h3>
 
-<span id="index-client"></span>
 <span id="index-parse-result-3"></span>
 <span id="index-source-tracking-1"></span>
 
@@ -515,15 +591,15 @@ Common Lisp reader (except functions related to readtables which Eclector
 provides separately, see <a href="#Readtable-features">Readtable features</a>).  These functions are
 discussed in the section <a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a>.
 
-</li><li> The second category is comprised of the <tt>*client*</tt> special variable
-and a collection of protocols which allow customizing the behavior of
-the reader by defining methods specialized to a particular client on the
-generic functions of the protocols.
+</li><li> The second category is comprised of the <tt>eclector.base:*client*</tt>
+special variable and a collection of protocols which allow customizing
+the behavior of the reader by defining methods specialized to a
+particular client on the generic functions of the protocols.
 </li></ul>
 
 <div class="float"><span id="fig_003aread_002dcall_002dsequence_002dordinary"></span>
-<img src="read-call-sequence-ordinary.png" alt="read-call-sequence-ordinary">
-
+<div align="center"><img src="read-call-sequence-ordinary.png" alt="read-call-sequence-ordinary">
+</div>
 <div class="float-caption"><p><strong>Figure 2.1: </strong>Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.</p></div></div>
@@ -534,16 +610,6 @@ when the functions <tt>read</tt>, <tt>read-preserving-whitespace</tt>,
 <tt>read-from-string</tt> and <tt>read-delimited-list</tt> are called by client
 code.
 </p>
-<span id="Variable-eclector_002ereader_003a_002aclient_002a"></span><dl>
-<dt id="index-_002aclient_002a-_005beclector_002ereader_005d">Variable: <strong>*client* [eclector.reader]</strong></dt>
-<dd><p>This variable is used by several generic functions called by
-<tt>read</tt>.  The default value of the variable is <tt>nil</tt>.
-Client code that wants to override or extend the default behavior of
-some generic function of Eclector should bind this variable to some
-standard object and provide a method on that generic function,
-specialized to the class of that standard object.
-</p></dd></dl>
-
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Common-Lisp-reader-compatible-interface" accesskey="1">Common Lisp reader compatible interface</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
@@ -560,13 +626,13 @@ specialized to the class of that standard object.
 <p>
 Next: <a href="#Reader-behavior-protocol" accesskey="n" rel="next">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Common-Lisp-reader-compatible-interface-1"></span><h4 class="subsection">2.2.1 Common Lisp reader compatible interface</h4>
+<span id="Common-Lisp-reader-compatible-interface-1"></span><h4 class="subsection">2.3.1 Common Lisp reader compatible interface</h4>
 
 <p>The following functions are like their standarad Common Lisp
 counterparts with the two differences that their names are symbols in
 the <tt>eclector.reader</tt> package and that their behavior can deviate from
-that of the standard reader depending on the value of the <tt>*client*</tt>
-variable.
+that of the standard reader depending on the value of the
+<tt>eclector.base:*client*</tt> variable.
 </p>
 <span id="Function-eclector_002ereader_003aread"></span><dl>
 <dt id="index-read-_005beclector_002ereader_005d">Function: <strong>read [eclector.reader]</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
@@ -602,14 +668,14 @@ function with the same name.
 <p>
 Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel="next">S-expression creation and quasiquotation</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Reader-behavior-protocol-1"></span><h4 class="subsection">2.2.2 Reader behavior protocol</h4>
+<span id="Reader-behavior-protocol-1"></span><h4 class="subsection">2.3.2 Reader behavior protocol</h4>
 
 <p>By defining methods on the generic functions of this protocol, clients
 can customize the high-level behavior of the reader.
 </p>
 <div class="float"><span id="fig_003aread_002dcall_002dsequence_002dcustomization"></span>
-<img src="read-call-sequence-customization.png" alt="read-call-sequence-customization">
-
+<div align="center"><img src="read-call-sequence-customization.png" alt="read-call-sequence-customization">
+</div>
 <div class="float-caption"><p><strong>Figure 2.2: </strong>Functions and typical function call sequences terminating on
 the right hand side of the diagram at customizable generic functions
 which implement aspects of the reader algorithm and standard reader
@@ -646,11 +712,11 @@ by <var>thunk</var> as its first value.  It may return additional values.
 <dt id="index-read_002dcommon-_005beclector_002ereader_005d">Generic Function: <strong>read-common [eclector.reader]</strong> <em>client input-stream eof-error-p eof-value</em></dt>
 <dd>
 <p>This generic function is called by <tt>read</tt>, passing it the value of the
-variable <tt>*client*</tt> and the corresponding parameters.  Client code can
-add methods on this function, specializing them to the client class of
-its choice.  The actions that <tt>read</tt> needs to take for different values
-of the parameter <var>recursive-p</var> have already been taken before
-<tt>read</tt> calls this generic function.
+variable <tt>eclector.base:*client*</tt> and the corresponding parameters.
+Client code can add methods on this function, specializing them to the
+client class of its choice.  The actions that <tt>read</tt> needs to take for
+different values of the parameter <var>recursive-p</var> have already been
+taken before <tt>read</tt> calls this generic function.
 </p></dd></dl>
 
 <span id="Generic_002dFunction-eclector_002ereader_003aread_002dmaybe_002dnothing"></span><dl>
@@ -687,10 +753,10 @@ return a value.  In this case the function returns <tt>nil</tt> and
 <p>This generic function is called whenever the reader skips some input
 such as a comment or a form that must be skipped because of a reader
 conditional.  It is called with the value of the variable
-<tt>*client*</tt>, the input stream from which the input is being read
-and an object indicating the reason for skipping the input.  The
-default method on this generic function does nothing.  Client code can
-supply a method that specializes to the client class of its choice.
+<tt>eclector.base:*client*</tt>, the input stream from which the input is
+being read and an object indicating the reason for skipping the input.
+The default method on this generic function does nothing.  Client code
+can supply a method that specializes to the client class of its choice.
 </p>
 <p>When this function is called, the stream is positioned immediately
 <em>after</em> the skipped input.  Client code that wants to know both
@@ -991,7 +1057,7 @@ once.
 <p>
 Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable initialization</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.2.3 S-expression creation and quasiquotation</h4>
+<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.3.3 S-expression creation and quasiquotation</h4>
 
 <span id="index-quotation"></span>
 
@@ -1085,7 +1151,7 @@ to <code>(list 'common-lisp:function <var>form</var>)</code>.
 <p>
 Previous: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="p" rel="prev">S-expression creation and quasiquotation</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Readtable-initialization-1"></span><h4 class="subsection">2.2.4 Readtable initialization</h4>
+<span id="Readtable-initialization-1"></span><h4 class="subsection">2.3.4 Readtable initialization</h4>
 
 <span id="index-readtable-1"></span>
 
@@ -1128,7 +1194,7 @@ section 2.4.8.)
 <p>
 Next: <a href="#Parse-result-construction-features" accesskey="n" rel="next">Parse result construction features</a>, Previous: <a href="#Ordinary-reader-features" accesskey="p" rel="prev">Ordinary reader features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Readtable-features-1"></span><h3 class="section">2.3 Readtable features</h3>
+<span id="Readtable-features-1"></span><h3 class="section">2.4 Readtable features</h3>
 
 <span id="index-readtable-2"></span>
 
@@ -1164,7 +1230,7 @@ default method returns <tt>nil</tt>.
 <p>
 Next: <a href="#CST-reader-features" accesskey="n" rel="next">CST reader features</a>, Previous: <a href="#Readtable-features" accesskey="p" rel="prev">Readtable features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Parse-result-construction-features-1"></span><h3 class="section">2.4 Parse result construction features</h3>
+<span id="Parse-result-construction-features-1"></span><h3 class="section">2.5 Parse result construction features</h3>
 
 <span id="index-client-1"></span>
 <span id="index-parse-result-4"></span>
@@ -1189,8 +1255,8 @@ defining a method on the generic function
 <tt>make-expression-result</tt>.
 </p>
 <div class="float"><span id="fig_003aread_002dcall_002dsequence_002dparse_002dresult"></span>
-<img src="read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result">
-
+<div align="center"><img src="read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result">
+</div>
 <div class="float-caption"><p><strong>Figure 2.3: </strong>Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.  Differences
@@ -1259,37 +1325,17 @@ list of &ldquo;orphan&rdquo; results (Described above).
 using this package.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002eparse_002eresult_003asource_002dposition"></span><dl>
-<dt id="index-source_002dposition-_005beclector_002eparse_002eresult_005d">Generic Function: <strong>source-position [eclector.parse.result]</strong> <em>client stream</em></dt>
-<dd>
-<p>This generic function is called in order to determine the current
-position in <var>stream</var>.  The default method calls
-<tt>cl:file-position</tt>.
-</p></dd></dl>
-
-<span id="Generic_002dFunction-eclector_002eparse_002dresult_003amake_002dsource_002drange"></span><dl>
-<dt id="index-make_002dsource_002drange-_005beclector_002eparse_002dresult_005d">Generic Function: <strong>make-source-range [eclector.parse-result]</strong> <em>client start end</em></dt>
-<dd>
-<p>This generic function is called in order to turn the source positions
-<var>start</var> and <var>end</var> into a range representation suitable
-for <var>client</var>.  The returned representation designates the range
-of input characters from and including the character at position
-<var>start</var> to but not including the character at position
-<var>end</var>.  The default method returns
-<code>(cons <var>start</var> <var>end</var>)</code>.
-</p></dd></dl>
-
 <span id="Generic_002dFunction-eclector_002eparse_002dresult_003amake_002dexpression_002dresult"></span><dl>
 <dt id="index-make_002dexpression_002dresult-_005beclector_002eparse_002dresult_005d">Generic Function: <strong>make-expression-result [eclector.parse-result]</strong> <em>client result  children source</em></dt>
 <dd>
 <p>This generic function is called in order to construct a parse result
-object.  The value of the <var>result</var> parameter is the raw object
-read.  The value of the <var>children</var> parameter is a list of
-already constructed parse result objects representing objects read by
-recursive <tt>read</tt> calls.  The value of the <var>source</var>
-parameter is a source range, as returned by <tt>make-source-range</tt>
-and <tt>source-position</tt> delimiting the range of characters from
-which <var>result</var> has been read.
+object.  The value of the <var>result</var> parameter is the raw object read.
+The value of the <var>children</var> parameter is a list of already
+constructed parse result objects representing objects read by recursive
+<tt>read</tt> calls.  The value of the <var>source</var> parameter is a source
+range, as returned by <tt>eclector.base:make-source-range</tt> and
+<tt>eclector.base:source-position</tt> delimiting the range of characters
+from which <var>result</var> has been read.
 </p>
 <p>This generic function does not have a default method since the purpose
 of the package is the construction of <em>custom</em> parse results.
@@ -1333,7 +1379,7 @@ not represented as a parse result.
 <p>
 Previous: <a href="#Parse-result-construction-features" accesskey="p" rel="prev">Parse result construction features</a>, Up: <a href="#External-protocols" accesskey="u" rel="up">External protocols</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="CST-reader-features-1"></span><h3 class="section">2.5 CST reader features</h3>
+<span id="CST-reader-features-1"></span><h3 class="section">2.6 CST reader features</h3>
 
 <span id="index-parse-result-5"></span>
 <span id="index-concrete-syntax-tree-2"></span>
@@ -1846,7 +1892,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-C">C</th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-client">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-client">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-client-1">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-complex-literal">complex literal</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-concrete-syntax-tree">concrete syntax tree</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
@@ -1883,6 +1929,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-S">S</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-side-effects">side effects</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Side-effects">Side effects</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-source-location">source location</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source-tracking">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source-tracking-1">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-specification-interpretation">specification interpretation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Unclear-Parts-of-the-Specifications">Interpretation of Unclear Parts of the Specifications</a></td></tr>
@@ -1940,7 +1987,7 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_symbol-1">*</th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-_002aclient_002a-_005beclector_002ereader_005d"><code>*client* [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_002aclient_002a-_005beclector_002ebase_005d"><code>*client* [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-_002askip_002dreason_002a-_005beclector_002ereader_005d"><code>*skip-reason* [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-C">C</th><td></td><td></td></tr>
@@ -1966,7 +2013,7 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-M">M</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dexpression_002dresult-_005beclector_002eparse_002dresult_005d"><code>make-expression-result [eclector.parse-result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dskipped_002dinput_002dresult-_005beclector_002eparse_002dresult_005d"><code>make-skipped-input-result [eclector.parse-result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-make_002dsource_002drange-_005beclector_002eparse_002dresult_005d"><code>make-source-range [eclector.parse-result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-make_002dsource_002drange-_005beclector_002ebase_005d"><code>make-source-range [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dstructure_002dinstance-_005beclector_002ereader_005d"><code>make-structure-instance [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-N">N</th><td></td><td></td></tr>
@@ -1997,7 +2044,7 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dmacro_002dcharacters-_005beclector_002ereader_005d"><code>set-standard-macro-characters [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dand_002dmacros-_005beclector_002ereader_005d"><code>set-standard-syntax-and-macros [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dtypes-_005beclector_002ereader_005d"><code>set-standard-syntax-types [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-source_002dposition-_005beclector_002eparse_002eresult_005d"><code>source-position [eclector.parse.result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-source_002dposition-_005beclector_002ebase_005d"><code>source-position [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-W">W</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-with_002dforbidden_002dquasiquotation-_005beclector_002ereader_005d"><code>with-forbidden-quasiquotation [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
