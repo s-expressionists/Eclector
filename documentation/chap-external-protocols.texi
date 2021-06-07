@@ -154,7 +154,7 @@ particular client on the generic functions of the protocols.
 @end itemize
 
 @float Figure,fig:read-call-sequence-ordinary
-@image{read-call-sequence-ordinary}
+@center @image{read-call-sequence-ordinary,15cm}
 @caption{Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.}
@@ -229,7 +229,7 @@ By defining methods on the generic functions of this protocol, clients
 can customize the high-level behavior of the reader.
 
 @float Figure,fig:read-call-sequence-customization
-@image{read-call-sequence-customization}
+@center @image{read-call-sequence-customization,15cm}
 @caption{Functions and typical function call sequences terminating on
 the right hand side of the diagram at customizable generic functions
 which implement aspects of the reader algorithm and standard reader
@@ -801,7 +801,7 @@ defining a method on the generic function
 @t{make-expression-result}.
 
 @float Figure,fig:read-call-sequence-parse-result
-@image{read-call-sequence-parse-result}
+@center @image{read-call-sequence-parse-result,15cm}
 @caption{Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.  Differences
