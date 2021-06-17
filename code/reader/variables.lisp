@@ -9,7 +9,7 @@
 ;;;; Lisp rules with respect to the COMMON-LISP package, so instead,
 ;;;; these variables are taken from host.
 
-(defparameter *package* (find-package '#:common-lisp-user)
+(defparameter *package* (find-package '#:common-lisp-user))
 
 (defparameter *read-eval* t)
 
