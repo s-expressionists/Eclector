@@ -48,6 +48,15 @@
                               "readtable")
                  :serial t
                  :components ((:file "package")
+                              ;; The file variables defines standard
+                              ;; variables with names in the
+                              ;; COMMON-LISP package which control the
+                              ;; reader. Loading the file can be
+                              ;; useful when Eclector is used as the
+                              ;; reader of a Common Lisp
+                              ;; implementation.
+                              (:file "variables"
+                               :if-feature :eclector-define-cl-variables)
                               (:file "generic-functions")
                               (:file "more-variables")
                               (:file "additional-conditions")
