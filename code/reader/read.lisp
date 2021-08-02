@@ -69,13 +69,13 @@
   ;; not comments.
   (loop for char = (peek-char t stream t nil)
         if (eql char close-char)
-        do (read-char stream)
-           (signal-end-of-list char)
+          do (read-char stream)
+             (signal-end-of-list char)
         else
-        do (multiple-value-bind (object what)
-               (read-maybe-nothing client stream t nil)
-             (unless (eq what :skip) ; Skip over comments
-               (return object)))))
+          do (multiple-value-bind (object what)
+                 (read-maybe-nothing client stream t nil)
+               (unless (eq what :skip) ; Skip over comments
+                 (return object)))))
 
 ;;; Read a list terminated by CLOSE-CHAR from STREAM. For each
 ;;; encountered list element as well the end of the list (or premature
@@ -90,20 +90,21 @@
         (loop with *consing-dot-allowed-p* = consing-dot-allowed-p
               for object = (let ((*consing-dot-allowed-p* nil))
                              (%read-list-element client stream close-char))
-              then (%read-list-element client stream close-char)
+                then (%read-list-element client stream close-char)
               if (eq object *consing-dot*)
-              do (setf *consing-dot-allowed-p* nil
-                       state :tail)
-                 (funcall function :tail (read stream t nil t))
-                 (setf state :end)
-                 ;; This call to read must not return (it has to signal
-                 ;; END-OF-LIST).
-                 (read stream t nil t)
-                 (%recoverable-reader-error
-                  stream 'multiple-objects-following-consing-dot
-                  :position-offset -1 :report 'ignore-object) ; not accurate
+                do (setf *consing-dot-allowed-p* nil
+                         state :tail)
+                   (funcall function :tail (read stream t nil t))
+                   (setf state :end)
+                   ;; This call to read must not return (it has to signal
+                   ;; END-OF-LIST).
+                   ;; (read stream t nil t)
+                   (%read-list-element client stream close-char)
+                   (%recoverable-reader-error
+                    stream 'multiple-objects-following-consing-dot
+                    :position-offset -1 :report 'ignore-object) ; not accurate
               else
-              do (funcall function state object))
+                do (funcall function state object))
       (end-of-list (condition)
         (let ((char (%character condition)))
           (unless (char= char close-char)
