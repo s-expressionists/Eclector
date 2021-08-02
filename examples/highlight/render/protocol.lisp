@@ -71,7 +71,7 @@
                        ;; indicator.
                        (when (and (eql character #\Newline)
                                   (find end errors :test #'eql :key #'cst:end))
-                         (write-char #\¶ (stream client)))
+                         (write-character client end #\¶ nil))
                        (maybe-end-errors end)
 
                        (loop :while node

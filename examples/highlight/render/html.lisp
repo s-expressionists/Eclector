@@ -13,6 +13,14 @@
     (#\→ (write-string "&rArr;" stream))
     (t   (write-char character stream))))
 
+(defun url-encode (string)
+  (with-output-to-string (stream)
+    (loop :for character :across string
+          :if (find character "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
+            :do (write-char character stream)
+          :else
+            :do (format stream "%~2,'0X" (char-code character)))))
+
 (defun str (stream string)
   (map nil (a:curry #'ch stream) string))
 
@@ -252,7 +260,8 @@
       (call-next-method)))
 
 (defmethod url ((client link-mixin) (node cst:standard-symbol-node))
-  (format nil "http://l1sp.org/cl/~(~A~)" (cst:name node)))
+  (format nil "http://l1sp.org/cl/~(~A~)"
+          (url-encode (cst:name node))))
 
 ;;; Sequence
 

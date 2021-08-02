@@ -219,7 +219,7 @@
 
 (defun read-stuff (input &key package
                               (client (make-instance 'highlight-client
-                                                     :input input
+                                                     :input           input
                                                      :current-package package)))
   (let ((stream (make-string-input-stream input)))
     (eclector.reader:call-as-top-level-read
