@@ -7,8 +7,12 @@
   (make-instance 'eclector.examples.highlight.render::linking-html-client :input input :stream stream))
 
 (defun highlight (input-string &key (package "COMMON-LISP-USER")
-                                    (client (make-minimal-client)))
-  (multiple-value-bind (cst errors) (read-stuff input-string :package package)
+                                    (read-client nil                   read-client-supplied-p)
+                                    (client      (make-minimal-client)))
+  (multiple-value-bind (cst errors)
+      (apply #'read-stuff input-string :package package
+             (when read-client-supplied-p
+               (list :client read-client)))
     (eclector.examples.highlight.render:render client input-string cst errors)))
 
 (defun highlight-string (string &key package client)
