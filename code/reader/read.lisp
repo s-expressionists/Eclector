@@ -146,7 +146,7 @@
                 :stream-position (stream-position condition)
                 :delimiter close-char :report 'use-partial-list)))))))
 
-(defun %read-delimited-list (stream close-char)
+(defun %read-delimited-list (stream close-char consing-dot-allowed-p)
   (alexandria:when-let ((list-reader *list-reader*))
     (return-from %read-delimited-list
       (funcall list-reader stream close-char)))
@@ -158,14 +158,14 @@
                (:proper (push value reversed-result))
                (:tail (setf tail value)))))
       (declare (dynamic-extent #'element))
-      (%read-list-elements stream #'element nil nil close-char t))
+      (%read-list-elements stream #'element nil nil close-char consing-dot-allowed-p))
     (nreconc reversed-result tail)))
 
 (defun read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
   (if recursive-p
-      (%read-delimited-list input-stream char)
+      (%read-delimited-list input-stream char nil)
       (flet ((do-it ()
-               (%read-delimited-list input-stream char)))
+               (%read-delimited-list input-stream char nil)))
         (declare (dynamic-extent #'do-it))
         (call-as-top-level-read *client* #'do-it input-stream nil nil t))))
 
@@ -173,5 +173,5 @@
                                             char &optional input-stream recursive-p)
   (if (and (constantp recursive-p)
            (eval recursive-p))
-      `(%read-delimited-list ,input-stream ,char)
+      `(%read-delimited-list ,input-stream ,char nil)
       form))

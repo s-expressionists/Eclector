@@ -355,7 +355,7 @@
 
 (defun left-parenthesis (stream char)
   (declare (ignore char))
-  (%read-delimited-list stream #\)))
+  (%read-delimited-list stream #\) t))
 
 (defun right-parenthesis (stream char)
   ;; If the call to SIGNAL returns, then there is no handler for this
