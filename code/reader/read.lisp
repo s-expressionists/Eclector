@@ -104,7 +104,8 @@
                      (setf state :end)
                      ;; This call to READ must not return (it has to signal
                      ;; END-OF-LIST).
-                     (read stream t nil t)
+                     ;; (read stream t nil t)
+                     (%read-list-element client stream close-char)
                      (%recoverable-reader-error
                       stream 'multiple-objects-following-consing-dot
                       :position-offset -1 :report 'ignore-object) ; not accurate
