@@ -302,6 +302,9 @@
       ("."            #\] eclector.reader:invalid-context-for-consing-dot
                           eclector.reader:invalid-context-for-consing-dot
                           0)
+      ("1 . 2 ]"      #\] eclector.reader:invalid-context-for-consing-dot
+                          eclector.reader:invalid-context-for-consing-dot
+                          2)
       ("1]"           #\] (1) eclector.reader:unterminated-list)
       ("1 ]"          #\] (1))
       ("1 #|2|# ]"    #\] (1))
