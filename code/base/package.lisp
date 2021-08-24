@@ -10,6 +10,11 @@
   (:export
    . #1#)
 
+  ;;Exported for eclector.*, not public use.
+  #+sbcl
+  (:export
+   #:&optional-and-&key-style-warning)
+
   ;; Conditions (with accessors)
   (:export
    #:stream-position-reader-error

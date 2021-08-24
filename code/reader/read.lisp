@@ -48,16 +48,17 @@
   (define read                       recursive-p)
   (define read-preserving-whitespace t))
 
-(defun read-from-string (string &optional (eof-error-p t)
-                                          (eof-value nil)
-                                &key (start 0)
-                                     (end nil)
-                                     (preserve-whitespace nil))
-  (let ((index))
-    (values (with-input-from-string (stream string :start start :end end
-                                                   :index index)
-              (read-aux stream eof-error-p eof-value nil preserve-whitespace))
-            index)))
+(locally (declare #+sbcl (sb-ext:muffle-conditions eclector.base:&optional-and-&key-style-warning))
+  (defun read-from-string (string &optional (eof-error-p t)
+                                            (eof-value nil)
+                                  &key (start 0)
+                                       (end nil)
+                                       (preserve-whitespace nil))
+    (let ((index))
+      (values (with-input-from-string (stream string :start start :end end
+                                                     :index index)
+                (read-aux stream eof-error-p eof-value nil preserve-whitespace))
+              index))))
 
 ;;; Reading lists
 

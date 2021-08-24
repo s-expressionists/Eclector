@@ -13,6 +13,7 @@
   :components  ((:module "base"
                  :pathname "code/base"
                  :components ((:file "package")
+                              (:file "utilities")
                               (:file "variables")
                               (:file "generic-functions")
                               (:file "conditions")
