@@ -52,6 +52,7 @@
         (if (null macro-function)
             (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unknown-macro-sub-character
+             :position-offset -1
              :disp-char disp-char :sub-char sub-char
              :report 'ignore-partial-macro)
             (funcall macro-function stream sub-char parameter))))))

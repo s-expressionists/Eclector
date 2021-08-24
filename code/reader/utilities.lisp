@@ -229,3 +229,8 @@
                       :whitespace))
           do (unread-char char stream)
              (return t)))
+
+;;; Error reporting utilities
+
+(defun parameter-length (parameter)
+  (with-standard-io-syntax (length (prin1-to-string parameter))))

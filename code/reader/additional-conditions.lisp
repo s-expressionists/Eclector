@@ -77,6 +77,7 @@
   (unless *read-suppress*
     (%recoverable-reader-error
      stream 'numeric-parameter-supplied-but-ignored
+     :position-offset -2
      :parameter parameter :macro-name macro-name :report 'ignore-parameter)))
 
 (define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
@@ -86,6 +87,7 @@
   (unless *read-suppress*
     (%recoverable-reader-error
      stream 'numeric-parameter-not-supplied-but-required
+     :position-offset -1
      :macro-name macro-name :report 'use-replacement-parameter)))
 
 ;;; Conditions related to single quote

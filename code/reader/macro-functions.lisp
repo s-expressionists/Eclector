@@ -79,7 +79,8 @@
                       nil)
                     (end-of-list (condition)
                       (%recoverable-reader-error
-                       stream 'object-must-follow-quote :report 'inject-nil)
+                       stream 'object-must-follow-quote
+                       :position-offset -1 :report 'inject-nil)
                       (unread-char (%character condition) stream)
                       nil))))
     (wrap-in-quote *client* material)))
@@ -114,6 +115,7 @@
           when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
             do (setf char2 (read-char-or-recoverable-error
                             stream nil 'unterminated-single-escape-in-string
+                            :position-offset -1
                             :escape-char char2 :report 'use-partial-string))
           when char2
             do (vector-push-extend char2 result)
@@ -168,7 +170,7 @@
     (unless *read-suppress*
       (%recoverable-reader-error
        stream 'backquote-in-invalid-context
-       :context context :report 'ignore-quasiquote)
+       :position-offset -1 :context context :report 'ignore-quasiquote)
       (return-from backquote
         (let ((*backquote-depth* 0))
           (read stream t nil t)))))
@@ -185,7 +187,7 @@
                       (end-of-list (condition)
                         (%recoverable-reader-error
                          stream 'object-must-follow-backquote
-                         :report 'inject-nil)
+                         :position-offset -1 :report 'inject-nil)
                         (unread-char (%character condition) stream)
                         nil)))))
     (wrap-in-quasiquote *client* material)))
@@ -210,18 +212,21 @@
                (end-of-list (condition)
                  (%recoverable-reader-error
                   stream 'object-must-follow-unquote
+                  :position-offset -1
                   :splicing-p splicing-p :report 'inject-nil)
                  (unread-char (%character condition) stream)
                  nil))))
       (unless (plusp depth)
         (%recoverable-reader-error
          stream 'unquote-not-inside-backquote
+         :position-offset (if splicing-p -2 -1)
          :splicing-p splicing-p :report 'ignore-unquote)
         (return-from comma (read-material)))
       (alexandria:when-let ((context *unquote-forbidden*))
         (unless *read-suppress*
           (%recoverable-reader-error
            stream 'unquote-in-invalid-context
+           :position-offset (if splicing-p -2 -1)
            :splicing-p splicing-p :context context :report 'ignore-unquote)
           (return-from comma (read-material))))
       (let* ((*backquote-depth* (1- depth))
@@ -302,9 +307,10 @@
   ;; condition, which means that the right parenthesis was found in a
   ;; context where it is not allowed.
   (signal-end-of-list char)
-  (%recoverable-reader-error stream 'invalid-context-for-right-parenthesis
-                             :found-character char
-                             :report 'ignore-trailing-right-paren))
+  (%recoverable-reader-error
+   stream 'invalid-context-for-right-parenthesis
+   :position-offset -1
+   :found-character char :report 'ignore-trailing-right-paren))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -327,7 +333,7 @@
                   (end-of-list (condition)
                     (%recoverable-reader-error
                      stream 'object-must-follow-sharpsign-single-quote
-                     :report 'inject-nil)
+                     :position-offset -1 :report 'inject-nil)
                     (unread-char (%character condition) stream)
                     nil)))))
     (cond (*read-suppress*
@@ -381,15 +387,20 @@
                  finally (return (coerce result 'simple-vector))))
           (t
            (loop with result = (make-array parameter)
+                 with excess-position = nil
                  for index from 0
                  for (element elementp) = (multiple-value-list
                                            (next-element))
                  while elementp
-                 when (< index parameter)
-                 do (setf (aref result index) element)
+                 if (< index parameter)
+                   do (setf (aref result index) element)
+                 else
+                   do (setf excess-position (eclector.base:source-position
+                                             *client* stream))
                  finally (cond ((and (zerop index) (plusp parameter))
                                 (%recoverable-reader-error
                                  stream 'no-elements-found
+                                 :position-offset -1
                                  :array-type 'vector :expected-number parameter
                                  :report 'use-empty-vector)
                                 (setf result (make-array 0)
@@ -397,6 +408,8 @@
                                ((> index parameter)
                                 (%recoverable-reader-error
                                  stream 'too-many-elements
+                                 :stream-position excess-position ; inaccurate
+                                 :position-offset -1
                                  :array-type 'vector
                                  :expected-number parameter
                                  :number-found index
@@ -433,7 +446,7 @@
                                  (end-of-list (condition)
                                    (%recoverable-reader-error
                                     stream 'object-must-follow-sharpsign-dot
-                                    :report 'inject-nil)
+                                    :position-offset -1 :report 'inject-nil)
                                    (unread-char (%character condition) stream)
                                    nil))))))
            (handler-case
@@ -493,8 +506,10 @@
                    (cond ((null character)
                           (%recoverable-reader-error
                            stream 'unknown-character-name
-                           :name name
-                           :report 'use-replacement-character)
+                           :position-offset (- (if (characterp name)
+                                                   1
+                                                   (length name)))
+                           :name name :report 'use-replacement-character)
                           #\?)
                          (t
                           character))))
@@ -532,6 +547,7 @@
              (digit-expected (char type recover-value)
                (%recoverable-reader-error
                 stream 'digit-expected
+                :position-offset -1
                 :character-found char :base base
                 :report 'replace-invalid-digit)
                (unless (eq type :constituent)
@@ -594,7 +610,8 @@
                (let ((value (integer nil nil nil)))
                  (cond ((eql value 0)
                         (%recoverable-reader-error
-                         stream 'zero-denominator :report 'replace-invalid-digit)
+                         stream 'zero-denominator
+                         :position-offset -1 :report 'replace-invalid-digit)
                         nil)
                        (t
                         value)))))
@@ -636,6 +653,7 @@
                       (unless *read-suppress*
                         (%recoverable-reader-error
                          stream 'invalid-radix
+                         :position-offset (- (+ (parameter-length parameter) 1))
                          :radix parameter :report 'use-replacement-radix))
                       36)
                      (t
@@ -662,6 +680,7 @@
                        ((null value)
                         (%recoverable-reader-error
                          stream 'digit-expected
+                         :position-offset -1
                          :character-found char :base 2.
                          :report 'replace-invalid-digit)
                         0)
@@ -694,6 +713,7 @@
                                  ((> index parameter)
                                   (%recoverable-reader-error
                                    stream 'too-many-elements
+                                   :position-offset (- (- index parameter))
                                    :array-type 'bit-vector
                                    :expected-number parameter
                                    :number-found index
@@ -737,6 +757,7 @@
            (when (not (typep object 'alexandria:proper-sequence))
              (%recoverable-reader-error
               stream 'read-object-type-error
+              :position-offset -1 ; inaccurate
               :expected-type 'sequence :datum object
               :report 'use-empty-array)
              (invoke-restart '%make-empty))
@@ -787,7 +808,7 @@
                (end-of-list (condition)
                  (%recoverable-reader-error
                   stream 'object-must-follow-sharpsign-a
-                  :report 'use-empty-array)
+                  :position-offset -1 :report 'use-empty-array)
                  (unread-char (%character condition) stream)
                  (invoke-restart '%make-empty))))))
 
@@ -888,6 +909,7 @@
                  ((eql #1=#.(gensym "END-OF-LIST"))
                   (%recoverable-reader-error
                    stream 'complex-part-expected
+                   :position-offset -1
                    :which part :report 'use-partial-complex)
                   1)
                  ((eql #2=#.(gensym "END-OF-INPUT"))
@@ -921,6 +943,7 @@
                      (when (eq part :end)
                        (%recoverable-reader-error
                         stream 'too-many-complex-parts
+                        :position-offset -1
                         :report 'ignore-excess-parts)
                        (setf part :past-end))
                      t)))))
@@ -960,7 +983,7 @@
         (end-of-list (condition) ; (... #C)
           (%recoverable-reader-error
            stream 'complex-parts-must-follow-sharpsign-c
-           :report 'use-partial-complex)
+           :position-offset -1 :report 'use-partial-complex)
           (unread-char (%character condition) stream))
         (:no-error (object)
           ;; If we got here, we managed to read an object.
@@ -968,6 +991,7 @@
                 ((or (not allow-non-list) (not (typep object 'cons)))
                  (%recoverable-reader-error
                   stream 'non-list-following-sharpsign-c
+                  :position-offset -1 ; inaccurate
                   :report 'use-replacement-part))
                 ((typep object #3='(cons real (cons real null)))
                  (setf real (first object)
@@ -975,6 +999,7 @@
                 (t
                  (%recoverable-reader-error
                   stream 'read-object-type-error
+                  :position-offset -1 ; inaccurate
                   :datum object :expected-type #3#
                   :report 'use-replacement-part)))))
       (complex real imaginary))))
@@ -1023,7 +1048,7 @@
                     ((eql #1=#.(gensym "END-OF-LIST"))
                      (%recoverable-reader-error
                       stream 'no-structure-type-name-found
-                      :report 'inject-nil))
+                      :position-offset -1 :report 'inject-nil))
                     ((eql #2=#.(gensym "END-OF-INPUT"))
                      (%recoverable-reader-error
                       stream 'end-of-input-before-structure-type-name
@@ -1033,7 +1058,7 @@
                     (t
                      (%recoverable-reader-error
                       stream 'structure-type-name-is-not-a-symbol
-                      :datum value :report 'inject-nil)))
+                      :position-offset -1 :datum value :report 'inject-nil)))
                   (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
                         *unquote-forbidden* 'sharpsign-s-slot-name
                         element :name))
@@ -1049,7 +1074,7 @@
                     (t
                      (%recoverable-reader-error
                       stream 'slot-name-is-not-a-string-designator
-                      :datum value :report 'skip-slot)
+                      :position-offset -1 :datum value :report 'skip-slot)
                      (setf slot-name value)))
                   (setf *quasiquote-forbidden* old-quasiquote-forbidden
                         *unquote-forbidden* 'sharpsign-s-slot-value
@@ -1059,6 +1084,7 @@
                     ((eql #1#)
                      (%recoverable-reader-error
                       stream 'no-slot-value-found
+                      :position-offset -1
                       :slot-name slot-name :report 'skip-slot))
                     ((eql #2#)
                      (%recoverable-reader-error
@@ -1104,13 +1130,14 @@
         (end-of-list (condition)
           (%recoverable-reader-error
            stream 'structure-constructor-must-follow-sharpsign-s
-           :report 'inject-nil)
+           :position-offset -1 :report 'inject-nil)
           (unread-char (%character condition) stream))
         (:no-error (&rest values)
           (declare (ignore values))
           (unless listp
-            (%recoverable-reader-error stream 'non-list-following-sharpsign-s
-                                       :report 'inject-nil))))
+            (%recoverable-reader-error
+             stream 'non-list-following-sharpsign-s
+             :position-offset -1 :report 'inject-nil))))
       (if (not (null type))
           (make-structure-instance *client* type (nreverse initargs))
           nil))))
@@ -1139,7 +1166,7 @@
               (end-of-list (condition)
                 (%recoverable-reader-error
                  stream 'namestring-must-follow-sharpsign-p
-                 :report 'replace-namestring)
+                 :position-offset -1 :report 'replace-namestring)
                 (unread-char (%character condition) stream)
                 ".")))))
     (cond ((stringp expression)
@@ -1147,6 +1174,7 @@
           (t
            (%recoverable-reader-error
             stream 'non-string-following-sharpsign-p
+            :position-offset -1
             :expected-type 'string :datum expression
             :report 'replace-namestring)
            #P"."))))
@@ -1166,7 +1194,8 @@
 (defun check-standard-feature-expression (feature-expression)
   (flet ((lose (stream-condition no-stream-condition &rest arguments)
            (alexandria:if-let ((stream *input-stream*))
-             (apply #'%reader-error stream stream-condition arguments)
+             (apply #'%reader-error stream stream-condition
+                    :position-offset -1 arguments)
              (apply #'error no-stream-condition arguments))))
     (unless (or (symbolp feature-expression)
                 (alexandria:proper-list-p feature-expression))
@@ -1222,7 +1251,7 @@
                (end-of-list (condition)
                  (%recoverable-reader-error
                   stream end-of-list-condition
-                  :context context :report 'inject-nil)
+                  :position-offset -1 :context context :report 'inject-nil)
                  (unread-char (%character condition) stream)
                  fallback-value))))
       (let* ((client *client*)
@@ -1323,7 +1352,7 @@
              (end-of-list (condition)
                (%recoverable-reader-error
                 stream 'object-must-follow-sharpsign-equals
-                :report 'inject-nil)
+                :position-offset -1 :report 'inject-nil)
                (unread-char (%character condition) stream)
                nil))))
     (when *read-suppress*
@@ -1335,6 +1364,7 @@
       (when (nth-value 1 (gethash parameter labels))
         (%recoverable-reader-error
          stream 'sharpsign-equals-label-defined-more-than-once
+         :position-offset (- (+ 1 (parameter-length parameter) 1))
          :label parameter :report 'ignore-label)
         (return-from sharpsign-equals (read-object)))
       (let ((marker (make-fixup-marker)))
@@ -1343,7 +1373,7 @@
           (when (eq result (fixup-marker-temporary marker))
             (%recoverable-reader-error
              stream 'sharpsign-equals-only-refers-to-self
-             :label parameter :report 'inject-nil)
+             :position-offset -1 :label parameter :report 'inject-nil)
             (remhash parameter labels)
             (return-from sharpsign-equals nil))
           (setf (fixup-marker-final marker) result
@@ -1361,6 +1391,7 @@
     (cond ((not definedp)
            (%recoverable-reader-error
             stream 'sharpsign-sharpsign-undefined-label
+            :position-offset (- (+ 1 (parameter-length parameter) 1))
             :label parameter :report 'inject-nil)
            nil)
           ;; If the final object has already been supplied, use it.
@@ -1378,5 +1409,6 @@
 (defun sharpsign-invalid (stream char parameter)
   (declare (ignore parameter))
   (%recoverable-reader-error
-   stream 'sharpsign-invalid :character-found char :report 'inject-nil)
+   stream 'sharpsign-invalid
+   :position-offset -1 :character-found char :report 'inject-nil)
   nil)

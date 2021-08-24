@@ -19,6 +19,7 @@
   (:export
    #:stream-position-reader-error
    #:stream-position
+   #:position-offset
 
    #:end-of-file
 

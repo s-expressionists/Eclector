@@ -294,6 +294,7 @@
              (next-cond (char)
                ((not char)
                 (%recoverable-reader-error input-stream 'too-many-dots
+                                           :position-offset (- (length token))
                                            :report 'treat-as-escaped)
                 (push (cons 0 (length token)) escape-ranges)
                 (return-from interpret-token (symbol)))
@@ -358,7 +359,7 @@
                       (when (zerop denominator)
                         (%recoverable-reader-error
                          input-stream 'zero-denominator
-                         :report 'replace-invalid-digit)
+                         :position-offset -1 :report 'replace-invalid-digit)
                         (setf denominator 1))
                       (* sign (/ numerator denominator)))
                     (symbol))))
@@ -417,6 +418,7 @@
                       (t
                        (%recoverable-reader-error
                         input-stream 'symbol-can-have-at-most-two-package-markers
+                        :position-offset (- (- (length token) index))
                         :token token :report 'treat-as-escaped)))
                 (go symbol)))))))))
 
@@ -456,12 +458,12 @@
     (cond ;; This signals an error for ":" and "::" but accepts ":||". "::" is
           ;; handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
           ((and (not escape-ranges)
-                (eql position-package-marker-1 0)
-                (or (= length 1)
-                    (and (= length 2)
-                         (eql position-package-marker-2 1))))
+                (case length
+                  (1 (eql position-package-marker-1 0))
+                  (2 (eql position-package-marker-2 1))))
            (%recoverable-reader-error
             input-stream 'symbol-name-must-not-be-only-package-markers
+            :position-offset (- (length token))
             :token token :report 'treat-as-escaped)
            (setf position-package-marker-1 nil
                  position-package-marker-2 nil))
@@ -472,12 +474,15 @@
                     (1- position-package-marker-2)))
            (%recoverable-reader-error
             input-stream 'two-package-markers-must-be-adjacent
+            :position-offset (+ (- (length token))
+                                position-package-marker-2)
             :token token :report 'treat-as-escaped)
            (setf position-package-marker-2 nil))
           ((and position-package-marker-2
                 (= position-package-marker-1 0))
            (%recoverable-reader-error
             input-stream 'two-package-markers-must-not-be-first
+            :position-offset (- (length token))
             :token token :report 'treat-as-escaped))
           ;; The symbol token must not end with a package marker (or
           ;; two package markers).
@@ -488,6 +493,7 @@
                   (not (find length escape-ranges :test #'= :key #'car))))
            (%recoverable-reader-error
             input-stream 'symbol-name-must-not-end-with-package-marker
+            :position-offset -1
             :token token :report 'treat-as-escaped)
            (setf position-package-marker-1 nil
                  position-package-marker-2 nil))))
@@ -516,9 +522,12 @@
     (finish-output stream)
     (list (read-line stream))))
 
-(defun package-does-not-exist (input-stream package-indicator symbol-name)
+(defun package-does-not-exist (input-stream package-indicator symbol-name internp)
   (restart-case
       (%reader-error input-stream 'package-does-not-exist
+                     :position-offset (- (+ (length package-indicator) ; inaccurate when escapes are present
+                                            (if internp 2 1)
+                                            (length symbol-name)))
                      :package-name package-indicator)
     (recover ()
       :report (lambda (stream)
@@ -541,6 +550,7 @@
 (defun symbol-does-not-exist (input-stream package symbol-name)
   (restart-case
       (%reader-error input-stream 'symbol-does-not-exist
+                     :position-offset (- (length symbol-name))
                      :package package :symbol-name symbol-name)
     (recover ()
       :report (lambda (stream)
@@ -560,6 +570,7 @@
 (defun symbol-is-not-external (input-stream package symbol-name symbol)
   (restart-case
       (%reader-error input-stream 'symbol-is-not-external
+                     :position-offset (- (length symbol-name))
                      :package package :symbol-name symbol-name)
     (recover ()
       :report (lambda (stream)
@@ -589,7 +600,8 @@
                      (t        (or (find-package package-indicator)
                                    (multiple-value-bind (value kind)
                                        (package-does-not-exist
-                                        input-stream package-indicator symbol-name)
+                                        input-stream
+                                        package-indicator symbol-name internp)
                                      (ecase kind
                                        (symbol
                                         (return value))

@@ -103,7 +103,7 @@
                        (not *consing-dot-allowed-p*))
                   (%recoverable-reader-error
                    input-stream 'invalid-context-for-consing-dot
-                   :report 'skip-token)
+                   :position-offset -1 :report 'skip-token)
                   (values nil :skip))
                  (t
                   (values object (if *read-suppress* :suppress :object))))))))))
