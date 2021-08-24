@@ -74,9 +74,3 @@
      (or eclector.reader:*client* *cst-client*)
      string eof-error-p eof-value :start start :end end
      :preserve-whitespace preserve-whitespace)))
-
-(defun cst-read (&rest arguments)
-  (apply #'eclector.parse-result:read
-         (or eclector.reader:*client* *cst-client*) arguments))
-#+sbcl (declaim (sb-ext:deprecated :early ("Eclector" "0.5")
-                                   (function cst-read :replacement read)))

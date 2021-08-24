@@ -15,8 +15,4 @@
 
   ;; Client class (can be used as a superclass)
   (:export
-   #:cst-client)
-
-  ;; Deprecated
-  (:export
-   #:cst-read))
+   #:cst-client))
