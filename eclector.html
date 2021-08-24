@@ -532,7 +532,31 @@ construction of source positions and source ranges.  Eclector uses
 source positions and source ranges in signaled conditions and parse
 results (see <a href="#Parse-result-construction-features">Parse result construction features</a>).
 </p>
-<span id="Variable-eclector_002ebase_003a_002aclient_002a"></span><dl>
+<span id="Class-eclector_002ebase_007cstream_002dposition_002dcondition"></span><dl>
+<dt id="index-stream_002dposition_002dcondition-_005beclector_002ebase_005d">Class: <strong>stream-position-condition [eclector.base]</strong></dt>
+<dd>
+<p>This condition type is the supertype of all conditions which are
+signaled by Eclector functions.  An instance of this condition type
+stores an approximate position in an input stream.  The condition is
+associated with the stream content at the designated position.  The
+position uses a representation which is controlled by the respective
+client by adding a method on the <tt>source-position</tt> generic function.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ebase_007cstream_002dposition"></span><dl>
+<dt id="index-stream_002dposition-_005beclector_002ebase_005d">Generic Function: <strong>stream-position [eclector.base]</strong> <em>condition</em></dt>
+<dd>
+<p>This generic function can be called by clients in order to obtain the
+approximate position in the input stream to which <var>condition</var>
+pertains.  The type and interpretation of the returned object depend on
+the client, namely the presence of client-specific methods on the
+<tt>source-position</tt> generic function.
+</p>
+<p>Applicable methods exist for all conditions of type
+<tt>stream-position-condition</tt>.
+</p></dd></dl>
+
+<span id="Variable-eclector_002ebase_007c_002aclient_002a"></span><dl>
 <dt id="index-_002aclient_002a-_005beclector_002ebase_005d">Variable: <strong>*client* [eclector.base]</strong></dt>
 <dd>
 <p>This variable is used by several generic functions which are called by
@@ -543,7 +567,7 @@ standard object and provide a method on that generic function,
 specialized to the class of that standard object.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ebase_003asource_002dposition"></span><dl>
+<span id="Generic_002dFunction-eclector_002ebase_007csource_002dposition"></span><dl>
 <dt id="index-source_002dposition-_005beclector_002ebase_005d">Generic Function: <strong>source-position [eclector.base]</strong> <em>client stream</em></dt>
 <dd>
 <p>This generic function is called in order to determine the current
@@ -556,7 +580,7 @@ define methods on this generic function that return arbitrary objects.
 <p>The default method on this generic function calls <tt>cl:file-position</tt>.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ebase_003amake_002dsource_002drange"></span><dl>
+<span id="Generic_002dFunction-eclector_002ebase_007cmake_002dsource_002drange"></span><dl>
 <dt id="index-make_002dsource_002drange-_005beclector_002ebase_005d">Generic Function: <strong>make-source-range [eclector.base]</strong> <em>client start end</em></dt>
 <dd>
 <p>This generic function is called in order to turn the source positions
@@ -634,7 +658,7 @@ the <tt>eclector.reader</tt> package and that their behavior can deviate from
 that of the standard reader depending on the value of the
 <tt>eclector.base:*client*</tt> variable.
 </p>
-<span id="Function-eclector_002ereader_003aread"></span><dl>
+<span id="Function-eclector_002ereader_007cread"></span><dl>
 <dt id="index-read-_005beclector_002ereader_005d">Function: <strong>read [eclector.reader]</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is the main entry point for the ordinary reader.  It is
@@ -642,21 +666,21 @@ entirely compatible with the standard Common Lisp function with the same
 name.
 </p></dd></dl>
 
-<span id="Function-eclector_002ereader_003aread_002dpreserving_002dwhitespace"></span><dl>
+<span id="Function-eclector_002ereader_007cread_002dpreserving_002dwhitespace"></span><dl>
 <dt id="index-read_002dpreserving_002dwhitespace-_005beclector_002ereader_005d">Function: <strong>read-preserving-whitespace [eclector.reader]</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is entirely compatible with the standard Common Lisp
 function with the same name.
 </p></dd></dl>
 
-<span id="Function-eclector_002ereader_003aread_002dfrom_002dstring"></span><dl>
+<span id="Function-eclector_002ereader_007cread_002dfrom_002dstring"></span><dl>
 <dt id="index-read_002dfrom_002dstring-_005beclector_002ereader_005d">Function: <strong>read-from-string [eclector.reader]</strong> <em>string <tt>&amp;optional</tt>  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  <tt>&amp;key</tt>  (start <tt>0</tt>)  (end <tt>nil</tt>)  (preserve-whitespace <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is entirely compatible with the standard Common Lisp
 function with the same name.
 </p></dd></dl>
 
-<span id="Function-eclector_002ereader_003aread_002ddelimited_002dlist"></span><dl>
+<span id="Function-eclector_002ereader_007cread_002ddelimited_002dlist"></span><dl>
 <dt id="index-read_002ddelimited_002dlist-_005beclector_002ereader_005d">Function: <strong>read-delimited-list [eclector.reader]</strong> <em>char <tt>&amp;optional</tt>  (input-stream <tt>*standard-input*</tt>)  (recursive-p <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is entirely compatible with the standard Common Lisp
@@ -687,7 +711,7 @@ customizable generic functions described in this section are called
 through the client interface and the implementation of the reader
 algorithm.
 </p>
-<span id="Generic_002dFunction-eclector_002ereader_003acall_002das_002dtop_002dlevel_002dread"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007ccall_002das_002dtop_002dlevel_002dread"></span><dl>
 <dt id="index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d">Generic Function: <strong>call-as-top-level-read [eclector.reader]</strong> <em>client thunk input-stream  eof-error-p eof-value preserve-whitespace-p</em></dt>
 <dd>
 <p>This generic function is called by <tt>read</tt> if <tt>read</tt> is called with
@@ -708,7 +732,7 @@ by <var>thunk</var> as its first value.  It may return additional values.
 </li></ol>
 </dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003aread_002dcommon"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cread_002dcommon"></span><dl>
 <dt id="index-read_002dcommon-_005beclector_002ereader_005d">Generic Function: <strong>read-common [eclector.reader]</strong> <em>client input-stream eof-error-p eof-value</em></dt>
 <dd>
 <p>This generic function is called by <tt>read</tt>, passing it the value of the
@@ -719,7 +743,7 @@ different values of the parameter <var>recursive-p</var> have already been
 taken before <tt>read</tt> calls this generic function.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003aread_002dmaybe_002dnothing"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cread_002dmaybe_002dnothing"></span><dl>
 <dt id="index-read_002dmaybe_002dnothing-_005beclector_002ereader_005d">Generic Function: <strong>read-maybe-nothing [eclector.reader]</strong> <em>client input-stream  eof-error-p eof-value</em></dt>
 <dd>
 <p>This generic function can be called directly by the client or by the
@@ -747,7 +771,7 @@ return a value.  In this case the function returns <tt>nil</tt> and
 </li></ul>
 </dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003anote_002dskipped_002dinput"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cnote_002dskipped_002dinput"></span><dl>
 <dt id="index-note_002dskipped_002dinput-_005beclector_002ereader_005d">Generic Function: <strong>note-skipped-input [eclector.reader]</strong> <em>client input-stream reason</em></dt>
 <dd>
 <p>This generic function is called whenever the reader skips some input
@@ -765,7 +789,7 @@ stream position before the call to <tt>read</tt> was made as well as
 the stream position when the call to this function is made.
 </p></dd></dl>
 
-<span id="Variable-eclector_002ereader_003a_002askip_002dreason_002a"></span><dl>
+<span id="Variable-eclector_002ereader_007c_002askip_002dreason_002a"></span><dl>
 <dt id="index-_002askip_002dreason_002a-_005beclector_002ereader_005d">Variable: <strong>*skip-reason* [eclector.reader]</strong></dt>
 <dd>
 <p>This variable is used by the reader to determine why a range of input
@@ -782,7 +806,7 @@ position information to the client by calling the
 (see <a href="#Parse-result-construction-features">Parse result construction features</a>).
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003aread_002dtoken"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cread_002dtoken"></span><dl>
 <dt id="index-read_002dtoken-_005beclector_002ereader_005d">Generic Function: <strong>read-token [eclector.reader]</strong> <em>client input-stream eof-error-p  eof-value</em></dt>
 <dd>
 <p>This generic function is called by <tt>read-common</tt> when it has
@@ -792,7 +816,7 @@ calling <tt>interpret-token</tt> (see below) in order to create and
 return a token.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003ainterpret_002dtoken"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cinterpret_002dtoken"></span><dl>
 <dt id="index-interpret_002dtoken-_005beclector_002ereader_005d">Generic Function: <strong>interpret-token [eclector.reader]</strong> <em>client input-stream token  escape-ranges</em></dt>
 <dd>
 <p>This generic function is called by <tt>read-token</tt> in order to
@@ -814,7 +838,7 @@ to convert the characters in <var>token</var> according to the
 constructed.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003acheck_002dsymbol_002dtoken"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007ccheck_002dsymbol_002dtoken"></span><dl>
 <dt id="index-check_002dsymbol_002dtoken-_005beclector_002ereader_005d">Generic Function: <strong>check-symbol-token [eclector.reader]</strong> <em>client  input-stream token escape-ranges  position-package-marker-1 position-package-marker-2</em></dt>
 <dd>
 <p>This generic function is called by the default method on
@@ -850,7 +874,7 @@ package markers taking into account escape ranges.  The method signals
 errors and allows error recovery as described above.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003ainterpret_002dsymbol_002dtoken"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cinterpret_002dsymbol_002dtoken"></span><dl>
 <dt id="index-interpret_002dsymbol_002dtoken-_005beclector_002ereader_005d">Generic Function: <strong>interpret-symbol-token [eclector.reader]</strong> <em>client  input-stream token position-package-marker-1  position-package-marker-2</em></dt>
 <dd>
 <p>This generic function is called by the default method on
@@ -870,7 +894,7 @@ token contains no package markers or only a single package marker.
 package indicator.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003ainterpret_002dsymbol"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cinterpret_002dsymbol"></span><dl>
 <dt id="index-interpret_002dsymbol-_005beclector_002ereader_005d">Generic Function: <strong>interpret-symbol [eclector.reader]</strong> <em>client input-stream  package-indicator symbol-name internp</em></dt>
 <dd>
 <p>This generic function is called by the default method on
@@ -904,7 +928,7 @@ being <tt>nil</tt> uses <tt>cl:make-symbol</tt> to create uninterned
 symbols.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003acall_002dreader_002dmacro"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007ccall_002dreader_002dmacro"></span><dl>
 <dt id="index-call_002dreader_002dmacro-_005beclector_002ereader_005d">Generic Function: <strong>call-reader-macro [eclector.reader]</strong> <em>client input-stream char  readtable</em></dt>
 <dd>
 <p>This generic function is called when the reader has determined that
@@ -922,7 +946,7 @@ default method therefore does the same thing that the standard
 Common Lisp reader does.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003afind_002dcharacter"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cfind_002dcharacter"></span><dl>
 <dt id="index-find_002dcharacter-_005beclector_002ereader_005d">Generic Function: <strong>find-character [eclector.reader]</strong> <em>client name</em></dt>
 <dd>
 <p>This generic function is called by the default
@@ -932,7 +956,7 @@ case.  The function has to either return the character designated by
 <var>name</var> or <tt>nil</tt> if no such character exists.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003amake_002dstructure_002dinstance"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cmake_002dstructure_002dinstance"></span><dl>
 <dt id="index-make_002dstructure_002dinstance-_005beclector_002ereader_005d">Generic Function: <strong>make-structure-instance [eclector.reader]</strong> <em>client name initargs</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>#S</tt> reader
@@ -952,7 +976,7 @@ portable way to construct structure instances given only the name of
 the structure type.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003acall_002dwith_002dcurrent_002dpackage"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007ccall_002dwith_002dcurrent_002dpackage"></span><dl>
 <dt id="index-call_002dwith_002dcurrent_002dpackage-_005beclector_002ereader_005d">Generic Function: <strong>call-with-current-package [eclector.reader]</strong> <em>client thunk  package-designator</em></dt>
 <dd>
 <p>This generic function is called by the reader when input has to be
@@ -969,7 +993,7 @@ current package around the call to <var>thunk</var>.
 around calling <var>thunk</var>.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003aevaluate_002dexpression"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cevaluate_002dexpression"></span><dl>
 <dt id="index-evaluate_002dexpression-_005beclector_002ereader_005d">Generic Function: <strong>evaluate-expression [eclector.reader]</strong> <em>client expression</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>#.</tt> reader
@@ -983,7 +1007,7 @@ evaluating <var>expression</var> or signal an error.
 of <code>(cl:eval <var>expression</var>)</code>.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003acheck_002dfeature_002dexpression"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007ccheck_002dfeature_002dexpression"></span><dl>
 <dt id="index-check_002dfeature_002dexpression-_005beclector_002ereader_005d">Generic Function: <strong>check-feature-expression [eclector.reader]</strong> <em>client  feature-expression</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>#+</tt> and
@@ -1001,7 +1025,7 @@ composed of symbols, <tt>:not</tt>-expressions,
 <tt>:and</tt>-expressions and <tt>:or</tt>-expressions.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003aevaluate_002dfeature_002dexpression"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cevaluate_002dfeature_002dexpression"></span><dl>
 <dt id="index-evaluate_002dfeature_002dexpression-_005beclector_002ereader_005d">Generic Function: <strong>evaluate-feature-expression [eclector.reader]</strong> <em>client feature-expression</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>#+</tt> and
@@ -1026,7 +1050,7 @@ absent.
 semantics for feature expressions.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003afixup"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cfixup"></span><dl>
 <dt id="index-fixup-_005beclector_002ereader_005d">Generic Function: <strong>fixup [eclector.reader]</strong> <em>client object seen-objects mapping</em></dt>
 <dd>
 <p>This generic function is potentially called to apply
@@ -1064,7 +1088,7 @@ Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable ini
 <p>The following generic functions allow clients to construct
 representations of quoted and quasiquoted forms.
 </p>
-<span id="Generic_002dFunction-eclector_002ereader_003awrap_002din_002dquote"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cwrap_002din_002dquote"></span><dl>
 <dt id="index-wrap_002din_002dquote-_005beclector_002ereader_005d">Generic Function: <strong>wrap-in-quote [eclector.reader]</strong> <em>client material</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>'</tt>-reader macro
@@ -1077,7 +1101,7 @@ equivalent to <code>(list 'common-lisp:quote <var>material</var>)</code>.
 
 <span id="index-quasiquotation"></span>
 
-<span id="Generic_002dFunction-eclector_002ereader_003awrap_002din_002dquasiquote"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cwrap_002din_002dquasiquote"></span><dl>
 <dt id="index-wrap_002din_002dquasiquote-_005beclector_002ereader_005d">Generic Function: <strong>wrap-in-quasiquote [eclector.reader]</strong> <em>client form</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>`</tt>-reader macro
@@ -1088,7 +1112,7 @@ the quasiquoted material.
 equivalent to <code>(list 'eclector.reader:quasiquote <var>form</var>)</code>.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003awrap_002din_002dunquote"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cwrap_002din_002dunquote"></span><dl>
 <dt id="index-wrap_002din_002dunquote-_005beclector_002ereader_005d">Generic Function: <strong>wrap-in-unquote [eclector.reader]</strong> <em>client form</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>,</tt>-reader macro
@@ -1099,7 +1123,7 @@ unquoted material.
 equivalent to <code>(list 'eclector.reader:unquote <var>form</var>)</code>.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_003awrap_002din_002dunquote_002dsplicing"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cwrap_002din_002dunquote_002dsplicing"></span><dl>
 <dt id="index-wrap_002din_002dunquote_002dsplicing-_005beclector_002ereader_005d">Generic Function: <strong>wrap-in-unquote-splicing [eclector.reader]</strong> <em>client form</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>,@</tt>-reader macro
@@ -1118,7 +1142,7 @@ backquote, unquote or both should be allowed in a given context.
 Since custom reader macros may also have to control this aspect,
 Eclector provides an external protocol:
 </p>
-<span id="Macro-eclector_002ereader_003awith_002dforbidden_002dquasiquotation"></span><dl>
+<span id="Macro-eclector_002ereader_007cwith_002dforbidden_002dquasiquotation"></span><dl>
 <dt id="index-with_002dforbidden_002dquasiquotation-_005beclector_002ereader_005d">Macro: <strong>with-forbidden-quasiquotation [eclector.reader]</strong> <em>context  <tt>&amp;optional</tt>  (quasiquote-forbidden-p <tt>t</tt>)  (unquote-forbidden-p <tt>t</tt>)  <tt>&amp;body</tt> body</em></dt>
 <dd>
 <p>Disallow backquote syntax, unquote syntax or both in <tt>read</tt>
@@ -1135,7 +1159,7 @@ the binding to remain unchanged.
 
 <span id="index-function"></span>
 
-<span id="Generic_002dFunction-eclector_002ereader_003awrap_002din_002dfunction"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereader_007cwrap_002din_002dfunction"></span><dl>
 <dt id="index-wrap_002din_002dfunction-_005beclector_002ereader_005d">Generic Function: <strong>wrap-in-function [eclector.reader]</strong> <em>client name</em></dt>
 <dd>
 <p>This generic function is called by the default <tt>#'</tt>-reader macro
@@ -1160,21 +1184,21 @@ ordinary reader can be set up for any readtable object implementing the
 readtable protocol (see <a href="#Readtable-features">Readtable features</a>).  The
 following functions are provided for this purpose:
 </p>
-<span id="Function-eclector_002ereader_003aset_002dstandard_002dsyntax_002dtypes"></span><dl>
+<span id="Function-eclector_002ereader_007cset_002dstandard_002dsyntax_002dtypes"></span><dl>
 <dt id="index-set_002dstandard_002dsyntax_002dtypes-_005beclector_002ereader_005d">Function: <strong>set-standard-syntax-types [eclector.reader]</strong> <em>readtable</em></dt>
 <dd>
 <p>This function sets the standard syntax types in <var>readtable</var>
 (See HyperSpec section 2.1.4.)
 </p></dd></dl>
 
-<span id="Function-eclector_002ereader_003aset_002dstandard_002dmacro_002dcharacters"></span><dl>
+<span id="Function-eclector_002ereader_007cset_002dstandard_002dmacro_002dcharacters"></span><dl>
 <dt id="index-set_002dstandard_002dmacro_002dcharacters-_005beclector_002ereader_005d">Function: <strong>set-standard-macro-characters [eclector.reader]</strong> <em>readtable</em></dt>
 <dd>
 <p>This function sets the standard macro characters in <var>readtable</var>
 (See HyperSpec section 2.4.)
 </p></dd></dl>
 
-<span id="Function-eclector_002ereader_003aset_002dstandard_002ddispatch_002dmacro_002dcharacters"></span><dl>
+<span id="Function-eclector_002ereader_007cset_002dstandard_002ddispatch_002dmacro_002dcharacters"></span><dl>
 <dt id="index-set_002dstandard_002ddispatch_002dmacro_002dcharacters-_005beclector_002ereader_005d">Function: <strong>set-standard-dispatch-macro-characters [eclector.reader]</strong> <em>readtable</em></dt>
 <dd>
 <p>This function sets the standard dispatch macro characters, that is
@@ -1182,7 +1206,7 @@ sharpsign and its sub-characters, in <var>readtable</var> (See HyperSpec
 section 2.4.8.)
 </p></dd></dl>
 
-<span id="Function-eclector_002ereader_003aset_002dstandard_002dsyntax_002dand_002dmacros"></span><dl>
+<span id="Function-eclector_002ereader_007cset_002dstandard_002dsyntax_002dand_002dmacros"></span><dl>
 <dt id="index-set_002dstandard_002dsyntax_002dand_002dmacros-_005beclector_002ereader_005d">Function: <strong>set-standard-syntax-and-macros [eclector.reader]</strong> <em>readtable</em></dt>
 <dd>
 <p>This function sets the standard syntax types and macro characters in
@@ -1213,7 +1237,7 @@ generic functions.
 </li><li> Symbols bound to additional functions and condition types.
 </li></ol>
 
-<span id="Generic_002dFunction-eclector_002ereadtable_003areadtablep"></span><dl>
+<span id="Generic_002dFunction-eclector_002ereadtable_007creadtablep"></span><dl>
 <dt id="index-readtablep-_005beclector_002ereadtable_005d">Generic Function: <strong>readtablep [eclector.readtable]</strong> <em>object</em></dt>
 <dd>
 <p>This function is the generic version of the standard Common Lisp
@@ -1266,7 +1290,7 @@ patterns that arise when the functions <tt>read</tt>,
 <tt>read-preserving-whitespace</tt>, <tt>read-from-string</tt> and
 <tt>read-delimited-list</tt> are called by client code.
 </p>
-<span id="Function-eclector_002eparse_002dresult_003aread"></span><dl>
+<span id="Function-eclector_002eparse_002dresult_007cread"></span><dl>
 <dt id="index-read-_005beclector_002eparse_002dresult_005d">Function: <strong>read [eclector.parse-result]</strong> <em>client <tt>&amp;optional</tt>  (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is the main entry point for this variant of the reader.
@@ -1292,7 +1316,7 @@ behave suitably.
 </li></ul>
 </dd></dl>
 
-<span id="Function-eclector_002eparse_002dresult_003aread_002dpreserving_002dwhitespace"></span><dl>
+<span id="Function-eclector_002eparse_002dresult_007cread_002dpreserving_002dwhitespace"></span><dl>
 <dt id="index-read_002dpreserving_002dwhitespace-_005beclector_002eparse_002dresult_005d">Function: <strong>read-preserving-whitespace [eclector.parse-result]</strong> <em>client  <tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is similar to the standard Common Lisp function
@@ -1300,7 +1324,7 @@ behave suitably.
 as described above for <tt>read</tt> compared to <tt>cl:read</tt>.
 </p></dd></dl>
 
-<span id="Function-eclector_002eparse_002dresult_003aread_002dfrom_002dstring"></span><dl>
+<span id="Function-eclector_002eparse_002dresult_007cread_002dfrom_002dstring"></span><dl>
 <dt id="index-read_002dfrom_002dstring-_005beclector_002eparse_002dresult_005d">Function: <strong>read-from-string [eclector.parse-result]</strong> <em>client string   <tt>&amp;optional</tt>  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  <tt>&amp;key</tt>  (start <tt>0</tt>)  (end <tt>nil</tt>)  (preserve-whitespace <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is similar to the standard Common Lisp function
@@ -1318,14 +1342,14 @@ list of &ldquo;orphan&rdquo; results (Described above).
 </li></ul>
 </dd></dl>
 
-<span id="Class-eclector_002eparse_002dresult_003aparse_002dresult_002dclient"></span><dl>
+<span id="Class-eclector_002eparse_002dresult_007cparse_002dresult_002dclient"></span><dl>
 <dt id="index-parse_002dresult_002dclient-_005beclector_002eparse_002dresult_005d">Class: <strong>parse-result-client [eclector.parse-result]</strong></dt>
 <dd>
 <p>This class should generally be used as a superclass for client classes
 using this package.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002eparse_002dresult_003amake_002dexpression_002dresult"></span><dl>
+<span id="Generic_002dFunction-eclector_002eparse_002dresult_007cmake_002dexpression_002dresult"></span><dl>
 <dt id="index-make_002dexpression_002dresult-_005beclector_002eparse_002dresult_005d">Generic Function: <strong>make-expression-result [eclector.parse-result]</strong> <em>client result  children source</em></dt>
 <dd>
 <p>This generic function is called in order to construct a parse result
@@ -1342,7 +1366,7 @@ of the package is the construction of <em>custom</em> parse results.
 Thus, a client must define a method on this generic function.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002eparse_002dresult_003amake_002dskipped_002dinput_002dresult"></span><dl>
+<span id="Generic_002dFunction-eclector_002eparse_002dresult_007cmake_002dskipped_002dinput_002dresult"></span><dl>
 <dt id="index-make_002dskipped_002dinput_002dresult-_005beclector_002eparse_002dresult_005d">Generic Function: <strong>make-skipped-input-result [eclector.parse-result]</strong> <em>client  stream reason source</em></dt>
 <dd>
 <p>This generic function is called after the reader skipped over a range
@@ -1387,7 +1411,7 @@ Previous: <a href="#Parse-result-construction-features" accesskey="p" rel="prev"
 <p>In this section, symbols written without package marker are in the
 <tt>eclector.concrete-syntax-tree</tt> package (see <a href="#Package-for-CST-features">Package for CST features</a>).
 </p>
-<span id="Function-eclector_002econcrete_002dsyntax_002dtree_003aread"></span><dl>
+<span id="Function-eclector_002econcrete_002dsyntax_002dtree_007cread"></span><dl>
 <dt id="index-read-_005beclector_002econcrete_002dsyntax_002dtree_005d">Function: <strong>read [eclector.concrete-syntax-tree]</strong> <em><tt>&amp;optional</tt>  (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is the main entry point for the CST reader.  It is
@@ -1404,7 +1428,7 @@ behave suitably.
 </li></ul>
 </dd></dl>
 
-<span id="Function-eclector_002econcrete_002dsyntax_002dtree_003aread_002dpreserving_002dwhitespace"></span><dl>
+<span id="Function-eclector_002econcrete_002dsyntax_002dtree_007cread_002dpreserving_002dwhitespace"></span><dl>
 <dt id="index-read_002dpreserving_002dwhitespace-_005beclector_002econcrete_002dsyntax_002dtree_005d">Function: <strong>read-preserving-whitespace [eclector.concrete-syntax-tree]</strong> <em><tt>&amp;optional</tt> (input-stream <tt>*standard-input*</tt>) (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is similar to the standard Common Lisp function
@@ -1412,7 +1436,7 @@ behave suitably.
 as described above for <tt>read</tt> compared to <tt>cl:read</tt>.
 </p></dd></dl>
 
-<span id="Function-eclector_002econcrete_002dsyntax_002dtree_003aread_002dfrom_002dstring"></span><dl>
+<span id="Function-eclector_002econcrete_002dsyntax_002dtree_007cread_002dfrom_002dstring"></span><dl>
 <dt id="index-read_002dfrom_002dstring-_005beclector_002econcrete_002dsyntax_002dtree_005d">Function: <strong>read-from-string [eclector.concrete-syntax-tree]</strong> <em>string  <tt>&amp;optional</tt>  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)  <tt>&amp;key</tt>  (start <tt>0</tt>)  (end <tt>nil</tt>)  (preserve-whitespace <tt>nil</tt>)</em></dt>
 <dd>
 <p>This function is similar to the standard Common Lisp function
@@ -1454,7 +1478,7 @@ errors are signaled.  Like the standard Common Lisp restart
 <tt>cl:continue</tt>, this restart can be invoked by a function of the
 same name:
 </p>
-<span id="Function-eclector_002ereader_003arecover"></span><dl>
+<span id="Function-eclector_002ereader_007crecover"></span><dl>
 <dt id="index-recover-_005beclector_002ereader_005d">Function: <strong>recover [eclector.reader]</strong> <em><tt>&amp;optional</tt> condition</em></dt>
 <dd>
 <p>This function recovers from an error by invoking the most recently
@@ -2045,6 +2069,8 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dand_002dmacros-_005beclector_002ereader_005d"><code>set-standard-syntax-and-macros [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dtypes-_005beclector_002ereader_005d"><code>set-standard-syntax-types [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source_002dposition-_005beclector_002ebase_005d"><code>source-position [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-stream_002dposition-_005beclector_002ebase_005d"><code>stream-position [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-stream_002dposition_002dcondition-_005beclector_002ebase_005d"><code>stream-position-condition [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-W">W</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-with_002dforbidden_002dquasiquotation-_005beclector_002ereader_005d"><code>with-forbidden-quasiquotation [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>

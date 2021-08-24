@@ -161,6 +161,27 @@ construction of source positions and source ranges.  Eclector uses
 source positions and source ranges in signaled conditions and parse
 results (*note Parse result construction features::).
 
+ -- Class: stream-position-condition [eclector.base]
+
+     This condition type is the supertype of all conditions which are
+     signaled by Eclector functions.  An instance of this condition type
+     stores an approximate position in an input stream.  The condition
+     is associated with the stream content at the designated position.
+     The position uses a representation which is controlled by the
+     respective client by adding a method on the source-position generic
+     function.
+
+ -- Generic Function: stream-position [eclector.base] condition
+
+     This generic function can be called by clients in order to obtain
+     the approximate position in the input stream to which CONDITION
+     pertains.  The type and interpretation of the returned object
+     depend on the client, namely the presence of client-specific
+     methods on the source-position generic function.
+
+     Applicable methods exist for all conditions of type
+     stream-position-condition.
+
  -- Variable: *client* [eclector.base]
 
      This variable is used by several generic functions which are called
@@ -1379,7 +1400,7 @@ Function and macro and variable and type index
  [index ]
 * Menu:
 
-* *client* [eclector.base]:              Basic features.      (line  16)
+* *client* [eclector.base]:              Basic features.      (line  37)
 * *skip-reason* [eclector.reader]:       Reader behavior protocol.
                                                               (line  95)
 * call-as-top-level-read [eclector.reader]: Reader behavior protocol.
@@ -1410,7 +1431,7 @@ Function and macro and variable and type index
                                                               (line  89)
 * make-skipped-input-result [eclector.parse-result]: Parse result construction features.
                                                               (line 106)
-* make-source-range [eclector.base]:     Basic features.      (line  37)
+* make-source-range [eclector.base]:     Basic features.      (line  58)
 * make-structure-instance [eclector.reader]: Reader behavior protocol.
                                                               (line 242)
 * note-skipped-input [eclector.reader]:  Reader behavior protocol.
@@ -1453,7 +1474,9 @@ Function and macro and variable and type index
                                                               (line  28)
 * set-standard-syntax-types [eclector.reader]: Readtable initialization.
                                                               (line  11)
-* source-position [eclector.base]:       Basic features.      (line  25)
+* source-position [eclector.base]:       Basic features.      (line  46)
+* stream-position [eclector.base]:       Basic features.      (line  26)
+* stream-position-condition [eclector.base]: Basic features.  (line  16)
 * with-forbidden-quasiquotation [eclector.reader]: S-expression creation and quasiquotation.
                                                               (line  53)
 * wrap-in-function [eclector.reader]:    S-expression creation and quasiquotation.
@@ -1481,83 +1504,85 @@ Node: Package for readtable features3541
 Node: Package for parse result construction features4149
 Node: Package for CST features4819
 Node: Basic features5407
-Ref: Variable eclector.base:*client*6096
-Ref: Generic-Function eclector.base:source-position6548
-Ref: Generic-Function eclector.base:make-source-range7118
-Node: Ordinary reader features7581
-Ref: fig:read-call-sequence-ordinary8699
-Node: Common Lisp reader compatible interface9469
-Ref: Function eclector.reader:read9989
-Ref: Function eclector.reader:read-preserving-whitespace10304
-Ref: Function eclector.reader:read-from-string10583
-Ref: Function eclector.reader:read-delimited-list10860
-Node: Reader behavior protocol11095
-Ref: fig:read-call-sequence-customization11467
-Ref: Generic-Function eclector.reader:call-as-top-level-read12121
-Ref: Generic-Function eclector.reader:read-common13039
-Ref: Generic-Function eclector.reader:read-maybe-nothing13567
-Ref: Generic-Function eclector.reader:note-skipped-input14710
-Ref: Variable eclector.reader:*skip-reason*15665
-Ref: Generic-Function eclector.reader:read-token16449
-Ref: Generic-Function eclector.reader:interpret-token16835
-Ref: Generic-Function eclector.reader:check-symbol-token17892
-Ref: Generic-Function eclector.reader:interpret-symbol-token19765
-Ref: Generic-Function eclector.reader:interpret-symbol20756
-Ref: Generic-Function eclector.reader:call-reader-macro21972
-Ref: Generic-Function eclector.reader:find-character22800
-Ref: Generic-Function eclector.reader:make-structure-instance23161
-Ref: Generic-Function eclector.reader:call-with-current-package23999
-Ref: Generic-Function eclector.reader:evaluate-expression24713
-Ref: Generic-Function eclector.reader:check-feature-expression25278
-Ref: Generic-Function eclector.reader:evaluate-feature-expression26104
-Ref: Generic-Function eclector.reader:fixup27187
-Node: S-expression creation and quasiquotation28313
-Ref: Generic-Function eclector.reader:wrap-in-quote28686
-Ref: Generic-Function eclector.reader:wrap-in-quasiquote29044
-Ref: Generic-Function eclector.reader:wrap-in-unquote29414
-Ref: Generic-Function eclector.reader:wrap-in-unquote-splicing29769
-Ref: Macro eclector.reader:with-forbidden-quasiquotation30523
-Ref: Generic-Function eclector.reader:wrap-in-function31275
-Node: Readtable initialization31647
-Ref: Function eclector.reader:set-standard-syntax-types32095
-Ref: Function eclector.reader:set-standard-macro-characters32264
-Ref: Function eclector.reader:set-standard-dispatch-macro-characters32439
-Ref: Function eclector.reader:set-standard-syntax-and-macros32692
-Node: Readtable features32894
-Ref: Generic-Function eclector.readtable:readtablep33655
-Node: Parse result construction features34007
-Ref: fig:read-call-sequence-parse-result35188
-Ref: Function eclector.parse-result:read35764
-Ref: Function eclector.parse-result:read-preserving-whitespace36859
-Ref: Function eclector.parse-result:read-from-string37214
-Ref: Class eclector.parse-result:parse-result-client37893
-Ref: Generic-Function eclector.parse-result:make-expression-result38051
-Ref: Generic-Function eclector.parse-result:make-skipped-input-result38900
-Node: CST reader features40481
-Ref: Function eclector.concrete-syntax-tree:read40791
-Ref: Function eclector.concrete-syntax-tree:read-preserving-whitespace41413
-Ref: Function eclector.concrete-syntax-tree:read-from-string41769
-Node: Recovering from errors42131
-Node: Error recovery features42378
-Ref: Function eclector.reader:recover42990
-Node: Recoverable errors43807
-Node: Potential problems45299
-Node: Side effects45930
-Node: Potential side effects for the default client46410
-Node: Symbols and packages (default client)48103
-Node: Read-time evaluation (default client)48505
-Node: Standard reader macros (default client)49082
-Node: Potential side effects for non-default clients49641
-Node: Symbols and packages50037
-Node: Read-time evaluation50489
-Node: Structure instance creation50798
-Node: Circular structure51482
-Node: Standard reader macros52041
-Node: Interpretation of Unclear Parts of the Specifications52875
-Node: Interpretation of Sharpsign C and Sharpsign S53425
-Node: Interpretation of Backquote and Sharpsign Single Quote56082
-Node: Concept index57178
-Node: Function and macro and variable and type index61272
+Ref: Class eclector.base|stream-position-condition6096
+Ref: Generic-Function eclector.base|stream-position6591
+Ref: Variable eclector.base|*client*7074
+Ref: Generic-Function eclector.base|source-position7526
+Ref: Generic-Function eclector.base|make-source-range8096
+Node: Ordinary reader features8559
+Ref: fig:read-call-sequence-ordinary9677
+Node: Common Lisp reader compatible interface10447
+Ref: Function eclector.reader|read10967
+Ref: Function eclector.reader|read-preserving-whitespace11282
+Ref: Function eclector.reader|read-from-string11561
+Ref: Function eclector.reader|read-delimited-list11838
+Node: Reader behavior protocol12073
+Ref: fig:read-call-sequence-customization12445
+Ref: Generic-Function eclector.reader|call-as-top-level-read13099
+Ref: Generic-Function eclector.reader|read-common14017
+Ref: Generic-Function eclector.reader|read-maybe-nothing14545
+Ref: Generic-Function eclector.reader|note-skipped-input15688
+Ref: Variable eclector.reader|*skip-reason*16643
+Ref: Generic-Function eclector.reader|read-token17427
+Ref: Generic-Function eclector.reader|interpret-token17813
+Ref: Generic-Function eclector.reader|check-symbol-token18870
+Ref: Generic-Function eclector.reader|interpret-symbol-token20743
+Ref: Generic-Function eclector.reader|interpret-symbol21734
+Ref: Generic-Function eclector.reader|call-reader-macro22950
+Ref: Generic-Function eclector.reader|find-character23778
+Ref: Generic-Function eclector.reader|make-structure-instance24139
+Ref: Generic-Function eclector.reader|call-with-current-package24977
+Ref: Generic-Function eclector.reader|evaluate-expression25691
+Ref: Generic-Function eclector.reader|check-feature-expression26256
+Ref: Generic-Function eclector.reader|evaluate-feature-expression27082
+Ref: Generic-Function eclector.reader|fixup28165
+Node: S-expression creation and quasiquotation29291
+Ref: Generic-Function eclector.reader|wrap-in-quote29664
+Ref: Generic-Function eclector.reader|wrap-in-quasiquote30022
+Ref: Generic-Function eclector.reader|wrap-in-unquote30392
+Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing30747
+Ref: Macro eclector.reader|with-forbidden-quasiquotation31501
+Ref: Generic-Function eclector.reader|wrap-in-function32253
+Node: Readtable initialization32625
+Ref: Function eclector.reader|set-standard-syntax-types33073
+Ref: Function eclector.reader|set-standard-macro-characters33242
+Ref: Function eclector.reader|set-standard-dispatch-macro-characters33417
+Ref: Function eclector.reader|set-standard-syntax-and-macros33670
+Node: Readtable features33872
+Ref: Generic-Function eclector.readtable|readtablep34633
+Node: Parse result construction features34985
+Ref: fig:read-call-sequence-parse-result36166
+Ref: Function eclector.parse-result|read36742
+Ref: Function eclector.parse-result|read-preserving-whitespace37837
+Ref: Function eclector.parse-result|read-from-string38192
+Ref: Class eclector.parse-result|parse-result-client38871
+Ref: Generic-Function eclector.parse-result|make-expression-result39029
+Ref: Generic-Function eclector.parse-result|make-skipped-input-result39878
+Node: CST reader features41459
+Ref: Function eclector.concrete-syntax-tree|read41769
+Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace42391
+Ref: Function eclector.concrete-syntax-tree|read-from-string42747
+Node: Recovering from errors43109
+Node: Error recovery features43356
+Ref: Function eclector.reader|recover43968
+Node: Recoverable errors44785
+Node: Potential problems46277
+Node: Side effects46908
+Node: Potential side effects for the default client47388
+Node: Symbols and packages (default client)49081
+Node: Read-time evaluation (default client)49483
+Node: Standard reader macros (default client)50060
+Node: Potential side effects for non-default clients50619
+Node: Symbols and packages51015
+Node: Read-time evaluation51467
+Node: Structure instance creation51776
+Node: Circular structure52460
+Node: Standard reader macros53019
+Node: Interpretation of Unclear Parts of the Specifications53853
+Node: Interpretation of Sharpsign C and Sharpsign S54403
+Node: Interpretation of Backquote and Sharpsign Single Quote57060
+Node: Concept index58156
+Node: Function and macro and variable and type index62250
 
 End Tag Table
 
