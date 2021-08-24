@@ -43,26 +43,26 @@ Common Lisp
 @end ifnottex
 
 @macro defvara{NAME,PACKAGE}
-@anchor{Variable \PACKAGE\:\NAME\}
+@anchor{Variable \PACKAGE\|\NAME\}
 @defvar {@symbol{\NAME\,\PACKAGE\}}
 @end macro
 
 @macro deffuna{NAME,PACKAGE}
-@anchor{Function \PACKAGE\:\NAME\}
+@anchor{Function \PACKAGE\|\NAME\}
 @deffn {Function} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
 
 @macro defgena{NAME,PACKAGE}
-@anchor{Generic-Function \PACKAGE\:\NAME\}
+@anchor{Generic-Function \PACKAGE\|\NAME\}
 @deffn {Generic Function} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
 
 @macro defmaca{NAME,PACKAGE}
-@anchor{Macro \PACKAGE\:\NAME\}
+@anchor{Macro \PACKAGE\|\NAME\}
 @deffn {Macro} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
 
 @macro defclassa{NAME,PACKAGE}
-@anchor{Class \PACKAGE\:\NAME\}
+@anchor{Class \PACKAGE\|\NAME\}
 @deftp {Class} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
