@@ -93,6 +93,28 @@ construction of source positions and source ranges.  @sysname{} uses
 source positions and source ranges in signaled conditions and parse
 results (@pxref{Parse result construction features}).
 
+@defclassa {stream-position-condition,eclector.base}
+
+This condition type is the supertype of all conditions which are
+signaled by @sysname{} functions.  An instance of this condition type
+stores an approximate position in an input stream.  The condition is
+associated with the stream content at the designated position.  The
+position uses a representation which is controlled by the respective
+client by adding a method on the @t{source-position} generic function.
+@end deftp
+
+@defgena {stream-position,eclector.base} condition
+
+This generic function can be called by clients in order to obtain the
+approximate position in the input stream to which @var{condition}
+pertains.  The type and interpretation of the returned object depend on
+the client, namely the presence of client-specific methods on the
+@t{source-position} generic function.
+
+Applicable methods exist for all conditions of type
+@t{stream-position-condition}.
+@end deffn
+
 @defvara {*client*,eclector.base}
 
 This variable is used by several generic functions which are called by
