@@ -520,6 +520,9 @@ This generic function is called by the default
 name.  @var{name} is the name that has been read converted to upper
 case.  The function has to either return the character designated by
 @var{name} or @t{nil} if no such character exists.
+
+The default method on this generic function recognizes the mandatory
+character names listing in HyperSpec Section 13.1.7 Character Names.
 @end deffn
 
 @defgena {make-structure-instance,eclector.reader} client name initargs

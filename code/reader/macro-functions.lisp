@@ -449,6 +449,7 @@
 ;;;
 ;;; Reader macro for sharpsign backslash.
 
+;;; Mandatory character names according to 13.1.7 Character Names.
 (defparameter *character-names*
   (alexandria:alist-hash-table '(("NEWLINE"   . #.(code-char 10))
                                  ("SPACE"     . #.(code-char 32))
