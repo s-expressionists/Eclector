@@ -41,6 +41,9 @@
   (when children-supplied?
     (map nil (lambda (child) (setf (%parent child) instance)) children)))
 
+(defmethod find-child-starting-at ((position integer) (container children-mixin))
+  (find position (children container) :key #'start))
+
 (defclass leaf-node (parent-mixin
                      node)
   ())
@@ -193,4 +196,3 @@
 (defclass pathname-node (object-node-mixin
                          inner-node)
   ())
-

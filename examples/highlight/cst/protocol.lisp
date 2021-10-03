@@ -10,7 +10,9 @@
 
 (defgeneric parent (node))
 
-(defgeneric children (node))
+(defgeneric children (container))
+
+(defgeneric find-child-starting-at (position container))
 
 (defgeneric object (node))
 

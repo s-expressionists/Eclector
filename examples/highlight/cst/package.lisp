@@ -20,6 +20,7 @@
    ;; Node hierarchy protocol
    #:parent
    #:children
+   #:find-child-starting-at
 
    ;; Error node protocol
    #:message

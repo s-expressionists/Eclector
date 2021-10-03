@@ -49,7 +49,7 @@
                    :do (leave-node client node)
                        (setf node (cst:parent node))))
            (maybe-enter-node (position)
-             (a:when-let ((child (find position (cst:children node) :key #'cst:start)))
+             (a:when-let ((child (cst:find-child-starting-at position node)))
                (enter-node client child)
                (setf node child))))
       (enter-node client cst)
