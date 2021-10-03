@@ -145,19 +145,25 @@
     (unquote                    . (:background :default))
 
     ;; Matching
-    ((open  1)                  . (:foreground :blue :underlinep t))
+    ((open  1)                  . (:foreground :blue    :underlinep t))
     ((open  2)                  . (:foreground :magenta :underlinep t))
-    ((open  3)                  . (:foreground :green :underlinep t))
-    ((open  4)                  . (:foreground :yellow :underlinep t))
-    ((open  5)                  . (:foreground :cyan :underlinep t))
-    ((close 1)                  . (:foreground :blue :underlinep t))
+    ((open  3)                  . (:foreground :green   :underlinep t))
+    ((open  4)                  . (:foreground :yellow  :underlinep t))
+    ((open  5)                  . (:foreground :cyan    :underlinep t))
+    ((close 1)                  . (:foreground :blue    :underlinep t))
     ((close 2)                  . (:foreground :magenta :underlinep t))
-    ((close 3)                  . (:foreground :green :underlinep t))
-    ((close 4)                  . (:foreground :yellow :underlinep t))
-    ((close 5)                  . (:foreground :cyan :underlinep t))
+    ((close 3)                  . (:foreground :green   :underlinep t))
+    ((close 4)                  . (:foreground :yellow  :underlinep t))
+    ((close 5)                  . (:foreground :cyan    :underlinep t))
 
     ;; Error
     (error                      . (:foreground :red :underlinep t))))
+
+(defmethod style-for-class ((class cons) (theme t))
+  (destructuring-bind (which level) class
+    (if (member which '(open close))
+        (call-next-method (list which (1+ (mod (1- level) 5))) theme)
+        (call-next-method))))
 
 (defmethod style-for-class ((class t) (theme t))
   (multiple-value-bind (style foundp)
@@ -198,7 +204,7 @@
   ;; As a default, derive the style class from the class name of NODE.
   (let* ((name    (symbol-name (class-name (class-of node))))
          (trimmed (subseq name 0 (- (length name) (length "-node")))))
-    (find-symbol trimmed (load-time-value '#:eclector.examples.highlight.render))))
+    (find-symbol trimmed (load-time-value '#.(package-name *package*)))))
 
 (defmethod enter-node ((client ansi-text-client) (node t))
   (let* ((style-class    (style-class client node))
