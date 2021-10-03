@@ -490,7 +490,7 @@
              (terminate-character ()
                (return-from sharpsign-backslash
                  (cond (*read-suppress* nil)
-                       ((null token)
+                       ((not (null char1)) ; no additional characters pushed (same as (null token))
                         char1)
                        ((find-character *client* (nstring-upcase (finalize))))
                        (t
