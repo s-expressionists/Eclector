@@ -74,7 +74,7 @@
       (flet ((do-it ()
                (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
                  (with-stream (stream) (eclector.reader:read stream)))))
-        (error-case expected-package
+        (error-case (expected-package expected-symbol)
           (error (do-it))
           ((nil)
            (let ((result (do-it)))
@@ -92,7 +92,7 @@
         ("#:foo"    nil       "FOO")
 
         ;; Non-existent package
-        ("baz:baz"  eclector.reader:package-does-not-exist)
+        ("baz:baz"  eclector.reader:package-does-not-exist 7)
 
         ;; Keyword
         (":foo"     "KEYWORD" "FOO")
@@ -103,7 +103,7 @@
 
         ;; User package
         ("bar:baz"  "BAR"     "BAZ")
-        ("bar:fez"  eclector.reader:symbol-does-not-exist)
+        ("bar:fez"  eclector.reader:symbol-does-not-exist 7)
         ("bar::fez" "BAR"     "FEZ")))))
 
 ;;; Test customizing FIND-CHARACTER
@@ -124,18 +124,18 @@
 (test find-character/customize
   "Test customizing the behavior of FIND-CHARACTER."
 
-  (do-stream-input-cases (() expected)
+  (do-stream-input-cases (() expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'find-character-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case expected
+      (error-case (expected expected-position)
         (error (do-it))
         (t
          (expect "character" (equal expected (do-it))))))
     '(;; Errors
-      ("#\\no_such_character" eclector.reader:unknown-character-name)
-      ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name)
+      ("#\\no_such_character" eclector.reader:unknown-character-name 19)
+      ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name 19)
 
       ;; Single character
       ("#\\a"                 #\a)
@@ -164,17 +164,17 @@
 (test evaluate-expression/customize
   "Test customizing the behavior of EVALUATE-EXPRESSION."
 
-  (do-stream-input-cases (() expected)
+  (do-stream-input-cases (() expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'evaluate-expression-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case expected
+      (error-case (expected expected-position)
         (error (do-it))
         (t
          (is (equal expected (do-it))))))
     '(;; Errors
-      ("(1 #.1 3)"          eclector.reader:read-time-evaluation-error)
+      ("(1 #.1 3)"          eclector.reader:read-time-evaluation-error 6)
       ;; No errors
       ("(1 #.2 3)"          (1 nil 3))
       ("(1 #.(list #.2) 3)" (1 nil 3)))))
@@ -213,19 +213,19 @@
 (test evaluate-feature-expression/customize
   "Test customizing the behavior of EVALUATE-FEATURE-EXPRESSION."
 
-  (do-stream-input-cases (() expected)
+  (do-stream-input-cases (() expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'feature-expression-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case expected
+      (error-case (expected expected-position)
         (error (do-it))
         (t
          (expect result (eq expected (do-it))))))
     '(;; Errors
-      ("#+(not a b)                1 2" eclector.reader:single-feature-expected)
-      ("#+(version-at-least)       1 2" eclector.reader:feature-expression-type-error)
-      ("#+(version-at-least 1)     1 2" eclector.reader:feature-expression-type-error)
+      ("#+(not a b)                1 2" eclector.reader:single-feature-expected       11)
+      ("#+(version-at-least)       1 2" eclector.reader:feature-expression-type-error 20)
+      ("#+(version-at-least 1)     1 2" eclector.reader:feature-expression-type-error 22)
       ;; No errors
       ("#+common-lisp              1 2" 1)
       ("#+(not common-lisp)        1 2" 1)

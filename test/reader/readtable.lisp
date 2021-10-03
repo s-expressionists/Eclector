@@ -17,7 +17,7 @@
                                           eclector.reader:*readtable*))))
                     (with-stream (stream)
                       (eclector.reader:read stream)))))
-           (error-case expected
+           (error-case (expected expected-position)
              (error (do-it))
              (t
               (multiple-value-bind (result position) (do-it)

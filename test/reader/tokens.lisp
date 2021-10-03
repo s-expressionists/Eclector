@@ -13,7 +13,7 @@
                (let ((*package* (find-package '#:eclector.reader.test))) ; TODO use a client that does not intern in INTERPRET-TOKEN
                  (eclector.reader:read-token
                   t stream eof-error-p eof-value)))))
-      (error-case expected
+      (error-case (expected expected-position)
         (error (do-it))
         (t
          (multiple-value-bind (value position) (do-it)
@@ -104,14 +104,15 @@
 
   (mapc (lambda (arguments-package-expected)
           (destructuring-bind (token escape-ranges marker1 marker2 package
-                               &optional signals)
+                               &optional signals (error-position (length token)))
               arguments-package-expected
             (let ((*package* (or package *package*)))
               (flet ((do-it ()
-                       (with-input-from-string (stream "")
+                       (with-input-from-string (stream token)
+                         (loop :repeat (length token) :do (read-char stream))
                          (eclector.reader:check-symbol-token
                           nil stream token escape-ranges marker1 marker2))))
-                (error-case signals
+                (error-case (signals error-position)
                   (error (do-it))
                   (t
                    (multiple-value-bind (new-token new-marker1 new-marker2)
@@ -143,14 +144,16 @@
   "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
 
   (mapc (lambda (arguments-package-expected)
-          (destructuring-bind (token marker1 marker2 package expected)
+          (destructuring-bind (token marker1 marker2 package expected
+                               &optional (error-position (length token)))
               arguments-package-expected
             (let ((*package* (or package *package*)))
               (flet ((do-it ()
-                       (with-input-from-string (stream "")
+                       (with-input-from-string (stream token)
+                         (loop :repeat (length token) :do (read-char stream))
                          (eclector.reader:interpret-symbol-token
                           nil stream token marker1 marker2))))
-                (error-case expected
+                (error-case (expected error-position)
                   (error (do-it))
                   (t
                    (is (equal expected (do-it)))))))))
@@ -174,17 +177,19 @@
           ("CL::ABS"                        2   3   nil abs))))
 
 (defun do-interpret-token-test-case (arguments-context-expected)
-  (destructuring-bind (token token-escapes *read-base* case expected)
+  (destructuring-bind (token token-escapes *read-base* case expected
+                       &optional (error-position (length token)))
       arguments-context-expected
     (let ((table (eclector.readtable:copy-readtable
                   eclector.reader:*readtable*)))
       (setf (eclector.readtable:readtable-case table) case)
       (flet ((do-it ()
-               (with-input-from-string (stream "")
+               (with-input-from-string (stream token)
+                 (loop :repeat (length token) :do (read-char stream))
                  (let ((eclector.reader:*readtable* table))
                    (eclector.reader:interpret-token
                     nil stream (copy-seq token) token-escapes)))))
-        (error-case expected
+        (error-case (expected error-position)
           (error (do-it))
           (t
            (unless (or token-escapes

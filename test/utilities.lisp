@@ -52,7 +52,7 @@
     (t
      condition-type)))
 
-(defun %signals-printable (condition-type thunk)
+(defun %signals-printable (condition-type position thunk)
   (handler-bind
       ((condition (lambda (condition)
                     (when (typep condition condition-type)
@@ -65,17 +65,22 @@
                                          (not (or eclector.reader:unquote-splicing-in-dotted-list
                                                   eclector.reader:unquote-splicing-at-top))))
                         (is (not (null (stream-error-stream condition)))))
+                      ;; Check stream position in CONDITION against
+                      ;; expected position.
+                      (unless (null position)
+                        (is (= position (eclector.base:stream-position condition))))
+                      ;; Make sure CONDITION prints properly.
                       (is (not (string= "" (princ-to-string condition))))
                       (return-from %signals-printable)))))
     (funcall thunk)))
 
-(defmacro signals-printable (condition &body body)
+(defmacro signals-printable (condition position &body body)
   (let ((do-it (gensym "DO-IT")))
     `(flet ((,do-it () ,@body))
        (signals ,condition (,do-it))
-       (%signals-printable ',condition #',do-it))))
+       (%signals-printable ',condition ,position #',do-it))))
 
-(defun handle-expected-error (expected thunk)
+(defun handle-expected-error (expected position thunk)
   (macrolet ((cases ()
                (flet ((condition-names ()
                         (let ((result '()))
@@ -87,18 +92,19 @@
                       (do-type (type)
                         `(,type
                           (signals ,type (funcall thunk))
-                          (%signals-printable ',type thunk)
+                          (%signals-printable ',type position thunk)
                           t)))
                  `(case expected
                     ,@(map 'list #'do-type (condition-names))
                     (t nil)))))
     (cases)))
 
-(defmacro error-case (expression &body clauses)
+(defmacro error-case ((expression &optional position) &body clauses)
   (let* ((error-clause (find 'error clauses :key #'first))
          (error-body (rest error-clause))
          (other-clauses (remove 'error clauses :key #'first)))
     (once-only (expression)
-      `(or (handle-expected-error ,expression (lambda () ,@error-body))
+      `(or (handle-expected-error
+            ,expression ,position (lambda () ,@error-body))
            (case ,expression
              ,@other-clauses)))))

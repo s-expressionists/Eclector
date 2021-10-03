@@ -12,7 +12,7 @@
                   (eclector.reader:read stream))))
       (flet ((do-it ()
                (macroexpand-1 form)))
-        (error-case expected
+        (error-case (expected)
           (error (do-it))
           (t
            (expect "evaluated result" (relaxed-equalp expected (eval (do-it))))))))

@@ -85,7 +85,7 @@
              (with-stream (stream)
                (eclector.parse-result:read
                 (make-instance 'simple-result-client) stream eof-error :eof))))
-      (error-case expected-raw
+      (error-case (expected-raw expected-position)
         (error (do-it))
         (:eof
          (multiple-value-bind (result orphan-results position) (do-it)
@@ -118,14 +118,15 @@
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
 
-  (do-stream-input-cases (() eof-error-p eof-value expected-raw
-                          &optional expected-location expected-position)
+  (do-stream-input-cases ((length) eof-error-p eof-value expected-raw
+                          &optional expected-location
+                                    (expected-position length))
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.parse-result:read-preserving-whitespace
                   (make-instance 'simple-result-client)
                   stream eof-error-p eof-value))))
-        (error-case expected-raw
+        (error-case (expected-raw expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
@@ -155,7 +156,7 @@
       (flet ((do-it ()
                (apply #'eclector.parse-result:read-from-string
                       (make-instance 'simple-result-client) input args)))
-        (error-case expected-raw
+        (error-case (expected-raw expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result position orphan-results) (do-it)
@@ -213,7 +214,7 @@
                                        client stream eof-error-p :eof))))
                      stream eof-error-p :eof t)
                      (values value kind parse-result))))))
-        (error-case expected-value
+        (error-case (expected-value expected-position)
           (error (do-it))
           (t
            (multiple-value-bind (value kind parse-result position)

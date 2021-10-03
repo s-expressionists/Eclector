@@ -31,11 +31,11 @@
   "Smoke test for the READ function."
 
   (do-stream-input-cases ((length) eof-error expected-raw
-                          &optional expected-location)
+                          &optional expected-location expected-position)
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.concrete-syntax-tree:read stream eof-error :eof))))
-      (error-case expected-raw
+      (error-case (expected-raw expected-position)
         (error (do-it))
         (:eof
          (is (eq :eof (do-it))))
@@ -66,13 +66,13 @@
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
 
-  (do-stream-input-cases (() eof-error-p eof-value
-                          expected-result &optional expected-position)
+  (do-stream-input-cases ((length) eof-error-p eof-value
+                          expected-result &optional (expected-position length))
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.concrete-syntax-tree:read-preserving-whitespace
                   stream eof-error-p eof-value))))
-        (error-case expected-result
+        (error-case (expected-result expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
@@ -87,9 +87,9 @@
              (expect "orphan results" (eq  '()               orphan-results))
              (expect "position"       (eql expected-position position))))))
     '((""        t   nil  eclector.reader:end-of-file)
-      (""        nil :eof :eof                        0)
+      (""        nil :eof :eof)
 
-      (":foo"    t   nil  :foo                        4)
+      (":foo"    t   nil  :foo)
       (":foo "   t   nil  :foo                        4)
       (":foo  "  t   nil  :foo                        4)
       (":foo  1" t   nil  :foo                        4))))
@@ -97,11 +97,12 @@
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
 
-  (do-input-cases (input args expected-value &optional expected-position)
+  (do-input-cases ((input length) args expected-value
+                   &optional (expected-position length))
       (flet ((do-it ()
                (apply #'eclector.concrete-syntax-tree:read-from-string
                       input args)))
-        (error-case expected-value
+        (error-case (expected-value expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result position) (do-it)
