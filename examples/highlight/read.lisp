@@ -179,14 +179,19 @@
 (defmethod eclector.parse-result:make-expression-result
     ((client highlight-client) (result cst:node) (children t) (source t))
   ;; This is used if RESULT already is a `cst:node'.
+  ;; TODO should be ok later, but for now, things like (#1=foo #1#)
+  ;; cause this to fail
+  ;; (assert (or (not (slot-boundp result 'cst::%children)) (null (cst:children result))))
   (reinitialize-instance result :children children :source source))
 
 (defmethod eclector.parse-result:make-expression-result
     ((client highlight-client) (result t) (children t) (source t))
-  (let ((class (cond ((and (a:lastcar children)
-                           (eq result (cst:object (a:lastcar children))))
-                      'cst:feature-expression-node)
-                     (t (result-node-class client result)))))
+  (multiple-value-bind (class children)
+      (cond ((and (a:lastcar children)
+                  (eq result (cst:object (a:lastcar children))))
+             (values 'cst:feature-expression-node (butlast children)))
+            (t
+             (values (result-node-class client result) children)))
     (make-instance class :object   result
                          :children children
                          :source   source)))

@@ -55,14 +55,15 @@
       (enter-node client cst)
       (loop :for character :across input-string
             :for position :from 0
-
+            ;; Update containment stack
             :do (maybe-end-errors position)
                 (maybe-leave-nodes position)
 
                 (maybe-enter-node position)
                 (maybe-start-errors position)
-
+            ;; Write current character
             :do (write-character client position character node)
+
 
             :finally (let ((end (1+ position)))
                        ;; When the input ends with a newline and we
