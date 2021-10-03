@@ -24,6 +24,7 @@
              :stream-position (eclector.base:stream-position condition)
              :disp-char disp-char :report 'ignore-partial-dispatch-macro)
             (return-from dispatcher)))
+      (declare (type character sub-char))
       (let ((macro-function
               (eclector.readtable:get-dispatch-macro-character
                readtable disp-char sub-char)))
