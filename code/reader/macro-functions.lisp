@@ -474,32 +474,37 @@
     (when (null char1) ; can happen when recovering
       (return-from sharpsign-backslash #\?))
     (with-token-info (push-char () finalize :lazy t)
-      (flet ((handle-char (char escapep)
-               (declare (ignore escapep))
-               (when (not (null char1))
-                 (push-char char1)
-                 (setf char1 nil))
-               (push-char char))
-             (unterminated-single-escape (escape-char)
-               (%recoverable-reader-error
-                stream 'unterminated-single-escape-in-character-name
-                :escape-char escape-char :report 'use-partial-character-name))
-             (unterminated-multiple-escape (delimiter)
-               (%recoverable-reader-error
-                stream 'unterminated-multiple-escape-in-character-name
-                :delimiter delimiter :report 'use-partial-character-name))
-             (terminate-character ()
-               (return-from sharpsign-backslash
-                 (cond (*read-suppress* nil)
-                       ((not (null char1)) ; no additional characters pushed (same as (null token))
-                        char1)
-                       ((find-character *client* (finalize)))
-                       (t
-                        (%recoverable-reader-error
-                         stream 'unknown-character-name
-                         :name (finalize)
-                         :report 'use-replacement-character)
-                        #\?)))))
+      (labels ((handle-char (char escapep)
+                 (declare (ignore escapep))
+                 (when (not (null char1))
+                   (push-char char1)
+                   (setf char1 nil))
+                 (push-char char))
+               (unterminated-single-escape (escape-char)
+                 (%recoverable-reader-error
+                  stream 'unterminated-single-escape-in-character-name
+                  :escape-char escape-char :report 'use-partial-character-name))
+               (unterminated-multiple-escape (delimiter)
+                 (%recoverable-reader-error
+                  stream 'unterminated-multiple-escape-in-character-name
+                  :delimiter delimiter :report 'use-partial-character-name))
+               (lookup (name)
+                 (let ((character (find-character *client* name)))
+                   (cond ((null character)
+                          (%recoverable-reader-error
+                           stream 'unknown-character-name
+                           :name name
+                           :report 'use-replacement-character)
+                          #\?)
+                         (t
+                          character))))
+               (terminate-character ()
+                 (return-from sharpsign-backslash
+                   (cond (*read-suppress* nil)
+                         ((not (null char1)) ; no additional characters pushed (same as (null token))
+                          (lookup char1))
+                         (t
+                          (lookup (finalize)))))))
         (token-state-machine
          stream *readtable* handle-char nil nil
          unterminated-single-escape unterminated-multiple-escape

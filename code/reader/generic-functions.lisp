@@ -39,9 +39,11 @@
     (let ((function (eclector.readtable:get-macro-character readtable char)))
       (funcall function input-stream char))))
 
-(defgeneric find-character (client name)
-  (:method ((client t) (name t))
-    (find-standard-character name)))
+(defgeneric find-character (client designator)
+  (:method ((client t) (designator character))
+    designator)
+  (:method ((client t) (designator string))
+    (find-standard-character designator)))
 
 (defgeneric make-structure-instance (client name initargs))
 

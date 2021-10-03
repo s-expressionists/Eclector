@@ -112,10 +112,14 @@
   ())
 
 (defmethod eclector.reader:find-character
-    ((client find-character-client) (name t))
-  (if (string-equal name "NO_SUCH_CHARACTER")
+    ((client find-character-client) (designator string))
+  (if (string-equal designator "NO_SUCH_CHARACTER")
       nil
       #\a))
+
+(defmethod eclector.reader:find-character
+    ((client find-character-client) (designator (eql #\B)))
+  #\C)
 
 (test find-character/customize
   "Test customizing the behavior of FIND-CHARACTER."
@@ -137,7 +141,7 @@
       ("#\\a"                 #\a)
       ("#\\A"                 #\A)
       ("#\\b"                 #\b)
-      ("#\\B"                 #\B)
+      ("#\\B"                 #\C)
 
       ;; Multiple characters
       ("#\\name"              #\a)

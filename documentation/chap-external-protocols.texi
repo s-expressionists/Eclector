@@ -513,21 +513,34 @@ default method therefore does the same thing that the standard
 @commonlisp{} reader does.
 @end deffn
 
-@defgena {find-character,eclector.reader} client name
+@defgena {find-character,eclector.reader} client designator
 
 This generic function is called by the default @t{#\} reader macro
-function to find a character by name.  @var{name} is the name of the
-character to be found with single and multiple escapes removed, but with
-the case of all characters as it was in the input.  The function has to
-either return the character designated by @var{name} or @t{nil} if no
-such character exists.
+function to find a character.  @var{designator} is either
+@itemize
+@item
+a @t{string} that is the name of the character to be found with single
+and multiple escapes removed, but with the case of all characters as it
+was in the input.
 
-It is the responsibility of the client to disregard the case of
-characters in @var{name}, for example by producing an uppercase string
-from @var{name} before looking up the designated character.
+@item
+or a character designating itself.
+@end itemize
+The function has to either return the character designated by
+@var{designator} or @t{nil} if no such character exists.
 
-The default method on this generic function recognizes the mandatory
-character names listing in HyperSpec Section 13.1.7 Character Names.
+If @var{designator} is a @t{string}, it is the responsibility of the
+client to disregard the case of characters in @var{designator}, for
+example by producing an uppercase string from @var{designator} before
+looking up the designated character.
+
+A default method on this generic function that is not specialized to any
+particular client but is specialized to @var{designator} being a
+@t{string} recognizes the mandatory character names listing in HyperSpec
+Section 13.1.7 Character Names.  Another default method on this generic
+function that is not specialized to any particular client but is
+specialized to @var{designator} being a @t{character} just returns
+@var{designator}.
 @end deffn
 
 @defgena {make-structure-instance,eclector.reader} client name initargs
