@@ -459,7 +459,7 @@
                                  ("BACKSPACE" . #.(code-char 8))
                                  ("RETURN"    . #.(code-char 13))
                                  ("LINEFEED"  . #.(code-char 10)))
-                               :test 'equal))
+                               :test 'equalp))
 
 (defun find-standard-character (name)
   (gethash name *character-names*))
@@ -493,7 +493,7 @@
                  (cond (*read-suppress* nil)
                        ((not (null char1)) ; no additional characters pushed (same as (null token))
                         char1)
-                       ((find-character *client* (nstring-upcase (finalize))))
+                       ((find-character *client* (finalize)))
                        (t
                         (%recoverable-reader-error
                          stream 'unknown-character-name

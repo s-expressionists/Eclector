@@ -113,7 +113,7 @@
 
 (defmethod eclector.reader:find-character
     ((client find-character-client) (name t))
-  (if (string= name "NO_SUCH_CHARACTER")
+  (if (string-equal name "NO_SUCH_CHARACTER")
       nil
       #\a))
 
