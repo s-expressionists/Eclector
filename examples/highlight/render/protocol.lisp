@@ -51,7 +51,9 @@
            (maybe-enter-node (position)
              (a:when-let ((child (cst:find-child-starting-at position node)))
                (enter-node client child)
-               (setf node child))))
+               (if (eql position (cst:end child))
+                   (leave-node client child)
+                   (setf node child)))))
       (enter-node client cst)
       (loop :for character :across input-string
             :for position :from 0
