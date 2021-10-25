@@ -240,7 +240,7 @@
                   = (multiple-value-list
                      (eclector.reader:read-maybe-nothing client stream nil nil))
                :until (eq kind :eof)
-               :unless (eq kind :whitespace)
-               :collect result :into results
+               :unless (member kind '(:skip :whitespace))
+                 :collect result :into results
                :finally (return (values (cst:make-cst results) (errors client))))))
      stream nil :eof t)))
