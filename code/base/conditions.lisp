@@ -20,12 +20,13 @@
 (defgeneric recovery-description-using-language (strategy language))
 
 (defun format-recovery-report (stream strategy &rest args)
-  (labels ((resolve (report)
-             (etypecase report
-               (symbol (resolve (recovery-description strategy)))
-               (string (apply #'format stream report args))
-               (function (apply report stream args)))))
-    (resolve strategy)))
+  (labels ((resolve (strategy &rest args)
+             (etypecase strategy
+               (cons (apply #'resolve (append strategy args)))
+               (symbol (apply #'resolve (recovery-description strategy) args))
+               (string (apply #'format stream strategy args))
+               (function (apply strategy stream args)))))
+    (apply #'resolve strategy args)))
 
 (defun %recoverable-reader-error (stream datum &rest arguments
                                                &key report &allow-other-keys)
