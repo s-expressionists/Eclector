@@ -47,7 +47,9 @@
   (define-description ignore-parameter             "Ignore the invalid numeric parameter.")
   (define-description use-replacement-parameter    "Use a valid numeric parameter in place of the missing one.")
 
-  (define-description use-replacement-character    "Use a replacement character in place of the invalid one.")
+  (define-description use-replacement-character    (lambda (stream replacement-character)
+                                                     (format stream "Use the character ~:C in place of the invalid one."
+                                                             replacement-character)))
   (define-description use-partial-character-name   "Use the already read part of the character name.")
 
   (define-description use-empty-vector             "Return an empty vector.")

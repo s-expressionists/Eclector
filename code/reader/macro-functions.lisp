@@ -483,9 +483,9 @@
     (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
   (let ((char1 (read-char-or-recoverable-error
                 stream nil 'end-of-input-after-backslash
-                :report 'use-replacement-character)))
+                :report '(use-replacement-character #1=#\?))))
     (when (null char1) ; can happen when recovering
-      (return-from sharpsign-backslash #\?))
+      (return-from sharpsign-backslash #1#))
     (with-token-info (push-char () finalize :lazy t)
       (labels ((handle-char (char escapep)
                  (declare (ignore escapep))
@@ -509,8 +509,9 @@
                            :position-offset (- (if (characterp name)
                                                    1
                                                    (length name)))
-                           :name name :report 'use-replacement-character)
-                          #\?)
+                           :name name
+                           :report '(use-replacement-character #2=#\?))
+                          #2#)
                          (t
                           character))))
                (terminate-character ()
