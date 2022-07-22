@@ -20,4 +20,4 @@
           ,@body)))
 
   (define-reporter ((condition end-of-file) stream)
-    (format stream "Unexpected end of input.")))
+    (format stream "~@<Unexpected end of input.~@:>")))
