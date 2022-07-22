@@ -110,35 +110,35 @@
       ("#+(or) #.(error \"foo\") 2" nil 2)
 
       ;; Some context-sensitive cases.
-      ("#C(1 `,2)"                  nil eclector.reader:backquote-in-invalid-context 6)
+      ("#C(1 `,2)"                  nil eclector.reader:backquote-in-invalid-context 5)
       ("#C(#.`,(+ 1 2) 2)"          nil #C(3 2))
-      ("#+`,common-lisp 1"          nil eclector.reader:backquote-in-invalid-context 3)
+      ("#+`,common-lisp 1"          nil eclector.reader:backquote-in-invalid-context 2)
       ("#+#.`,:common-lisp 1"       nil 1)
-      (",foo"                       nil eclector.reader:unquote-not-inside-backquote 1)
-      (",@foo"                      nil eclector.reader:unquote-not-inside-backquote 2)
-      ("`(,)"                       nil eclector.reader:object-must-follow-unquote 4)
-      ("`(,@)"                      nil eclector.reader:object-must-follow-unquote 5)
-      ("`(,.)"                      nil eclector.reader:object-must-follow-unquote 5)
+      (",foo"                       nil eclector.reader:unquote-not-inside-backquote 0)
+      (",@foo"                      nil eclector.reader:unquote-not-inside-backquote 0)
+      ("`(,)"                       nil eclector.reader:object-must-follow-unquote 3)
+      ("`(,@)"                      nil eclector.reader:object-must-follow-unquote 4)
+      ("`(,.)"                      nil eclector.reader:object-must-follow-unquote 4)
       ("#1=`(,2)"                   nil (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
 
       ;; Consing dot
       ("(1 . 2)"                    nil (1 . 2))
       ("(1 .||)"                    nil (1 |.|))
       ("(1 .|| 2)"                  nil (1 |.| 2))
-      ("(1 #(.))"                   nil eclector.reader:invalid-context-for-consing-dot 6)
+      ("(1 #(.))"                   nil eclector.reader:invalid-context-for-consing-dot 5)
 
       ;; Interaction between *READ-SUPPRESS* and reader macros.
       ("#+(or) #|skipme|# 1 2"      nil 2)
       ("#+(or) ; skipme~%1 2"       nil 2)
 
       ;; Invalid macro sub-character.
-      (,(format nil "#~C" #\Tab)    nil eclector.reader:sharpsign-invalid 2)
-      (,(format nil "#~C" #\Tab)    t   eclector.reader:sharpsign-invalid 2)
-      ("#<"                         nil eclector.reader:sharpsign-invalid 2)
-      ("#<"                         t   eclector.reader:sharpsign-invalid 2)
+      (,(format nil "#~C" #\Tab)    nil eclector.reader:sharpsign-invalid 1)
+      (,(format nil "#~C" #\Tab)    t   eclector.reader:sharpsign-invalid 1)
+      ("#<"                         nil eclector.reader:sharpsign-invalid 1)
+      ("#<"                         t   eclector.reader:sharpsign-invalid 1)
       ;; Unknown macro sub-character.
-      ("#!"                         nil eclector.reader:unknown-macro-sub-character 2)
-      ("#!"                         t   eclector.reader:unknown-macro-sub-character 2)
+      ("#!"                         nil eclector.reader:unknown-macro-sub-character 1)
+      ("#!"                         t   eclector.reader:unknown-macro-sub-character 1)
       ;; End of input while trying to read macro sub character.
       ("#"                          nil eclector.reader:unterminated-dispatch-macro 1)
       ("#"                          t   eclector.reader:unterminated-dispatch-macro 1))))
@@ -248,7 +248,7 @@
              (expect "position" (eql   expected-position position))))))
     '((""       (nil nil) :eof :eof       0)
       (""       (t   nil) eclector.reader:end-of-file)
-      ("."      (nil nil) eclector.reader:invalid-context-for-consing-dot nil 1)
+      ("."      (nil nil) eclector.reader:invalid-context-for-consing-dot nil 0)
 
       ("   "    (nil nil) nil :whitespace 3)
       ("   "    (nil nil) nil :whitespace 3)
@@ -296,12 +296,12 @@
     '((""             #\] eclector.reader:unterminated-list)
       (")"            #\] eclector.reader:invalid-context-for-right-parenthesis
                           eclector.reader:invalid-context-for-right-parenthesis
-                          1)
+                          0)
       ("]"            #\] ())
       ("1"            #\] eclector.reader:unterminated-list)
       ("."            #\] eclector.reader:invalid-context-for-consing-dot
                           eclector.reader:invalid-context-for-consing-dot
-                          1)
+                          0)
       ("1]"           #\] (1) eclector.reader:unterminated-list)
       ("1 ]"          #\] (1))
       ("1 #|2|# ]"    #\] (1))
@@ -309,7 +309,7 @@
       ("1 #()]"       #\] (1 #()))
       ("1 #(.)]"      #\] eclector.reader:invalid-context-for-consing-dot
                           eclector.reader:invalid-context-for-consing-dot
-                          5)
+                          4)
 
       ;; We call READ-DELIMITED-LIST with RECURSIVE-P being false, so
       ;; labels and references should work between and within list

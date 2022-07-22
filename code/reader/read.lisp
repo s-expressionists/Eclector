@@ -101,7 +101,7 @@
                  (read stream t nil t)
                  (%recoverable-reader-error
                   stream 'multiple-objects-following-consing-dot
-                  :report 'ignore-object)
+                  :position-offset -1 :report 'ignore-object) ; not accurate
               else
               do (funcall function state object))
       (end-of-list (condition)
@@ -109,6 +109,7 @@
           (unless (char= char close-char)
             (%recoverable-reader-error
              stream 'invalid-context-for-right-parenthesis
+             :position-offset -1
              :expected-character close-char :found-character char
              :report 'ignore-trailing-right-paren)))
         (cond ((and (not (null eol-value))
@@ -116,7 +117,7 @@
               ((eq state :tail)
                (%recoverable-reader-error
                 stream 'object-must-follow-consing-dot
-                :report 'inject-nil))))
+                :position-offset -1 :report 'inject-nil))))
       ((and end-of-file (not incomplete-construct)) (condition)
         (cond ((and (not (null eof-value))
                     (funcall function state eof-value)))

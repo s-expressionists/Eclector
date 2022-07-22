@@ -65,10 +65,13 @@
                                          (not (or eclector.reader:unquote-splicing-in-dotted-list
                                                   eclector.reader:unquote-splicing-at-top))))
                         (is (not (null (stream-error-stream condition)))))
-                      ;; Check stream position in CONDITION against
-                      ;; expected position.
+                      ;; Check effective stream position in CONDITION
+                      ;; against expected position.
                       (unless (null position)
-                        (is (= position (eclector.base:stream-position condition))))
+                        (let ((effective-position
+                               (+ (eclector.base:stream-position condition)
+                                  (eclector.base:position-offset condition))))
+                         (is (= position effective-position))))
                       ;; Make sure CONDITION prints properly.
                       (is (not (string= "" (princ-to-string condition))))
                       (return-from %signals-printable)))))

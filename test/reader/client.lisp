@@ -134,8 +134,8 @@
         (t
          (expect "character" (equal expected (do-it))))))
     '(;; Errors
-      ("#\\no_such_character" eclector.reader:unknown-character-name 19)
-      ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name 19)
+      ("#\\no_such_character" eclector.reader:unknown-character-name 2)
+      ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name 2)
 
       ;; Single character
       ("#\\a"                 #\a)
@@ -223,9 +223,9 @@
         (t
          (expect result (eq expected (do-it))))))
     '(;; Errors
-      ("#+(not a b)                1 2" eclector.reader:single-feature-expected       11)
-      ("#+(version-at-least)       1 2" eclector.reader:feature-expression-type-error 20)
-      ("#+(version-at-least 1)     1 2" eclector.reader:feature-expression-type-error 22)
+      ("#+(not a b)                1 2" eclector.reader:single-feature-expected       10)
+      ("#+(version-at-least)       1 2" eclector.reader:feature-expression-type-error 19)
+      ("#+(version-at-least 1)     1 2" eclector.reader:feature-expression-type-error 21)
       ;; No errors
       ("#+common-lisp              1 2" 1)
       ("#+(not common-lisp)        1 2" 1)

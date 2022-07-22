@@ -4,9 +4,13 @@
                       &rest arguments
                       &key (stream-position (eclector.base:source-position
                                              *client* stream))
+                           (position-offset 0)
                       &allow-other-keys)
-  (apply #'error datum :stream stream :stream-position stream-position
-         (alexandria:remove-from-plist arguments :stream-position)))
+  (apply #'error datum :stream          stream
+                       :stream-position stream-position
+                       :position-offset position-offset
+         (alexandria:remove-from-plist
+          arguments :stream-position :position-offset)))
 
 (defgeneric recovery-description (strategy &key language)
   (:method ((strategy t) &key (language (acclimation:language
@@ -39,7 +43,23 @@
 
 (define-condition stream-position-condition (condition)
   ((%stream-position :initarg :stream-position
-                     :reader stream-position)))
+                     :reader stream-position
+                     :documentation
+                     #.(format nil
+                        "Approximate position in an input stream with ~
+                         which the condition is associated. The ~
+                         representation is controlled by the client by ~
+                         adding methods on the generic function ~
+                         STREAM-POSITION."))
+   (%position-offset :initarg :position-offset
+                     :type integer
+                     :reader position-offset
+                     :initform 0
+                     :documentation
+                     #.(format nil
+                        "Offset from the approximate position to produce ~
+                         the exact position. Always an integer and not ~
+                         controlled by the client."))))
 
 (define-condition stream-position-reader-error (acclimation:condition
                                                 stream-position-condition
