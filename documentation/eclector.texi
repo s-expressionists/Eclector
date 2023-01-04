@@ -17,7 +17,7 @@
 
 @copying
 Copyright @copyright{} 2010 - 2018 Robert Strandh
-Copyright @copyright{} 2018 - 2020 Jan Moringen
+Copyright @copyright{} 2018 - 2023 Jan Moringen
 @end copying
 
 @dircategory Common Lisp
@@ -45,7 +45,7 @@ This manual is for @sysname{} version TODO.
 * External protocols::
 * Recovering from errors::
 * Side effects::
-* Interpretation of Unclear Parts of the Specifications::
+* Interpretation of unclear parts of the specification::
 * Concept index::
 * Function and macro and variable and type index::
 @end menu

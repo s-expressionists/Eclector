@@ -1,5 +1,5 @@
-@node Interpretation of Unclear Parts of the Specifications
-@chapter Interpretation of Unclear Parts of the Specifications
+@node Interpretation of unclear parts of the specification
+@chapter Interpretation of unclear parts of the specification
 
 @cindex specification interpretation
 
