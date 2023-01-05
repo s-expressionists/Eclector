@@ -38,5 +38,5 @@
                    (gethash val mapping)
                  (if found-p
                      (setf (gethash key object) value)
-                     (fixup client value seen-objects mapping))))
+                     (fixup client val seen-objects mapping))))
              object)))
