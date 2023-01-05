@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- Copyright (C) 2010 - 2018 Robert Strandh
-Copyright (C) 2018 - 2020 Jan Moringen -->
+Copyright (C) 2018 - 2023 Jan Moringen -->
 <title>Eclector User&rsquo;s Manual</title>
 
 <meta name="description" content="Eclector User&rsquo;s Manual">
@@ -344,10 +344,11 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
       <li><a id="toc-Standard-reader-macros-1" href="#Standard-reader-macros">4.2.5 Standard reader macros</a></li>
     </ul></li>
   </ul></li>
-  <li><a id="toc-Interpretation-of-Unclear-Parts-of-the-Specifications-1" href="#Interpretation-of-Unclear-Parts-of-the-Specifications">5 Interpretation of Unclear Parts of the Specifications</a>
+  <li><a id="toc-Interpretation-of-unclear-parts-of-the-specification-1" href="#Interpretation-of-unclear-parts-of-the-specification">5 Interpretation of unclear parts of the specification</a>
   <ul class="no-bullet">
     <li><a id="toc-Interpretation-of-Sharpsign-C-and-Sharpsign-S-1" href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">5.1 Interpretation of Sharpsign C and Sharpsign S</a></li>
     <li><a id="toc-Interpretation-of-Backquote-and-Sharpsign-Single-Quote-1" href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">5.2 Interpretation of Backquote and Sharpsign Single Quote</a></li>
+    <li><a id="toc-Circular-objects-and-custom-reader-macros-1" href="#Circular-objects-and-custom-reader-macros">5.3 Circular objects and custom reader macros</a></li>
   </ul></li>
   <li><a id="toc-Concept-index-1" href="#Concept-index" rel="index">Concept index</a></li>
   <li><a id="toc-Function-and-macro-and-variable-and-type-index-1" href="#Function-and-macro-and-variable-and-type-index" rel="index">Function and macro and variable and type index</a></li>
@@ -1615,7 +1616,7 @@ not <code>(DEFUN FOO (X Y) &quot;My documentation string&quot; (+ x y))</code>.
 <div class="chapter" id="Side-effects">
 <div class="header">
 <p>
-Next: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="n" rel="next">Interpretation of Unclear Parts of the Specifications</a>, Previous: <a href="#Recovering-from-errors" accesskey="p" rel="prev">Recovering from errors</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Interpretation-of-unclear-parts-of-the-specification" accesskey="n" rel="next">Interpretation of unclear parts of the specification</a>, Previous: <a href="#Recovering-from-errors" accesskey="p" rel="prev">Recovering from errors</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Side-effects-1"></span><h2 class="chapter">4 Side effects</h2>
 
@@ -1841,12 +1842,12 @@ clients that install non-standard macro functions for the <tt>(</tt> and
 </div>
 </div>
 </div>
-<div class="chapter" id="Interpretation-of-Unclear-Parts-of-the-Specifications">
+<div class="chapter" id="Interpretation-of-unclear-parts-of-the-specification">
 <div class="header">
 <p>
 Next: <a href="#Concept-index" accesskey="n" rel="next">Concept index</a>, Previous: <a href="#Side-effects" accesskey="p" rel="prev">Side effects</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Interpretation-of-Unclear-Parts-of-the-Specifications-1"></span><h2 class="chapter">5 Interpretation of Unclear Parts of the Specifications</h2>
+<span id="Interpretation-of-unclear-parts-of-the-specification-1"></span><h2 class="chapter">5 Interpretation of unclear parts of the specification</h2>
 
 <span id="index-specification-interpretation"></span>
 
@@ -1858,12 +1859,13 @@ conforming reader completely unambiguously.
 <ul class="section-toc">
 <li><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S" accesskey="1">Interpretation of Sharpsign C and Sharpsign S</a></li>
 <li><a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote" accesskey="2">Interpretation of Backquote and Sharpsign Single Quote</a></li>
+<li><a href="#Circular-objects-and-custom-reader-macros" accesskey="3">Circular objects and custom reader macros</a></li>
 </ul>
 <hr>
 <div class="section" id="Interpretation-of-Sharpsign-C-and-Sharpsign-S">
 <div class="header">
 <p>
-Next: <a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote" accesskey="n" rel="next">Interpretation of Backquote and Sharpsign Single Quote</a>, Up: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="u" rel="up">Interpretation of Unclear Parts of the Specifications</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote" accesskey="n" rel="next">Interpretation of Backquote and Sharpsign Single Quote</a>, Up: <a href="#Interpretation-of-unclear-parts-of-the-specification" accesskey="u" rel="up">Interpretation of unclear parts of the specification</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Interpretation-of-Sharpsign-C-and-Sharpsign-S-1"></span><h3 class="section">5.1 Interpretation of Sharpsign C and Sharpsign S</h3>
 
@@ -1932,7 +1934,7 @@ follows:
 <div class="section" id="Interpretation-of-Backquote-and-Sharpsign-Single-Quote">
 <div class="header">
 <p>
-Previous: <a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S" accesskey="p" rel="prev">Interpretation of Sharpsign C and Sharpsign S</a>, Up: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="u" rel="up">Interpretation of Unclear Parts of the Specifications</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Circular-objects-and-custom-reader-macros" accesskey="n" rel="next">Circular objects and custom reader macros</a>, Previous: <a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S" accesskey="p" rel="prev">Interpretation of Sharpsign C and Sharpsign S</a>, Up: <a href="#Interpretation-of-unclear-parts-of-the-specification" accesskey="u" rel="up">Interpretation of unclear parts of the specification</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Interpretation-of-Backquote-and-Sharpsign-Single-Quote-1"></span><h3 class="section">5.2 Interpretation of Backquote and Sharpsign Single Quote</h3>
 
@@ -1957,11 +1959,82 @@ unquote in the function name.
 </p>
 <hr>
 </div>
+<div class="section" id="Circular-objects-and-custom-reader-macros">
+<div class="header">
+<p>
+Previous: <a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote" accesskey="p" rel="prev">Interpretation of Backquote and Sharpsign Single Quote</a>, Up: <a href="#Interpretation-of-unclear-parts-of-the-specification" accesskey="u" rel="up">Interpretation of unclear parts of the specification</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Circular-objects-and-custom-reader-macros-1"></span><h3 class="section">5.3 Circular objects and custom reader macros</h3>
+
+<p>The Common Lisp specification describes the behavior of the <tt>##</tt>
+reader macro as follows:
+</p>
+<blockquote>
+<p><tt>#<var>n</var>#</tt>, where <var>n</var> is a required unsigned decimal integer,
+provides a reference to some object labeled by <tt>#<var>n</var>=</tt>; that is,
+<tt>#<var>n</var>#</tt> represents a pointer to the same (<tt>eq</tt>) object labeled
+by <tt>#<var>n</var>=</tt>.
+</p></blockquote>
+
+<p>The vague phrasing &ldquo;represents a pointer to the same (<tt>eq</tt>) object&rdquo;
+is probably chosen to cover the situation in which the object in
+question is not yet defined when the reader encounters the <tt>#<var>n</var>#</tt>
+reference as is the case with input of the form
+<tt>#<var>n</var>=(…#<var>n</var>#…)</tt>.  The fact that the object is not yet defined
+when the reference is encountered is not a problem in general except for
+one situation: assume <tt>#_</tt> is a custom reader macro in the current
+readtable which calls <tt>read</tt>.  In this situation, reading an
+expression of the form <tt>#<var>n</var>=(…#_#<var>n</var>#…)</tt> causes the reader
+macro function for <tt>#_</tt> to be called which calls <tt>read</tt> to read the
+following object which encounters the reference. This chain of calls
+leads to a potential problem: the <tt>read</tt> call made by the reader macro
+function has to return some object but it cannot return the object
+labeled <var>n</var> since that object has not been read yet.  The reader
+macro function must therefore receive some sort of
+implementation-dependent <a id="DOCF2" href="#FOOT2"><sup>2</sup></a> object which stands in
+for the object labeled <var>n</var> and gets replaced at some later time
+after the object labeled <var>n</var> has been read.  Since the stand-in
+object is implementation-dependent, the reader macro function must not
+make any assumptions regarding the type of the object or operate on it
+in any way other than returning the object or using the object as a part
+of a compound object.
+</p>
+<p>The following example violates this principle since the reader macro
+function in <tt>custom-macro-readtable</tt> calls <tt>cl:second</tt> on the object
+returned by <tt>eclector.reader:read</tt>:
+</p>
+<div class="example lisp">
+<pre class="lisp">(defun custom-macro-readtable ()
+  (let ((readtable (eclector.readtable:copy-readtable
+                    eclector.reader:*readtable*)))
+    (eclector.readtable:set-dispatch-macro-character
+     readtable #\# #\_ (lambda (stream char sub-char)
+                         (declare (ignore char sub-char))
+                         (second (eclector.reader:read stream t nil t))))
+    readtable))
+
+(let ((eclector.reader:*readtable* (custom-macro-readtable)))
+  (eclector.reader:read-from-string &quot;#1=(:a #_#1#)&quot;))
+; =&gt; undefined
+</pre></div>
+
+<p>To handle the problem described above, Eclector imposes the following
+restriction on custom reader macro functions which call <tt>read</tt>:
+</p>
+<blockquote>
+<p>A reader macro function which reads an object by calling <tt>read</tt> must
+account for the object being of an implementation-dependent type and
+must not operate on the object in any way other than returning the
+object or using the object as a part of a compound object.
+</p></blockquote>
+
+<hr>
+</div>
 </div>
 <div class="unnumbered" id="Concept-index">
 <div class="header">
 <p>
-Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" rel="next">Function and macro and variable and type index</a>, Previous: <a href="#Interpretation-of-Unclear-Parts-of-the-Specifications" accesskey="p" rel="prev">Interpretation of Unclear Parts of the Specifications</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" rel="next">Function and macro and variable and type index</a>, Previous: <a href="#Interpretation-of-unclear-parts-of-the-specification" accesskey="p" rel="prev">Interpretation of unclear parts of the specification</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Concept-index-1"></span><h2 class="unnumbered">Concept index</h2>
 
@@ -2024,7 +2097,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td></td><td valign="top"><a href="#index-source-location">source location</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source-tracking">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source-tracking-1">source tracking</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Ordinary-reader-features">Ordinary reader features</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-specification-interpretation">specification interpretation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Unclear-Parts-of-the-Specifications">Interpretation of Unclear Parts of the Specifications</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-specification-interpretation">specification interpretation</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-unclear-parts-of-the-specification">Interpretation of unclear parts of the specification</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-structure-literal">structure literal</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 </table>
@@ -2185,6 +2258,10 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 
 <h5><a id="FOOT1" href="#DOCF1">(1)</a></h5>
 <p>See: <a href="https://github.com/s-expressionists/Concrete-Syntax-Tree">https://github.com/s-expressionists/Concrete-Syntax-Tree</a></p>
+<h5><a id="FOOT2" href="#DOCF2">(2)</a></h5>
+<p>We use &ldquo;implementation-dependent&rdquo;
+in the sense defined in the Common Lisp specification except that
+Eclector is the implementation in question.</p>
 </div>
 
 
