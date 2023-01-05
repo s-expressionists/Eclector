@@ -23,14 +23,19 @@
     (fixup-place (cdr object)))
 
   (defmethod fixup (client (object array) seen-objects mapping)
-    (loop for i from 0 below (array-total-size object)
-          do (fixup-place (row-major-aref object i))))
+    ;; Fix up array elements unless the array element type indicates
+    ;; that no fix up is required.
+    (let ((element-type (array-element-type object)))
+      (when (or (eq element-type 't) ; fast path
+                (not (subtypep element-type '(or character number symbol))))
+        (loop for i from 0 below (array-total-size object)
+              do (fixup-place (row-major-aref object i))))))
 
   (defmethod fixup (client (object standard-object) seen-objects mapping)
     (loop for slot-definition in (closer-mop:class-slots (class-of object))
           for name = (closer-mop:slot-definition-name slot-definition)
           when (slot-boundp object name)
-          do (fixup-place (slot-value object name))))
+            do (fixup-place (slot-value object name))))
 
   (defmethod fixup (client (object hash-table) seen-objects mapping)
     (maphash (lambda (key val)
