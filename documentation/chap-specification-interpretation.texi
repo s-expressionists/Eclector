@@ -10,6 +10,7 @@ conforming reader completely unambiguously.
 @menu
 * Interpretation of Sharpsign C and Sharpsign S::
 * Interpretation of Backquote and Sharpsign Single Quote::
+* Circular objects and custom reader macros::
 @end menu
 
 @node Interpretation of Sharpsign C and Sharpsign S
@@ -97,3 +98,70 @@ is a relatively common idiom, @sysname{} accepts it by default.
 function under the name
 @t{eclector.reader:strict-sharpsign-single-quote} which does not accept
 unquote in the function name.
+
+@node Circular objects and custom reader macros
+@section Circular objects and custom reader macros
+
+The @commonlisp{} specification describes the behavior of the @t{##}
+reader macro as follows:
+
+@quotation
+@t{#@var{n}#}, where @var{n} is a required unsigned decimal integer,
+provides a reference to some object labeled by @t{#@var{n}=}; that is,
+@t{#@var{n}#} represents a pointer to the same (@t{eq}) object labeled
+by @t{#@var{n}=}.
+@end quotation
+
+The vague phrasing ``represents a pointer to the same (@t{eq}) object''
+is probably chosen to cover the situation in which the object in
+question is not yet defined when the reader encounters the @t{#@var{n}#}
+reference as is the case with input of the form
+@t{#@var{n}=(…#@var{n}#…)}.  The fact that the object is not yet defined
+when the reference is encountered is not a problem in general except for
+one situation: assume @t{#_} is a custom reader macro in the current
+readtable which calls @t{read}.  In this situation, reading an
+expression of the form @t{#@var{n}=(…#_#@var{n}#…)} causes the reader
+macro function for @t{#_} to be called which calls @t{read} to read the
+following object which encounters the reference. This chain of calls
+leads to a potential problem: the @t{read} call made by the reader macro
+function has to return some object but it cannot return the object
+labeled @var{n} since that object has not been read yet.  The reader
+macro function must therefore receive some sort of
+implementation-dependent @footnote{We use ``implementation-dependent''
+in the sense defined in the @commonlisp{} specification except that
+@sysname{} is the implementation in question.} object which stands in
+for the object labeled @var{n} and gets replaced at some later time
+after the object labeled @var{n} has been read.  Since the stand-in
+object is implementation-dependent, the reader macro function must not
+make any assumptions regarding the type of the object or operate on it
+in any way other than returning the object or using the object as a part
+of a compound object.
+
+The following example violates this principle since the reader macro
+function in @t{custom-macro-readtable} calls @t{cl:second} on the object
+returned by @t{eclector.reader:read}:
+
+@lisp
+(defun custom-macro-readtable ()
+  (let ((readtable (eclector.readtable:copy-readtable
+                    eclector.reader:*readtable*)))
+    (eclector.readtable:set-dispatch-macro-character
+     readtable #\# #\_ (lambda (stream char sub-char)
+                         (declare (ignore char sub-char))
+                         (second (eclector.reader:read stream t nil t))))
+    readtable))
+
+(let ((eclector.reader:*readtable* (custom-macro-readtable)))
+  (eclector.reader:read-from-string "#1=(:a #_#1#)"))
+; => undefined
+@end lisp
+
+To handle the problem described above, @sysname{} imposes the following
+restriction on custom reader macro functions which call @t{read}:
+
+@quotation
+A reader macro function which reads an object by calling @t{read} must
+account for the object being of an implementation-dependent type and
+must not operate on the object in any way other than returning the
+object or using the object as a part of a compound object.
+@end quotation
