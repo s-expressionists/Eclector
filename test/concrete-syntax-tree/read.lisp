@@ -195,7 +195,16 @@
                                 (scons (10 11)) ; second 1 (arbitrarily)
                                 (scons ()
                                        (scons (10 11)) ; second 1 (arbitrarily)
-                                       (scons ()))))))))
+                                       (scons ()))))
+
+        ;; Quote injects expressions
+        ("'(123)"       ,(scons (0 6)
+                                (scons ()) ; quote, no source
+                                (scons () ; ((123)), no source
+                                       (scons (1 6) ; (123)
+                                              (scons (2 5)) ; 123
+                                              (scons ())) ; nil
+                                       (scons ())))))))) ; nil
 
 ;;; Custom client
 
