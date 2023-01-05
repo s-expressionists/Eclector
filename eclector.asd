@@ -12,6 +12,7 @@
 
   :components  ((:module "base"
                  :pathname "code/base"
+                 :serial t
                  :components ((:file "package")
                               (:file "utilities")
                               (:file "variables")
@@ -88,11 +89,16 @@
   :in-order-to ((test-op (test-op "eclector/test"))))
 
 (defsystem "eclector/test"
+  :description "Tests for the eclector system"
+  :license     "BSD"
+  :author      "Jan Moringen"
+
   :depends-on  ("alexandria"
                 "eclector"
                 (:version "fiveam" "1.4"))
 
   :components  ((:module "test"
+                 :serial t
                  :components ((:file "package")
                               (:file "utilities")))
 

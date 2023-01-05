@@ -20,6 +20,10 @@
   :in-order-to ((test-op (test-op "eclector-concrete-syntax-tree/test"))))
 
 (defsystem :eclector-concrete-syntax-tree/test
+  :description "Test for the eclector-concrete-syntax-tree system"
+  :license     "BSD"
+  :author      "Jan Moringen"
+
   :depends-on  ("eclector-concrete-syntax-tree"
                 "eclector/test"
                 (:version "fiveam" "1.4"))
