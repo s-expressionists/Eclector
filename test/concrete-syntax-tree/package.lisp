@@ -16,4 +16,5 @@
 (def-suite :eclector.concrete-syntax-tree)
 
 (defun run-tests ()
-  (run! :eclector.concrete-syntax-tree))
+  (let ((*print-circle* t))
+    (run! :eclector.concrete-syntax-tree)))

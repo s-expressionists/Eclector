@@ -18,4 +18,5 @@
 (def-suite :eclector)
 
 (defun run-tests ()
-  (run! :eclector))
+  (let ((*print-circle* t))
+    (run! :eclector)))
