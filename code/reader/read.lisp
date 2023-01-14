@@ -69,13 +69,13 @@
   ;; not comments.
   (loop for char = (peek-char t stream t nil)
         if (eql char close-char)
-        do (read-char stream)
-           (signal-end-of-list char)
+          do (read-char stream)
+             (signal-end-of-list char)
         else
-        do (multiple-value-bind (object what)
-               (read-maybe-nothing client stream t nil)
-             (unless (eq what :skip) ; Skip over comments
-               (return object)))))
+          do (multiple-value-bind (object what)
+                 (read-maybe-nothing client stream t nil)
+               (unless (eq what :skip) ; Skip over comments
+                 (return object)))))
 
 ;;; Read a list terminated by CLOSE-CHAR from STREAM. For each
 ;;; encountered list element as well the end of the list (or premature
