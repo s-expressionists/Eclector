@@ -15,13 +15,11 @@
    input-stream eof-error-p eof-value))
 
 (locally (declare #+sbcl (sb-ext:muffle-conditions eclector.base:&optional-and-&key-style-warning))
-  (defun read-from-string (string &optional
-                                  (eof-error-p t)
-                                  (eof-value nil)
-                                  &key
-                                  (start 0)
-                                  (end nil)
-                                  (preserve-whitespace nil))
+  (defun read-from-string (string &optional (eof-error-p t)
+                                            (eof-value nil)
+                                  &key (start 0)
+                                       (end nil)
+                                       (preserve-whitespace nil))
     (eclector.parse-result:read-from-string
      (or eclector.reader:*client* *cst-client*)
      string eof-error-p eof-value :start start :end end
