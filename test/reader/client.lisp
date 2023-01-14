@@ -1,6 +1,7 @@
 (cl:in-package #:eclector.reader.test)
 
-(in-suite :eclector.reader)
+(def-suite* :eclector.reader.client
+  :in :eclector.reader)
 
 ;;; Test customizing INTERPRET-SYMBOL
 
@@ -68,7 +69,6 @@
 
 (test interpret-symbol/customize
   "Test customizing the behavior of INTERPRET-SYMBOL."
-
   (let ((*mock-packages* (make-mock-packages)))
     (do-stream-input-cases (() expected-package &optional expected-symbol)
       (flet ((do-it ()
@@ -123,7 +123,6 @@
 
 (test find-character/customize
   "Test customizing the behavior of FIND-CHARACTER."
-
   (do-stream-input-cases (() expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
@@ -163,7 +162,6 @@
 
 (test evaluate-expression/customize
   "Test customizing the behavior of EVALUATE-EXPRESSION."
-
   (do-stream-input-cases (() expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
@@ -212,7 +210,6 @@
 
 (test evaluate-feature-expression/customize
   "Test customizing the behavior of EVALUATE-FEATURE-EXPRESSION."
-
   (do-stream-input-cases (() expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
@@ -266,7 +263,6 @@
 
 (test call-with-current-package/customize
   "Test customizing the behavior of CALL-WITH-CURRENT-PACKAGE."
-
   (do-input-cases (input)
     (let ((eclector.reader:*client*
             (make-instance 'with-current-package-client)))

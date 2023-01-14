@@ -1,11 +1,10 @@
 (cl:in-package #:eclector.reader.test)
 
 (def-suite* :eclector.reader.macro-functions
-    :in :eclector.reader)
+  :in :eclector.reader)
 
 (test semicolon/smoke
   "Smoke test for the SEMICOLON reader macro function."
-
   (do-stream-input-cases ((length) expected
                           &optional (expected-position length))
     (multiple-value-bind (result position)
@@ -21,7 +20,6 @@
 
 (test single-quote/smoke
   "Smoke test for the SINGLE-QUOTE reader macro function."
-
   (do-stream-input-cases ((length) expected
                           &optional (expected-position length))
     (flet ((do-it ()
@@ -40,7 +38,6 @@
 
 (test double-quote/smoke
   "Smoke test for the DOUBLE-QUOTE reader macro function."
-
   (do-stream-input-cases ((length) expected
                           &optional (expected-position length))
     (flet ((do-it ()
@@ -68,7 +65,6 @@
 
 (test backquote/smoke
   "Smoke test for the BACKQUOTE reader macro function."
-
   (do-stream-input-cases ((length) quasiquote-forbidden expected
                           &optional (expected-position length))
     (flet ((do-it ()
@@ -97,7 +93,6 @@
 
 (test comma/smoke
   "Smoke test for the COMMA reader macro function."
-
   (do-stream-input-cases ((length) unquote-forbidden backquote-depth
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -132,7 +127,6 @@
 
 (test left-parenthesis/smoke
   "Smoke test for the LEFT-PARENTHESIS reader macro function."
-
   (do-stream-input-cases ((length)
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -164,7 +158,6 @@
 
 (test right-parenthesis/smoke
   "Smoke test for the RIGHT-PARENTHESIS reader macro function."
-
   (signals-printable eclector.reader:invalid-context-for-right-parenthesis -1
     (with-input-from-string (stream "")
       (eclector.reader::right-parenthesis stream #\)))))
@@ -174,7 +167,6 @@
 
 Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
 \"strict\" variant, that is STRICT-SHARPSIGN-SINGLE-QUOTE."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected-relaxed
                           &optional (expected-strict expected-relaxed)
@@ -227,7 +219,6 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
 (test sharpsign-single-quote/switch-to-strict
   "Test switching to the \"strict\" variant of the
 SHARPSIGN-SINGLE-QUOTE reader macro function."
-
   (let ((eclector.reader:*readtable* (eclector.readtable:copy-readtable
                                       eclector.reader:*readtable*)))
     (eclector.readtable:set-dispatch-macro-character
@@ -238,7 +229,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-left-parenthesis/smoke
   "Smoke test for the SHARPSIGN-LEFT-PARENTHESIS reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -275,7 +265,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-dot/smoke
   "Smoke test for the SHARPSIGN-DOT reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress read-eval
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -306,7 +295,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-backslash/smoke
   "Smoke test for the SHARPSIGN-BACKSLASH reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -355,7 +343,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test read-rational/smoke
   "Smoke test for the READ-RATIONAL reader macro function."
-
   (do-stream-input-cases ((length) base
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -427,7 +414,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
               (test-name (alexandria:symbolicate function-name '#:/smoke)))
          `(test ,test-name
             ,(format nil "Smoke test for the ~A function." function-name)
-
             (do-stream-input-cases ((length) parameter read-suppress
                                     expected &optional (expected-position length))
               (flet ((do-it ()
@@ -549,7 +535,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-asterisk/smoke
   "Smoke test for the SHARPSIGN-ASTERISK function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -592,7 +577,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-vertical-bar/smoke
   "Smoke test for the SHARPSIGN-VERTICAL-BAR function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -626,7 +610,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-a/smoke
   "Smoke test for the SHARPSIGN-A reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           &optional expected (expected-position length))
     (flet ((do-it ()
@@ -679,7 +662,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-colon/smoke
   "Smoke test for the SHARPSIGN-COLON reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -716,7 +698,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-c/smoke
   "Smoke test for the SHARPSIGN-C reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected-relaxed
                           &optional (expected-strict expected-relaxed)
@@ -801,7 +782,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-s/smoke
   "Smoke test for the SHARPSIGN-S reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -861,7 +841,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
-
   (do-stream-input-cases ((length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -891,7 +870,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
-
   (do-stream-input-cases ((length) parameter *read-suppress*
                           plus-expected &optional (minus-expected plus-expected)
                                                   (expected-position length))
@@ -971,18 +949,14 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-invalid/smoke
   "Smoke test for the SHARPSIGN-INVALID function."
-
   (signals-printable eclector.reader:sharpsign-invalid -1
     (with-input-from-string (stream "")
       (eclector.reader::sharpsign-invalid stream #\< nil))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Reader macros for sharpsign equals and sharpsign sharpsign.
 
 (test sharpsign-{equal\,sharpsign}/smoke
   "Smoke test for the SHARPSIGN-{EQUAL,SHARPSIGN} functions."
-
   (do-stream-input-cases ((length) read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()

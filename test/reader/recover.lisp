@@ -1,6 +1,7 @@
 (cl:in-package #:eclector.reader.test)
 
-(in-suite :eclector.reader)
+(def-suite* :eclector.reader.recover
+  :in :eclector.reader)
 
 (defun do-recover-test-case (input-and-expected)
   (destructuring-bind (input expected-conditions expected-value
@@ -53,7 +54,6 @@
 
 (test recover/smoke
   "Test recovering from various syntax errors."
-
   (mapc #'do-recover-test-case
         `(;; Recover from invalid syntax in symbols.
           (":"                                (eclector.reader:symbol-name-must-not-be-only-package-markers) |:|)
@@ -293,7 +293,6 @@
 #+(or sbcl ccl)
 (test recover-from-invalid-float-format
   "Test recovering from invalid value of *READ-DEFAULT-FLOAT-FORMAT*."
-
   (let ((*read-default-float-format* 'rational))
     (mapc #'do-recover-test-case
           '(("1.0" (eclector.reader:invalid-default-float-format) 1.0f0)
@@ -301,13 +300,12 @@
 
 (test recover/package-problems
   "Test recovering form non-existing packages, symbols and similar problems."
-
   (labels ((check-restart (name)
              (let* ((restart (find-restart name))
                     (report (princ-to-string restart)))
                (is-false (alexandria:emptyp report))))
            (invoke-restart-interactively* (restart-name)
-             ;; CCL prints a message about invoke the restart to
+             ;; CCL prints a message about invoking the restart to
              ;; *ERROR-OUTPUT*.
              (let ((*error-output* (make-broadcast-stream)))
                (invoke-restart-interactively restart-name)))

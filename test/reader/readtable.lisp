@@ -5,7 +5,6 @@
 
 (test read/readtable-interaction
   "Test for the interaction between READ and the readtable."
-
   (mapc
    (lambda (setup-cases)
      (destructuring-bind (setup &rest cases) setup-cases
@@ -75,7 +74,6 @@
 
 (test peek-char/readtable-interaction
   "Test for the interaction between PEEK-CHAR and the readtable."
-
   (mapc
    (lambda (setup-input-expected)
      (destructuring-bind

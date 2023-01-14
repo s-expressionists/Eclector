@@ -20,7 +20,7 @@
                    ((mappablep expected)
                     (and (eq (class-of expected) (class-of value))
                          (= (length expected) (length value))
-                         (every #'relaxed-equalp expected value)))
+                         (every #'rec expected value)))
                    ((not (symbolp expected))
                     (equalp expected value))
                    ((not (symbol-package expected))

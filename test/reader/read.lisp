@@ -5,7 +5,6 @@
 
 (test read-char/smoke
   "Smoke test for the READ-CHAR function."
-
   (do-stream-input-cases ((length) args
                           expected &optional (error-position length))
     (flet ((do-it ()
@@ -26,7 +25,6 @@
 
 (test peek-char/smoke
   "Smoke test for the PEEK-CHAR function."
-
   (do-stream-input-cases ((length) args
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -89,7 +87,6 @@
 
 (test read/smoke
   "Smoke test for the READ function."
-
   ;; This test focuses on interactions between different parts of the
   ;; reader since the individual parts in isolation are handled by
   ;; more specific tests.
@@ -148,7 +145,6 @@
 
 (test read/circularity-and-standard-objects
   "Test the combination of circularity and standard instance literals."
-
   (let* ((input "(#1=#.(make-instance 'unbound-slot-class) #1#)")
          (result (read-from-string input)))
     (is-true (typep result '(cons unbound-slot-class
@@ -159,7 +155,6 @@
 
 (test read/runtime-recursive-p
   "Test READ with RECURSIVE-P being unknown until runtime."
-
   (do-stream-input-cases ((length) recursive-p
                           expected-result &optional (expected-position length))
       (multiple-value-bind (result position)
@@ -172,7 +167,6 @@
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
-
   (do-stream-input-cases ((length) eof-error-p eof-value
                           expected-result &optional (expected-position length))
     (flet ((do-it ()
@@ -195,7 +189,6 @@
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
-
   (do-input-cases (input args expected-value &optional expected-position)
       (flet ((do-it ()
                (apply #'eclector.reader:read-from-string input args)))
@@ -227,7 +220,6 @@
 
 (test read-maybe-nothing/smoke
   "Smoke test for the READ-MAYBE-NOTHING function."
-
   (do-stream-input-cases ((length) (eof-error-p read-suppress)
                           expected-value
                           &optional expected-kind (expected-position length))
@@ -269,7 +261,6 @@
 
 (test read-delimited-list/smoke
   "Smoke test for the READ-DELIMITED-LIST function."
-
   (do-stream-input-cases ((length) char expected1
                           &optional (expected2 expected1)
                                     (expected-position length))
@@ -319,7 +310,6 @@
 
 (test read-delimited-list/runtime-recursive-p
   "Test READ-DELIMITED-LIST with RECURSIVE-P being unknown until runtime."
-
   (do-stream-input-cases ((length) recursive-p
                           expected-result &optional (expected-position length))
       (multiple-value-bind (result position)

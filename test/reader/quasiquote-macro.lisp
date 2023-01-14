@@ -1,12 +1,11 @@
 (cl:in-package #:eclector.reader.test)
 
 (def-suite* :eclector.reader.quasiquote
-    :in :eclector.reader)
+  :in :eclector.reader)
 
 (test expand-quasiquote/smoke
   "Smoke test for QUASIQUOTE expansion. This covers some of the error
    cases the random test cannot."
-
   (do-stream-input-cases (() expected)
     (let ((form (with-stream (stream)
                   (eclector.reader:read stream))))
@@ -37,7 +36,6 @@
 (test expand-quasiquote.host-equivalence/random
   "Checks equivalence to host's result of expanded and evaluated
    random QUASIQUOTE expressions."
-
   (let () #+no ((*num-trials* 100000)
         (*max-trials* 100000))
     (for-all ((expression (gen-quasiquote-expression)))

@@ -29,7 +29,6 @@
 
 (test read/smoke
   "Smoke test for the READ function."
-
   (do-stream-input-cases ((length) eof-error expected-raw
                           &optional expected-location expected-position)
     (flet ((do-it ()
@@ -65,7 +64,6 @@
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
-
   (do-stream-input-cases ((length) eof-error-p eof-value
                           expected-result &optional (expected-position length))
       (flet ((do-it ()
@@ -96,7 +94,6 @@
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
-
   (do-input-cases ((input length) args expected-value
                    &optional (expected-position length))
       (flet ((do-it ()
@@ -152,7 +149,6 @@
 
 (test read/source-locations
   "Test source locations assigned by READ."
-
   (do-stream-input-cases (() expected)
       (let ((result (with-stream (stream)
                       (eclector.concrete-syntax-tree:read stream))))
@@ -221,7 +217,6 @@
 
 (test read-cst/custom-client
   "Test using a custom client with READ."
-
   (let ((result (with-input-from-string (stream "#||# 1")
                   (let ((eclector.reader:*client* (make-instance 'custom-client)))
                     (eclector.concrete-syntax-tree:read stream)))))
@@ -240,7 +235,6 @@
 
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
-
   (do-stream-input-cases ((length) read-suppress expected)
     (flet ((do-it ()
              (let ((client
@@ -281,7 +275,6 @@
 (test make-expression-result/long-list
   "The method on MAKE-EXPRESSION-RESULT used to blow the stack for
    long lists."
-
   (let* ((length 200000)
          (input (format nil "(~{~A~^ ~})" (alexandria:iota length)))
          (result (with-input-from-string (stream input)

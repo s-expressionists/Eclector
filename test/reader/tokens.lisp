@@ -5,7 +5,6 @@
 
 (test read-token/smoke
   "Smoke test for the default method on READ-TOKEN."
-
   (do-stream-input-cases ((length) eof-error-p eof-value
                           expected &optional (expected-position length))
     (flet ((do-it ()
@@ -101,7 +100,6 @@
 
 (test check-symbol-token/smoke
   "Smoke test for the default method on CHECK-SYMBOL-TOKEN."
-
   (mapc (lambda (arguments-package-expected)
           (destructuring-bind (token escape-ranges marker1 marker2 package
                                &optional signals (error-position (length token)))
@@ -142,7 +140,6 @@
 
 (test interpret-symbol-token/smoke
   "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
-
   (mapc (lambda (arguments-package-expected)
           (destructuring-bind (token marker1 marker2 package expected
                                &optional (error-position (length token)))
@@ -204,7 +201,6 @@
 
 (test interpret-token.default/smoke
   "Smoke test for the default method on INTERPRET-TOKEN."
-
   (let ((*read-default-float-format* 'single-float))
     (mapc #'do-interpret-token-test-case
           `(;; empty
@@ -412,7 +408,6 @@
 #+(or sbcl ccl)
 (test interpret-token.default/default-float-format
   "Test default float format handling in the default method on INTERPRET-TOKEN."
-
   (let ((*read-default-float-format* 'rational))
     (mapc #'do-interpret-token-test-case
           '(("1.0" () 10 :upcase eclector.reader:invalid-default-float-format)

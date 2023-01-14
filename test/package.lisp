@@ -5,11 +5,13 @@
    #:fiveam)
 
   (:export
-   #:run-tests
    #:error-case)
 
   (:export
-   #:signals-printable))
+   #:signals-printable)
+
+  (:export
+   #:run-tests))
 
 (cl:in-package #:eclector.test)
 
