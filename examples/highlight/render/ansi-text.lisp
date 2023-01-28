@@ -114,6 +114,10 @@
 (defparameter *default-theme*
   '((root                       . ())
 
+    (invalid                    . ())
+    (definition                 . ())
+    (reference                  . (:underlinep t))
+
     (skipped                    . (:foreground :gray))
     (line-comment               . (:foreground :gray))
     (block-comment              . (:foreground :gray))
@@ -156,14 +160,29 @@
     ((close 4)                  . (:foreground :yellow  :underlinep t))
     ((close 5)                  . (:foreground :cyan    :underlinep t))
 
+    ;; Labeled objects
+    ((definition 1)             . (:foreground :blue    :underlinep t))
+    ((definition 2)             . (:foreground :magenta :underlinep t))
+    ((definition 3)             . (:foreground :green   :underlinep t))
+    ((definition 4)             . (:foreground :yellow  :underlinep t))
+    ((definition 5)             . (:foreground :cyan    :underlinep t))
+    ((reference  1)             . (:foreground :blue    :underlinep t))
+    ((reference  2)             . (:foreground :magenta :underlinep t))
+    ((reference  3)             . (:foreground :green   :underlinep t))
+    ((reference  4)             . (:foreground :yellow  :underlinep t))
+    ((reference  5)             . (:foreground :cyan    :underlinep t))
+
     ;; Error
     (error                      . (:foreground :red :underlinep t))))
 
 (defmethod style-for-class ((class cons) (theme t))
   (destructuring-bind (which level) class
-    (if (member which '(open close))
-        (call-next-method (list which (1+ (mod (1- level) 5))) theme)
-        (call-next-method))))
+    (cond ((member which '(open close))
+           (call-next-method (list which (1+ (mod (1- level) 5))) theme))
+          ((member which '(definition reference))
+           (call-next-method (list which (1+ (mod (1- level) 5))) theme))
+          (t
+           (call-next-method)))))
 
 (defmethod style-for-class ((class t) (theme t))
   (multiple-value-bind (style foundp)
@@ -224,6 +243,17 @@
 ;;; Document
 
 (defmethod enter-node ((client ansi-text-client) (node cst:root-node))
+  ;; (fresh-line *standard-output*)
+  ;; (utilities.print-tree:print-tree
+  ;;  *standard-output* node
+  ;;  (utilities.print-tree:make-node-printer
+  ;;   (lambda (stream depth node)
+  ;;     (declare (ignore depth))
+  ;;     (princ node stream))
+  ;;   nil
+  ;;   #'cst:children))
+  ;; (terpri)
+  ;; (finish-output *standard-output*)
   (apply-style (style client) (stream client)))
 
 (defmethod leave-node ((client ansi-text-client) (node cst:root-node))
@@ -318,3 +348,33 @@
           (when close-end?
             (pop-style! client)))
         (call-next-method))))
+
+(defmethod write-character :around ((client    nesting-highlighting-mixin)
+                                    (position  t)
+                                    (character t)
+                                    (node      cst::definition-node))
+  (let* ((children    (cst:children node))
+         (start       (cst:start node))
+         ; (end         (cst:end node))
+         (child-start (a:when-let ((child (first children)))
+                        (cst:start child))))
+    (if (<= start (point client) child-start)
+        (let* ((open-start? (and (eql position start) (not (eql start child-start))))
+               (open-end?   (or (and (not child-start) (eql position start))
+                                (eql (1+ position) child-start))))
+          (when open-start?
+            (let* ((label     (cst::label node))
+                   (name      `(definition ,label))
+                   (style     (style-for-class name (theme client)))
+                   (new-style (apply #'change-style (style client) style)))
+              (push-style! new-style client)))
+          (call-next-method)
+          (when open-end?
+            (pop-style! client)))
+        (call-next-method))))
+
+(defmethod write-character :around ((client    nesting-highlighting-mixin)
+                                    (position  t)
+                                    (character t)
+                                    (node      cst::reference-node))
+  (call-next-method))

@@ -24,5 +24,8 @@
 (defmethod children ((node t))
   '())
 
+(defmethod find-child-starting-at ((position t) (container t))
+  (find position (children container) :key #'start))
+
 (defmethod object ((node t))
   nil)

@@ -6,12 +6,12 @@
 
 (defclass node ()
   ((%source :initarg  :source
-            :type     (cons a:non-negative-integer a:non-negative-integer)
+            :type     (cons a:non-negative-integer (or null a:non-negative-integer))
             :reader   source)))
 
 (defmethod print-object ((object node) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~D-~D" (start object) (end object))))
+    (format stream "~D-~:[∞~;~:*~D~]" (start object) (end object))))
 
 (defmethod start ((node node))
   (car (source node)))
@@ -41,9 +41,6 @@
   (when children-supplied?
     (map nil (lambda (child) (setf (%parent child) instance)) children)))
 
-(defmethod find-child-starting-at ((position integer) (container children-mixin))
-  (find position (children container) :key #'start))
-
 (defclass leaf-node (parent-mixin
                      node)
   ())
@@ -62,7 +59,7 @@
 
 (defun make-cst (children)
   (make-instance 'root-node :children children
-                            :source   (cons 0 100000000000000))) ; TODO
+                            :source   (cons 0 nil))) ; TODO
 
 ;;; Node class for recorded syntax errors
 
@@ -70,9 +67,29 @@
   ((%message :initarg :message
              :reader  message)))
 
-(defun make-syntax-error (start end message)
-  (make-instance 'syntax-error :source  (cons start end)
-                               :message message))
+(defun make-syntax-error (start end condition)
+  (let ((message (let ((*print-right-margin* most-positive-fixnum))
+                   (princ-to-string condition))))
+    (make-instance 'syntax-error :source  (cons start end)
+                                 :message message)))
+
+;;; Invalid nodes
+
+(defclass invalid-node (object-node-mixin
+                        leaf-node)
+  ())
+
+(defclass labeled-object-mixin ()
+  ((%label :initarg :label
+           :reader  label)))
+
+(defclass definition-node (labeled-object-mixin
+                           inner-node)
+  ())
+
+(defclass reference-node (labeled-object-mixin
+                          leaf-node)
+  ())
 
 ;;; Skipped
 
@@ -123,11 +140,16 @@
 (defclass symbol-node (inner-node) ; TODO could be atom
   ((%name :initarg :name
           :type    string
-          :reader  name)))
+          :reader  name))
+  (:default-initargs
+   :children '()))
 
 (defmethod shared-initialize :after ((instance symbol-node) (slot-names t)
-                                     &key object)
-  (declare (ignore object)))
+                                     &key (name   nil name-supplied?)
+                                          (object nil object-supplied?))
+  (declare (ignore name))
+  (when (and (not name-supplied?) object-supplied?)
+    (setf (slot-value instance '%name) (symbol-name object))))
 
 (defmethod print-object ((object symbol-node) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -159,7 +181,10 @@
             (package object) (name object) (start object) (end object))))
 
 (defclass standard-symbol-node (interned-symbol-node)
-  ())
+  ()
+  (:default-initargs
+   :package "CL"
+   :internp nil))
 
 (defclass lambda-list-keyword-symbol-node (standard-symbol-node)
   ())

@@ -2,9 +2,7 @@
 
 ;;; Client protocol
 
-(defgeneric write-character (client position character node)
-  (:documentation
-   ""))
+(defgeneric render (client input-string cst errors))
 
 (defgeneric enter-node (client node)
   (:documentation
@@ -22,6 +20,10 @@
   (:documentation
    ""))
 
+(defgeneric write-character (client position character node)
+  (:documentation
+   ""))
+
 ;;;
 
 (defgeneric style-class (client node)
@@ -34,7 +36,7 @@
 
 ;;; Entry point
 
-(defun render (client input-string cst errors)
+(defmethod render ((client t) (input-string t) (cst t) (errors t))
   (let ((node cst))
     (flet ((maybe-end-errors (position)
              (a:when-let ((errors (remove position errors
@@ -63,7 +65,7 @@
 
                 (maybe-enter-node position)
                 (maybe-start-errors position)
-            ;; Write current character
+                ;; Write current character
             :do (write-character client position character node)
 
 
