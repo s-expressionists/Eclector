@@ -185,16 +185,59 @@
   (reinitialize-instance result :children children :source source))
 
 (defmethod eclector.parse-result:make-expression-result
-    ((client highlight-client) (result t) (children t) (source t))
-  (multiple-value-bind (class children)
-      (cond ((and (a:lastcar children)
-                  (eq result (cst:object (a:lastcar children))))
-             (values 'cst:feature-expression-node (butlast children)))
-            (t
-             (values (result-node-class client result) children)))
-    (make-instance class :object   result
-                         :children children
-                         :source   source)))
+    ((client highlight-client) (result t) (children list) (source t))
+  (cond #+no ((and (a:lastcar children)
+              ; (typep (a:lastcar children) 'cst::object-node-mixin)
+              (eq result (cst:object (a:lastcar children))))
+         (make-instance 'cst:feature-expression-node
+                        :children (butlast children)
+                        :source   source))
+        ((eq (eclector.reader:labeled-object-state client result) :circular) ; happens for #1=#1#
+         (make-instance 'cst::invalid-node :object   result
+                                           :source   source))
+        (t
+         (make-instance (result-node-class client result)
+                        :object   result
+                        :children children
+                        :source   source))))
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client   highlight-client)
+     (result   (eql eclector.parse-result::**definition**))
+     (children t)
+     (source   t))
+  (let ((target (nth-value 2 (eclector.reader:labeled-object-state
+                              client children))))
+    (make-instance 'cst::definition-node :label    1
+                                         :children (list target)
+                                         :source   source)))
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client highlight-client)
+     (result (eql eclector.parse-result::**reference**))
+     (children t)
+     (source t))
+  (make-instance 'cst::reference-node :label  1
+                                      :source source))
+
+(defmethod eclector.reader:fixup ((client highlight-client) (object cst:node) (seen-objects t))
+  (flet ((fixup-child (cell)
+           (let* ((child          (car cell))
+                  (current-object (cst:object child)))
+             (eclector.reader:fixup-case (client current-object)
+                 (()
+                   (eclector.reader:fixup client child seen-objects))
+                 (()
+                   (let ((reference (eclector.parse-result:make-expression-result
+                                     client
+                                     eclector.parse-result:**reference**
+                                     current-object
+                                     (cst:source child)))) ; let ((parse-result (nth-value 2 (eclector.reader:labeled-object-state client object))))
+                     (setf (cst::%parent reference) object)
+                     (setf (car cell) reference))
+                   #+no (let ((new-class (result-node-class client object*)))
+                          (change-class object new-class :object object* :children '())))))))
+    (mapl #'fixup-child (cst:children object))))
 
 (defmethod result-node-class ((client highlight-client) (result number))
   'cst:number-node)
@@ -233,7 +276,7 @@
        (handler-bind ((error (lambda (condition)
                                (let ((position (file-position stream)))
                                  (push (cst:make-syntax-error
-                                        (1- position) position (princ-to-string condition))
+                                        (1- position) position condition)
                                        (errors client)))
                                (eclector.reader:recover))))
          (loop :for (object kind result)
@@ -241,6 +284,6 @@
                      (eclector.reader:read-maybe-nothing client stream nil nil))
                :until (eq kind :eof)
                :unless (member kind '(:skip :whitespace))
-                 :collect result :into results
+               :collect result :into results
                :finally (return (values (cst:make-cst results) (errors client))))))
      stream nil :eof t)))
