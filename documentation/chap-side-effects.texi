@@ -145,12 +145,12 @@ of the structure.  The following example illustrates this problem:
 @node Circular structure
 @subsection Circular structure
 
-The @t{fixup} generic function potentially modifies its second
-argument destructively.  Clients that define methods on
-@t{eclector.reader:make-structure-instance} should be aware of
-this potential modification in cases like @t{#1=#S(foo :bar
-  #1#)}.  Similar considerations apply for other ways of
-constructing compound objects such as @t{#1=(t . #1#)}.
+The @t{eclector.reader:fixup} generic function potentially modifies its
+second argument destructively.  Clients that define methods on
+@t{eclector.reader:make-structure-instance} should be aware of this
+potential modification in cases like @t{#1=#S(foo :bar #1#)}.  Similar
+considerations apply for other ways of constructing compound objects
+such as @t{#1=(t . #1#)}.
 
 @node Standard reader macros
 @subsection Standard reader macros
