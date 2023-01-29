@@ -143,7 +143,8 @@
                  :depends-on ("test")
                  :serial t
                  :components ((:file "package")
-                              (:file "read"))))
+                              (:file "read")
+                              (:file "recover"))))
 
   :perform     (test-op (operation component)
                  (uiop:symbol-call '#:eclector.test '#:run-tests)))

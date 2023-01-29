@@ -3,7 +3,7 @@
 (def-suite* :eclector.reader.recover
   :in :eclector.reader)
 
-(defun do-recover-test-case (input-and-expected)
+(defun do-recover-test-case (input-and-expected reader)
   (destructuring-bind (input expected-conditions expected-value
                        &optional (expected-position (length input)))
       input-and-expected
@@ -30,11 +30,7 @@
                               input)
                           (invoke-restart restart)))))
                  (with-input-from-string (stream input)
-                   (values (let ((eclector.reader::*backquote-depth* 1)
-                                 (eclector.reader::*client*
-                                   (make-instance 'sharpsign-s-client)))
-                             (eclector.reader:read stream nil))
-                           (file-position stream))))))
+                   (values (funcall reader stream) (file-position stream))))))
         ;; Check expected value and position.
         (multiple-value-bind (value position) (do-it)
           (is (relaxed-equalp expected-value value)
@@ -52,9 +48,15 @@
             input
             (length remaining-conditions) remaining-conditions)))))
 
+(defun read-with-context-and-client (stream)
+  (let ((eclector.reader::*backquote-depth* 1)
+        (eclector.reader::*client* (make-instance 'sharpsign-s-client)))
+    (eclector.reader:read stream nil)))
+
 (test recover/smoke
   "Test recovering from various syntax errors."
-  (mapc #'do-recover-test-case
+  (mapc (alexandria:rcurry #'do-recover-test-case
+                           #'read-with-context-and-client)
         `(;; Recover from invalid syntax in symbols.
           (":"                                (eclector.reader:symbol-name-must-not-be-only-package-markers) |:|)
           ("::"                               (eclector.reader:symbol-name-must-not-be-only-package-markers) |::|)
@@ -247,7 +249,7 @@
           ;; Recover from errors related to feature-expressions
           ("#+"               (eclector.reader:end-of-input-after-sharpsign-plus-minus
                                eclector.reader:end-of-input-after-feature-expression)
-                              nil)
+                                                                                                   nil)
           ("(#+)"             (eclector.reader:feature-expression-must-follow-sharpsign-plus-minus
                                eclector.reader:object-must-follow-feature-expression)
                                                                                                    (nil))
@@ -280,10 +282,10 @@
           ;; Multiple subsequent recoveries needed.
           ("(1 (2"     (eclector.reader:unterminated-list
                         eclector.reader:unterminated-list)
-                       (1 (2)))
+                                                            (1 (2)))
           ("(1 \"a"    (eclector.reader:unterminated-string
                         eclector.reader:unterminated-list)
-                                                                                (1 "a")))))
+                                                            (1 "a")))))
 
 ;;; Binding *READ-DEFAULT-FLOAT-FORMAT* to a non-standard value is
 ;;; allowed if the implementation accepts the value. SBCL allows the
@@ -294,7 +296,8 @@
 (test recover-from-invalid-float-format
   "Test recovering from invalid value of *READ-DEFAULT-FLOAT-FORMAT*."
   (let ((*read-default-float-format* 'rational))
-    (mapc #'do-recover-test-case
+    (mapc (alexandria:rcurry #'do-recover-test-case
+                             #'read-with-context-and-client)
           '(("1.0" (eclector.reader:invalid-default-float-format) 1.0f0)
             ("1e0" (eclector.reader:invalid-default-float-format) 1.0f0)))))
 
