@@ -36,7 +36,8 @@
                  :components ((:file "package")
                               (:file "read")
                               (:file "client")
-                              (:file "labeled-objects"))))
+                              (:file "labeled-objects")
+                              (:file "read-code"))))
 
   :perform     (test-op (operation component)
                  (uiop:symbol-call '#:eclector.concrete-syntax-tree.test '#:run-tests)))

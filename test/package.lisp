@@ -6,6 +6,7 @@
 
   (:export
    #:equal*
+   #:code-equal
 
    #:error-case)
 
@@ -14,6 +15,10 @@
 
   (:export
    #:gen-labels-and-references)
+
+  (:export
+   #:map-all-system-files
+   #:map-all-system-expressions)
 
   (:export
    #:run-tests))

@@ -102,6 +102,7 @@
                  :serial t
                  :components ((:file "package")
                               (:file "utilities")
+                              (:file "code-reading-utilities")
                               (:file "gen-labeled-objects")))
 
                 (:module "readtable"
@@ -138,7 +139,9 @@
 
                               (:file "client")
 
-                              (:file "recover")))
+                              (:file "recover")
+
+                              (:file "read-code")))
 
                 (:module "parse-result"
                  :pathname "test/parse-result"
@@ -147,7 +150,8 @@
                  :components ((:file "package")
                               (:file "read")
                               (:file "client")
-                              (:file "recover"))))
+                              (:file "recover")
+                              (:file "read-code"))))
 
   :perform     (test-op (operation component)
                  (uiop:symbol-call '#:eclector.test '#:run-tests)))

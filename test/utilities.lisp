@@ -2,23 +2,57 @@
 
 ;;; Safe recursive equality
 
-(defun equal* (left right)
+(defun equal* (left right
+               &key (atom-test (lambda (recurse left right)
+                                 (declare (ignore recurse))
+                                 (if (consp right)
+                                     nil
+                                     (values (eql left right) t)))))
   (let ((seen (make-hash-table :test #'eq)))
     (labels ((rec (left right)
-               (let (old-right)
-                 (cond ((not (consp left))
-                        (eql left right))
-                       ((multiple-value-bind (right foundp)
+               (let (old-right result resultp)
+                 (cond ((multiple-value-bind (right foundp)
                             (gethash left seen)
                           (when foundp
                             (setf old-right right)
                             t))
                         (eq right old-right))
+                       ((progn
+                          (setf (values result resultp)
+                                (funcall atom-test #'rec left right))
+                          resultp)
+                        result)
                        (t
                         (setf (gethash left seen) right)
                         (and (rec (car left) (car right))
                              (rec (cdr left) (cdr right))))))))
       (rec left right))))
+
+(defun code-equal (left right)
+  (flet ((compare (recurse left right)
+           (cond ((and (symbolp right) (not (symbol-package right)))
+                  (values (and (null (symbol-package left))
+                               (string= (symbol-name left)
+                                        (symbol-name right)))
+                          t))
+                 ((typep right '(cons (eql eclector.reader:quasiquote)))
+                  (values t t))
+                 ((pathnamep right)
+                  (values (and (pathnamep left) (equalp left right)) t))
+                 ((stringp right)
+                  (values (and (stringp left) (string= left right)) t))
+                 ((typep right '(and sequence (not cons)))
+                  (values (and (eq (class-of left) (class-of right))
+                               (= (length left) (length right))
+                               (every recurse left right))
+                          t))
+                 ((typep right 'array) ; #0A() or higher rank
+                  (values (equalp left right) t))
+                 ((not (consp right))
+                  (values (eql left right) t))
+                 (t
+                  (values nil nil)))))
+    (equal* left right :atom-test #'compare)))
 
 ;;; Processing test cases
 
