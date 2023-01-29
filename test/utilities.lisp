@@ -1,5 +1,25 @@
 (cl:in-package #:eclector.test)
 
+;;; Safe recursive equality
+
+(defun equal* (left right)
+  (let ((seen (make-hash-table :test #'eq)))
+    (labels ((rec (left right)
+               (let (old-right)
+                 (cond ((not (consp left))
+                        (eql left right))
+                       ((multiple-value-bind (right foundp)
+                            (gethash left seen)
+                          (when foundp
+                            (setf old-right right)
+                            t))
+                        (eq right old-right))
+                       (t
+                        (setf (gethash left seen) right)
+                        (and (rec (car left) (car right))
+                             (rec (cdr left) (cdr right))))))))
+      (rec left right))))
+
 ;;; Processing test cases
 
 (defun wrap-in-expect (input-var form)

@@ -269,3 +269,132 @@
       (eclector.reader:read-from-string input))
     '(("#+foo       1 2")
       ("#+(bar baz) 1 2"))))
+
+;;; Test customizing labeled object processing
+
+(defclass custom-labeled-objects-client () ())
+
+(defvar *labels* nil)
+
+(defmethod eclector.reader:call-with-label-tracking
+    ((client custom-labeled-objects-client) (thunk function))
+  (let ((*labels* '()))
+    (funcall thunk)))
+
+(defstruct (%labeled-object (:constructor %make-labeled-object (label)))
+  (label (error "required"))
+  (object nil)
+  (state :defined))
+
+(defmethod eclector.reader:note-labeled-object
+    ((client custom-labeled-objects-client)
+     (input-stream stream)
+     (label integer))
+  (let ((labeled-object (eclector.reader:make-labeled-object
+                         client input-stream label)))
+    (push (cons label labeled-object) *labels*)
+    labeled-object))
+
+(defmethod eclector.reader:forget-labeled-object
+    ((client custom-labeled-objects-client) (label integer))
+  (setf *labels* (remove label *labels* :key #'car)))
+
+(defmethod eclector.reader:find-labeled-object
+    ((client custom-labeled-objects-client) (label integer))
+  (alexandria:assoc-value *labels* label))
+
+(defmethod eclector.reader:make-labeled-object
+    ((client custom-labeled-objects-client)
+     (input-stream stream)
+     label)
+  (%make-labeled-object label))
+
+(defmethod eclector.reader:labeled-object-state
+    ((client custom-labeled-objects-client) (object %labeled-object))
+  (values (%labeled-object-state object)
+          (%labeled-object-object object)))
+
+(defmethod eclector.reader:finalize-labeled-object
+    ((client custom-labeled-objects-client)
+     (labeled-object %labeled-object)
+     object)
+  (let ((old-state (%labeled-object-state labeled-object)))
+    (setf (%labeled-object-object labeled-object) object
+          (%labeled-object-state labeled-object) :final)
+    (when (eq old-state :circular)
+      (eclector.reader:fixup-graph client object)))
+  (values labeled-object :final))
+
+(defmethod eclector.reader:reference-labeled-object
+    ((client custom-labeled-objects-client)
+     (input-stream stream)
+     (labeled-object %labeled-object))
+  (multiple-value-bind (state object)
+      (eclector.reader:labeled-object-state client labeled-object)
+    (ecase state
+      (:final ; Use final object, if it has already been stored
+       object)
+      (:defined ; Else, use LABELED-OBJECT as a placeholder, fix up later
+       (setf (%labeled-object-state labeled-object) :circular)
+       labeled-object)
+      (:circular ; Same but without changing the state
+       labeled-object))))
+
+(test custom-labeled-objects/smoke
+  "Smoke test for custom labeled object processing."
+  (is (equal* '(a #1=(b #1# c #1# d) e #1# f)
+              (let ((eclector.base:*client*
+                      (make-instance 'custom-labeled-objects-client)))
+                (eclector.reader:read-from-string
+                 "(a #1=(b #1# c #1# d) e #1# f)")))))
+
+;;; Test customizing labeled object references
+
+(defclass label-reference-annotation-mixin () ())
+
+;;; Clients may define various methods on REFERENCE-LABELED-OBJECT and
+;;; make use of CALL-NEXT-METHOD as well as call
+;;; REFERENCE-LABELED-OBJECT recursively. We want to annotate only
+;;; once and only the result of the outermost call.
+(defvar *outermostp* t)
+(defmethod eclector.reader:reference-labeled-object
+    :around ((client label-reference-annotation-mixin)
+             (input-stream stream)
+             (labeled-object t))
+  (if *outermostp*
+      (let ((state (eclector.reader:labeled-object-state
+                    client labeled-object))
+            (result (let ((*outermostp* nil))
+                      (call-next-method))))
+        (ecase state
+          ((:final :final/circular)
+           `(:ordinary-reference ,result))
+          (:defined
+           `(:circular-reference ,result))
+          (:circular
+           `(:another-circular-reference ,result))))
+      (call-next-method)))
+
+(defclass annotating-custom-labeled-objects-client
+    (label-reference-annotation-mixin
+     custom-labeled-objects-client)
+  ())
+
+(defmethod eclector.reader:reference-labeled-object
+    ((client annotating-custom-labeled-objects-client)
+     (input-stream stream)
+     (labeled-object t))
+  ;; Make sure multiple applicable methods do not interfere with the
+  ;; annotation.
+  (call-next-method))
+
+(test custom-labeled-objects/annotation
+  "Test custom labeled object reference processing."
+  (is (equal* '(a #1=(b (:circular-reference #1#)
+                      c (:another-circular-reference #1#)
+                      d)
+                e (:ordinary-reference #1#) f)
+              (let ((eclector.base:*client*
+                      (make-instance 'annotating-custom-labeled-objects-client)))
+                (eclector.reader:read-from-string
+                 "(A #1=(b #1# c #1# d) e #1# f)")))))

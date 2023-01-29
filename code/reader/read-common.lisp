@@ -30,29 +30,13 @@
 (defmethod call-as-top-level-read (client thunk input-stream
                                    eof-error-p eof-value preserve-whitespace-p)
   (declare (ignore eof-error-p eof-value))
-  (let* ((labels (make-hash-table))
-         (values (multiple-value-list
-                  (let ((*labels* labels))
-                    (funcall thunk))))
-         (result (first values)))
-    ;; LABELS maps labels to conses of the form
-    ;;
-    ;;   (TEMPORARY-OBJECT . FINAL-OBJECT)
-    ;;
-    ;; where TEMPORARY-OBJECT is EQ-comparable and its sub-structure
-    ;; does not matter here. For the fixup step, convert these conses
-    ;; into a hash-table mapping temporary objects to final objects.
-    (unless (zerop (hash-table-count labels))
-      (let ((mapping (alexandria:alist-hash-table
-                      (alexandria:hash-table-values labels)
-                      :test #'eq)))
-        (fixup-graph client result mapping)))
+  (multiple-value-prog1
+      (call-with-label-tracking client thunk)
     ;; All reading in READ-COMMON and its callees was done in a
     ;; whitespace-preserving way. So we skip zero to one whitespace
     ;; characters here if requested via PRESERVE-WHITESPACE-P.
     (unless preserve-whitespace-p
-      (skip-whitespace input-stream))
-    (values-list values)))
+      (skip-whitespace input-stream))))
 
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (loop for (value what . rest) = (multiple-value-list

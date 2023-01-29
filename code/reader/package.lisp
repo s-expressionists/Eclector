@@ -96,10 +96,25 @@
 
    #:evaluate-expression
    #:check-feature-expression
-   #:evaluate-feature-expression
+   #:evaluate-feature-expression)
+
+  ;; Labeled object protocol
+  (:export
+   #:call-with-label-tracking
+   #:note-labeled-object
+   #:forget-labeled-object
+   #:find-labeled-object
+   #:make-labeled-object
+   #:labeled-object-state
+   #:finalize-labeled-object
+   #:reference-labeled-object
 
    #:fixup-graph
-   #:fixup)
+   #:fixup
+
+   #:fixup-case
+   #:fixup-place-using-value
+   #:fixup-place)
 
   ;; S-expression creation protocol
   (:export

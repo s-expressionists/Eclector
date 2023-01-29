@@ -969,32 +969,42 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
          (let ((result (do-it)))
            (is-true (consp result))
            (expect "result" (eq result (car result)))))
+        (recursive-cons2
+         (let ((result (do-it)))
+           (is-true (consp result))
+           (expect "result" (eq result (cadadr result)))
+           (expect "result" (eq (cadr result) (caadr result)))))
+        (recursive-vector
+         (let ((result (do-it)))
+           (is-true (vectorp result))
+           (expect "result" (eq result (aref result 0)))))
         (t
          (expect "result" (equalp expected (do-it))))))
     '(;; sharpsign equals errors
-      ("#1="            nil eclector.reader:end-of-input-after-sharpsign-equals)
-      ("(#1=)"          nil eclector.reader:object-must-follow-sharpsign-equals 4)
-      ("#="             nil eclector.reader:numeric-parameter-not-supplied-but-required 1)
-      ("(#1=1 #1=2)"    nil eclector.reader:sharpsign-equals-label-defined-more-than-once 6)
-      ("#1=#1#"         nil eclector.reader:sharpsign-equals-only-refers-to-self 5)
+      ("#1="                     nil eclector.reader:end-of-input-after-sharpsign-equals)
+      ("(#1=)"                   nil eclector.reader:object-must-follow-sharpsign-equals 4)
+      ("#="                      nil eclector.reader:numeric-parameter-not-supplied-but-required 1)
+      ("(#1=1 #1=2)"             nil eclector.reader:sharpsign-equals-label-defined-more-than-once 6)
+      ("#1=#1#"                  nil eclector.reader:sharpsign-equals-only-refers-to-self 5)
       ;; sharpsign sharpsign errors
-      ("##"             nil eclector.reader:numeric-parameter-not-supplied-but-required 1)
-      ("#1#"            nil eclector.reader:sharpsign-sharpsign-undefined-label 0)
-      ("(#1=1 #2#)"     nil eclector.reader:sharpsign-sharpsign-undefined-label 6)
-      ;;
-      ("(#1=1)"         nil (1))
-      ("(#1=1 #1#)"     nil (1 1))
-      ("(#1=1 #1# #1#)" nil (1 1 1))
-      ("#1=(#1#)"       nil recursive-cons)
-      ;; There was problem leading to unrelated expressions of the
-      ;; forms (nil) and (t) being replaced by the fixup
-      ;; processor.
-      ("(#1=1 (nil))"   nil (1 (nil)))
-      ("(#1=((nil)))"   nil (((nil))))
-      ("(#1=1 (t))"     nil (1 (t)))
-      ("(#1=((t)))"     nil (((t))))
+      ("##"                      nil eclector.reader:numeric-parameter-not-supplied-but-required 1)
+      ("#1#"                     nil eclector.reader:sharpsign-sharpsign-undefined-label 0)
+      ("(#1=1 #2#)"              nil eclector.reader:sharpsign-sharpsign-undefined-label 6)
+      ;; Labels and references in conses and vectors
+      ("(#1=1)"                  nil (1))
+      ("(#1=1 #1#)"              nil (1 1))
+      ("(#1=1 #1# #1#)"          nil (1 1 1))
+      ("#1=(#1#)"                nil recursive-cons)
+      ("#1=(1 #2=(#2# #1# #2#))" nil recursive-cons2)
+      ("#1=#(#1#)"               nil recursive-vector)
+      ;; There was a problem leading to unrelated expressions of the
+      ;; forms (nil) and (t) being replaced by the fixup processor.
+      ("(#1=1 (nil))"            nil (1 (nil)))
+      ("(#1=((nil)))"            nil (((nil))))
+      ("(#1=1 (t))"              nil (1 (t)))
+      ("(#1=((t)))"              nil (((t))))
       ;; With *READ-SUPPRESS* bound to t
-      ("#=1"            t   nil)
-      ("(#1=1 #1=2)"    t   nil)
-      ("##"             t   nil)
-      ("#1#"            t   nil))))
+      ("#=1"                     t   nil)
+      ("(#1=1 #1=2)"             t   nil)
+      ("##"                      t   nil)
+      ("#1#"                     t   nil))))

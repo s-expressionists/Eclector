@@ -69,9 +69,29 @@
      :check (alexandria:curry #'check-feature-expression client)
      :recurse (alexandria:curry #'evaluate-feature-expression client))))
 
-(defgeneric fixup-graph (client root-object mapping))
+(defgeneric call-with-label-tracking (client thunk))
 
-(defgeneric fixup (client object seen-objects mapping))
+(defgeneric note-labeled-object (client input-stream label))
+
+(defgeneric forget-labeled-object (client label))
+
+(defgeneric find-labeled-object (client label))
+
+(defgeneric make-labeled-object (client input-stream label))
+
+(defgeneric labeled-object-state (client object)
+  (:method (client object)
+    (declare (ignore client object))
+    ;; Default behavior: OBJECT is not a labeled object.
+    nil))
+
+(defgeneric finalize-labeled-object (client labeled-object object))
+
+(defgeneric reference-labeled-object (client input-stream labeled-object))
+
+(defgeneric fixup-graph (client root-object))
+
+(defgeneric fixup (client object seen-objects))
 
 ;;; Creating s-expressions
 

@@ -8,6 +8,9 @@ FIGURES=$(wildcard *.png)
 
 all : $(NAME).info $(NAME).pdf $(NAME).html
 
+#%.png: %.plantuml
+#	java -jar .../plantuml.jar -tpng $<
+
 $(NAME).info: $(SOURCES) $(FIGURES)
 	makeinfo --output $@ $(NAME).texi
 

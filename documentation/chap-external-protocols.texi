@@ -210,6 +210,7 @@ code.
 @menu
 * @commonlisp{} reader compatible interface::
 * Reader behavior protocol::
+* Labeled objects and references::
 * S-expression creation and quasiquotation::
 * Readtable initialization::
 @end menu
@@ -653,7 +654,253 @@ The default method on this generic function first calls
 semantics for feature expressions.
 @end deffn
 
-@defgena {fixup-graph,eclector.reader} client root-object mapping
+@node Labeled objects and references
+@subsection Labeled objects and references
+
+@cindex labeled object
+
+@sysname{} includes implementations of the @t{#=} and @t{##} reader
+macros and they are present in the default readtable.  One way to
+customize the behavior of the reader around the @t{#=} and @t{##} syntax
+is replacing the reader macro functions with custom ones but with this
+approach the client code has to reimplement a lot of functionality.  As
+a finer grained and more composable mechanism for customization,
+@sysname{} provides a protocol for implementing and customizing the
+behavior of the @t{#=} and @t{##} reader macros, with or without
+modifying the readtable.  The remainder of this section describes that
+protocol.
+
+To start with a bit of terminology, we call the object created by
+reading @t{#@var{N}=@var{expression}} a @dfn{labeled object}. We call
+@var{N} the @dfn{label} of the labeled object and the result of reading
+@t{@var{expression}} the @dfn{object} of the labeled object.  We say
+that @t{#@var{N}=@var{expression}} @dfn{defines} the labeled object and
+@t{#@var{N}#} @dfn{references} the labeled object.  We call the
+reference @dfn{circular} if @t{#@var{N}#} occurs within
+@var{expression}.  Labeled objects are internal to the reader and only
+exist during @t{eclector.reader:read} calls: before such a call returns
+an object, each labeled object within the returned object is replaced by
+its respective final object.  Callers of @t{eclector.reader:read} and
+related functions will therefore only ever see the object, never the
+labeled object@footnote{Reader macro functions which call
+@t{eclector.reader:read} may receive labeled objects under certain
+circumstances (@pxref{Circular objects and custom reader macros}).}.
+
+On a technical level, a labeled object is represented as a data type
+with a current state and a single (possibly unbound) slot containing the
+object.  The following diagrams depicts the possible states of a labeled
+object together with input patterns and corresponding transitions:
+
+@float Figure,fig:labeled-object-states
+@center @image{labeled-object-states,15cm}
+@caption{Possible states of a labeled object and input patterns which
+correspond to state transitions.}
+@end float
+
+Put differently, a labeled object can be in the following states:
+
+@multitable @columnfractions .5 .3
+@headitem State                                          @tab Object slot
+@item undefined                                          @tab --
+@item defined                                            @tab unbound
+@item final                                              @tab the object
+@item referenced @emph{(not strictly needed)}            @tab the object
+@item circular                                           @tab unbound
+@item final (circular)                                   @tab the object
+@item referenced (circular) @emph{(not strictly needed)} @tab the object
+@end multitable
+
+The distinction between the states @t{final} and @t{referenced} on the
+one hand and @t{final (circular)}, and @t{referenced (circular)} on the
+other hand is not required for implementing labeled objects.  Those two
+pairs of states are therefore collapsed to just @t{final} and @t{final
+(circular)} in the remainder of this section.  The following figure and
+paragraphs describe generic functions and methods which implement the
+creation, registration, lookup and manipulation of labeled objects
+according to the reduced set of states:
+
+@float Figure,fig:labeled-object-api-states
+@center @image{labeled-object-api-states,12cm}
+@caption{Reduced set of states of a labeled object and protocol
+functions with corresponding state transitions.}
+@end float
+
+In addition to the generic functions referenced in the above diagram,
+the generic functions @t{fixup-graph} and @t{fixup} are part of the
+protocol.  Those two functions are used to replace labeled objects with
+their respective final objects within an object that is about to be
+returned to the caller of @t{eclector.reader:read}@footnote{This fixup
+processing has to be delayed under certain circumstances
+(@pxref{Circular objects and custom reader macros}).}.  To this end, the
+@t{#=} reader macro function must inspect and update the state of the
+labeled object it is processing after reading @t{@var{expression}} by
+calling @t{finalize-labeled-object}.  @t{finalize-labeled-object}
+decides whether @t{fixup-graph} (see below) must be called: If after
+reading @t{@var{expression}} the labeled object is in state
+@t{:circular}, @t{@var{expression}} must have contained circular
+references and the result of reading it contains labeled objects that
+have to be replaced with their respective final objects.
+@t{fixup-graph} and @t{fixup} perform this replacement.
+
+@defgena{call-with-label-tracking,eclector.reader} client thunk
+
+This generic function is called by the default method on
+@t{call-as-top-level-read} in order to establish a context for tracking
+@t{#=} label definitions and @t{##} label references around a call to
+@var{thunk}.
+
+The default method on this generic function establishes a context in
+which the default @t{#=} and @t{##} reader macro functions can make the
+appropriate calls to @t{note-labeled-object}, @t{forget-labeled-object},
+@t{find-labeled-object}.
+@end deffn
+
+@defgena{note-labeled-object,eclector.reader} client input-stream label
+
+This generic function is called by the default @t{#=} reader macro
+function to note the definition of a labeled object with label
+@var{label} while reading from @var{input-stream}.  The function
+creates, registers and returns a representation of the labeled object.
+The returned object is registered in the sense that a subsequent call to
+@t{find-labeled-object} with arguments @var{client} and @var{label}
+returns the same object unless @t{forget-labeled-object} has been called
+to unregister the object.
+
+Note that, when reading an expression of the form
+@t{#@var{N}=@var{object}}, this function is called after reading
+@t{#@var{N}=} from @var{input-stream} but before reading
+@t{@var{object}}.  Consequently, the created and returned labeled object
+is defined but does not have an object associated with it.
+
+The default method on this generic function calls
+@t{make-labeled-object} with @var{client}, @var{input-stream} and
+@var{label} to create an object of an unspecified type.  The method
+registers and returns the created object.  Client code should manipulate
+the object only via the generic functions described in this section and
+in particular not rely on the object being of a particular type (since
+methods on @t{make-labeled-object} specialized to certain client classes
+could return unexpected objects).  The default method requires the
+context established by the default method on
+@t{call-with-label-tracking}.
+@end deffn
+
+@defgena{forget-labeled-object,eclector.reader} client label
+
+This generic function is called by the default @t{#=} reader macro
+function when @sysname{} reads an invalid labeled object of the form
+@t{#@var{N}=#@var{N}#} and the caller chooses to recover from the
+resulting error (@pxref{Recovering from errors}).  In that situation,
+the remainder of the input is processed as if there had been no labeled
+object with label @var{N}.  This function makes the labeled object
+undefined so that a subsequent @t{find-labeled-object} call for
+@var{label} will return @t{nil}.
+
+The default method on this generic function requires the context
+established by the default method on @t{call-with-label-tracking}.
+@end deffn
+
+@defgena{find-labeled-object,eclector.reader} client label
+
+This generic function is called by the default @t{##} reader macro
+function to look up the previously registered representation of a
+labeled object for @var{label}.  The function returns @t{nil} if no such
+object has been registered for @var{label} and the registered object
+otherwise.
+
+The default method on this generic function requires the context
+established by the default method on @t{call-with-label-tracking}.
+@end deffn
+
+@defgena{make-labeled-object,eclector.reader} client input-stream label
+
+This generic function is called by @t{note-labeled-object} to create and
+return a representation of a labeled object with label @var{label}.
+
+The default method on this generic function creates and returns an
+object of an unspecified type.  Client code should manipulate the object
+only via the generic functions @t{labeled-object-state},
+@t{finalize-labeled-object} and @t{reference-labeled-object} and in
+particular not rely on the object being of a particular type (since
+methods on this generic function specialized to certain client classes
+could return unexpected objects).
+@end deffn
+
+@defgena{labeled-object-state,eclector.reader} client object
+
+This generic function is called by the default @t{#=} reader macro
+function to determine the state of @var{object}.  This function returns
+
+@itemize
+@item
+@t{nil} if @var{object} is not a labeled object
+
+@item
+two values if @var{object} is a labeled object: one of the keywords
+@t{:defined}, @t{:circular}, @t{:final}, @t{:final/circular} and the
+final object stored in @var{object} if the first value is either
+@t{:final} or @t{:final/circular} or @t{nil} otherwise.
+@end itemize
+
+The following table lists all possible return value shapes:
+@multitable @columnfractions .3 .3 .3
+@headitem @var{object} is a labeled object @tab First value         @tab Second value
+@item no                                   @tab @t{nil}             @tab
+@item yes                                  @tab @t{:defined}        @tab @t{nil}
+@item yes                                  @tab @t{:circular}       @tab @t{nil}
+@item yes                                  @tab @t{:final}          @tab @var{final-object}
+@item yes                                  @tab @t{:final/circular} @tab @var{final-object}
+@end multitable
+
+The default method on this generic function is applicable to labeled
+object representations returned by the default methods on
+@t{note-labeled-object} and @t{make-labeled-object}.
+@end deffn
+
+@defgena{finalize-labeled-object,eclector.reader} client labeled-object@
+  object
+
+This generic function is called by the default @t{#=} reader macro
+function after reading a complete labeled object in order to store
+@var{object} in @var{labeled-object} and change the state of
+@var{labeled-object} to either @t{:final} or @t{:final/circular}.  The
+function returns two values: the finalized @var{labeled-object} and the
+new state of @var{labeled-object}.
+
+The default method on this generic function is applicable to labeled
+object representations returned by the default methods on
+@t{note-labeled-object} and @t{make-labeled-object}.
+@end deffn
+
+@defgena{reference-labeled-object,eclector.reader} client input-stream@
+  labeled-object
+
+This generic function is called by the default @t{##} reader macro
+function to process a reference to @var{labeled-object} while reading
+from @var{input-stream}.  @var{labeled-object} must be a representation
+of a labeled object and has, in the context of the @t{##} reader macro
+function, likely been obtained by calling @t{find-labeled-object}.
+Depending on the state of @var{labeled-object}, this function returns
+either @var{labeled-object} itself or an object that can be returned to
+the caller as-is.  In case @var{labeled-object} is returned, it will be
+replaced by its associated object later, when @t{fixup-graph} is called.
+
+The default method on this generic function is applicable to labeled
+object representations returned by the default methods on
+@t{note-labeled-object} and @t{make-labeled-object}.
+@end deffn
+
+As briefly mentioned above, the generic functions @t{fixup-graph} and
+@t{fixup} traverse and inspect objects in the object graph reachable
+from an object that is about to be returned to the caller of
+@t{eclector.reader:read}.  In order to distinguish ordinary objects from
+labeled objects that act as placeholders in the object graph and must be
+replaced with their respective final objects, @t{fixup} methods call
+@t{labeled-object-state} on all encountered objects.
+@t{labeled-object-state} returns @t{nil} for all objects that are not
+labeled objects and @t{:final} for labeled objects which must be
+replaced with their final object.
+
+@defgena {fixup-graph,eclector.reader} client root-object
 
 This generic function is potentially called after the reader has
 constructed an object graph which is reachable from @var{root-object}
@@ -663,34 +910,39 @@ references before @var{root-object} is returned to the caller (of
 
 The default method on this generic function creates a hash table for
 tracking already processed objects and calls @t{fixup} with
-@var{client}, @var{root-object}, the hash table and @var{mapping} to
-recursively process objects in the object graph which is reachable from
+@var{client}, @var{root-object} and the hash table to recursively
+process objects in the object graph which is reachable from
 @var{root-object}.
 @end deffn
 
-@defgena {fixup,eclector.reader} client object seen-objects mapping
+@defgena {fixup,eclector.reader} client object seen-objects
 
-This generic function is potentially called to apply
-circularity-related changes to the object constructed by the reader
-before it is returned to the caller.  @var{object} is the object
-that should be modified.  @var{seen-objects} is a @t{eq}-hash
-table used to track already processed objects (see below).
-@var{mapping} is a hash table of substitutions, mapping marker
-objects to replacement objects.  A method specialized on a class,
+This generic function is potentially called to apply circularity-related
+changes to the object constructed by the reader before it is returned to
+the caller.  @var{object} is the object that should be modified.
+@var{seen-objects} is a @t{eq}-hash table used to track already
+processed objects (see below).  A method specialized to a class,
 instances of which consists of parts, should modify @var{object} by
-scanning its parts for marker objects, replacing found markers with
-replacement object and recursively calling @t{fixup} for all
-parts.  @t{fixup} is called for side effects -- its return value
-is ignored.
+scanning its parts for labeled object markers, replacing found labeled
+object markers with the respective final object and recursively calling
+@t{fixup} for all parts.
 
-Default methods specializing on the @var{object} parameter for
-@t{cons}, @t{array}, @t{standard-object} and
-@t{hash-table} process instances of those classes in the obvious
-way.
+To recognize labeled objects which have to be replaced, methods should
+call @t{labeled-object-state} on each part of @var{object} and interpret
+the returned values as follows: if @t{nil} is returned, the part should
+not be replaced but recursively processed.  If @t{:final} is returned as
+the first value, the part should be replaced with the final object that
+is returned as the second value.  Parts are replaced by mutating
+@var{object}.
+
+@t{fixup} is called for side effects -- its return value is ignored.
+
+Default methods specializing the @var{object} parameter to @t{cons},
+@t{array}, @t{standard-object} and @t{hash-table} process instances of
+those classes in the obvious way.
 
 An unspecialized @t{:around} method queries and updates
-@var{seen-objects} to ensure that each object is processed exactly
-once.
+@var{seen-objects} to ensure that each object is processed exactly once.
 @end deffn
 
 @node S-expression creation and quasiquotation

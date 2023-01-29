@@ -100,7 +100,8 @@
   :components  ((:module "test"
                  :serial t
                  :components ((:file "package")
-                              (:file "utilities")))
+                              (:file "utilities")
+                              (:file "gen-labeled-objects")))
 
                 (:module "readtable"
                  :pathname "test/readtable"

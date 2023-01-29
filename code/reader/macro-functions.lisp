@@ -348,7 +348,7 @@
 ;;;
 ;;;   (quasiquote (function (unquote (foo))))
 ;;;
-;;; .  It is not clear that this behavior is supported by
+;;; .  It is not clear that this behavior is supported by the
 ;;; specification, but it is widely relied upon and thus the default
 ;;; behavior.
 (defun sharpsign-single-quote (stream char parameter)
@@ -1294,50 +1294,18 @@
 ;;; Reader macros for sharpsign equals and sharpsign sharpsign.
 ;;;
 ;;; When the SHARPSIGN-EQUALS reader macro encounters #N=EXPRESSION,
-;;; it associates a marker object with N in the hash-table bound to
-;;; *LABELS*. The marker object is of the form
+;;; it associates a marker object with N. When the SHARPSIGN-SHARPSIGN
+;;; reader macros encounters #N#, the marker for N is looked up and
+;;; examined. If the marker has been finalized, the final object is
+;;; inserted. Otherwise the marker is inserted, to be fixed up later.
+;;; After reading EXPRESSION, the marker is finalized with the
+;;; resulting object. If circular references have been encountered
+;;; while reading EXPRESSION, FIXUP-GRAPH is called to replace markers
+;;; with final objects. Subsequent #N# encounters can directly use the
+;;; object.
 ;;;
-;;;   ((FINALP) . FINAL-OBJECT)
-;;;
-;;; where FINALP and FINAL-OBJECT are initially NIL. The cons cell
-;;; (FINALP) is called the temporary object of the marker object.
-;;;
-;;; If #N# is encountered, the marker for N is looked up in *LABELS*
-;;; and FINALP is examined. If FINALP is true, FINAL-OBJECT can be
-;;; returned as the result of reading #N#. However, if FINALP is false
-;;; (this can happen while READing EXPRESSION if #N=EXPRESSION is
-;;; circular), the temporary object is returned as the result of
-;;; reading #N# and a deferred fixup step will be necessary. This
-;;; fixup happens in READ-AUX.
-;;;
-;;; After reading EXPRESSION, the resulting object is stored in the
-;;; cdr as FINAL-OBJECT and FINALP within the temporary object is set
-;;; to true. Subsequent #N# encounters can directly return
-;;; FINAL-OBJECT as described above.
-
-(declaim (inline make-fixup-marker
-                 fixup-marker-temporary
-                 fixup-marker-final-p (setf fixup-marker-final-p)
-                 fixup-marker-final (setf fixup-marker-final)))
-
-(defun make-fixup-marker ()
-  (let ((temporary (list nil)))
-    (cons temporary nil)))
-
-(defun fixup-marker-temporary (marker)
-  (car marker))
-
-(defun fixup-marker-final-p (marker)
-  (car (fixup-marker-temporary marker)))
-
-(defun (setf fixup-marker-final-p) (new-value marker)
-  (setf (car (fixup-marker-temporary marker)) new-value))
-
-(defun fixup-marker-final (marker)
-  (cdr marker))
-
-(defun (setf fixup-marker-final) (new-value marker)
-  (setf (cdr marker) new-value))
+;;; See the *LABELED-OBJECT* generic functions and the file
+;;; labeled-objects.lisp for more details.
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
@@ -1361,25 +1329,32 @@
     (when (null parameter)
       (numeric-parameter-not-supplied stream 'sharpsign-equals)
       (return-from sharpsign-equals (read-object)))
-    (let ((labels *labels*))
-      (when (nth-value 1 (gethash parameter labels))
+    (let ((client *client*))
+      (unless (null (find-labeled-object client parameter))
         (%recoverable-reader-error
          stream 'sharpsign-equals-label-defined-more-than-once
          :position-offset (- (+ 1 (parameter-length parameter) 1))
          :label parameter :report 'ignore-label)
         (return-from sharpsign-equals (read-object)))
-      (let ((marker (make-fixup-marker)))
-        (setf (gethash parameter labels) marker)
-        (let ((result (read-object)))
-          (when (eq result (fixup-marker-temporary marker))
-            (%recoverable-reader-error
-             stream 'sharpsign-equals-only-refers-to-self
-             :position-offset -1 :label parameter :report 'inject-nil)
-            (remhash parameter labels)
-            (return-from sharpsign-equals nil))
-          (setf (fixup-marker-final marker) result
-                (fixup-marker-final-p marker) t)
-          result)))))
+      ;; Make a labeled object for the label PARAMETER and read the
+      ;; following object. Reading the object may encounter references
+      ;; to the label PARAMETER in which case LABELED-OBJECT will
+      ;; appear as a placeholder in RESULT and the state of
+      ;; LABELED-OBJECT will be changed to :CIRCULAR.
+      (let ((labeled-object (note-labeled-object client stream parameter))
+            (result (read-object)))
+        ;; If RESULT is just LABELED-OBJECT, the input was of the form
+        ;; #N=#N#.
+        (when (eq result labeled-object)
+          (%recoverable-reader-error
+           stream 'sharpsign-equals-only-refers-to-self
+           :position-offset -1 :label parameter :report 'inject-nil)
+          (forget-labeled-object client parameter)
+          (return-from sharpsign-equals nil))
+        ;; Perform fixup work in case LABELED-OBJECT changed its state
+        ;; to :CIRCULAR.
+        (finalize-labeled-object client labeled-object result)
+        result))))
 
 (defun sharpsign-sharpsign (stream char parameter)
   (declare (ignore char))
@@ -1388,20 +1363,15 @@
   (when (null parameter)
     (numeric-parameter-not-supplied stream 'sharpsign-equals)
     (return-from sharpsign-sharpsign nil))
-  (multiple-value-bind (marker definedp) (gethash parameter *labels*)
-    (cond ((not definedp)
-           (%recoverable-reader-error
-            stream 'sharpsign-sharpsign-undefined-label
-            :position-offset (- (+ 1 (parameter-length parameter) 1))
-            :label parameter :report 'inject-nil)
-           nil)
-          ;; If the final object has already been supplied, use it.
-          ((fixup-marker-final-p marker)
-           (fixup-marker-final marker))
-          ;; Else, we must use the temporary object and it will be
-          ;; fixed up later.
-          (t
-           (fixup-marker-temporary marker)))))
+  (let* ((client *client*)
+         (labeled-object (find-labeled-object client parameter)))
+    (when (null labeled-object)
+      (%recoverable-reader-error
+       stream 'sharpsign-sharpsign-undefined-label
+       :position-offset (- (+ 1 (parameter-length parameter) 1))
+       :label parameter :report 'inject-nil)
+      (return-from sharpsign-sharpsign nil))
+    (reference-labeled-object client stream labeled-object)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
