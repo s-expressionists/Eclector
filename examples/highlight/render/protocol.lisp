@@ -37,15 +37,18 @@
 ;;; Entry point
 
 (defmethod render ((client t) (input-string t) (cst t) (errors t))
-  (let ((node cst))
+  (let ((node        cst)
+        (error-stack '()))
     (flet ((maybe-end-errors (position)
-             (a:when-let ((errors (remove position errors
+             (a:when-let ((errors (remove position error-stack
                                           :test-not #'eql :key #'cst:end)))
-               (leave-errors client errors)))
+               (leave-errors client errors)
+               (setf error-stack (set-difference error-stack errors))))
            (maybe-start-errors (position)
              (a:when-let ((errors (remove position errors
                                           :test-not #'eql :key #'cst:start)))
-               (enter-errors client errors)))
+               (enter-errors client errors)
+               (setf error-stack (append errors error-stack))))
            (maybe-leave-nodes (position)
              (loop :while (eql position (cst:end node))
                    :do (leave-node client node)
@@ -62,23 +65,21 @@
             ;; Update containment stack
             :do (maybe-end-errors position)
                 (maybe-leave-nodes position)
-
                 (maybe-enter-node position)
                 (maybe-start-errors position)
-                ;; Write current character
+             ;; Write current character
             :do (write-character client position character node)
-
-
             :finally (let ((end (1+ position)))
                        ;; When the input ends with a newline and we
                        ;; must report errors for the end position, add
                        ;; a character to which we can attach the error
                        ;; indicator.
-                       (when (and (eql character #\Newline)
-                                  (find end errors :test #'eql :key #'cst:end))
-                         (write-character client end #\¶ nil))
+                       (when (find end errors :test #'eql :key #'cst:end)
+                         (maybe-end-errors end)
+                         (maybe-leave-nodes end)
+                         (maybe-start-errors end)
+                         (write-character client end #\Space nil))
                        (maybe-end-errors end)
-
                        (loop :while node
                              :do (leave-node client node)
                                  (setf node (cst:parent node))))))))

@@ -12,12 +12,7 @@
                      :initform (map 'list (lambda (symbol)
                                             (cons (symbol-name symbol)
                                                   (package-name (symbol-package symbol))))
-                                    *features*))
-   ;; A list of accumulated errors.
-   (%errors          :initarg  :errors
-                     :type     list
-                     :accessor errors
-                     :initform '())))
+                                    *features*))))
 
 ;;; Environment
 
@@ -65,6 +60,7 @@
                    ((not (eq :external (nth-value 1 (find-symbol symbol-name cl))))
                     (eclector.reader::%recoverable-reader-error
                      input-stream 'eclector.reader::symbol-does-not-exist
+                     :position-offset (- (length symbol-name))
                      :package cl :symbol-name symbol-name
                      :report 'eclector.reader::inject-nil)
                     'cst:standard-symbol-node)
@@ -178,10 +174,11 @@
 
 (defmethod eclector.parse-result:make-expression-result
     ((client highlight-client) (result cst:node) (children t) (source t))
-  ;; This is used if RESULT already is a `cst:node'.
-  ;; TODO should be ok later, but for now, things like (#1=foo #1#)
-  ;; cause this to fail
-  ;; (assert (or (not (slot-boundp result 'cst::%children)) (null (cst:children result))))
+  ;; This is used if RESULT already is a `cst:node'.  For example, the
+  ;; `interpret-symbol' method returns partly initialized
+  ;; `cst:symbol-node' instances.
+  (assert (or (not (slot-boundp result 'cst::%children))
+              (null (cst:children result))))
   (reinitialize-instance result :children children :source source))
 
 (defmethod eclector.parse-result:make-expression-result
@@ -192,9 +189,15 @@
          (make-instance 'cst:feature-expression-node
                         :children (butlast children)
                         :source   source))
-        ((eq (eclector.reader:labeled-object-state client result) :circular) ; happens for #1=#1#
-         (make-instance 'cst::invalid-node :object   result
-                                           :source   source))
+        ((eq (eclector.reader:labeled-object-state client result) :circular)
+         ;; This happens for labeled objects which are actually
+         ;; circular and could not yet be fixed up like #1# in #1=(1
+         ;; #1#).  The `invalid-node' instance will be replaced by a
+         ;; REFERENCE-NODE when the surrounding object (and CST) is
+         ;; fixed up.  When we recover from invalid input like #1=#1#,
+         ;; the `invalid-node' instance may remain in the final CST.
+         (make-instance 'cst::invalid-node :object result
+                                           :source source))
         (t
          (make-instance (result-node-class client result)
                         :object   result
@@ -269,21 +272,28 @@
                               (client (make-instance 'highlight-client
                                                      :input           input
                                                      :current-package package)))
-  (let ((stream (make-string-input-stream input)))
-    (eclector.reader:call-as-top-level-read
-     client
-     (lambda ()
-       (handler-bind ((error (lambda (condition)
-                               (let ((position (file-position stream)))
-                                 (push (cst:make-syntax-error
-                                        (1- position) position condition)
-                                       (errors client)))
-                               (eclector.reader:recover))))
-         (loop :for (object kind result)
-                  = (multiple-value-list
-                     (eclector.reader:read-maybe-nothing client stream nil nil))
-               :until (eq kind :eof)
-               :unless (member kind '(:skip :whitespace))
-               :collect result :into results
-               :finally (return (values (cst:make-cst results) (errors client))))))
-     stream nil :eof t)))
+  (let* ((stream    (make-string-input-stream input))
+         (eof-value stream)
+         (results   '())
+         (errors    '()))
+    (flet ((record-error (condition)
+             (let* ((offset (eclector.base:position-offset condition))
+                    (start  (+ (eclector.base:stream-position condition)
+                                 offset))
+                    (end    (if (typep condition 'end-of-file)
+                                start
+                                (1+ start))))
+               (push (cst:make-syntax-error start end condition) errors))))
+      (handler-bind ((error (lambda (condition)
+                              (record-error condition)
+                              (eclector.reader:recover))))
+        (loop
+          (multiple-value-bind (parse-result orphan-results)
+              (eclector.parse-result:read client stream nil eof-value)
+            (let* ((result-list (if (eq parse-result eof-value) '() (list parse-result)))
+                   (new-results (merge 'list result-list orphan-results #'<
+                                       :key #'cst:start)))
+              (setf results (nconc results new-results)))
+            (when (eq parse-result eof-value)
+              (return))))))
+    (values (cst:make-cst results) errors)))

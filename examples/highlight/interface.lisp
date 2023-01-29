@@ -9,11 +9,11 @@
 (defun highlight (input-string &key (package "COMMON-LISP-USER")
                                     (read-client nil                   read-client-supplied-p)
                                     (client      (make-minimal-client)))
-  (multiple-value-bind (cst errors)
+  (multiple-value-bind (cst-root errors)
       (apply #'read-stuff input-string :package package
              (when read-client-supplied-p
                (list :client read-client)))
-    (eclector.examples.highlight.render:render client input-string cst errors)))
+    (eclector.examples.highlight.render:render client input-string cst-root errors)))
 
 (defun highlight-string (string &key package client)
   (with-output-to-string (stream)

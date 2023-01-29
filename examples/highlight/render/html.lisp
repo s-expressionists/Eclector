@@ -331,7 +331,7 @@
     (loop :for (error rest) :on errors
           :do (str stream (cst:message error))
           :when rest
-          :do (write-string "<br/>" stream))
+            :do (write-string "<br/>" stream))
     (/span stream)
 
     (/span stream)))

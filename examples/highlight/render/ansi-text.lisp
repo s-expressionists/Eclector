@@ -242,18 +242,20 @@
 
 ;;; Document
 
+#.(progn #1=(ql:quickload "utilities.print-tree") '#1#)
+
 (defmethod enter-node ((client ansi-text-client) (node cst:root-node))
-  ;; (fresh-line *standard-output*)
-  ;; (utilities.print-tree:print-tree
-  ;;  *standard-output* node
-  ;;  (utilities.print-tree:make-node-printer
-  ;;   (lambda (stream depth node)
-  ;;     (declare (ignore depth))
-  ;;     (princ node stream))
-  ;;   nil
-  ;;   #'cst:children))
-  ;; (terpri)
-  ;; (finish-output *standard-output*)
+  (fresh-line *standard-output*)
+  (utilities.print-tree:print-tree
+   *standard-output* node
+   (utilities.print-tree:make-node-printer
+    (lambda (stream depth node)
+      (declare (ignore depth))
+      (princ node stream))
+    nil
+    #'cst:children))
+  (terpri)
+  (finish-output *standard-output*)
   (apply-style (style client) (stream client)))
 
 (defmethod leave-node ((client ansi-text-client) (node cst:root-node))
