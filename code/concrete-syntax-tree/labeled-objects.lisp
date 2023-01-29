@@ -34,3 +34,52 @@
                                      source))))))))
     (fixup-place (slot-value object 'cst::%first))
     (fixup-place (slot-value object 'cst::%rest))))
+
+;;; Explicit definition and reference CSTs
+;;;
+;;; These mixins allow clients to wrap CSTs for defined and referenced
+;;; labeled objects in DEFINITION-CST and REFERENCE-CST instances
+;;; respectively.
+
+(defclass wrapper-cst (cst:cst)
+  ((%target :initarg :target
+            :reader  target)))
+
+(defclass definition-cst (wrapper-cst) ())
+
+(defclass reference-cst (wrapper-cst) ())
+
+(defclass definition-csts-mixin () ())
+
+(defclass reference-csts-mixin () ())
+
+(defmethod eclector.reader:fixup ((client cst-client)
+                                  (object wrapper-cst)
+                                  seen-objects)
+  (declare (ignore seen-objects))) ; nothing to do
+
+(macrolet ((labeled-object-result (client labeled-object source class)
+             `(multiple-value-bind (state object parse-result)
+                  (eclector.reader:labeled-object-state ,client ,labeled-object)
+                (declare (ignore state))
+                (make-instance ',class :source ,source
+                                       :raw object
+                                       :target parse-result))))
+
+  (defmethod eclector.parse-result:make-expression-result
+      ((client definition-csts-mixin)
+       (result (eql eclector.parse-result:**definition**))
+       children
+       source)
+    ;; Due to a slight abuse of the protocol, CHILDREN is the labeled
+    ;; object being defined.
+    (labeled-object-result client children source definition-cst))
+
+  (defmethod eclector.parse-result:make-expression-result
+      ((client reference-csts-mixin)
+       (result (eql eclector.parse-result:**reference**))
+       children
+       source)
+    ;; Due to a slight abuse of the protocol, CHILDREN is the labeled
+    ;; object being referenced.
+    (labeled-object-result client children source reference-cst)))

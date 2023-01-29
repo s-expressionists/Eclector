@@ -15,4 +15,15 @@
 
   ;; Client class (can be used as a superclass)
   (:export
-   #:cst-client))
+   #:cst-client)
+
+  ;; Wrapper CST classes and client mixins
+  (:export
+   #:wrapper-cst
+   #:target
+
+   #:definition-cst
+   #:definition-csts-mixin
+
+   #:reference-cst
+   #:reference-csts-mixin))
