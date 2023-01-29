@@ -80,6 +80,7 @@
                  :components ((:file "package")
                               (:file "client")
                               (:file "generic-functions")
+                              (:file "labeled-objects")
                               (:file "read")
                               (:file "deprecation" :if-feature :sbcl)))
 
@@ -145,6 +146,7 @@
                  :serial t
                  :components ((:file "package")
                               (:file "read")
+                              (:file "client")
                               (:file "recover"))))
 
   :perform     (test-op (operation component)

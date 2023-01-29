@@ -21,8 +21,8 @@
                  (unless raw-atom-p
                    (multiple-value-bind (cst-car raw-car) (both (first cst))
                      (multiple-value-bind (cst-cdr raw-cdr) (both (rest cst))
-                       (is (equal raw-car (cst:raw cst-car)))
-                       (is (equal raw-cdr (cst:raw cst-cdr)))
+                       (is (eq raw-car (cst:raw cst-car)))
+                       (is (eq raw-cdr (cst:raw cst-cdr)))
                        (rec cst-car)
                        (rec cst-cdr)))))))
       (rec cst))))
@@ -45,22 +45,25 @@
            (is (typep result 'cst:cst))
            (is-consistent-with-raw result)
            (let ((raw (cst:raw result)))
-             (expect "raw result" (equal expected-raw raw)))
+             (expect "raw result" (equal* expected-raw raw)))
            ;; Expected source location.
            (expect "source location" (equal expected-location (cst:source result)))
            ;; Consumed all input.
            (expect "position" (eql length position))))))
     '(;; End of file
-      (""              t   eclector.reader:end-of-file)
-      (""              nil :eof)
-      ("; comment"     t   eclector.reader:end-of-file)
-      ("; comment"     nil :eof)
+      (""                    t   eclector.reader:end-of-file)
+      (""                    nil :eof)
+      ("; comment"           t   eclector.reader:end-of-file)
+      ("; comment"           nil :eof)
       ;; Actually reading something
-      ("(cons 1 2)"    t   (cons 1 2) ( 0 . 10))
-      ("#+(or) `1 2"   t   2          (10 . 11))
-      ("#|comment|# 1" t   1          (12 . 13))
-      ("; comment~%1"  t   1          (10 . 11))
-      ("(a . 2)"       t   (a . 2)    ( 0 .  7)))))
+      ("(cons 1 2)"          t   (cons 1 2)          ( 0 . 10))
+      ("#+(or) `1 2"         t   2                   (10 . 11))
+      ("#|comment|# 1"       t   1                   (12 . 13))
+      ("; comment~%1"        t   1                   (10 . 11))
+      ("(a . 2)"             t   (a . 2)             ( 0 .  7))
+      ("(#1=1 #1#)"          t   (#1=1 #1#)          ( 0 . 10))
+      ("#1=(#1#)"            t   #2=(#2#)            ( 3 .  8))
+      ("#1=(1 #2=(#1# #2#))" t   #3=(1 #4=(#3# #4#)) ( 3 . 19)))))
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."

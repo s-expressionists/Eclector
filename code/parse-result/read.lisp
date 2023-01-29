@@ -57,7 +57,10 @@
 (defmethod eclector.reader:read-maybe-nothing
     ((client parse-result-client) input-stream eof-error-p eof-value)
   (declare (ignore eof-error-p eof-value))
-  (let* ((stack (list* '() *stack*))
+  (let* (;; *WRAPPER* is used in MAKE-LABELED-OBJECT,
+         ;; REFERENCE-LABELED-OBJECT and MAKE-EXPRESSION-RESULT.
+         (*wrapper* nil)
+         (stack (list* '() *stack*))
          (start (eclector.base:source-position client input-stream)))
     (multiple-value-bind (value what)
         (let ((*stack* stack)

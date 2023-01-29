@@ -15,6 +15,9 @@
 
   ;; Parse result protocol
   (:export
+   #:**definition**
+   #:**reference**
+
    #:make-expression-result
    #:make-skipped-input-result)
 

@@ -30,24 +30,26 @@
                  :reader     rest-child)))
 
 (defun resultify (raw results &optional source)
-  (labels ((rec (raw-rest result-rest &optional source)
-             (cond
-               ((and (not (null (kind result-rest)))
-                     (eq raw-rest (raw result-rest)))
-                result-rest)
-               ((atom raw-rest)
-                (make-instance 'atom-result :raw raw-rest :source nil))
-               (t
-                (make-instance 'cons-result
-                               :raw raw-rest
-                               :source source
-                               :first (rec (first raw-rest)
-                                           (when (consp result-rest)
-                                             (first result-rest)))
-                               :rest (rec (rest raw-rest)
-                                          (when (consp result-rest)
-                                            (rest result-rest))))))))
-    (rec raw results source)))
+  (let ((seen (make-hash-table :test #'eq)))
+    (labels ((rec (raw-rest result-rest &optional source)
+               (cond ((and (not (null (kind result-rest)))
+                           (eq raw-rest (raw result-rest)))
+                      result-rest)
+                     ((atom raw-rest)
+                      (make-instance 'atom-result :raw raw-rest :source nil))
+                     (t
+                      (or (gethash raw-rest seen)
+                          (let ((result (make-instance 'cons-result :raw raw-rest
+                                                                    :source source)))
+                            (setf (gethash raw-rest seen) result)
+                            (reinitialize-instance
+                             result :first (rec (first raw-rest)
+                                                (when (consp result-rest)
+                                                  (first result-rest)))
+                                    :rest (rec (rest raw-rest)
+                                               (when (consp result-rest)
+                                                 (rest result-rest))))))))))
+      (rec raw results source))))
 
 (defclass simple-result-client (eclector.parse-result:parse-result-client)
   ())
@@ -59,6 +61,31 @@
 (defmethod eclector.parse-result:make-expression-result
     ((client simple-result-client) (result t) (children t) (source t))
   (make-instance 'atom-result :raw result :source source))
+
+(defmethod eclector.reader:fixup ((client simple-result-client)
+                                  (object atom-result)
+                                  seen)
+  ;; Simplified, things like arrays and structures need fixup.
+  (declare (ignore seen)))
+
+(defmethod eclector.reader:fixup ((client simple-result-client)
+                                  (object cons-result)
+                                  seen)
+  (macrolet ((fixup-place (place)
+               `(let* ((current-value ,place)
+                       (current-raw-value (raw current-value)))
+                  (eclector.reader:fixup-case (client current-raw-value)
+                    (()
+                     (eclector.reader:fixup client current-value seen))
+                    (()
+                     (let ((source (source current-value)))
+                       (setf ,place (eclector.parse-result:make-expression-result
+                                     client
+                                     eclector.parse-result:**reference**
+                                     current-raw-value
+                                     source))))))))
+    (fixup-place (slot-value object '%first-child))
+    (fixup-place (slot-value object '%rest-child))))
 
 ;;; A client that stores all result information in lists.
 
@@ -94,25 +121,28 @@
         (t
          (multiple-value-bind (result orphan-results position) (do-it)
            (is (typep result 'parse-result))
-           (expect "raw result"      (equal expected-raw      (raw result)))
-           (expect "source location" (equal expected-location (source result)))
-           (expect "orphan results"  (equal '()               orphan-results))
-           (expect "position"        (eql   expected-position position))))))
+           (expect "raw result"      (equal* expected-raw      (raw result)))
+           (expect "source location" (equal  expected-location (source result)))
+           (expect "orphan results"  (equal  '()               orphan-results))
+           (expect "position"        (eql    expected-position position))))))
     '(;; End of file
-      (""              t   eclector.reader:end-of-file)
-      (""              nil :eof)
-      ("; comment"     t   eclector.reader:end-of-file)
-      ("; comment"     nil :eof)
+      (""                    t   eclector.reader:end-of-file)
+      (""                    nil :eof)
+      ("; comment"           t   eclector.reader:end-of-file)
+      ("; comment"           nil :eof)
       ;; Actually reading something
-      ("1"             t   1          ( 0 .  1))
-      (" 1"            t   1          ( 1 .  2))
-      ("1 "            t   1          ( 0 .  1))
-      ("1 2"           t   1          ( 0 .  1) 2)
-      ("(cons 1 2)"    t   (cons 1 2) ( 0 . 10))
-      ("#+(or) `1 2"   t   2          (10 . 11))
-      ("#|comment|# 1" t   1          (12 . 13))
-      ("; comment~%1"  t   1          (10 . 11))
-      ("(a . 2)"       t   (a . 2)    ( 0 .  7)))))
+      ("1"                   t   1                   ( 0 .  1))
+      (" 1"                  t   1                   ( 1 .  2))
+      ("1 "                  t   1                   ( 0 .  1))
+      ("1 2"                 t   1                   ( 0 .  1) 2)
+      ("(cons 1 2)"          t   (cons 1 2)          ( 0 . 10))
+      ("#+(or) `1 2"         t   2                   (10 . 11))
+      ("#|comment|# 1"       t   1                   (12 . 13))
+      ("; comment~%1"        t   1                   (10 . 11))
+      ("(a . 2)"             t   (a . 2)             ( 0 .  7))
+      ("(#1=1 #1#)"          t   (#1=1 #1#)          ( 0 . 10))
+      ("#1=(#1#)"            t   #2=(#2#)            ( 3 .  8))
+      ("#1=(1 #2=(#1# #2#))" t   #3=(1 #4=(#3# #4#)) ( 3 . 19)))))
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
