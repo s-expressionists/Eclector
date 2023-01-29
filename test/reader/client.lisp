@@ -289,9 +289,10 @@
 (defmethod eclector.reader:note-labeled-object
     ((client custom-labeled-objects-client)
      (input-stream stream)
-     (label integer))
+     (label integer)
+     parent)
   (let ((labeled-object (eclector.reader:make-labeled-object
-                         client input-stream label)))
+                         client input-stream label parent)))
     (push (cons label labeled-object) *labels*)
     labeled-object))
 
@@ -306,7 +307,9 @@
 (defmethod eclector.reader:make-labeled-object
     ((client custom-labeled-objects-client)
      (input-stream stream)
-     label)
+     label
+     parent)
+  (declare (ignore parent))
   (%make-labeled-object label))
 
 (defmethod eclector.reader:labeled-object-state
@@ -318,12 +321,12 @@
     ((client custom-labeled-objects-client)
      (labeled-object %labeled-object)
      object)
-  (let ((old-state (%labeled-object-state labeled-object)))
+  (let ((new-state (case (%labeled-object-state labeled-object)
+                     (:defined  :final)
+                     (:circular :final/circular))))
     (setf (%labeled-object-object labeled-object) object
-          (%labeled-object-state labeled-object) :final)
-    (when (eq old-state :circular)
-      (eclector.reader:fixup-graph client object)))
-  (values labeled-object :final))
+          (%labeled-object-state labeled-object) new-state)
+    (values labeled-object new-state)))
 
 (defmethod eclector.reader:reference-labeled-object
     ((client custom-labeled-objects-client)
@@ -332,13 +335,17 @@
   (multiple-value-bind (state object)
       (eclector.reader:labeled-object-state client labeled-object)
     (ecase state
-      (:final ; Use final object, if it has already been stored
+      ((:final :final/circular) ; Use final object, if it has already been stored
        object)
       (:defined ; Else, use LABELED-OBJECT as a placeholder, fix up later
        (setf (%labeled-object-state labeled-object) :circular)
        labeled-object)
       (:circular ; Same but without changing the state
        labeled-object))))
+
+(defmethod eclector.reader:fixup-graph-p ((client custom-labeled-objects-client)
+                                          (root-labeled-object %labeled-object))
+  (eq (%labeled-object-state root-labeled-object) :final/circular))
 
 (test custom-labeled-objects/smoke
   "Smoke test for custom labeled object processing."

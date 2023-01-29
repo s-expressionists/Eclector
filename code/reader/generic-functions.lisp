@@ -71,13 +71,13 @@
 
 (defgeneric call-with-label-tracking (client thunk))
 
-(defgeneric note-labeled-object (client input-stream label))
+(defgeneric note-labeled-object (client input-stream label parent))
 
 (defgeneric forget-labeled-object (client label))
 
 (defgeneric find-labeled-object (client label))
 
-(defgeneric make-labeled-object (client input-stream label))
+(defgeneric make-labeled-object (client input-stream label parent))
 
 (defgeneric labeled-object-state (client object)
   (:method (client object)
@@ -89,7 +89,11 @@
 
 (defgeneric reference-labeled-object (client input-stream labeled-object))
 
-(defgeneric fixup-graph (client root-object))
+(defgeneric fixup-graph-p (client root-labeled-object))
+
+(defgeneric fixup-graph (client root-labeled-object &key object-key))
+
+(defgeneric walk-fixup-tree (client function root-labeled-object))
 
 (defgeneric fixup (client object seen-objects))
 

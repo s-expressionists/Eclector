@@ -726,21 +726,46 @@ functions with corresponding state transitions.}
 @end float
 
 In addition to the generic functions referenced in the above diagram,
-the generic functions @t{fixup-graph} and @t{fixup} are part of the
-protocol.  Those two functions are used to replace labeled objects with
-their respective final objects within an object that is about to be
-returned to the caller of @t{eclector.reader:read}@footnote{This fixup
-processing has to be delayed under certain circumstances
-(@pxref{Circular objects and custom reader macros}).}.  To this end, the
-@t{#=} reader macro function must inspect and update the state of the
-labeled object it is processing after reading @t{@var{expression}} by
-calling @t{finalize-labeled-object}.  @t{finalize-labeled-object}
-decides whether @t{fixup-graph} (see below) must be called: If after
-reading @t{@var{expression}} the labeled object is in state
-@t{:circular}, @t{@var{expression}} must have contained circular
-references and the result of reading it contains labeled objects that
-have to be replaced with their respective final objects.
-@t{fixup-graph} and @t{fixup} perform this replacement.
+the generic functions @t{fixup-graph-p}, @t{fixup-graph} and @t{fixup}
+are part of the protocol.  Those functions are used to replace labeled
+objects with their respective final objects within an object that is
+about to be returned to the caller of @t{eclector.reader:read}
+@footnote{This fixup processing has to be delayed under certain
+circumstances (@pxref{Circular objects and custom reader macros}).}.  To
+this end, the @t{#=} reader macro function must inspect and update the
+state of the labeled object it is processing after reading
+@t{@var{expression}} by calling @t{finalize-labeled-object}.
+@t{finalize-labeled-object} decides whether @t{fixup-graph} (see below)
+must be called: If after reading @t{@var{expression}} the labeled object
+is in state @t{:circular}, @t{@var{expression}} must have contained
+circular references and the result of reading it contains labeled
+objects that have to be replaced with their respective final objects.
+@t{fixup-graph} and @t{fixup} perform this replacement.  This
+replacement is performed by recursively traversing objects which are
+reachable from the final object of the labeled objects, for example by
+visiting the slots of standard objects, and replacing labeled objects
+with their respective final object.
+
+In certain cases, the computational complexity of this traversal and
+replacement can be rather high, depending on when and how exactly the
+traversal is performed: consider an expression of the form
+@t{#1=(1 #1# #2=(2 #2# @dots{}))}.  The nested labeled objects in this
+expression are all circular and thus require fixing up.  The @t{read}
+call for the innermost labeled object, say @t{#100=@dots{}}, returns
+first and the fixup processing for the labeled object could be performed
+immediately.  The problem is that each of the labeled objects would
+be processed in the same manner which would lead to a computation
+complexity of @math{O(N M)} where @math{N} is the number of labels and
+@math{M} is the number of nodes in the object graph rooted at the object
+which is returned by the outermost @t{read} call.  One way to avoid this
+problem would be to perform fixup processing only for the outermost
+@t{read} call.  The problem with that approach is that only a small
+sub-graph of the whole object graph may be circular in which case most
+of the work for traversing the whole graph would be wasted.  To address
+both problems, @sysname{} allows clients to track the nesting of labeled
+objects and fix up sub-graphs which contain multiple nested objects in
+one go
+(@pxref{Generic-Function eclector.reader|fixup-graph-p, fixup-graph-p}).
 
 @defgena{call-with-label-tracking,eclector.reader} client thunk
 
@@ -755,7 +780,8 @@ appropriate calls to @t{note-labeled-object}, @t{forget-labeled-object},
 @t{find-labeled-object}.
 @end deffn
 
-@defgena{note-labeled-object,eclector.reader} client input-stream label
+@defgena{note-labeled-object,eclector.reader} client input-stream label@
+  parent
 
 This generic function is called by the default @t{#=} reader macro
 function to note the definition of a labeled object with label
@@ -765,6 +791,12 @@ The returned object is registered in the sense that a subsequent call to
 @t{find-labeled-object} with arguments @var{client} and @var{label}
 returns the same object unless @t{forget-labeled-object} has been called
 to unregister the object.
+
+@var{parent} is either @t{nil} or a (previously created) surrounding
+labeled object.  The parent labeled object is provided to allow the
+client to potentially defer fixup processing for the new labeled object
+if the processing for the surrounding labeled object subsumes the
+processing for the new labeled object.
 
 Note that, when reading an expression of the form
 @t{#@var{N}=@var{object}}, this function is called after reading
@@ -811,10 +843,15 @@ The default method on this generic function requires the context
 established by the default method on @t{call-with-label-tracking}.
 @end deffn
 
-@defgena{make-labeled-object,eclector.reader} client input-stream label
+@defgena{make-labeled-object,eclector.reader} client input-stream label@
+  parent
 
 This generic function is called by @t{note-labeled-object} to create and
 return a representation of a labeled object with label @var{label}.
+@var{parent} is either @t{nil} or a previously created, surrounding
+labeled object which allows the client to potentially defer fixup
+processing for the new labeled object if the processing for the
+surrounding labeled object subsumes the processing.
 
 The default method on this generic function creates and returns an
 object of an unspecified type.  Client code should manipulate the object
@@ -900,19 +937,55 @@ replaced with their respective final objects, @t{fixup} methods call
 labeled objects and @t{:final} for labeled objects which must be
 replaced with their final object.
 
-@defgena {fixup-graph,eclector.reader} client root-object
+@defgena {fixup-graph-p,eclector.reader} client root-labeled-object
+
+This generic function is potentially called by a method on
+@t{finalize-labeled-object} to determine whether the object graph
+reachable from the object of @var{root-labeled-object} should be fixed
+up by calling @t{fixup-graph} with @var{client} and
+@var{labeled-object}.
+
+Multiple default methods on this generic function jointly implement the
+following behavior:
+
+@itemize
+
+@item
+If @var{root-labeled-object} has a parent labeled object,
+@var{root-labeled-object} should not be fixup up immediately (since the
+fixup processing for ancestor labeled objects will subsume the fixup
+processing for @var{root-labeled-object}).
+
+@item
+If @var{root-labeled-object} does not have parent labeled object but has
+child labeled objects, @var{root-labeled-object} should be fixed up
+immediately.
+
+@item
+If @var{root-labeled-object} does not have parent labeled object and is
+in state @t{:final/circular}, @var{root-labeled-object} should be fixed
+up immediately.
+@end itemize
+@end deffn
+
+@defgena {fixup-graph,eclector.reader} client root-labeled-object@
+ @pkey@ object-key
 
 This generic function is potentially called after the reader has
-constructed an object graph which is reachable from @var{root-object}
-and noticed circular references within this graph to fix up circular
-references before @var{root-object} is returned to the caller (of
-@t{read} or related functions).
+constructed an object graph which is reachable from the object of
+@var{root-labeled-object} and noticed circular references within this
+graph to fix up circular references before the object of
+@var{root-labeled-object} is returned to the caller (of @t{read} or
+related functions).
+
+@var{object-key} is a function that accepts a labeled object and returns
+the object of the labeled object.
 
 The default method on this generic function creates a hash table for
 tracking already processed objects and calls @t{fixup} with
-@var{client}, @var{root-object} and the hash table to recursively
-process objects in the object graph which is reachable from
-@var{root-object}.
+@var{client}, the object of @var{root-labeled-object} and the hash table
+to recursively process objects in the object graph which is reachable
+from the object of @var{root-labeled-object}.
 @end deffn
 
 @defgena {fixup,eclector.reader} client object seen-objects

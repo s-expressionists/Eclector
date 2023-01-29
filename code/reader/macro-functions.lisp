@@ -1301,11 +1301,19 @@
 ;;; After reading EXPRESSION, the marker is finalized with the
 ;;; resulting object. If circular references have been encountered
 ;;; while reading EXPRESSION, FIXUP-GRAPH is called to replace markers
-;;; with final objects. Subsequent #N# encounters can directly use the
-;;; object.
+;;; with final objects (this fixup processing may be delayed if a the
+;;; fixup processing for a surrounding circular object subsumes the
+;;; processing for the current object, see Fixup work tree in
+;;; labeled-objects.lisp). Subsequent #N# encounters can directly use
+;;; the object.
 ;;;
 ;;; See the *LABELED-OBJECT* generic functions and the file
 ;;; labeled-objects.lisp for more details.
+
+;;; Track the immediately surrounding labeled object of the current
+;;; labeled object in order to potentially avoid unnecessary fixup
+;;; work. See Fixup work tree in labeled-objects.lisp for details.
+(defvar *parent-labeled-object* nil)
 
 (defun sharpsign-equals (stream char parameter)
   (declare (ignore char))
@@ -1341,8 +1349,11 @@
       ;; to the label PARAMETER in which case LABELED-OBJECT will
       ;; appear as a placeholder in RESULT and the state of
       ;; LABELED-OBJECT will be changed to :CIRCULAR.
-      (let ((labeled-object (note-labeled-object client stream parameter))
-            (result (read-object)))
+      (let* ((parent *parent-labeled-object*)
+             (labeled-object (note-labeled-object
+                              client stream parameter parent))
+             (result (let ((*parent-labeled-object* labeled-object))
+                       (read-object))))
         ;; If RESULT is just LABELED-OBJECT, the input was of the form
         ;; #N=#N#.
         (when (eq result labeled-object)
@@ -1351,8 +1362,8 @@
            :position-offset -1 :label parameter :report 'inject-nil)
           (forget-labeled-object client parameter)
           (return-from sharpsign-equals nil))
-        ;; Perform fixup work in case LABELED-OBJECT changed its state
-        ;; to :CIRCULAR.
+        ;; Perform (or defer) fixup work in case LABELED-OBJECT
+        ;; changed its state to :CIRCULAR.
         (finalize-labeled-object client labeled-object result)
         result))))
 

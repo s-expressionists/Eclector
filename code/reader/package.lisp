@@ -109,7 +109,9 @@
    #:finalize-labeled-object
    #:reference-labeled-object
 
+   #:fixup-graph-p
    #:fixup-graph
+   #:walk-fixup-tree
    #:fixup
 
    #:fixup-case
