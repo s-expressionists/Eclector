@@ -314,8 +314,9 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
     <ul class="no-bullet">
       <li><a id="toc-Common-Lisp-reader-compatible-interface-1" href="#Common-Lisp-reader-compatible-interface">2.3.1 Common Lisp reader compatible interface</a></li>
       <li><a id="toc-Reader-behavior-protocol-1" href="#Reader-behavior-protocol">2.3.2 Reader behavior protocol</a></li>
-      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.3.3 S-expression creation and quasiquotation</a></li>
-      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.3.4 Readtable initialization</a></li>
+      <li><a id="toc-Labeled-objects-and-references-1" href="#Labeled-objects-and-references">2.3.3 Labeled objects and references</a></li>
+      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.3.4 S-expression creation and quasiquotation</a></li>
+      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.3.5 Readtable initialization</a></li>
     </ul></li>
     <li><a id="toc-Readtable-features-1" href="#Readtable-features">2.4 Readtable features</a></li>
     <li><a id="toc-Parse-result-construction-features-1" href="#Parse-result-construction-features">2.5 Parse result construction features</a></li>
@@ -654,8 +655,9 @@ code.
 <ul class="section-toc">
 <li><a href="#Common-Lisp-reader-compatible-interface" accesskey="1">Common Lisp reader compatible interface</a></li>
 <li><a href="#Reader-behavior-protocol" accesskey="2">Reader behavior protocol</a></li>
-<li><a href="#S_002dexpression-creation-and-quasiquotation" accesskey="3">S-expression creation and quasiquotation</a></li>
-<li><a href="#Readtable-initialization" accesskey="4">Readtable initialization</a></li>
+<li><a href="#Labeled-objects-and-references" accesskey="3">Labeled objects and references</a></li>
+<li><a href="#S_002dexpression-creation-and-quasiquotation" accesskey="4">S-expression creation and quasiquotation</a></li>
+<li><a href="#Readtable-initialization" accesskey="5">Readtable initialization</a></li>
 </ul>
 <hr>
 <div class="subsection" id="Common-Lisp-reader-compatible-interface">
@@ -705,7 +707,7 @@ function with the same name.
 <div class="subsection" id="Reader-behavior-protocol">
 <div class="header">
 <p>
-Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel="next">S-expression creation and quasiquotation</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Labeled-objects-and-references" accesskey="n" rel="next">Labeled objects and references</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Reader-behavior-protocol-1"></span><h4 class="subsection">2.3.2 Reader behavior protocol</h4>
 
@@ -1084,30 +1086,369 @@ absent.
 semantics for feature expressions.
 </p></dd></dl>
 
-<span id="Generic_002dFunction-eclector_002ereader_007cfixup"></span><dl class="def">
-<dt id="index-fixup-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>fixup [eclector.reader]</strong> <em>client object seen-objects mapping</em><a href='#index-fixup-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
-<dd>
-<p>This generic function is potentially called to apply
-circularity-related changes to the object constructed by the reader
-before it is returned to the caller.  <var>object</var> is the object
-that should be modified.  <var>seen-objects</var> is a <tt>eq</tt>-hash
-table used to track already processed objects (see below).
-<var>mapping</var> is a hash table of substitutions, mapping marker
-objects to replacement objects.  A method specialized on a class,
-instances of which consists of parts, should modify <var>object</var> by
-scanning its parts for marker objects, replacing found markers with
-replacement object and recursively calling <tt>fixup</tt> for all
-parts.  <tt>fixup</tt> is called for side effects &ndash; its return value
-is ignored.
+<hr>
+</div>
+<div class="subsection" id="Labeled-objects-and-references">
+<div class="header">
+<p>
+Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel="next">S-expression creation and quasiquotation</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Labeled-objects-and-references-1"></span><h4 class="subsection">2.3.3 Labeled objects and references</h4>
+
+<span id="index-labeled-object"></span>
+
+<p>Eclector includes implementations of the <tt>#=</tt> and <tt>##</tt> reader
+macros and they are present in the default readtable.  One way to
+customize the behavior of the reader around the <tt>#=</tt> and <tt>##</tt> syntax
+is replacing the reader macro functions with custom ones but with this
+approach the client code has to reimplement a lot of functionality.  As
+a finer grained and more composable mechanism for customization,
+Eclector provides a protocol for implementing and customizing the
+behavior of the <tt>#=</tt> and <tt>##</tt> reader macros, with or without
+modifying the readtable.  The remainder of this section describes that
+protocol.
 </p>
-<p>Default methods specializing on the <var>object</var> parameter for
-<tt>cons</tt>, <tt>array</tt>, <tt>standard-object</tt> and
-<tt>hash-table</tt> process instances of those classes in the obvious
-way.
+<p>To start with a bit of terminology, we call the object created by
+reading <tt>#<var>N</var>=<var>expression</var></tt> a <em>labeled object</em>. We call
+<var>N</var> the <em>label</em> of the labeled object and the result of reading
+<tt><var>expression</var></tt> the <em>object</em> of the labeled object.  We say
+that <tt>#<var>N</var>=<var>expression</var></tt> <em>defines</em> the labeled object and
+<tt>#<var>N</var>#</tt> <em>references</em> the labeled object.  We call the
+reference <em>circular</em> if <tt>#<var>N</var>#</tt> occurs within
+<var>expression</var>.  Labeled objects are internal to the reader and only
+exist during <tt>eclector.reader:read</tt> calls: before such a call returns
+an object, each labeled object within the returned object is replaced by
+its respective final object.  Callers of <tt>eclector.reader:read</tt> and
+related functions will therefore only ever see the object, never the
+labeled object<a id="DOCF2" href="#FOOT2"><sup>2</sup></a>.
+</p>
+<p>On a technical level, a labeled object is represented as a data type
+with a current state and a single (possibly unbound) slot containing the
+object.  The following diagrams depicts the possible states of a labeled
+object together with input patterns and corresponding transitions:
+</p>
+<div class="float"><span id="fig_003alabeled_002dobject_002dstates"></span>
+<div align="center"><img src="labeled-object-states.png" alt="labeled-object-states">
+</div>
+<div class="float-caption"><p><strong>Figure 2.3: </strong>Possible states of a labeled object and input patterns which
+correspond to state transitions.</p></div></div>
+<p>Put differently, a labeled object can be in the following states:
+</p>
+<table>
+<thead><tr><th width="50%">State</th><th width="30%">Object slot</th></tr></thead>
+<tr><td width="50%">undefined</td><td width="30%">&ndash;</td></tr>
+<tr><td width="50%">defined</td><td width="30%">unbound</td></tr>
+<tr><td width="50%">final</td><td width="30%">the object</td></tr>
+<tr><td width="50%">referenced <em>(not strictly needed)</em></td><td width="30%">the object</td></tr>
+<tr><td width="50%">circular</td><td width="30%">unbound</td></tr>
+<tr><td width="50%">final (circular)</td><td width="30%">the object</td></tr>
+<tr><td width="50%">referenced (circular) <em>(not strictly needed)</em></td><td width="30%">the object</td></tr>
+</table>
+
+<p>The distinction between the states <tt>final</tt> and <tt>referenced</tt> on the
+one hand and <tt>final (circular)</tt>, and <tt>referenced (circular)</tt> on the
+other hand is not required for implementing labeled objects.  Those two
+pairs of states are therefore collapsed to just <tt>final</tt> and <tt>final
+(circular)</tt> in the remainder of this section.  The following figure and
+paragraphs describe generic functions and methods which implement the
+creation, registration, lookup and manipulation of labeled objects
+according to the reduced set of states:
+</p>
+<div class="float"><span id="fig_003alabeled_002dobject_002dapi_002dstates"></span>
+<div align="center"><img src="labeled-object-api-states.png" alt="labeled-object-api-states">
+</div>
+<div class="float-caption"><p><strong>Figure 2.4: </strong>Reduced set of states of a labeled object and protocol
+functions with corresponding state transitions.</p></div></div>
+<p>In addition to the generic functions referenced in the above diagram,
+the generic functions <tt>fixup-graph-p</tt>, <tt>fixup-graph</tt> and <tt>fixup</tt>
+are part of the protocol.  Those functions are used to replace labeled
+objects with their respective final objects within an object that is
+about to be returned to the caller of <tt>eclector.reader:read</tt>
+<a id="DOCF3" href="#FOOT3"><sup>3</sup></a>.  To
+this end, the <tt>#=</tt> reader macro function must inspect and update the
+state of the labeled object it is processing after reading
+<tt><var>expression</var></tt> by calling <tt>finalize-labeled-object</tt>.
+<tt>finalize-labeled-object</tt> decides whether <tt>fixup-graph</tt> (see below)
+must be called: If after reading <tt><var>expression</var></tt> the labeled object
+is in state <tt>:circular</tt>, <tt><var>expression</var></tt> must have contained
+circular references and the result of reading it contains labeled
+objects that have to be replaced with their respective final objects.
+<tt>fixup-graph</tt> and <tt>fixup</tt> perform this replacement.  This
+replacement is performed by recursively traversing objects which are
+reachable from the final object of the labeled objects, for example by
+visiting the slots of standard objects, and replacing labeled objects
+with their respective final object.
+</p>
+<p>In certain cases, the computational complexity of this traversal and
+replacement can be rather high, depending on when and how exactly the
+traversal is performed: consider an expression of the form
+<tt>#1=(1 #1# #2=(2 #2# &hellip;))</tt>.  The nested labeled objects in this
+expression are all circular and thus require fixing up.  The <tt>read</tt>
+call for the innermost labeled object, say <tt>#100=&hellip;</tt>, returns
+first and the fixup processing for the labeled object could be performed
+immediately.  The problem is that each of the labeled objects would
+be processed in the same manner which would lead to a computation
+complexity of <em class='math'>O(N M)</em> where <em class='math'>N</em> is the number of labels and
+<em class='math'>M</em> is the number of nodes in the object graph rooted at the object
+which is returned by the outermost <tt>read</tt> call.  One way to avoid this
+problem would be to perform fixup processing only for the outermost
+<tt>read</tt> call.  The problem with that approach is that only a small
+sub-graph of the whole object graph may be circular in which case most
+of the work for traversing the whole graph would be wasted.  To address
+both problems, Eclector allows clients to track the nesting of labeled
+objects and fix up sub-graphs which contain multiple nested objects in
+one go
+(see <a href="#Generic_002dFunction-eclector_002ereader_007cfixup_002dgraph_002dp">fixup-graph-p</a>).
+</p>
+<span id="Generic_002dFunction-eclector_002ereader_007ccall_002dwith_002dlabel_002dtracking"></span><dl class="def">
+<dt id="index-call_002dwith_002dlabel_002dtracking-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>call-with-label-tracking [eclector.reader]</strong> <em>client thunk</em><a href='#index-call_002dwith_002dlabel_002dtracking-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default method on
+<tt>call-as-top-level-read</tt> in order to establish a context for tracking
+<tt>#=</tt> label definitions and <tt>##</tt> label references around a call to
+<var>thunk</var>.
+</p>
+<p>The default method on this generic function establishes a context in
+which the default <tt>#=</tt> and <tt>##</tt> reader macro functions can make the
+appropriate calls to <tt>note-labeled-object</tt>, <tt>forget-labeled-object</tt>,
+<tt>find-labeled-object</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cnote_002dlabeled_002dobject"></span><dl class="def">
+<dt id="index-note_002dlabeled_002dobject-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>note-labeled-object [eclector.reader]</strong> <em>client input-stream label  parent</em><a href='#index-note_002dlabeled_002dobject-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default <tt>#=</tt> reader macro
+function to note the definition of a labeled object with label
+<var>label</var> while reading from <var>input-stream</var>.  The function
+creates, registers and returns a representation of the labeled object.
+The returned object is registered in the sense that a subsequent call to
+<tt>find-labeled-object</tt> with arguments <var>client</var> and <var>label</var>
+returns the same object unless <tt>forget-labeled-object</tt> has been called
+to unregister the object.
+</p>
+<p><var>parent</var> is either <tt>nil</tt> or a (previously created) surrounding
+labeled object.  The parent labeled object is provided to allow the
+client to potentially defer fixup processing for the new labeled object
+if the processing for the surrounding labeled object subsumes the
+processing for the new labeled object.
+</p>
+<p>Note that, when reading an expression of the form
+<tt>#<var>N</var>=<var>object</var></tt>, this function is called after reading
+<tt>#<var>N</var>=</tt> from <var>input-stream</var> but before reading
+<tt><var>object</var></tt>.  Consequently, the created and returned labeled object
+is defined but does not have an object associated with it.
+</p>
+<p>The default method on this generic function calls
+<tt>make-labeled-object</tt> with <var>client</var>, <var>input-stream</var> and
+<var>label</var> to create an object of an unspecified type.  The method
+registers and returns the created object.  Client code should manipulate
+the object only via the generic functions described in this section and
+in particular not rely on the object being of a particular type (since
+methods on <tt>make-labeled-object</tt> specialized to certain client classes
+could return unexpected objects).  The default method requires the
+context established by the default method on
+<tt>call-with-label-tracking</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cforget_002dlabeled_002dobject"></span><dl class="def">
+<dt id="index-forget_002dlabeled_002dobject-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>forget-labeled-object [eclector.reader]</strong> <em>client label</em><a href='#index-forget_002dlabeled_002dobject-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default <tt>#=</tt> reader macro
+function when Eclector reads an invalid labeled object of the form
+<tt>#<var>N</var>=#<var>N</var>#</tt> and the caller chooses to recover from the
+resulting error (see <a href="#Recovering-from-errors">Recovering from errors</a>).  In that situation,
+the remainder of the input is processed as if there had been no labeled
+object with label <var>N</var>.  This function makes the labeled object
+undefined so that a subsequent <tt>find-labeled-object</tt> call for
+<var>label</var> will return <tt>nil</tt>.
+</p>
+<p>The default method on this generic function requires the context
+established by the default method on <tt>call-with-label-tracking</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cfind_002dlabeled_002dobject"></span><dl class="def">
+<dt id="index-find_002dlabeled_002dobject-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>find-labeled-object [eclector.reader]</strong> <em>client label</em><a href='#index-find_002dlabeled_002dobject-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default <tt>##</tt> reader macro
+function to look up the previously registered representation of a
+labeled object for <var>label</var>.  The function returns <tt>nil</tt> if no such
+object has been registered for <var>label</var> and the registered object
+otherwise.
+</p>
+<p>The default method on this generic function requires the context
+established by the default method on <tt>call-with-label-tracking</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cmake_002dlabeled_002dobject"></span><dl class="def">
+<dt id="index-make_002dlabeled_002dobject-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>make-labeled-object [eclector.reader]</strong> <em>client input-stream label  parent</em><a href='#index-make_002dlabeled_002dobject-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by <tt>note-labeled-object</tt> to create and
+return a representation of a labeled object with label <var>label</var>.
+<var>parent</var> is either <tt>nil</tt> or a previously created, surrounding
+labeled object which allows the client to potentially defer fixup
+processing for the new labeled object if the processing for the
+surrounding labeled object subsumes the processing.
+</p>
+<p>The default method on this generic function creates and returns an
+object of an unspecified type.  Client code should manipulate the object
+only via the generic functions <tt>labeled-object-state</tt>,
+<tt>finalize-labeled-object</tt> and <tt>reference-labeled-object</tt> and in
+particular not rely on the object being of a particular type (since
+methods on this generic function specialized to certain client classes
+could return unexpected objects).
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007clabeled_002dobject_002dstate"></span><dl class="def">
+<dt id="index-labeled_002dobject_002dstate-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>labeled-object-state [eclector.reader]</strong> <em>client object</em><a href='#index-labeled_002dobject_002dstate-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default <tt>#=</tt> reader macro
+function to determine the state of <var>object</var>.  This function returns
+</p>
+<ul>
+<li> <tt>nil</tt> if <var>object</var> is not a labeled object
+
+</li><li> two values if <var>object</var> is a labeled object: one of the keywords
+<tt>:defined</tt>, <tt>:circular</tt>, <tt>:final</tt>, <tt>:final/circular</tt> and the
+final object stored in <var>object</var> if the first value is either
+<tt>:final</tt> or <tt>:final/circular</tt> or <tt>nil</tt> otherwise.
+</li></ul>
+
+<p>The following table lists all possible return value shapes:
+</p><table>
+<thead><tr><th width="30%"><var>object</var> is a labeled object</th><th width="30%">First value</th><th width="30%">Second value</th></tr></thead>
+<tr><td width="30%">no</td><td width="30%"><tt>nil</tt></td><td width="30%"></td></tr>
+<tr><td width="30%">yes</td><td width="30%"><tt>:defined</tt></td><td width="30%"><tt>nil</tt></td></tr>
+<tr><td width="30%">yes</td><td width="30%"><tt>:circular</tt></td><td width="30%"><tt>nil</tt></td></tr>
+<tr><td width="30%">yes</td><td width="30%"><tt>:final</tt></td><td width="30%"><var>final-object</var></td></tr>
+<tr><td width="30%">yes</td><td width="30%"><tt>:final/circular</tt></td><td width="30%"><var>final-object</var></td></tr>
+</table>
+
+<p>The default method on this generic function is applicable to labeled
+object representations returned by the default methods on
+<tt>note-labeled-object</tt> and <tt>make-labeled-object</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cfinalize_002dlabeled_002dobject"></span><dl class="def">
+<dt id="index-finalize_002dlabeled_002dobject-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>finalize-labeled-object [eclector.reader]</strong> <em>client labeled-object  object</em><a href='#index-finalize_002dlabeled_002dobject-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default <tt>#=</tt> reader macro
+function after reading a complete labeled object in order to store
+<var>object</var> in <var>labeled-object</var> and change the state of
+<var>labeled-object</var> to either <tt>:final</tt> or <tt>:final/circular</tt>.  The
+function returns two values: the finalized <var>labeled-object</var> and the
+new state of <var>labeled-object</var>.
+</p>
+<p>The default method on this generic function is applicable to labeled
+object representations returned by the default methods on
+<tt>note-labeled-object</tt> and <tt>make-labeled-object</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007creference_002dlabeled_002dobject"></span><dl class="def">
+<dt id="index-reference_002dlabeled_002dobject-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>reference-labeled-object [eclector.reader]</strong> <em>client input-stream  labeled-object</em><a href='#index-reference_002dlabeled_002dobject-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the default <tt>##</tt> reader macro
+function to process a reference to <var>labeled-object</var> while reading
+from <var>input-stream</var>.  <var>labeled-object</var> must be a representation
+of a labeled object and has, in the context of the <tt>##</tt> reader macro
+function, likely been obtained by calling <tt>find-labeled-object</tt>.
+Depending on the state of <var>labeled-object</var>, this function returns
+either <var>labeled-object</var> itself or an object that can be returned to
+the caller as-is.  In case <var>labeled-object</var> is returned, it will be
+replaced by its associated object later, when <tt>fixup-graph</tt> is called.
+</p>
+<p>The default method on this generic function is applicable to labeled
+object representations returned by the default methods on
+<tt>note-labeled-object</tt> and <tt>make-labeled-object</tt>.
+</p></dd></dl>
+
+<p>As briefly mentioned above, the generic functions <tt>fixup-graph</tt> and
+<tt>fixup</tt> traverse and inspect objects in the object graph reachable
+from an object that is about to be returned to the caller of
+<tt>eclector.reader:read</tt>.  In order to distinguish ordinary objects from
+labeled objects that act as placeholders in the object graph and must be
+replaced with their respective final objects, <tt>fixup</tt> methods call
+<tt>labeled-object-state</tt> on all encountered objects.
+<tt>labeled-object-state</tt> returns <tt>nil</tt> for all objects that are not
+labeled objects and <tt>:final</tt> for labeled objects which must be
+replaced with their final object.
+</p>
+<span id="Generic_002dFunction-eclector_002ereader_007cfixup_002dgraph_002dp"></span><dl class="def">
+<dt id="index-fixup_002dgraph_002dp-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>fixup-graph-p [eclector.reader]</strong> <em>client root-labeled-object</em><a href='#index-fixup_002dgraph_002dp-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is potentially called by a method on
+<tt>finalize-labeled-object</tt> to determine whether the object graph
+reachable from the object of <var>root-labeled-object</var> should be fixed
+up by calling <tt>fixup-graph</tt> with <var>client</var> and
+<var>labeled-object</var>.
+</p>
+<p>Multiple default methods on this generic function jointly implement the
+following behavior:
+</p>
+<ul>
+<li> If <var>root-labeled-object</var> has a parent labeled object,
+<var>root-labeled-object</var> should not be fixup up immediately (since the
+fixup processing for ancestor labeled objects will subsume the fixup
+processing for <var>root-labeled-object</var>).
+
+</li><li> If <var>root-labeled-object</var> does not have parent labeled object but has
+child labeled objects, <var>root-labeled-object</var> should be fixed up
+immediately.
+
+</li><li> If <var>root-labeled-object</var> does not have parent labeled object and is
+in state <tt>:final/circular</tt>, <var>root-labeled-object</var> should be fixed
+up immediately.
+</li></ul>
+</dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cfixup_002dgraph"></span><dl class="def">
+<dt id="index-fixup_002dgraph-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>fixup-graph [eclector.reader]</strong> <em>client root-labeled-object <tt>&amp;key</tt>&nbsp;object-key</em><a href='#index-fixup_002dgraph-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is potentially called after the reader has
+constructed an object graph which is reachable from the object of
+<var>root-labeled-object</var> and noticed circular references within this
+graph to fix up circular references before the object of
+<var>root-labeled-object</var> is returned to the caller (of <tt>read</tt> or
+related functions).
+</p>
+<p><var>object-key</var> is a function that accepts a labeled object and returns
+the object of the labeled object.
+</p>
+<p>The default method on this generic function creates a hash table for
+tracking already processed objects and calls <tt>fixup</tt> with
+<var>client</var>, the object of <var>root-labeled-object</var> and the hash table
+to recursively process objects in the object graph which is reachable
+from the object of <var>root-labeled-object</var>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cfixup"></span><dl class="def">
+<dt id="index-fixup-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>fixup [eclector.reader]</strong> <em>client object seen-objects</em><a href='#index-fixup-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is potentially called to apply circularity-related
+changes to the object constructed by the reader before it is returned to
+the caller.  <var>object</var> is the object that should be modified.
+<var>seen-objects</var> is a <tt>eq</tt>-hash table used to track already
+processed objects (see below).  A method specialized to a class,
+instances of which consists of parts, should modify <var>object</var> by
+scanning its parts for labeled object markers, replacing found labeled
+object markers with the respective final object and recursively calling
+<tt>fixup</tt> for all parts.
+</p>
+<p>To recognize labeled objects which have to be replaced, methods should
+call <tt>labeled-object-state</tt> on each part of <var>object</var> and interpret
+the returned values as follows: if <tt>nil</tt> is returned, the part should
+not be replaced but recursively processed.  If <tt>:final</tt> is returned as
+the first value, the part should be replaced with the final object that
+is returned as the second value.  Parts are replaced by mutating
+<var>object</var>.
+</p>
+<p><tt>fixup</tt> is called for side effects &ndash; its return value is ignored.
+</p>
+<p>Default methods specializing the <var>object</var> parameter to <tt>cons</tt>,
+<tt>array</tt>, <tt>standard-object</tt> and <tt>hash-table</tt> process instances of
+those classes in the obvious way.
 </p>
 <p>An unspecialized <tt>:around</tt> method queries and updates
-<var>seen-objects</var> to ensure that each object is processed exactly
-once.
+<var>seen-objects</var> to ensure that each object is processed exactly once.
 </p></dd></dl>
 
 <hr>
@@ -1115,9 +1456,9 @@ once.
 <div class="subsection" id="S_002dexpression-creation-and-quasiquotation">
 <div class="header">
 <p>
-Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable initialization</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable initialization</a>, Previous: <a href="#Labeled-objects-and-references" accesskey="p" rel="prev">Labeled objects and references</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.3.3 S-expression creation and quasiquotation</h4>
+<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.3.4 S-expression creation and quasiquotation</h4>
 
 <span id="index-quotation"></span>
 
@@ -1213,7 +1554,7 @@ to <code>(list 'common-lisp:function <var>form</var>)</code>.
 <p>
 Previous: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="p" rel="prev">S-expression creation and quasiquotation</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Readtable-initialization-1"></span><h4 class="subsection">2.3.4 Readtable initialization</h4>
+<span id="Readtable-initialization-1"></span><h4 class="subsection">2.3.5 Readtable initialization</h4>
 
 <span id="index-readtable-1"></span>
 
@@ -1324,11 +1665,11 @@ defining a method on the generic function
 <div class="float"><span id="fig_003aread_002dcall_002dsequence_002dparse_002dresult"></span>
 <div align="center"><img src="read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result">
 </div>
-<div class="float-caption"><p><strong>Figure 2.3: </strong>Functions and typical function call sequences.  Solid arrows
+<div class="float-caption"><p><strong>Figure 2.5: </strong>Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.  Differences
 from the non-parse result version are highlighted with bold text.</p></div></div>
-<p><a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.3</a> shows typical function call
+<p><a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.5</a> shows typical function call
 patterns that arise when the functions <tt>read</tt>,
 <tt>read-preserving-whitespace</tt>, <tt>read-from-string</tt> and
 <tt>read-delimited-list</tt> are called by client code.
@@ -1991,7 +2332,7 @@ leads to a potential problem: the <tt>read</tt> call made by the reader macro
 function has to return some object but it cannot return the object
 labeled <var>n</var> since that object has not been read yet.  The reader
 macro function must therefore receive some sort of
-implementation-dependent <a id="DOCF2" href="#FOOT2"><sup>2</sup></a> object which stands in
+implementation-dependent <a id="DOCF4" href="#FOOT4"><sup>4</sup></a> object which stands in
 for the object labeled <var>n</var> and gets replaced at some later time
 after the object labeled <var>n</var> has been read.  Since the stand-in
 object is implementation-dependent, the reader macro function must not
@@ -2044,6 +2385,8 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-F"><b>F</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-L"><b>L</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-P"><b>P</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-Q"><b>Q</b></a>
@@ -2070,6 +2413,9 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><th id="Concept-index_cp_letter-F">F</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-function">function</a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-function-1">function</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">Interpretation of Backquote and Sharpsign Single Quote</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-L">L</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-labeled-object">labeled object</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-P">P</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-parse-result">parse result</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Introduction">Introduction</a></td></tr>
@@ -2107,6 +2453,8 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-F"><b>F</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-L"><b>L</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-P"><b>P</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-Q"><b>Q</b></a>
@@ -2137,6 +2485,8 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
  &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-I"><b>I</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-L"><b>L</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-M"><b>M</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-N"><b>N</b></a>
@@ -2161,6 +2511,7 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d"><code>call-as-top-level-read [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-call_002dreader_002dmacro-_005beclector_002ereader_005d"><code>call-reader-macro [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-call_002dwith_002dcurrent_002dpackage-_005beclector_002ereader_005d"><code>call-with-current-package [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-call_002dwith_002dlabel_002dtracking-_005beclector_002ereader_005d"><code>call-with-label-tracking [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-check_002dfeature_002dexpression-_005beclector_002ereader_005d"><code>check-feature-expression [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-check_002dsymbol_002dtoken-_005beclector_002ereader_005d"><code>check-symbol-token [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
@@ -2169,21 +2520,31 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-evaluate_002dfeature_002dexpression-_005beclector_002ereader_005d"><code>evaluate-feature-expression [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-F">F</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-finalize_002dlabeled_002dobject-_005beclector_002ereader_005d"><code>finalize-labeled-object [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-find_002dcharacter-_005beclector_002ereader_005d"><code>find-character [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-fixup-_005beclector_002ereader_005d"><code>fixup [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-find_002dlabeled_002dobject-_005beclector_002ereader_005d"><code>find-labeled-object [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-fixup-_005beclector_002ereader_005d"><code>fixup [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-fixup_002dgraph-_005beclector_002ereader_005d"><code>fixup-graph [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-fixup_002dgraph_002dp-_005beclector_002ereader_005d"><code>fixup-graph-p [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-forget_002dlabeled_002dobject-_005beclector_002ereader_005d"><code>forget-labeled-object [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-I">I</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-interpret_002dsymbol-_005beclector_002ereader_005d"><code>interpret-symbol [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-interpret_002dsymbol_002dtoken-_005beclector_002ereader_005d"><code>interpret-symbol-token [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-interpret_002dtoken-_005beclector_002ereader_005d"><code>interpret-token [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-L">L</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-labeled_002dobject_002dstate-_005beclector_002ereader_005d"><code>labeled-object-state [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-M">M</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dexpression_002dresult-_005beclector_002eparse_002dresult_005d"><code>make-expression-result [eclector.parse-result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-make_002dlabeled_002dobject-_005beclector_002ereader_005d"><code>make-labeled-object [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dskipped_002dinput_002dresult-_005beclector_002eparse_002dresult_005d"><code>make-skipped-input-result [eclector.parse-result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dsource_002drange-_005beclector_002ebase_005d"><code>make-source-range [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-make_002dstructure_002dinstance-_005beclector_002ereader_005d"><code>make-structure-instance [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-N">N</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-note_002dlabeled_002dobject-_005beclector_002ereader_005d"><code>note-labeled-object [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-note_002dskipped_002dinput-_005beclector_002ereader_005d"><code>note-skipped-input [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-P">P</th><td></td><td></td></tr>
@@ -2206,6 +2567,7 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <tr><td></td><td valign="top"><a href="#index-read_002dtoken-_005beclector_002ereader_005d"><code>read-token [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtablep-_005beclector_002ereadtable_005d"><code>readtablep [eclector.readtable]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-features">Readtable features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-recover-_005beclector_002ereader_005d"><code>recover [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Error-recovery-features">Error recovery features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-reference_002dlabeled_002dobject-_005beclector_002ereader_005d"><code>reference-labeled-object [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-S">S</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002ddispatch_002dmacro_002dcharacters-_005beclector_002ereader_005d"><code>set-standard-dispatch-macro-characters [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
@@ -2236,6 +2598,8 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
  &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-I"><b>I</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-L"><b>L</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-M"><b>M</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-N"><b>N</b></a>
@@ -2259,6 +2623,13 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <h5><a id="FOOT1" href="#DOCF1">(1)</a></h5>
 <p>See: <a href="https://github.com/s-expressionists/Concrete-Syntax-Tree">https://github.com/s-expressionists/Concrete-Syntax-Tree</a></p>
 <h5><a id="FOOT2" href="#DOCF2">(2)</a></h5>
+<p>Reader macro functions which call
+<tt>eclector.reader:read</tt> may receive labeled objects under certain
+circumstances (see <a href="#Circular-objects-and-custom-reader-macros">Circular objects and custom reader macros</a>).</p>
+<h5><a id="FOOT3" href="#DOCF3">(3)</a></h5>
+<p>This fixup processing has to be delayed under certain
+circumstances (see <a href="#Circular-objects-and-custom-reader-macros">Circular objects and custom reader macros</a>).</p>
+<h5><a id="FOOT4" href="#DOCF4">(4)</a></h5>
 <p>We use &ldquo;implementation-dependent&rdquo;
 in the sense defined in the Common Lisp specification except that
 Eclector is the implementation in question.</p>

@@ -270,6 +270,7 @@ read-from-string and read-delimited-list are called by client code.
 
 * Common Lisp reader compatible interface::
 * Reader behavior protocol::
+* Labeled objects and references::
 * S-expression creation and quasiquotation::
 * Readtable initialization::
 
@@ -314,7 +315,7 @@ eclector.base:*client* variable.
      function with the same name.
 
 
-File: eclector.info,  Node: Reader behavior protocol,  Next: S-expression creation and quasiquotation,  Prev: Common Lisp reader compatible interface,  Up: Ordinary reader features
+File: eclector.info,  Node: Reader behavior protocol,  Next: Labeled objects and references,  Prev: Common Lisp reader compatible interface,  Up: Ordinary reader features
 
 2.3.2 Reader behavior protocol
 ------------------------------
@@ -657,32 +658,355 @@ algorithm.
      FEATURE-EXPRESSION.  It then evaluates FEATURE-EXPRESSION according
      to standard Common Lisp semantics for feature expressions.
 
+
+File: eclector.info,  Node: Labeled objects and references,  Next: S-expression creation and quasiquotation,  Prev: Reader behavior protocol,  Up: Ordinary reader features
+
+2.3.3 Labeled objects and references
+------------------------------------
+
+Eclector includes implementations of the #= and ## reader macros and
+they are present in the default readtable.  One way to customize the
+behavior of the reader around the #= and ## syntax is replacing the
+reader macro functions with custom ones but with this approach the
+client code has to reimplement a lot of functionality.  As a finer
+grained and more composable mechanism for customization, Eclector
+provides a protocol for implementing and customizing the behavior of the
+#= and ## reader macros, with or without modifying the readtable.  The
+remainder of this section describes that protocol.
+
+   To start with a bit of terminology, we call the object created by
+reading #N=EXPRESSION a “labeled object”.  We call N the “label” of the
+labeled object and the result of reading EXPRESSION the “object” of the
+labeled object.  We say that #N=EXPRESSION “defines” the labeled object
+and #N# “references” the labeled object.  We call the reference
+“circular” if #N# occurs within EXPRESSION.  Labeled objects are
+internal to the reader and only exist during eclector.reader:read calls:
+before such a call returns an object, each labeled object within the
+returned object is replaced by its respective final object.  Callers of
+eclector.reader:read and related functions will therefore only ever see
+the object, never the labeled object(1).
+
+   On a technical level, a labeled object is represented as a data type
+with a current state and a single (possibly unbound) slot containing the
+object.  The following diagrams depicts the possible states of a labeled
+object together with input patterns and corresponding transitions:
+
+                 [image src="labeled-object-states.png" ]
+
+
+Figure 2.3: Possible states of a labeled object and input patterns which
+correspond to state transitions.
+
+   Put differently, a labeled object can be in the following states:
+
+State                                Object slot
+------------------------------------------------------------
+undefined                            –
+defined                              unbound
+final                                the object
+referenced _(not strictly needed)_   the object
+circular                             unbound
+final (circular)                     the object
+referenced (circular) _(not          the object
+strictly needed)_
+
+   The distinction between the states final and referenced on the one
+hand and final (circular), and referenced (circular) on the other hand
+is not required for implementing labeled objects.  Those two pairs of
+states are therefore collapsed to just final and final (circular) in the
+remainder of this section.  The following figure and paragraphs describe
+generic functions and methods which implement the creation,
+registration, lookup and manipulation of labeled objects according to
+the reduced set of states:
+
+               [image src="labeled-object-api-states.png" ]
+
+
+Figure 2.4: Reduced set of states of a labeled object and protocol
+functions with corresponding state transitions.
+
+   In addition to the generic functions referenced in the above diagram,
+the generic functions fixup-graph-p, fixup-graph and fixup are part of
+the protocol.  Those functions are used to replace labeled objects with
+their respective final objects within an object that is about to be
+returned to the caller of eclector.reader:read (2).  To this end, the #=
+reader macro function must inspect and update the state of the labeled
+object it is processing after reading EXPRESSION by calling
+finalize-labeled-object.  finalize-labeled-object decides whether
+fixup-graph (see below) must be called: If after reading EXPRESSION the
+labeled object is in state :circular, EXPRESSION must have contained
+circular references and the result of reading it contains labeled
+objects that have to be replaced with their respective final objects.
+fixup-graph and fixup perform this replacement.  This replacement is
+performed by recursively traversing objects which are reachable from the
+final object of the labeled objects, for example by visiting the slots
+of standard objects, and replacing labeled objects with their respective
+final object.
+
+   In certain cases, the computational complexity of this traversal and
+replacement can be rather high, depending on when and how exactly the
+traversal is performed: consider an expression of the form #1=(1 #1#
+#2=(2 #2# ...)).  The nested labeled objects in this expression are all
+circular and thus require fixing up.  The read call for the innermost
+labeled object, say #100=..., returns first and the fixup processing for
+the labeled object could be performed immediately.  The problem is that
+each of the labeled objects would be processed in the same manner which
+would lead to a computation complexity of O(N M) where N is the number
+of labels and M is the number of nodes in the object graph rooted at the
+object which is returned by the outermost read call.  One way to avoid
+this problem would be to perform fixup processing only for the outermost
+read call.  The problem with that approach is that only a small
+sub-graph of the whole object graph may be circular in which case most
+of the work for traversing the whole graph would be wasted.  To address
+both problems, Eclector allows clients to track the nesting of labeled
+objects and fix up sub-graphs which contain multiple nested objects in
+one go (*note fixup-graph-p: Generic-Function
+eclector.reader|fixup-graph-p.).
+
+ -- Generic Function: call-with-label-tracking [eclector.reader] client
+          thunk
+
+     This generic function is called by the default method on
+     call-as-top-level-read in order to establish a context for tracking
+     #= label definitions and ## label references around a call to
+     THUNK.
+
+     The default method on this generic function establishes a context
+     in which the default #= and ## reader macro functions can make the
+     appropriate calls to note-labeled-object, forget-labeled-object,
+     find-labeled-object.
+
+ -- Generic Function: note-labeled-object [eclector.reader] client
+          input-stream label parent
+
+     This generic function is called by the default #= reader macro
+     function to note the definition of a labeled object with label
+     LABEL while reading from INPUT-STREAM.  The function creates,
+     registers and returns a representation of the labeled object.  The
+     returned object is registered in the sense that a subsequent call
+     to find-labeled-object with arguments CLIENT and LABEL returns the
+     same object unless forget-labeled-object has been called to
+     unregister the object.
+
+     PARENT is either nil or a (previously created) surrounding labeled
+     object.  The parent labeled object is provided to allow the client
+     to potentially defer fixup processing for the new labeled object if
+     the processing for the surrounding labeled object subsumes the
+     processing for the new labeled object.
+
+     Note that, when reading an expression of the form #N=OBJECT, this
+     function is called after reading #N= from INPUT-STREAM but before
+     reading OBJECT.  Consequently, the created and returned labeled
+     object is defined but does not have an object associated with it.
+
+     The default method on this generic function calls
+     make-labeled-object with CLIENT, INPUT-STREAM and LABEL to create
+     an object of an unspecified type.  The method registers and returns
+     the created object.  Client code should manipulate the object only
+     via the generic functions described in this section and in
+     particular not rely on the object being of a particular type (since
+     methods on make-labeled-object specialized to certain client
+     classes could return unexpected objects).  The default method
+     requires the context established by the default method on
+     call-with-label-tracking.
+
+ -- Generic Function: forget-labeled-object [eclector.reader] client
+          label
+
+     This generic function is called by the default #= reader macro
+     function when Eclector reads an invalid labeled object of the form
+     #N=#N# and the caller chooses to recover from the resulting error
+     (*note Recovering from errors::).  In that situation, the remainder
+     of the input is processed as if there had been no labeled object
+     with label N.  This function makes the labeled object undefined so
+     that a subsequent find-labeled-object call for LABEL will return
+     nil.
+
+     The default method on this generic function requires the context
+     established by the default method on call-with-label-tracking.
+
+ -- Generic Function: find-labeled-object [eclector.reader] client label
+
+     This generic function is called by the default ## reader macro
+     function to look up the previously registered representation of a
+     labeled object for LABEL.  The function returns nil if no such
+     object has been registered for LABEL and the registered object
+     otherwise.
+
+     The default method on this generic function requires the context
+     established by the default method on call-with-label-tracking.
+
+ -- Generic Function: make-labeled-object [eclector.reader] client
+          input-stream label parent
+
+     This generic function is called by note-labeled-object to create
+     and return a representation of a labeled object with label LABEL.
+     PARENT is either nil or a previously created, surrounding labeled
+     object which allows the client to potentially defer fixup
+     processing for the new labeled object if the processing for the
+     surrounding labeled object subsumes the processing.
+
+     The default method on this generic function creates and returns an
+     object of an unspecified type.  Client code should manipulate the
+     object only via the generic functions labeled-object-state,
+     finalize-labeled-object and reference-labeled-object and in
+     particular not rely on the object being of a particular type (since
+     methods on this generic function specialized to certain client
+     classes could return unexpected objects).
+
+ -- Generic Function: labeled-object-state [eclector.reader] client
+          object
+
+     This generic function is called by the default #= reader macro
+     function to determine the state of OBJECT.  This function returns
+
+        • nil if OBJECT is not a labeled object
+
+        • two values if OBJECT is a labeled object: one of the keywords
+          :defined, :circular, :final, :final/circular and the final
+          object stored in OBJECT if the first value is either :final or
+          :final/circular or nil otherwise.
+
+     The following table lists all possible return value shapes:
+     OBJECT is a labeled    First value            Second value
+     object
+     ---------------------------------------------------------------------
+     no                     nil
+     yes                    :defined               nil
+     yes                    :circular              nil
+     yes                    :final                 FINAL-OBJECT
+     yes                    :final/circular        FINAL-OBJECT
+
+     The default method on this generic function is applicable to
+     labeled object representations returned by the default methods on
+     note-labeled-object and make-labeled-object.
+
+ -- Generic Function: finalize-labeled-object [eclector.reader] client
+          labeled-object object
+
+     This generic function is called by the default #= reader macro
+     function after reading a complete labeled object in order to store
+     OBJECT in LABELED-OBJECT and change the state of LABELED-OBJECT to
+     either :final or :final/circular.  The function returns two values:
+     the finalized LABELED-OBJECT and the new state of LABELED-OBJECT.
+
+     The default method on this generic function is applicable to
+     labeled object representations returned by the default methods on
+     note-labeled-object and make-labeled-object.
+
+ -- Generic Function: reference-labeled-object [eclector.reader] client
+          input-stream labeled-object
+
+     This generic function is called by the default ## reader macro
+     function to process a reference to LABELED-OBJECT while reading
+     from INPUT-STREAM.  LABELED-OBJECT must be a representation of a
+     labeled object and has, in the context of the ## reader macro
+     function, likely been obtained by calling find-labeled-object.
+     Depending on the state of LABELED-OBJECT, this function returns
+     either LABELED-OBJECT itself or an object that can be returned to
+     the caller as-is.  In case LABELED-OBJECT is returned, it will be
+     replaced by its associated object later, when fixup-graph is
+     called.
+
+     The default method on this generic function is applicable to
+     labeled object representations returned by the default methods on
+     note-labeled-object and make-labeled-object.
+
+   As briefly mentioned above, the generic functions fixup-graph and
+fixup traverse and inspect objects in the object graph reachable from an
+object that is about to be returned to the caller of
+eclector.reader:read.  In order to distinguish ordinary objects from
+labeled objects that act as placeholders in the object graph and must be
+replaced with their respective final objects, fixup methods call
+labeled-object-state on all encountered objects.  labeled-object-state
+returns nil for all objects that are not labeled objects and :final for
+labeled objects which must be replaced with their final object.
+
+ -- Generic Function: fixup-graph-p [eclector.reader] client
+          root-labeled-object
+
+     This generic function is potentially called by a method on
+     finalize-labeled-object to determine whether the object graph
+     reachable from the object of ROOT-LABELED-OBJECT should be fixed up
+     by calling fixup-graph with CLIENT and LABELED-OBJECT.
+
+     Multiple default methods on this generic function jointly implement
+     the following behavior:
+
+        • If ROOT-LABELED-OBJECT has a parent labeled object,
+          ROOT-LABELED-OBJECT should not be fixup up immediately (since
+          the fixup processing for ancestor labeled objects will subsume
+          the fixup processing for ROOT-LABELED-OBJECT).
+
+        • If ROOT-LABELED-OBJECT does not have parent labeled object but
+          has child labeled objects, ROOT-LABELED-OBJECT should be fixed
+          up immediately.
+
+        • If ROOT-LABELED-OBJECT does not have parent labeled object and
+          is in state :final/circular, ROOT-LABELED-OBJECT should be
+          fixed up immediately.
+
+ -- Generic Function: fixup-graph [eclector.reader] client
+          root-labeled-object &key object-key
+
+     This generic function is potentially called after the reader has
+     constructed an object graph which is reachable from the object of
+     ROOT-LABELED-OBJECT and noticed circular references within this
+     graph to fix up circular references before the object of
+     ROOT-LABELED-OBJECT is returned to the caller (of read or related
+     functions).
+
+     OBJECT-KEY is a function that accepts a labeled object and returns
+     the object of the labeled object.
+
+     The default method on this generic function creates a hash table
+     for tracking already processed objects and calls fixup with CLIENT,
+     the object of ROOT-LABELED-OBJECT and the hash table to recursively
+     process objects in the object graph which is reachable from the
+     object of ROOT-LABELED-OBJECT.
+
  -- Generic Function: fixup [eclector.reader] client object seen-objects
-          mapping
 
      This generic function is potentially called to apply
      circularity-related changes to the object constructed by the reader
      before it is returned to the caller.  OBJECT is the object that
      should be modified.  SEEN-OBJECTS is a eq-hash table used to track
-     already processed objects (see below).  MAPPING is a hash table of
-     substitutions, mapping marker objects to replacement objects.  A
-     method specialized on a class, instances of which consists of
-     parts, should modify OBJECT by scanning its parts for marker
-     objects, replacing found markers with replacement object and
-     recursively calling fixup for all parts.  fixup is called for side
-     effects – its return value is ignored.
+     already processed objects (see below).  A method specialized to a
+     class, instances of which consists of parts, should modify OBJECT
+     by scanning its parts for labeled object markers, replacing found
+     labeled object markers with the respective final object and
+     recursively calling fixup for all parts.
 
-     Default methods specializing on the OBJECT parameter for cons,
-     array, standard-object and hash-table process instances of those
-     classes in the obvious way.
+     To recognize labeled objects which have to be replaced, methods
+     should call labeled-object-state on each part of OBJECT and
+     interpret the returned values as follows: if nil is returned, the
+     part should not be replaced but recursively processed.  If :final
+     is returned as the first value, the part should be replaced with
+     the final object that is returned as the second value.  Parts are
+     replaced by mutating OBJECT.
+
+     fixup is called for side effects – its return value is ignored.
+
+     Default methods specializing the OBJECT parameter to cons, array,
+     standard-object and hash-table process instances of those classes
+     in the obvious way.
 
      An unspecialized :around method queries and updates SEEN-OBJECTS to
      ensure that each object is processed exactly once.
 
-
-File: eclector.info,  Node: S-expression creation and quasiquotation,  Next: Readtable initialization,  Prev: Reader behavior protocol,  Up: Ordinary reader features
+   ---------- Footnotes ----------
 
-2.3.3 S-expression creation and quasiquotation
+   (1) Reader macro functions which call eclector.reader:read may
+receive labeled objects under certain circumstances (*note Circular
+objects and custom reader macros::).
+
+   (2) This fixup processing has to be delayed under certain
+circumstances (*note Circular objects and custom reader macros::).
+
+
+File: eclector.info,  Node: S-expression creation and quasiquotation,  Next: Readtable initialization,  Prev: Labeled objects and references,  Up: Ordinary reader features
+
+2.3.4 S-expression creation and quasiquotation
 ----------------------------------------------
 
 The following generic functions allow clients to construct
@@ -758,7 +1082,7 @@ protocol:
 
 File: eclector.info,  Node: Readtable initialization,  Prev: S-expression creation and quasiquotation,  Up: Ordinary reader features
 
-2.3.4 Readtable initialization
+2.3.5 Readtable initialization
 ------------------------------
 
 The standard syntax types and macro character associations used by the
@@ -843,12 +1167,12 @@ least defining a method on the generic function make-expression-result.
             [image src="read-call-sequence-parse-result.png" ]
 
 
-Figure 2.3: Functions and typical function call sequences.  Solid arrows
+Figure 2.5: Functions and typical function call sequences.  Solid arrows
 represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.  Differences
 from the non-parse result version are highlighted with bold text.
 
-   *note Figure 2.3: fig:read-call-sequence-parse-result. shows typical
+   *note Figure 2.5: fig:read-call-sequence-parse-result. shows typical
 function call patterns that arise when the functions read,
 read-preserving-whitespace, read-from-string and read-delimited-list are
 called by client code.
@@ -1457,6 +1781,8 @@ Concept index
                                                                (line 67)
 * function <1>:                          Interpretation of Backquote and Sharpsign Single Quote.
                                                                (line  6)
+* labeled object:                        Labeled objects and references.
+                                                               (line  6)
 * parse result:                          Introduction.         (line  6)
 * parse result <1>:                      Package for parse result construction features.
                                                                (line  6)
@@ -1512,6 +1838,8 @@ Function and macro and variable and type index
                                                               (line 219)
 * call-with-current-package [eclector.reader]: Reader behavior protocol.
                                                               (line 278)
+* call-with-label-tracking [eclector.reader]: Labeled objects and references.
+                                                              (line 105)
 * check-feature-expression [eclector.reader]: Reader behavior protocol.
                                                               (line 306)
 * check-symbol-token [eclector.reader]:  Reader behavior protocol.
@@ -1520,23 +1848,39 @@ Function and macro and variable and type index
                                                               (line 293)
 * evaluate-feature-expression [eclector.reader]: Reader behavior protocol.
                                                               (line 322)
+* finalize-labeled-object [eclector.reader]: Labeled objects and references.
+                                                              (line 223)
 * find-character [eclector.reader]:      Reader behavior protocol.
                                                               (line 235)
-* fixup [eclector.reader]:               Reader behavior protocol.
-                                                              (line 344)
+* find-labeled-object [eclector.reader]: Labeled objects and references.
+                                                              (line 167)
+* fixup [eclector.reader]:               Labeled objects and references.
+                                                              (line 307)
+* fixup-graph [eclector.reader]:         Labeled objects and references.
+                                                              (line 288)
+* fixup-graph-p [eclector.reader]:       Labeled objects and references.
+                                                              (line 264)
+* forget-labeled-object [eclector.reader]: Labeled objects and references.
+                                                              (line 152)
 * interpret-symbol [eclector.reader]:    Reader behavior protocol.
                                                               (line 191)
 * interpret-symbol-token [eclector.reader]: Reader behavior protocol.
                                                               (line 173)
 * interpret-token [eclector.reader]:     Reader behavior protocol.
                                                               (line 119)
+* labeled-object-state [eclector.reader]: Labeled objects and references.
+                                                              (line 196)
 * make-expression-result [eclector.parse-result]: Parse result construction features.
                                                               (line  90)
+* make-labeled-object [eclector.reader]: Labeled objects and references.
+                                                              (line 178)
 * make-skipped-input-result [eclector.parse-result]: Parse result construction features.
                                                               (line 107)
 * make-source-range [eclector.base]:     Basic features.      (line  75)
 * make-structure-instance [eclector.reader]: Reader behavior protocol.
                                                               (line 260)
+* note-labeled-object [eclector.reader]: Labeled objects and references.
+                                                              (line 118)
 * note-skipped-input [eclector.reader]:  Reader behavior protocol.
                                                               (line  78)
 * parse-result-client [eclector.parse-result]: Parse result construction features.
@@ -1570,6 +1914,8 @@ Function and macro and variable and type index
 * readtablep [eclector.readtable]:       Readtable features.  (line  19)
 * recover [eclector.reader]:             Error recovery features.
                                                               (line  14)
+* reference-labeled-object [eclector.reader]: Labeled objects and references.
+                                                              (line 236)
 * set-standard-dispatch-macro-characters [eclector.reader]: Readtable initialization.
                                                               (line  21)
 * set-standard-macro-characters [eclector.reader]: Readtable initialization.
@@ -1616,80 +1962,95 @@ Ref: Generic-Function eclector.base|source-position8424
 Ref: Generic-Function eclector.base|make-source-range8994
 Node: Ordinary reader features9457
 Ref: fig:read-call-sequence-ordinary10575
-Node: Common Lisp reader compatible interface11346
-Ref: Function eclector.reader|read11866
-Ref: Function eclector.reader|read-preserving-whitespace12181
-Ref: Function eclector.reader|read-from-string12460
-Ref: Function eclector.reader|read-delimited-list12737
-Node: Reader behavior protocol12972
-Ref: fig:read-call-sequence-customization13344
-Ref: Generic-Function eclector.reader|call-as-top-level-read13999
-Ref: Generic-Function eclector.reader|read-common14917
-Ref: Generic-Function eclector.reader|read-maybe-nothing15445
-Ref: Generic-Function eclector.reader|note-skipped-input16588
-Ref: Variable eclector.reader|*skip-reason*17543
-Ref: Generic-Function eclector.reader|read-token18327
-Ref: Generic-Function eclector.reader|interpret-token18713
-Ref: Generic-Function eclector.reader|check-symbol-token19770
-Ref: Generic-Function eclector.reader|interpret-symbol-token21643
-Ref: Generic-Function eclector.reader|interpret-symbol22634
-Ref: Generic-Function eclector.reader|call-reader-macro23850
-Ref: Generic-Function eclector.reader|find-character24678
-Ref: Generic-Function eclector.reader|make-structure-instance25920
-Ref: Generic-Function eclector.reader|call-with-current-package26758
-Ref: Generic-Function eclector.reader|evaluate-expression27472
-Ref: Generic-Function eclector.reader|check-feature-expression28037
-Ref: Generic-Function eclector.reader|evaluate-feature-expression28863
-Ref: Generic-Function eclector.reader|fixup29946
-Node: S-expression creation and quasiquotation31072
-Ref: Generic-Function eclector.reader|wrap-in-quote31445
-Ref: Generic-Function eclector.reader|wrap-in-quasiquote31803
-Ref: Generic-Function eclector.reader|wrap-in-unquote32173
-Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing32528
-Ref: Macro eclector.reader|with-forbidden-quasiquotation33282
-Ref: Generic-Function eclector.reader|wrap-in-function34034
-Node: Readtable initialization34406
-Ref: Function eclector.reader|set-standard-syntax-types34854
-Ref: Function eclector.reader|set-standard-macro-characters35023
-Ref: Function eclector.reader|set-standard-dispatch-macro-characters35198
-Ref: Function eclector.reader|set-standard-syntax-and-macros35451
-Node: Readtable features35653
-Ref: Generic-Function eclector.readtable|readtablep36414
-Node: Parse result construction features36766
-Ref: fig:read-call-sequence-parse-result37947
-Ref: Function eclector.parse-result|read38524
-Ref: Function eclector.parse-result|read-preserving-whitespace39619
-Ref: Function eclector.parse-result|read-from-string39974
-Ref: Class eclector.parse-result|parse-result-client40653
-Ref: Generic-Function eclector.parse-result|make-expression-result40811
-Ref: Generic-Function eclector.parse-result|make-skipped-input-result41660
-Node: CST reader features43241
-Ref: Function eclector.concrete-syntax-tree|read43551
-Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace44173
-Ref: Function eclector.concrete-syntax-tree|read-from-string44529
-Node: Recovering from errors44891
-Node: Error recovery features45138
-Ref: Function eclector.reader|recover45750
-Node: Recoverable errors46567
-Node: Potential problems48059
-Node: Side effects48690
-Node: Potential side effects for the default client49169
-Node: Symbols and packages (default client)50862
-Node: Read-time evaluation (default client)51264
-Node: Standard reader macros (default client)51841
-Node: Potential side effects for non-default clients52400
-Node: Symbols and packages52796
-Node: Read-time evaluation53248
-Node: Structure instance creation53557
-Node: Circular structure54241
-Node: Standard reader macros54800
-Node: Interpretation of unclear parts of the specification55634
-Node: Interpretation of Sharpsign C and Sharpsign S56227
-Node: Interpretation of Backquote and Sharpsign Single Quote58883
-Node: Circular objects and custom reader macros60028
-Ref: Circular objects and custom reader macros-Footnote-163171
-Node: Concept index63327
-Node: Function and macro and variable and type index67419
+Node: Common Lisp reader compatible interface11381
+Ref: Function eclector.reader|read11901
+Ref: Function eclector.reader|read-preserving-whitespace12216
+Ref: Function eclector.reader|read-from-string12495
+Ref: Function eclector.reader|read-delimited-list12772
+Node: Reader behavior protocol13007
+Ref: fig:read-call-sequence-customization13369
+Ref: Generic-Function eclector.reader|call-as-top-level-read14024
+Ref: Generic-Function eclector.reader|read-common14942
+Ref: Generic-Function eclector.reader|read-maybe-nothing15470
+Ref: Generic-Function eclector.reader|note-skipped-input16613
+Ref: Variable eclector.reader|*skip-reason*17568
+Ref: Generic-Function eclector.reader|read-token18352
+Ref: Generic-Function eclector.reader|interpret-token18738
+Ref: Generic-Function eclector.reader|check-symbol-token19795
+Ref: Generic-Function eclector.reader|interpret-symbol-token21668
+Ref: Generic-Function eclector.reader|interpret-symbol22659
+Ref: Generic-Function eclector.reader|call-reader-macro23875
+Ref: Generic-Function eclector.reader|find-character24703
+Ref: Generic-Function eclector.reader|make-structure-instance25945
+Ref: Generic-Function eclector.reader|call-with-current-package26783
+Ref: Generic-Function eclector.reader|evaluate-expression27497
+Ref: Generic-Function eclector.reader|check-feature-expression28062
+Ref: Generic-Function eclector.reader|evaluate-feature-expression28888
+Node: Labeled objects and references29971
+Ref: fig:labeled-object-states31875
+Ref: fig:labeled-object-api-states33081
+Ref: Generic-Function eclector.reader|call-with-label-tracking35680
+Ref: Generic-Function eclector.reader|note-labeled-object36224
+Ref: Generic-Function eclector.reader|forget-labeled-object38089
+Ref: Generic-Function eclector.reader|find-labeled-object38821
+Ref: Generic-Function eclector.reader|make-labeled-object39326
+Ref: Generic-Function eclector.reader|labeled-object-state40294
+Ref: Generic-Function eclector.reader|finalize-labeled-object41507
+Ref: Generic-Function eclector.reader|reference-labeled-object42156
+Ref: Generic-Function eclector.reader|fixup-graph-p43698
+Ref: Generic-Function eclector.reader|fixup-graph44777
+Ref: Generic-Function eclector.reader|fixup45678
+Ref: Labeled objects and references-Footnote-147207
+Ref: Labeled objects and references-Footnote-247379
+Node: S-expression creation and quasiquotation47508
+Ref: Generic-Function eclector.reader|wrap-in-quote47887
+Ref: Generic-Function eclector.reader|wrap-in-quasiquote48245
+Ref: Generic-Function eclector.reader|wrap-in-unquote48615
+Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing48970
+Ref: Macro eclector.reader|with-forbidden-quasiquotation49724
+Ref: Generic-Function eclector.reader|wrap-in-function50476
+Node: Readtable initialization50848
+Ref: Function eclector.reader|set-standard-syntax-types51296
+Ref: Function eclector.reader|set-standard-macro-characters51465
+Ref: Function eclector.reader|set-standard-dispatch-macro-characters51640
+Ref: Function eclector.reader|set-standard-syntax-and-macros51893
+Node: Readtable features52095
+Ref: Generic-Function eclector.readtable|readtablep52856
+Node: Parse result construction features53208
+Ref: fig:read-call-sequence-parse-result54389
+Ref: Function eclector.parse-result|read54966
+Ref: Function eclector.parse-result|read-preserving-whitespace56061
+Ref: Function eclector.parse-result|read-from-string56416
+Ref: Class eclector.parse-result|parse-result-client57095
+Ref: Generic-Function eclector.parse-result|make-expression-result57253
+Ref: Generic-Function eclector.parse-result|make-skipped-input-result58102
+Node: CST reader features59683
+Ref: Function eclector.concrete-syntax-tree|read59993
+Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace60615
+Ref: Function eclector.concrete-syntax-tree|read-from-string60971
+Node: Recovering from errors61333
+Node: Error recovery features61580
+Ref: Function eclector.reader|recover62192
+Node: Recoverable errors63009
+Node: Potential problems64501
+Node: Side effects65132
+Node: Potential side effects for the default client65611
+Node: Symbols and packages (default client)67304
+Node: Read-time evaluation (default client)67706
+Node: Standard reader macros (default client)68283
+Node: Potential side effects for non-default clients68842
+Node: Symbols and packages69238
+Node: Read-time evaluation69690
+Node: Structure instance creation69999
+Node: Circular structure70683
+Node: Standard reader macros71242
+Node: Interpretation of unclear parts of the specification72076
+Node: Interpretation of Sharpsign C and Sharpsign S72669
+Node: Interpretation of Backquote and Sharpsign Single Quote75325
+Node: Circular objects and custom reader macros76470
+Ref: Circular objects and custom reader macros-Footnote-179613
+Node: Concept index79769
+Node: Function and macro and variable and type index84007
 
 End Tag Table
 
