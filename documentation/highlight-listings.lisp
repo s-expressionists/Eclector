@@ -25,7 +25,7 @@
    (lambda (string start end)
      (loop :for (pattern replacement) :in replacements
            :when (string= pattern string :start2 start :end2 end)
-           :do (return replacement)))
+             :do (return replacement)))
    (lambda (string start)
      (values-list
       (reduce (lambda (best-position pattern)
@@ -41,11 +41,12 @@
 ;;;
 
 (defun replace-entities (string)
-  (replace-all-in-string '(("&quot;" "\"")
-                           ("&amp;"  "&")
-                           ("&lt;"   "<")
-                           ("&gt;"   ">")
-                           ("&rArr;" "→"))
+  (replace-all-in-string '(("&quot;"   "\"")
+                           ("&amp;"    "&")
+                           ("&lt;"     "<")
+                           ("&gt;"     ">")
+                           ("&rArr;"   "→")
+                           ("&hellip;" "…"))
                          string))
 
 ;;; Eclector links
