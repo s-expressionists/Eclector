@@ -83,9 +83,12 @@
                  (string= package "READTABLE")    (string= package "ECLECTOR.READTABLE")
                  (string= package "PARSE-RESULT") (string= package "ECLECTOR.PARSE-RESULT")
                  (string= package "ECLECTOR.CONCRETE-SYNTAX-TREE"))
-             (find-package package)
-             (nth-value 1 (find-symbol name (find-package package))))
-        (format nil "#index-~A" (name->anchor name package))
+             (find-package package))
+        (multiple-value-bind (symbol foundp) (find-symbol name (find-package package))
+          (if foundp
+              (let ((package-name (package-name (symbol-package symbol))))
+                (format nil "#index-~A" (name->anchor name package-name)))
+              (warn "~@<Referenced symbol ~A:~A does not exist.~@:>" package name)))
         (call-next-method))))
 
 (defmethod eclector.examples.highlight.render:write-character ((client    documentation-client)
