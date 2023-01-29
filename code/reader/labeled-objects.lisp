@@ -1,5 +1,9 @@
 (cl:in-package #:eclector.reader)
 
+(defmethod fixup-graph (client root-object mapping)
+  (let ((seen (make-hash-table :test #'eq)))
+    (fixup client root-object seen mapping)))
+
 (defmethod fixup :around (client object seen-objects mapping)
   (declare (ignore client mapping))
   (unless (gethash object seen-objects)

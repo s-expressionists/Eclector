@@ -98,6 +98,7 @@
    #:check-feature-expression
    #:evaluate-feature-expression
 
+   #:fixup-graph
    #:fixup)
 
   ;; S-expression creation protocol

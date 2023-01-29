@@ -43,11 +43,10 @@
     ;; does not matter here. For the fixup step, convert these conses
     ;; into a hash-table mapping temporary objects to final objects.
     (unless (zerop (hash-table-count labels))
-      (let ((seen (make-hash-table :test #'eq))
-            (mapping (alexandria:alist-hash-table
+      (let ((mapping (alexandria:alist-hash-table
                       (alexandria:hash-table-values labels)
                       :test #'eq)))
-        (fixup client result seen mapping)))
+        (fixup-graph client result mapping)))
     ;; All reading in READ-COMMON and its callees was done in a
     ;; whitespace-preserving way. So we skip zero to one whitespace
     ;; characters here if requested via PRESERVE-WHITESPACE-P.

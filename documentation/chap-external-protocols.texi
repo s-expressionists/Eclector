@@ -653,6 +653,21 @@ The default method on this generic function first calls
 semantics for feature expressions.
 @end deffn
 
+@defgena {fixup-graph,eclector.reader} client root-object mapping
+
+This generic function is potentially called after the reader has
+constructed an object graph which is reachable from @var{root-object}
+and noticed circular references within this graph to fix up circular
+references before @var{root-object} is returned to the caller (of
+@t{read} or related functions).
+
+The default method on this generic function creates a hash table for
+tracking already processed objects and calls @t{fixup} with
+@var{client}, @var{root-object}, the hash table and @var{mapping} to
+recursively process objects in the object graph which is reachable from
+@var{root-object}.
+@end deffn
+
 @defgena {fixup,eclector.reader} client object seen-objects mapping
 
 This generic function is potentially called to apply

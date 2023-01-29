@@ -69,6 +69,8 @@
      :check (alexandria:curry #'check-feature-expression client)
      :recurse (alexandria:curry #'evaluate-feature-expression client))))
 
+(defgeneric fixup-graph (client root-object mapping))
+
 (defgeneric fixup (client object seen-objects mapping))
 
 ;;; Creating s-expressions
