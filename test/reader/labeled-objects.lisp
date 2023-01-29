@@ -1,6 +1,6 @@
 (cl:in-package #:eclector.reader.test)
 
-(def-suite* :eclector.reader.fixup
+(def-suite* :eclector.reader.labeled-objects
   :in :eclector.reader)
 
 ;;; Count fixup calls

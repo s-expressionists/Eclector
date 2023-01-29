@@ -63,13 +63,13 @@
                               (:file "more-variables")
                               (:file "additional-conditions")
                               (:file "utilities")
+                              (:file "labeled-objects")
                               (:file "tokens")
                               (:file "read-common")
                               (:file "read")
                               (:file "macro-functions")
                               (:file "init")
                               (:file "quasiquote-macro")
-                              (:file "fixup")
                               ;; Translatable messages
                               (:file "messages-english")))
 
@@ -126,11 +126,11 @@
                               (:file "gen-quasiquote")
 
                               (:file "utilities")
+                              (:file "labeled-objects")
                               (:file "tokens")
                               (:file "read")
                               (:file "macro-functions")
                               (:file "quasiquote-macro")
-                              (:file "fixup")
 
                               (:file "readtable")
 
