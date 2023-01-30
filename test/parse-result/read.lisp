@@ -210,7 +210,9 @@
       ;;
       ;; should return. So on some implementations, the source
       ;; position will be (5 . 6) instead of (1 . 2).
-      (":foo 1 2" (t nil :start 4)                 1    (1 . 2) 7)
+      (":foo 1 2" (t nil :start 4)                 1    #-ecl (1 . 2)
+                                                        #+ecl (5 . 6)
+                                                        7)
       (":foo 1 2" (t nil :end 3)                   :fo  (0 . 3) 3)
 
       ;; Preserving whitespace
