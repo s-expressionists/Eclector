@@ -5,6 +5,7 @@ on: [push]
 env:
   SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-2.1.1-x86-64-linux-binary.tar.bz2
   ECL_DOWNLOAD_URL:
+  CCL_DOWNLOAD_URL: https://github.com/Clozure/ccl/releases/download/v1.12/ccl-1.12-linuxx86.tar.gz
 
   CL_LAUNCH_DOWNLOAD_URL: https://xcvb.common-lisp.dev/cl-launch/cl-launch.sh
   QUICKLISP_DOWNLOAD_URL: https://beta.quicklisp.org/quicklisp.lisp
@@ -49,7 +50,7 @@ jobs:
             && (steps.ecl-cache.outputs.cache-hit != 'true')
         working-directory: /tmp
         run: |
-          curl https://github.com/sbcl/sbcl/releases/download/sbcl-1.4.14/ecl.tgz | tar -xz
+          curl -L https://github.com/ecl/ecl/releases/download/ecl-1.4.14/ecl.tgz | tar -xz
           mv ecl ecl-src
           cd ecl-src
           ./configure --prefix=/tmp/ecl/
@@ -63,12 +64,12 @@ jobs:
         if: ${{ matrix.implementation }} == 'ccl'
         working-directory: /tmp
         run: |
-          curl https://github.com/Clozure/ccl/releases/download/v1.12/ccl-1.12-linuxx86.tar.gz | tar -xz
+          curl -L "${CCL_DOWNLOAD_URL}" | tar -xz
 
       # Install cl-launch and Quicklisp
       - name: install cl-launch
         run: |
-          curl -l -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
+          curl -L -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
           chmod +x cl
 
           echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
@@ -77,7 +78,7 @@ jobs:
 
       - name: install quicklisp
         run: |
-          curl -o quicklisp.lisp "${QUICKLISP_DOWNLOAD_URL}"
+          curl -L -o quicklisp.lisp "${QUICKLISP_DOWNLOAD_URL}"
           ./cl --rc --lisp "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
           rm quicklisp.lisp
 
