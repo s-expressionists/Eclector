@@ -86,13 +86,11 @@ jobs:
       # Run tests
       - name: test
         working-directory: /tmp
-        run: >
-          ./cl
-            -l ${{ matrix.implementation }}
-            --rc
-            --quicklisp
-            -S '(:source-registry (:directory "'$(pwd)'") :ignore-inherited-configuration)'
-            -s eclector/test -s eclector-concrete-syntax-tree/test
+        run: |
+          ./cl \
+            -l ${{ matrix.implementation }} --rc --quicklisp \
+            -S '(:source-registry (:directory "'$(pwd)'") :ignore-inherited-configuration)' \
+            -s eclector/test -s eclector-concrete-syntax-tree/test \
             '(or (and (eclector.test:run-tests)
                       (eclector.concrete-syntax-tree.test:run-tests))
                  (uiop:quit -1))'
