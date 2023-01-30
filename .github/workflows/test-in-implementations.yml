@@ -74,13 +74,16 @@ jobs:
           echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
           echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
 
+          echo "QUICKLISP_PATH=/tmp/quicklisp/" >> ~/.cl-launchrc
+
       - name: install quicklisp
         working-directory: /tmp
         run: |
           curl -o quicklisp.lisp "${QUICKLISP_DOWNLOAD_URL}"
           ./cl --rc -v -l sbcl '(print (list 1 2 3))'
           ./cl --rc -v '(print (list 1 2 3))'
-          ./cl --rc -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
+          ./cl --rc -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install :path "/tmp/quicklisp/")'
+          ./cl --rc --quicklisp -v -l "${{ matrix.implementation }}" '(ql:system-apropos "esrap")'
 
       # Run tests
       - name: test
