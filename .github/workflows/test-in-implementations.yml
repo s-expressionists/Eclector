@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        implementation: [ sbcl ] # TODO ecl, ccl
+        implementation: [ sbcl, ccl ] # TODO ecl
 
     steps:
       - uses: actions/checkout@v3
@@ -49,8 +49,7 @@ jobs:
             && (steps.ecl-cache.outputs.cache-hit != 'true')
         working-directory: /tmp
         run: |
-          wget -q https://github.com/sbcl/sbcl/releases/download/sbcl-1.4.14/ecl.tgz
-          tar -xzf ecl.tgz
+          curl https://github.com/sbcl/sbcl/releases/download/sbcl-1.4.14/ecl.tgz | tar -xz
           mv ecl ecl-src
           cd ecl-src
           ./configure --prefix=/tmp/ecl/
@@ -60,35 +59,34 @@ jobs:
           echo '(setf *debugger-hook* (lambda (c fun) (princ c) (si::tpl-backtrace) (quit 1)))' > ~/.eclrc
 
       # Install CCL (with cache)
-      # - name: install implementation CCL
-      #  if: ${{ matrix.implementation }} == 'ccl'
-      #  run: |
+      - name: install implementation CCL
+        if: ${{ matrix.implementation }} == 'ccl'
+        working-directory: /tmp
+        run: |
+          curl https://github.com/Clozure/ccl/releases/download/v1.12/ccl-1.12-linuxx86.tar.gz | tar -xz
 
       # Install cl-launch and Quicklisp
       - name: install cl-launch
-        working-directory: /tmp
         run: |
           curl -l -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
           chmod +x cl
 
           echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
           echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
+          echo CCL=/tmp/ccl/lx86cl64 >> ~/.cl-launchrc
 
       - name: install quicklisp
-        working-directory: /tmp
         run: |
           curl -o quicklisp.lisp "${QUICKLISP_DOWNLOAD_URL}"
-          ./cl --rc -v -l sbcl '(print (list 1 2 3))'
-          ./cl --rc -v '(print (list 1 2 3))'
-          ./cl --rc -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
-          ./cl --rc --quicklisp -v -l "${{ matrix.implementation }}" '(ql:system-apropos "esrap")'
+          ./cl --rc --lisp "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
+          rm quicklisp.lisp
 
       # Run tests
       - name: test
         working-directory: /tmp
         run: |
           ./cl \
-            -l ${{ matrix.implementation }} --rc --quicklisp \
+            --rc --quicklisp --lisp ${{ matrix.implementation }} \
             -S '(:source-registry (:directory "'$(pwd)'") :ignore-inherited-configuration)' \
             -s eclector/test -s eclector-concrete-syntax-tree/test \
             '(or (and (eclector.test:run-tests)
