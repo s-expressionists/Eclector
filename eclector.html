@@ -281,7 +281,6 @@ th {
 
 
 
-
 <div class="top" id="Top">
 <div class="header">
 <p>
@@ -289,7 +288,7 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
 </div>
 <span id="Eclector-User_0027s-Manual"></span><h1 class="top">Eclector User&rsquo;s Manual</h1>
 
-<p>This manual is for Eclector version TODO.
+<p>This manual is for Eclector version 0.9.0.
 </p>
 
 <div class="Contents_element" id="SEC_Contents">
@@ -2132,9 +2131,9 @@ of the structure.  The following example illustrates this problem:
 <pre class="lisp">  (defvar *counter* 0)
   (defstruct foo (bar (incf *counter*)))
   #S(foo)
-  *counter* ; =&gt; 1
+  *counter* &rArr; 1
   #S(foo)
-  *counter* ; =&gt; 2
+  *counter* &rArr; 2
 </pre></div>
 
 <hr>
@@ -2356,7 +2355,7 @@ returned by <tt>eclector.reader:read</tt>:
 
 (let ((eclector.reader:*readtable* (custom-macro-readtable)))
   (eclector.reader:read-from-string &quot;#1=(:a #_#1#)&quot;))
-; =&gt; undefined
+&rArr; undefined
 </pre></div>
 
 <p>To handle the problem described above, Eclector imposes the following
