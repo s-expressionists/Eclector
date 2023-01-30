@@ -73,6 +73,9 @@ jobs:
           echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
           echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
 
+          echo ${HOME}
+          cat ~/.cl-launchrc
+          cat ${HOME}/.cl-launchrc
           /tmp/sbcl/bin/sbcl --version
 
           ./cl -v -l sbcl '(print (list 1 2 3))'
