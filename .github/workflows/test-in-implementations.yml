@@ -66,6 +66,7 @@ jobs:
 
       # Install cl-launch and Quicklisp
       - name: install cl-launch
+        working-directory: /tmp
         run: |
           curl -l -o cl "${CL_LAUNCH_DOWNLOAD_URL}"
           chmod +x cl
@@ -73,31 +74,17 @@ jobs:
           echo "SBCL=/tmp/sbcl/bin/sbcl" >> ~/.cl-launchrc
           echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
 
-          echo ${HOME}
-          cat ~/.cl-launchrc
-          cat ${HOME}/.cl-launchrc
-          /tmp/sbcl/bin/sbcl --version
-
-          ./cl --rc -v -l sbcl '(print (list 1 2 3))'
-          ./cl -v '(print (list 1 2 3))'
-          ./cl -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
-
       - name: install quicklisp
+        working-directory: /tmp
         run: |
-          echo ======
-          ls /tmp/sbcl/bin/sbcl
-          ls ~/.cl-launchrc
-          cat ~/.cl-launchrc
-          echo ======
-
-          /tmp/sbcl/bin/sbcl --version
           curl -o quicklisp.lisp "${QUICKLISP_DOWNLOAD_URL}"
-          ./cl -v -l sbcl '(print (list 1 2 3))'
-          ./cl -v '(print (list 1 2 3))'
-          ./cl -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
+          ./cl --rc -v -l sbcl '(print (list 1 2 3))'
+          ./cl --rc -v '(print (list 1 2 3))'
+          ./cl --rc -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
 
       # Run tests
       - name: test
+        working-directory: /tmp
         run: |
           ./cl
             -l ${{ matrix.implementation }}
