@@ -153,7 +153,7 @@ returned by @t{eclector.reader:read}:
 
 (let ((eclector.reader:*readtable* (custom-macro-readtable)))
   (eclector.reader:read-from-string "#1=(:a #_#1#)"))
-; => undefined
+@result{} undefined
 @end lisp
 
 To handle the problem described above, @sysname{} imposes the following
