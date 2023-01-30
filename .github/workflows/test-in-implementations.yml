@@ -84,7 +84,6 @@ jobs:
 
       # Run tests
       - name: test
-        working-directory: /tmp
         run: |
           ./cl \
             --rc --quicklisp --lisp ${{ matrix.implementation }} \
