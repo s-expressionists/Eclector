@@ -1,6 +1,7 @@
 \input texinfo
 
 @include macros.texi
+@include version.texi
 
 @documentencoding UTF-8
 @documentlanguage en
@@ -12,8 +13,6 @@
 
 @setfilename eclector
 @settitle @sysname{} User's Manual
-
-@set ECLECTORVERSION 0.6
 
 @copying
 Copyright @copyright{} 2010 - 2018 Robert Strandh
@@ -37,7 +36,7 @@ Copyright @copyright{} 2018 - 2023 Jan Moringen
 @node Top
 @top @sysname{} User's Manual
 
-This manual is for @sysname{} version TODO.
+This manual is for @sysname{} version @sysversion{}.
 @end ifnottex
 
 @menu
