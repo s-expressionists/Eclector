@@ -210,11 +210,11 @@
 (defclass custom-client (eclector.concrete-syntax-tree:cst-client)
   ())
 
-(defmethod eclector.parse-result:source-position
+(defmethod eclector.base:source-position
     ((client custom-client) (stream t))
   (- (call-next-method)))
 
-(defmethod eclector.parse-result:make-source-range
+(defmethod eclector.base:make-source-range
     ((client custom-client) (start t) (end t))
   (vector start end))
 

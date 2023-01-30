@@ -336,11 +336,11 @@
 (defclass custom-source-position-client (simple-result-client)
   ())
 
-(defmethod eclector.parse-result:source-position
+(defmethod eclector.base:source-position
     ((client custom-source-position-client) (stream t))
   (- (call-next-method)))
 
-(defmethod eclector.parse-result:make-source-range
+(defmethod eclector.base:make-source-range
     ((client custom-source-position-client) (start t) (end t))
   (vector start end))
 
