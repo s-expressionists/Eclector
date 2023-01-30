@@ -105,6 +105,7 @@ jobs:
       - name: documentation
         if: matrix.implementation == 'sbcl'
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y update
           sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install texinfo
           cd documentation
           make all
