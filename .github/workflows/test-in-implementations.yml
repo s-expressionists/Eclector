@@ -78,7 +78,7 @@ jobs:
           cat ${HOME}/.cl-launchrc
           /tmp/sbcl/bin/sbcl --version
 
-          ./cl -v -l sbcl '(print (list 1 2 3))'
+          ./cl --rc -v -l sbcl '(print (list 1 2 3))'
           ./cl -v '(print (list 1 2 3))'
           ./cl -v -l "${{ matrix.implementation }}" -L quicklisp.lisp '(quicklisp-quickstart:install)'
 
