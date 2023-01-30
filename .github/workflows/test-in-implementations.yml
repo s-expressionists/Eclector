@@ -6,7 +6,7 @@ env:
   SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-2.1.1-x86-64-linux-binary.tar.bz2
   ECL_DOWNLOAD_URL:
 
-  CL_LAUNCH_DOWNLOAD_URL: https://common-lisp.net/project/xcvb/cl-launch/cl-launch.sh
+  CL_LAUNCH_DOWNLOAD_URL: https://xcvb.common-lisp.dev/cl-launch/cl-launch.sh
   QUICKLISP_DOWNLOAD_URL: https://beta.quicklisp.org/quicklisp.lisp
 
 jobs:
@@ -74,8 +74,6 @@ jobs:
           echo "ECL=/tmp/ecl/bin/ecl" >> ~/.cl-launchrc
 
           /tmp/sbcl/bin/sbcl --version
-
-          cat ./cl
 
           ./cl -v -l sbcl '(print (list 1 2 3))'
           ./cl -v '(print (list 1 2 3))'
