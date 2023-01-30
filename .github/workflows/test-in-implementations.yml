@@ -18,10 +18,10 @@ jobs:
         implementation: [ sbcl ] # TODO ecl, ccl
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       # Install SBCL (with cache)
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         id: sbcl-cache
         if: matrix.implementation == 'sbcl'
         with:
@@ -37,7 +37,7 @@ jobs:
         working-directory: /tmp/
 
       # Install ECL (with cache)
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         id: ecl-cache
         if: matrix.implementation == 'ecl'
         with:
