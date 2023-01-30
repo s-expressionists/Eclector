@@ -100,3 +100,11 @@ jobs:
             '(or (and (eclector.test:run-tests)
                       (eclector.concrete-syntax-tree.test:run-tests))
                  (uiop:quit -1))'
+
+      # Build documentation
+      - name: documentation
+        if: matrix.implementation == 'sbcl'
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install texinfo
+          cd documentation
+          make all
