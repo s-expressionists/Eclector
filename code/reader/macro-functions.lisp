@@ -844,9 +844,7 @@
   (when package-marker
     (%recoverable-reader-error
      stream 'uninterned-symbol-must-not-contain-package-marker
-     :stream-position (if (eq package-marker t)
-                          nil
-                          package-marker)
+     :stream-position package-marker :position-offset -1
      :token token :report 'treat-as-escaped))
   (convert-according-to-readtable-case token token-escapes)
   (interpret-symbol *client* stream nil (copy-seq token) nil))
@@ -861,8 +859,8 @@
                  (when (and (not escapep)
                             (char= char #\:)
                             (not package-marker))
-                   (setf package-marker (or (ignore-errors (file-position stream))
-                                            t)))
+                   (setf package-marker (eclector.base:source-position
+                                         *client* stream)))
                  (push-char char))
                (unterminated-single-escape (escape-char)
                  (%recoverable-reader-error

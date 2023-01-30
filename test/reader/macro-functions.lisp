@@ -678,8 +678,8 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("\\"      nil nil eclector.reader:unterminated-single-escape-in-symbol)
       ("|"       nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
       ("|\\"     nil nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("a:b"     nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker 2)
-      ("a:b:c"   nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker 2)
+      ("a:b"     nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker 1)
+      ("a:b:c"   nil nil eclector.reader:uninterned-symbol-must-not-contain-package-marker 1)
       ("a"       1   nil eclector.reader:numeric-parameter-supplied-but-ignored -2)
       ;; Valid
       (""        nil nil #:||)
