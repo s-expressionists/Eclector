@@ -6,33 +6,24 @@
 ;;; simulate what a client might do to represent parse results.
 
 (defclass parse-result ()
-  ((%raw    :initarg    :raw
-            :reader     raw)
-   (%source :initarg    :source
-            :reader     source)
-   (%kind   :allocation :class
-            :reader     kind)))
-
-(defmethod kind (thing)
-  (declare (ignore thing))
-  nil)
+  ((%raw    :initarg :raw
+            :reader raw)
+   (%source :initarg :source
+            :reader source)))
 
 (defclass atom-result (parse-result)
-  ((%kind :allocation :class
-          :initform   'atom)))
+  ())
 
 (defclass cons-result (parse-result)
-  ((%kind        :allocation :class
-                 :initform   'cons)
-   (%first-child :initarg    :first
-                 :reader     first-child)
-   (%rest-child  :initarg    :rest
-                 :reader     rest-child)))
+  ((%first-child :initarg :first
+                 :reader first-child)
+   (%rest-child  :initarg :rest
+                 :reader rest-child)))
 
 (defun resultify (raw results &optional source)
   (let ((seen (make-hash-table :test #'eq)))
     (labels ((rec (raw-rest result-rest &optional source)
-               (cond ((and (not (null (kind result-rest)))
+               (cond ((and (typep result-rest 'parse-result)
                            (eq raw-rest (raw result-rest)))
                       result-rest)
                      ((atom raw-rest)
@@ -234,13 +225,13 @@
                (let ((client (make-instance 'list-result-client)))
                  (with-stream (stream)
                    (let (value kind parse-result)
-                    (eclector.reader:call-as-top-level-read
-                     client (lambda ()
-                              (setf (values value kind parse-result)
-                                    (let ((*read-suppress* read-suppress))
-                                      (eclector.reader:read-maybe-nothing
-                                       client stream eof-error-p :eof))))
-                     stream eof-error-p :eof t)
+                     (eclector.reader:call-as-top-level-read
+                      client (lambda ()
+                               (setf (values value kind parse-result)
+                                     (let ((*read-suppress* read-suppress))
+                                       (eclector.reader:read-maybe-nothing
+                                        client stream eof-error-p :eof))))
+                      stream eof-error-p :eof t)
                      (values value kind parse-result))))))
         (error-case (expected-value expected-position)
           (error (do-it))
@@ -277,8 +268,8 @@
                (is (equal expected-location (source result)))
                (cond
                  ((not children)
-                  (is (eq 'atom (kind result))))
-                 ((not (eq (kind result) 'cons))
+                  (is (typep result 'atom-result)))
+                 ((not (typep result 'cons-result))
                   (fail "Expected CONS-RESULT, but got ~S" result))
                  (t
                   (check (first-child result) (first children))
@@ -366,8 +357,8 @@
       (cons result children)))
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client skipped-input-recording-client) (stream t) (kind t) (source t))
-  (list kind source))
+    ((client skipped-input-recording-client) (stream t) (reason t) (source t))
+  (list reason source))
 
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
