@@ -30,16 +30,20 @@
   ;; to work without the user code explicitly binding the variable.
   (let* ((eclector.base:*client* client)
          (stack (list '()))
-         (*stack* stack)
-         (values (multiple-value-list (call-next-method)))
-         (value (first values))
-         (results (if (and (null eof-error-p) (eq value eof-value))
-                      (first stack)
-                      (rest (first stack))))
-         (orphan-results (reverse results)))
-    (if (null orphan-results)
-        (values-list values)
-        (multiple-value-call #'values (values-list values) orphan-results))))
+         (*stack* stack))
+    (multiple-value-call
+        (lambda (value &optional (parse-result nil not-eof-p))
+          ;; The presence of the second return value indicates whether
+          ;; the next method (which usually calls READ-COMMON)
+          ;; encountered an end-of-input situation.
+          (let* ((other-results (if not-eof-p
+                                    (rest (first stack))
+                                    (first stack)))
+                 (orphan-results (reverse other-results)))
+            (if not-eof-p
+                (values value parse-result orphan-results)
+                (values value orphan-results))))
+      (call-next-method))))
 
 (defmethod eclector.reader:read-common
     ((client parse-result-client) input-stream eof-error-p eof-value)
@@ -49,7 +53,7 @@
                client input-stream eof-error-p eof-value))
         do (ecase what
              (:eof
-              (return (values value nil)))
+              (return value)) ; single value indicates end-of-input
              ((:suppress :object)
               (return (values value parse-result)))
              ((:whitespace :skip)))))
@@ -86,23 +90,27 @@
 ;;; Entry points
 
 (defun read-aux (client input-stream eof-error-p eof-value preserve-whitespace-p)
-  (multiple-value-bind (result parse-result orphan-results)
-      (flet ((read-common ()
-               (eclector.reader:read-common
-                client input-stream eof-error-p eof-value)))
-        (declare (dynamic-extent #'read-common))
-        (eclector.reader:call-as-top-level-read
-         client #'read-common input-stream
-         eof-error-p eof-value preserve-whitespace-p))
-    ;; If we come here, that means that either the call to READ-AUX
-    ;; succeeded without encountering end-of-file, or that EOF-ERROR-P
-    ;; is false, end-of-file was encountered, and EOF-VALUE was
-    ;; returned.  In the latter case, we want READ to return
-    ;; EOF-VALUE.
-    (values (if (and (null eof-error-p) (eq eof-value result))
-                eof-value
-                parse-result)
-            orphan-results)))
+  (multiple-value-call
+      (lambda (value parse-result-or-orphan-results
+               &optional (orphan-results nil not-eof-p))
+        ;; If we come here, that means that either the call to
+        ;; CALL-AS-TOP-LEVEL-READ succeeded without encountering
+        ;; end-of-file, or that EOF-ERROR-P is false, end-of-file was
+        ;; encountered.  In the latter case, which is indicated by
+        ;; CALL-AS-TOP-LEVEL-READ returning only two values, we want
+        ;; READ to return EOF-VALUE (which is the same as VALUE).  If
+        ;; an object was read, return the corresponding parse result
+        ;; along with any orphan parse results.
+        (if not-eof-p
+            (values parse-result-or-orphan-results orphan-results)
+            (values value parse-result-or-orphan-results)))
+    (flet ((read-common ()
+             (eclector.reader:read-common
+              client input-stream eof-error-p eof-value)))
+      (declare (dynamic-extent #'read-common))
+      (eclector.reader:call-as-top-level-read
+       client #'read-common input-stream
+       eof-error-p eof-value preserve-whitespace-p))))
 
 (defun read (client &optional (input-stream *standard-input*)
                               (eof-error-p t)

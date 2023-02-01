@@ -135,6 +135,44 @@
       ("#1=(#1#)"            t   #2=(#2#)            ( 3 .  8))
       ("#1=(1 #2=(#1# #2#))" t   #3=(1 #4=(#3# #4#)) ( 3 . 19)))))
 
+(defclass eof-value-client (simple-result-client) ())
+
+(defmethod eclector.parse-result:make-skipped-input-result
+    ((client eof-value-client) (stream t) (reason t) (source t))
+  (list reason source))
+
+(test read/eof-value
+  "Ensure that different eof-values work for READing into parse results."
+  (do-stream-input-cases ((length) eof-value expected-raw
+                          &optional (expected-location (cons 0 length))
+                                    (expected-position length)
+                                    (expected-orphan-results '()))
+    (multiple-value-bind (parse-result orphan-results position)
+        (with-stream (stream)
+          (eclector.parse-result:read
+           (make-instance 'eof-value-client) stream nil eof-value))
+      (case expected-raw
+        (:eof
+         (is (eq eof-value parse-result)))
+        (t
+         (is-true (typep parse-result 'parse-result))
+         (is (eql   expected-raw      (raw parse-result)))
+         (is (equal expected-location (source parse-result)))))
+      (is (eql   expected-position       position))
+      (is (equal expected-orphan-results orphan-results)))
+    '(;; End of file situations
+      (""             nil   :eof)
+      (""             #:eof :eof)
+      ("#+(or) t"     nil   :eof nil       8 (((:sharpsign-plus :or) (0 . 8))))
+      ("#+(or) t"     #:eof :eof nil       8 (((:sharpsign-plus :or) (0 . 8))))
+      ("#|foo|#"      nil   :eof nil       7 ((:block-comment (0 . 7))))
+      ("#|foo|#"      #:eof :eof nil       7 ((:block-comment (0 . 7))))
+      ;;
+      ("nil"          nil   nil)
+      ("nil"          #:eof nil)
+      ("#+(or) t nil" nil   nil  (9 . 12) 12 (((:sharpsign-plus :or) (0 . 8))))
+      ("#+(or) t nil" #:eof nil  (9 . 12) 12 (((:sharpsign-plus :or) (0 . 8)))))))
+
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
   (do-stream-input-cases ((length) eof-error-p eof-value expected-raw
@@ -230,7 +268,10 @@
                                (setf (values value kind parse-result)
                                      (let ((*read-suppress* read-suppress))
                                        (eclector.reader:read-maybe-nothing
-                                        client stream eof-error-p :eof))))
+                                        client stream eof-error-p :eof)))
+                               (if (eq kind :eof)
+                                   value
+                                   (values value kind)))
                       stream eof-error-p :eof t)
                      (values value kind parse-result))))))
         (error-case (expected-value expected-position)
