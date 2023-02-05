@@ -730,15 +730,23 @@ algorithm.
 <span id="Generic_002dFunction-eclector_002ereader_007ccall_002das_002dtop_002dlevel_002dread"></span><dl class="def">
 <dt id="index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>call-as-top-level-read [eclector.reader]</strong> <em>client thunk input-stream  eof-error-p eof-value preserve-whitespace-p</em><a href='#index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
 <dd>
-<p>This generic function is called by <tt>read</tt> if <tt>read</tt> is called with
-a false value for the <var>recursive-p</var> parameter.  It calls <var>thunk</var>
+<p>This generic function is called by <tt>read</tt> if <tt>read</tt> is called with a
+false value for the <var>recursive-p</var> parameter.  It calls <var>thunk</var>
 with the necessary context for a global <tt>read</tt> call.  <var>thunk</var>
 should read and return an object without consuming any whitespace
 following the object.  If <var>preserve-whitespace-p</var> is false, this
 function reads up to one character of whitespace after <var>thunk</var>
-returns.  This function returns the object or <var>eof-value</var> returned
-by <var>thunk</var> as its first value.  It may return additional values.
+returns.  By default, this function returns the object or
+<var>eof-value</var> returned by <var>thunk</var> as its sole value.
 </p>
+<blockquote>
+<p><b>Note:</b> This generic function may return more values in additional to the one
+described above.  Clients may use this feature to communicate additional
+information between methods (see <a href="#Parse-result-construction-features">Parse result construction features</a>).  Client defined methods on this generic function should
+accept such additional values when calling <var>thunk</var>, a next method or
+<tt>read-common</tt> and themselves return the additional values.
+</p></blockquote>
+
 <p>The default method on this generic function performs two tasks:
 </p><ol>
 <li> It establishes a context in which labels (<tt>#N=</tt>) and references
@@ -753,7 +761,17 @@ by <var>thunk</var> as its first value.  It may return additional values.
 <dd>
 <p>This generic function is called by <tt>read</tt>, passing it the value of the
 variable <tt>eclector.base:*client*</tt> and the corresponding parameters.
-Client code can add methods on this function, specializing them to the
+By default, this generic function returns the objects as its sole value.
+</p>
+<blockquote>
+<p><b>Note:</b> This generic function may return more values in additional to the one
+described above.  Clients may use this feature to communicate additional
+information between methods (see <a href="#Parse-result-construction-features">Parse result construction features</a>).  Client defined methods on this generic function should
+accept such additional values when calling a next method or
+<tt>read-maybe-nothing</tt> and themselves return the additional values.
+</p></blockquote>
+
+<p>Client code can add methods on this function, specializing them to the
 client class of its choice.  The actions that <tt>read</tt> needs to take for
 different values of the parameter <var>recursive-p</var> have already been
 taken before <tt>read</tt> calls this generic function.
@@ -786,6 +804,14 @@ return a value.  In this case the function returns <tt>nil</tt> and
 <tt>:skip</tt>.
 </li></ul>
 </dd></dl>
+
+<blockquote>
+<p><b>Note:</b> This generic function may return more values in additional to the ones
+described above.  Clients may use this feature to communicate additional
+information between methods (see <a href="#Parse-result-construction-features">Parse result construction features</a>).  Client defined methods on this generic function should
+accept such additional values when calling a next method and themselves
+return the additional values.
+</p></blockquote>
 
 <span id="Generic_002dFunction-eclector_002ereader_007cnote_002dskipped_002dinput"></span><dl class="def">
 <dt id="index-note_002dskipped_002dinput-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>note-skipped-input [eclector.reader]</strong> <em>client input-stream reason</em><a href='#index-note_002dskipped_002dinput-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
@@ -1653,13 +1679,36 @@ the client chooses, represent comments and other kinds of input that
 <tt>cl:read</tt> would discard.  Furthermore, clients can associate
 source location information with parse results.
 </p>
-<p>Clients using this package pass a &ldquo;client&rdquo; instance for which
-methods on the generic functions described below are applicable to
-<tt>read</tt>, <tt>read-preserving-whitespace</tt> or
-<tt>read-from-string</tt>.  Suitable client classes can be constructed
-by using <tt>parse-result-client</tt> as a superclass and at least
-defining a method on the generic function
+<p>Clients using this package pass a &ldquo;client&rdquo; object for which methods on
+the generic functions described below are applicable to <tt>read</tt>,
+<tt>read-preserving-whitespace</tt> or <tt>read-from-string</tt>.  Suitable client
+classes can be defined by using <tt>parse-result-client</tt> as a superclass
+and at least defining a method on the generic function
 <tt>make-expression-result</tt>.
+</p>
+<p>When a client constructs parse results, some of the generic functions
+for customizing the behavior of the reader (see <a href="#Reader-behavior-protocol">Reader behavior protocol</a>) return additional values:
+</p>
+<table>
+<thead><tr><th width="25%">Generic function</th><th width="15%">Situation</th><th width="30%">Ordinary values</th><th width="30%">Extended values</th></tr></thead>
+<tr><td width="25%"><tt>eclector.reader:call-as-top-level-read</tt></td><td width="15%">object</td><td width="30%"><em>object</em></td><td width="30%"><em>object</em>, <em>parse result</em>, <em>orphan results</em></td></tr>
+<tr><td width="25%"><tt>eclector.reader:read-common</tt></td><td width="15%">object</td><td width="30%"><em>object</em></td><td width="30%"><em>object</em>, <em>parse result</em></td></tr>
+<tr><td width="25%"><tt>eclector.reader:read-maybe-nothing</tt></td><td width="15%">object</td><td width="30%"><em>object</em>, <em>kind</em></td><td width="30%"><em>object</em>, <em>kind</em>, <em>parse result</em></td></tr>
+<tr><td width="25%"><tt>eclector.reader:call-as-top-level-read</tt></td><td width="15%">end of input</td><td width="30%"><var>eof-value</var></td><td width="30%"><var>eof-value</var>, <em>orphan results</em></td></tr>
+<tr><td width="25%"><tt>eclector.reader:read-common</tt></td><td width="15%">end of input</td><td width="30%"><var>eof-value</var></td><td width="30%"><var>eof-value</var></td></tr>
+<tr><td width="25%"><tt>eclector.reader:read-maybe-nothing</tt></td><td width="15%">end of input</td><td width="30%"><var>eof-value</var>, <tt>:eof</tt></td><td width="30%"><var>eof-value</var>, <tt>:eof</tt></td></tr>
+</table>
+
+<p>Note how <tt>eclector.reader:call-as-top-level-read</tt> and
+<tt>eclector.reader:read-common</tt> return fewer values for the &ldquo;end of
+input&rdquo; situation.  This difference in return value count allows the
+caller to recognize the &ldquo;end of input&rdquo; situation even if
+<var>eof-value</var> is an object that could be read such as <tt>nil</tt>.  Using
+such an <var>eof-value</var> makes sense for clients which construct parse
+results since top-level <tt>eclector.parse-result:read</tt> calls return
+these parse results so that there is no risk of confusing the chosen
+<var>eof-value</var>, even if something like <tt>nil</tt>, with having read a
+similar object.
 </p>
 <div class="float"><span id="fig_003aread_002dcall_002dsequence_002dparse_002dresult"></span>
 <div align="center"><img src="read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result">
@@ -1669,9 +1718,10 @@ represent calls, dashed arrows represent returns from function calls.
 Labels above arrows represent arguments and return values.  Differences
 from the non-parse result version are highlighted with bold text.</p></div></div>
 <p><a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.5</a> shows typical function call
-patterns that arise when the functions <tt>read</tt>,
-<tt>read-preserving-whitespace</tt>, <tt>read-from-string</tt> and
-<tt>read-delimited-list</tt> are called by client code.
+patterns, including ordinary and additional return values, that arise
+when the functions <tt>read</tt>, <tt>read-preserving-whitespace</tt>,
+<tt>read-from-string</tt> and <tt>read-delimited-list</tt> are called by client
+code.
 </p>
 <span id="Function-eclector_002eparse_002dresult_007cread"></span><dl class="def">
 <dt id="index-read-_005beclector_002eparse_002dresult_005d"><span class="category">Function: </span><span><strong>read [eclector.parse-result]</strong> <em>client <tt>&amp;optional</tt>  (input-stream <tt>*standard-input*</tt>)  (eof-error-p <tt>t</tt>)  (eof-value <tt>nil</tt>)</em><a href='#index-read-_005beclector_002eparse_002dresult_005d' class='copiable-anchor'> &para;</a></span></dt>

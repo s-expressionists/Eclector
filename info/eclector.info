@@ -346,9 +346,17 @@ algorithm.
      necessary context for a global read call.  THUNK should read and
      return an object without consuming any whitespace following the
      object.  If PRESERVE-WHITESPACE-P is false, this function reads up
-     to one character of whitespace after THUNK returns.  This function
-     returns the object or EOF-VALUE returned by THUNK as its first
-     value.  It may return additional values.
+     to one character of whitespace after THUNK returns.  By default,
+     this function returns the object or EOF-VALUE returned by THUNK as
+     its sole value.
+
+          Note: This generic function may return more values in
+          additional to the one described above.  Clients may use this
+          feature to communicate additional information between methods
+          (*note Parse result construction features::).  Client defined
+          methods on this generic function should accept such additional
+          values when calling THUNK, a next method or read-common and
+          themselves return the additional values.
 
      The default method on this generic function performs two tasks:
        1. It establishes a context in which labels (#N=) and references
@@ -361,11 +369,21 @@ algorithm.
 
      This generic function is called by read, passing it the value of
      the variable eclector.base:*client* and the corresponding
-     parameters.  Client code can add methods on this function,
-     specializing them to the client class of its choice.  The actions
-     that read needs to take for different values of the parameter
-     RECURSIVE-P have already been taken before read calls this generic
-     function.
+     parameters.  By default, this generic function returns the objects
+     as its sole value.
+
+          Note: This generic function may return more values in
+          additional to the one described above.  Clients may use this
+          feature to communicate additional information between methods
+          (*note Parse result construction features::).  Client defined
+          methods on this generic function should accept such additional
+          values when calling a next method or read-maybe-nothing and
+          themselves return the additional values.
+
+     Client code can add methods on this function, specializing them to
+     the client class of its choice.  The actions that read needs to
+     take for different values of the parameter RECURSIVE-P have already
+     been taken before read calls this generic function.
 
  -- Generic Function: read-maybe-nothing [eclector.reader] client
           input-stream eof-error-p eof-value
@@ -391,6 +409,13 @@ algorithm.
           the associated reader macro function if that reader macro
           function does not return a value.  In this case the function
           returns nil and :skip.
+
+     Note: This generic function may return more values in additional to
+     the ones described above.  Clients may use this feature to
+     communicate additional information between methods (*note Parse
+     result construction features::).  Client defined methods on this
+     generic function should accept such additional values when calling
+     a next method and themselves return the additional values.
 
  -- Generic Function: note-skipped-input [eclector.reader] client
           input-stream reason
@@ -1158,11 +1183,43 @@ chooses, represent comments and other kinds of input that cl:read would
 discard.  Furthermore, clients can associate source location information
 with parse results.
 
-   Clients using this package pass a “client” instance for which methods
+   Clients using this package pass a “client” object for which methods
 on the generic functions described below are applicable to read,
 read-preserving-whitespace or read-from-string.  Suitable client classes
-can be constructed by using parse-result-client as a superclass and at
-least defining a method on the generic function make-expression-result.
+can be defined by using parse-result-client as a superclass and at least
+defining a method on the generic function make-expression-result.
+
+   When a client constructs parse results, some of the generic functions
+for customizing the behavior of the reader (*note Reader behavior
+protocol::) return additional values:
+
+Generic function   Situation   Ordinary values        Extended values
+                                                      
+-----------------------------------------------------------------------------
+eclector.reader:call-as-top-level-readobject_object_  _object_, _parse
+                                                      result_, _orphan
+                                                      results_
+eclector.reader:read-commonobject_object_             _object_, _parse
+                                                      result_
+eclector.reader:read-maybe-nothingobject_object_, _kind__object_, _kind_,
+                                                      _parse result_
+                                                      
+eclector.reader:call-as-top-level-readend ofEOF-VALUE EOF-VALUE, _orphan
+                   input                              results_
+eclector.reader:read-commonend ofEOF-VALUE            EOF-VALUE
+                   input
+eclector.reader:read-maybe-nothingend ofEOF-VALUE, :eofEOF-VALUE, :eof
+                   input
+
+   Note how eclector.reader:call-as-top-level-read and
+eclector.reader:read-common return fewer values for the “end of input”
+situation.  This difference in return value count allows the caller to
+recognize the “end of input” situation even if EOF-VALUE is an object
+that could be read such as nil.  Using such an EOF-VALUE makes sense for
+clients which construct parse results since top-level
+eclector.parse-result:read calls return these parse results so that
+there is no risk of confusing the chosen EOF-VALUE, even if something
+like nil, with having read a similar object.
 
             [image src="read-call-sequence-parse-result.png" ]
 
@@ -1173,9 +1230,9 @@ Labels above arrows represent arguments and return values.  Differences
 from the non-parse result version are highlighted with bold text.
 
    *note Figure 2.5: fig:read-call-sequence-parse-result. shows typical
-function call patterns that arise when the functions read,
-read-preserving-whitespace, read-from-string and read-delimited-list are
-called by client code.
+function call patterns, including ordinary and additional return values,
+that arise when the functions read, read-preserving-whitespace,
+read-from-string and read-delimited-list are called by client code.
 
  -- Function: read [eclector.parse-result] client &optional
           (input-stream *standard-input*) (eof-error-p t) (eof-value
@@ -1831,27 +1888,27 @@ Function and macro and variable and type index
 
 * *client* [eclector.base]:              Basic features.      (line  54)
 * *skip-reason* [eclector.reader]:       Reader behavior protocol.
-                                                              (line  96)
+                                                              (line 121)
 * call-as-top-level-read [eclector.reader]: Reader behavior protocol.
                                                               (line  24)
 * call-reader-macro [eclector.reader]:   Reader behavior protocol.
-                                                              (line 219)
+                                                              (line 244)
 * call-with-current-package [eclector.reader]: Reader behavior protocol.
-                                                              (line 278)
+                                                              (line 303)
 * call-with-label-tracking [eclector.reader]: Labeled objects and references.
                                                               (line 105)
 * check-feature-expression [eclector.reader]: Reader behavior protocol.
-                                                              (line 306)
+                                                              (line 331)
 * check-symbol-token [eclector.reader]:  Reader behavior protocol.
-                                                              (line 137)
+                                                              (line 162)
 * evaluate-expression [eclector.reader]: Reader behavior protocol.
-                                                              (line 293)
+                                                              (line 318)
 * evaluate-feature-expression [eclector.reader]: Reader behavior protocol.
-                                                              (line 322)
+                                                              (line 347)
 * finalize-labeled-object [eclector.reader]: Labeled objects and references.
                                                               (line 223)
 * find-character [eclector.reader]:      Reader behavior protocol.
-                                                              (line 235)
+                                                              (line 260)
 * find-labeled-object [eclector.reader]: Labeled objects and references.
                                                               (line 167)
 * fixup [eclector.reader]:               Labeled objects and references.
@@ -1863,54 +1920,54 @@ Function and macro and variable and type index
 * forget-labeled-object [eclector.reader]: Labeled objects and references.
                                                               (line 152)
 * interpret-symbol [eclector.reader]:    Reader behavior protocol.
-                                                              (line 191)
+                                                              (line 216)
 * interpret-symbol-token [eclector.reader]: Reader behavior protocol.
-                                                              (line 173)
+                                                              (line 198)
 * interpret-token [eclector.reader]:     Reader behavior protocol.
-                                                              (line 119)
+                                                              (line 144)
 * labeled-object-state [eclector.reader]: Labeled objects and references.
                                                               (line 196)
 * make-expression-result [eclector.parse-result]: Parse result construction features.
-                                                              (line  90)
+                                                              (line 122)
 * make-labeled-object [eclector.reader]: Labeled objects and references.
                                                               (line 178)
 * make-skipped-input-result [eclector.parse-result]: Parse result construction features.
-                                                              (line 107)
+                                                              (line 139)
 * make-source-range [eclector.base]:     Basic features.      (line  75)
 * make-structure-instance [eclector.reader]: Reader behavior protocol.
-                                                              (line 260)
+                                                              (line 285)
 * note-labeled-object [eclector.reader]: Labeled objects and references.
                                                               (line 118)
 * note-skipped-input [eclector.reader]:  Reader behavior protocol.
-                                                              (line  78)
+                                                              (line 103)
 * parse-result-client [eclector.parse-result]: Parse result construction features.
-                                                              (line  85)
+                                                              (line 117)
 * position-offset [eclector.base]:       Basic features.      (line  39)
 * read [eclector.concrete-syntax-tree]:  CST reader features. (line  10)
 * read [eclector.parse-result]:          Parse result construction features.
-                                                              (line  37)
+                                                              (line  69)
 * read [eclector.reader]:                Common Lisp reader compatible interface.
                                                               (line  12)
 * read-common [eclector.reader]:         Reader behavior protocol.
-                                                              (line  42)
+                                                              (line  50)
 * read-delimited-list [eclector.reader]: Common Lisp reader compatible interface.
                                                               (line  34)
 * read-from-string [eclector.concrete-syntax-tree]: CST reader features.
                                                               (line  33)
 * read-from-string [eclector.parse-result]: Parse result construction features.
-                                                              (line  69)
+                                                              (line 101)
 * read-from-string [eclector.reader]:    Common Lisp reader compatible interface.
                                                               (line  27)
 * read-maybe-nothing [eclector.reader]:  Reader behavior protocol.
-                                                              (line  53)
+                                                              (line  71)
 * read-preserving-whitespace [eclector.concrete-syntax-tree]: CST reader features.
                                                               (line  25)
 * read-preserving-whitespace [eclector.parse-result]: Parse result construction features.
-                                                              (line  61)
+                                                              (line  93)
 * read-preserving-whitespace [eclector.reader]: Common Lisp reader compatible interface.
                                                               (line  20)
 * read-token [eclector.reader]:          Reader behavior protocol.
-                                                              (line 111)
+                                                              (line 136)
 * readtablep [eclector.readtable]:       Readtable features.  (line  19)
 * recover [eclector.reader]:             Error recovery features.
                                                               (line  14)
@@ -1970,87 +2027,87 @@ Ref: Function eclector.reader|read-delimited-list12773
 Node: Reader behavior protocol13008
 Ref: fig:read-call-sequence-customization13370
 Ref: Generic-Function eclector.reader|call-as-top-level-read14025
-Ref: Generic-Function eclector.reader|read-common14943
-Ref: Generic-Function eclector.reader|read-maybe-nothing15471
-Ref: Generic-Function eclector.reader|note-skipped-input16614
-Ref: Variable eclector.reader|*skip-reason*17569
-Ref: Generic-Function eclector.reader|read-token18353
-Ref: Generic-Function eclector.reader|interpret-token18739
-Ref: Generic-Function eclector.reader|check-symbol-token19796
-Ref: Generic-Function eclector.reader|interpret-symbol-token21669
-Ref: Generic-Function eclector.reader|interpret-symbol22660
-Ref: Generic-Function eclector.reader|call-reader-macro23876
-Ref: Generic-Function eclector.reader|find-character24704
-Ref: Generic-Function eclector.reader|make-structure-instance25946
-Ref: Generic-Function eclector.reader|call-with-current-package26784
-Ref: Generic-Function eclector.reader|evaluate-expression27498
-Ref: Generic-Function eclector.reader|check-feature-expression28063
-Ref: Generic-Function eclector.reader|evaluate-feature-expression28889
-Node: Labeled objects and references29972
-Ref: fig:labeled-object-states31876
-Ref: fig:labeled-object-api-states33082
-Ref: Generic-Function eclector.reader|call-with-label-tracking35681
-Ref: Generic-Function eclector.reader|note-labeled-object36225
-Ref: Generic-Function eclector.reader|forget-labeled-object38090
-Ref: Generic-Function eclector.reader|find-labeled-object38822
-Ref: Generic-Function eclector.reader|make-labeled-object39327
-Ref: Generic-Function eclector.reader|labeled-object-state40295
-Ref: Generic-Function eclector.reader|finalize-labeled-object41508
-Ref: Generic-Function eclector.reader|reference-labeled-object42157
-Ref: Generic-Function eclector.reader|fixup-graph-p43699
-Ref: Generic-Function eclector.reader|fixup-graph44778
-Ref: Generic-Function eclector.reader|fixup45679
-Ref: Labeled objects and references-Footnote-147208
-Ref: Labeled objects and references-Footnote-247380
-Node: S-expression creation and quasiquotation47509
-Ref: Generic-Function eclector.reader|wrap-in-quote47888
-Ref: Generic-Function eclector.reader|wrap-in-quasiquote48246
-Ref: Generic-Function eclector.reader|wrap-in-unquote48616
-Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing48971
-Ref: Macro eclector.reader|with-forbidden-quasiquotation49725
-Ref: Generic-Function eclector.reader|wrap-in-function50477
-Node: Readtable initialization50849
-Ref: Function eclector.reader|set-standard-syntax-types51297
-Ref: Function eclector.reader|set-standard-macro-characters51466
-Ref: Function eclector.reader|set-standard-dispatch-macro-characters51641
-Ref: Function eclector.reader|set-standard-syntax-and-macros51894
-Node: Readtable features52096
-Ref: Generic-Function eclector.readtable|readtablep52857
-Node: Parse result construction features53209
-Ref: fig:read-call-sequence-parse-result54390
-Ref: Function eclector.parse-result|read54967
-Ref: Function eclector.parse-result|read-preserving-whitespace56062
-Ref: Function eclector.parse-result|read-from-string56417
-Ref: Class eclector.parse-result|parse-result-client57096
-Ref: Generic-Function eclector.parse-result|make-expression-result57254
-Ref: Generic-Function eclector.parse-result|make-skipped-input-result58103
-Node: CST reader features59684
-Ref: Function eclector.concrete-syntax-tree|read59994
-Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace60616
-Ref: Function eclector.concrete-syntax-tree|read-from-string60972
-Node: Recovering from errors61334
-Node: Error recovery features61581
-Ref: Function eclector.reader|recover62193
-Node: Recoverable errors63010
-Node: Potential problems64502
-Node: Side effects65133
-Node: Potential side effects for the default client65612
-Node: Symbols and packages (default client)67305
-Node: Read-time evaluation (default client)67707
-Node: Standard reader macros (default client)68284
-Node: Potential side effects for non-default clients68843
-Node: Symbols and packages69239
-Node: Read-time evaluation69691
-Node: Structure instance creation70000
-Node: Circular structure70682
-Node: Standard reader macros71241
-Node: Interpretation of unclear parts of the specification72075
-Node: Interpretation of Sharpsign C and Sharpsign S72668
-Node: Interpretation of Backquote and Sharpsign Single Quote75324
-Node: Circular objects and custom reader macros76469
-Ref: Circular objects and custom reader macros-Footnote-179611
-Node: Concept index79767
-Node: Function and macro and variable and type index84005
+Ref: Generic-Function eclector.reader|read-common15394
+Ref: Generic-Function eclector.reader|read-maybe-nothing16475
+Ref: Generic-Function eclector.reader|note-skipped-input18031
+Ref: Variable eclector.reader|*skip-reason*18986
+Ref: Generic-Function eclector.reader|read-token19770
+Ref: Generic-Function eclector.reader|interpret-token20156
+Ref: Generic-Function eclector.reader|check-symbol-token21213
+Ref: Generic-Function eclector.reader|interpret-symbol-token23086
+Ref: Generic-Function eclector.reader|interpret-symbol24077
+Ref: Generic-Function eclector.reader|call-reader-macro25293
+Ref: Generic-Function eclector.reader|find-character26121
+Ref: Generic-Function eclector.reader|make-structure-instance27363
+Ref: Generic-Function eclector.reader|call-with-current-package28201
+Ref: Generic-Function eclector.reader|evaluate-expression28915
+Ref: Generic-Function eclector.reader|check-feature-expression29480
+Ref: Generic-Function eclector.reader|evaluate-feature-expression30306
+Node: Labeled objects and references31389
+Ref: fig:labeled-object-states33293
+Ref: fig:labeled-object-api-states34499
+Ref: Generic-Function eclector.reader|call-with-label-tracking37098
+Ref: Generic-Function eclector.reader|note-labeled-object37642
+Ref: Generic-Function eclector.reader|forget-labeled-object39507
+Ref: Generic-Function eclector.reader|find-labeled-object40239
+Ref: Generic-Function eclector.reader|make-labeled-object40744
+Ref: Generic-Function eclector.reader|labeled-object-state41712
+Ref: Generic-Function eclector.reader|finalize-labeled-object42925
+Ref: Generic-Function eclector.reader|reference-labeled-object43574
+Ref: Generic-Function eclector.reader|fixup-graph-p45116
+Ref: Generic-Function eclector.reader|fixup-graph46195
+Ref: Generic-Function eclector.reader|fixup47096
+Ref: Labeled objects and references-Footnote-148625
+Ref: Labeled objects and references-Footnote-248797
+Node: S-expression creation and quasiquotation48926
+Ref: Generic-Function eclector.reader|wrap-in-quote49305
+Ref: Generic-Function eclector.reader|wrap-in-quasiquote49663
+Ref: Generic-Function eclector.reader|wrap-in-unquote50033
+Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing50388
+Ref: Macro eclector.reader|with-forbidden-quasiquotation51142
+Ref: Generic-Function eclector.reader|wrap-in-function51894
+Node: Readtable initialization52266
+Ref: Function eclector.reader|set-standard-syntax-types52714
+Ref: Function eclector.reader|set-standard-macro-characters52883
+Ref: Function eclector.reader|set-standard-dispatch-macro-characters53058
+Ref: Function eclector.reader|set-standard-syntax-and-macros53311
+Node: Readtable features53513
+Ref: Generic-Function eclector.readtable|readtablep54274
+Node: Parse result construction features54626
+Ref: fig:read-call-sequence-parse-result57626
+Ref: Function eclector.parse-result|read58253
+Ref: Function eclector.parse-result|read-preserving-whitespace59348
+Ref: Function eclector.parse-result|read-from-string59703
+Ref: Class eclector.parse-result|parse-result-client60382
+Ref: Generic-Function eclector.parse-result|make-expression-result60540
+Ref: Generic-Function eclector.parse-result|make-skipped-input-result61389
+Node: CST reader features62970
+Ref: Function eclector.concrete-syntax-tree|read63280
+Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace63902
+Ref: Function eclector.concrete-syntax-tree|read-from-string64258
+Node: Recovering from errors64620
+Node: Error recovery features64867
+Ref: Function eclector.reader|recover65479
+Node: Recoverable errors66296
+Node: Potential problems67788
+Node: Side effects68419
+Node: Potential side effects for the default client68898
+Node: Symbols and packages (default client)70591
+Node: Read-time evaluation (default client)70993
+Node: Standard reader macros (default client)71570
+Node: Potential side effects for non-default clients72129
+Node: Symbols and packages72525
+Node: Read-time evaluation72977
+Node: Structure instance creation73286
+Node: Circular structure73968
+Node: Standard reader macros74527
+Node: Interpretation of unclear parts of the specification75361
+Node: Interpretation of Sharpsign C and Sharpsign S75954
+Node: Interpretation of Backquote and Sharpsign Single Quote78610
+Node: Circular objects and custom reader macros79755
+Ref: Circular objects and custom reader macros-Footnote-182897
+Node: Concept index83053
+Node: Function and macro and variable and type index87291
 
 End Tag Table
 
