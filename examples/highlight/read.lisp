@@ -177,9 +177,14 @@
   ;; This is used if RESULT already is a `cst:node'.  For example, the
   ;; `interpret-symbol' method returns partly initialized
   ;; `cst:symbol-node' instances.
-  (assert (or (not (slot-boundp result 'cst::%children))
-              (null (cst:children result))))
-  (reinitialize-instance result :children children :source source))
+  (let ((existing-children (when (slot-boundp result 'cst::%children)
+                             (cst:children result))))
+    (cond ((and (a:length= 1 children)
+                (eq result (first children)))
+           (reinitialize-instance result :source source))
+          (t
+           (assert (not existing-children))
+           (reinitialize-instance result :children children :source source)))))
 
 (defmethod eclector.parse-result:make-expression-result
     ((client highlight-client) (result t) (children list) (source t))
@@ -279,14 +284,15 @@
     (flet ((record-error (condition)
              (let* ((offset (eclector.base:position-offset condition))
                     (start  (+ (eclector.base:stream-position condition)
-                                 offset))
+                               offset))
                     (end    (if (typep condition 'end-of-file)
                                 start
                                 (1+ start))))
                (push (cst:make-syntax-error start end condition) errors))))
-      (handler-bind ((error (lambda (condition)
-                              (record-error condition)
-                              (eclector.reader:recover))))
+      (handler-bind ((eclector.base:stream-position-reader-error
+                       (lambda (condition)
+                         (record-error condition)
+                         (eclector.reader:recover))))
         (loop
           (multiple-value-bind (parse-result orphan-results)
               (eclector.parse-result:read client stream nil eof-value)
