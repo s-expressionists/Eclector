@@ -287,14 +287,23 @@ algorithm.
 @defgena {call-as-top-level-read,eclector.reader} {client thunk input-stream@
   eof-error-p eof-value preserve-whitespace-p}
 
-This generic function is called by @t{read} if @t{read} is called with
-a false value for the @var{recursive-p} parameter.  It calls @var{thunk}
+This generic function is called by @t{read} if @t{read} is called with a
+false value for the @var{recursive-p} parameter.  It calls @var{thunk}
 with the necessary context for a global @t{read} call.  @var{thunk}
 should read and return an object without consuming any whitespace
 following the object.  If @var{preserve-whitespace-p} is false, this
 function reads up to one character of whitespace after @var{thunk}
-returns.  This function returns the object or @var{eof-value} returned
-by @var{thunk} as its first value.  It may return additional values.
+returns.  By default, this function returns the object or
+@var{eof-value} returned by @var{thunk} as its sole value.
+
+@quotation Note
+This generic function may return more values in additional to the one
+described above.  Clients may use this feature to communicate additional
+information between methods (@pxref{Parse result construction
+features}).  Client defined methods on this generic function should
+accept such additional values when calling @var{thunk}, a next method or
+@t{read-common} and themselves return the additional values.
+@end quotation
 
 The default method on this generic function performs two tasks:
 @enumerate
@@ -311,6 +320,17 @@ It realizes the requested @var{preserve-whitespace-p} behavior.
 
 This generic function is called by @t{read}, passing it the value of the
 variable @t{eclector.base:*client*} and the corresponding parameters.
+By default, this generic function returns the objects as its sole value.
+
+@quotation Note
+This generic function may return more values in additional to the one
+described above.  Clients may use this feature to communicate additional
+information between methods (@pxref{Parse result construction
+features}).  Client defined methods on this generic function should
+accept such additional values when calling a next method or
+@t{read-maybe-nothing} and themselves return the additional values.
+@end quotation
+
 Client code can add methods on this function, specializing them to the
 client class of its choice.  The actions that @t{read} needs to take for
 different values of the parameter @var{recursive-p} have already been
@@ -348,6 +368,15 @@ return a value.  In this case the function returns @t{nil} and
 @t{:skip}.
 @end itemize
 @end deffn
+
+@quotation Note
+This generic function may return more values in additional to the ones
+described above.  Clients may use this feature to communicate additional
+information between methods (@pxref{Parse result construction
+features}).  Client defined methods on this generic function should
+accept such additional values when calling a next method and themselves
+return the additional values.
+@end quotation
 
 @defgena {note-skipped-input,eclector.reader} client input-stream reason
 
@@ -1193,13 +1222,39 @@ the client chooses, represent comments and other kinds of input that
 @t{cl:read} would discard.  Furthermore, clients can associate
 source location information with parse results.
 
-Clients using this package pass a ``client'' instance for which
-methods on the generic functions described below are applicable to
-@t{read}, @t{read-preserving-whitespace} or
-@t{read-from-string}.  Suitable client classes can be constructed
-by using @t{parse-result-client} as a superclass and at least
-defining a method on the generic function
+Clients using this package pass a ``client'' object for which methods on
+the generic functions described below are applicable to @t{read},
+@t{read-preserving-whitespace} or @t{read-from-string}.  Suitable client
+classes can be defined by using @t{parse-result-client} as a superclass
+and at least defining a method on the generic function
 @t{make-expression-result}.
+
+When a client constructs parse results, some of the generic functions
+for customizing the behavior of the reader (@pxref{Reader behavior
+protocol}) return additional values:
+
+@multitable @columnfractions .25 .15 .3 .3
+@headitem Generic function                       @tab Situation    @tab Ordinary values            @tab Extended values
+
+@item @t{eclector.reader:call-as-top-level-read} @tab object       @tab @emph{object}              @tab @emph{object}, @emph{parse result}, @emph{orphan results}
+@item @t{eclector.reader:read-common}            @tab object       @tab @emph{object}              @tab @emph{object}, @emph{parse result}
+@item @t{eclector.reader:read-maybe-nothing}     @tab object       @tab @emph{object}, @emph{kind} @tab @emph{object}, @emph{kind}, @emph{parse result}
+
+@item @t{eclector.reader:call-as-top-level-read} @tab end of input @tab @var{eof-value}            @tab @var{eof-value}, @emph{orphan results}
+@item @t{eclector.reader:read-common}            @tab end of input @tab @var{eof-value}            @tab @var{eof-value}
+@item @t{eclector.reader:read-maybe-nothing}     @tab end of input @tab @var{eof-value}, @t{:eof}  @tab @var{eof-value}, @t{:eof}
+@end multitable
+
+Note how @t{eclector.reader:call-as-top-level-read} and
+@t{eclector.reader:read-common} return fewer values for the ``end of
+input'' situation.  This difference in return value count allows the
+caller to recognize the ``end of input'' situation even if
+@var{eof-value} is an object that could be read such as @t{nil}.  Using
+such an @var{eof-value} makes sense for clients which construct parse
+results since top-level @t{eclector.parse-result:read} calls return
+these parse results so that there is no risk of confusing the chosen
+@var{eof-value}, even if something like @t{nil}, with having read a
+similar object.
 
 @float Figure,fig:read-call-sequence-parse-result
 @center @image{read-call-sequence-parse-result,15cm}
@@ -1210,9 +1265,10 @@ from the non-parse result version are highlighted with bold text.}
 @end float
 
 @ref{fig:read-call-sequence-parse-result} shows typical function call
-patterns that arise when the functions @t{read},
-@t{read-preserving-whitespace}, @t{read-from-string} and
-@t{read-delimited-list} are called by client code.
+patterns, including ordinary and additional return values, that arise
+when the functions @t{read}, @t{read-preserving-whitespace},
+@t{read-from-string} and @t{read-delimited-list} are called by client
+code.
 
 @deffuna {read,eclector.parse-result} client @optional@
   (input-stream @t{*standard-input*})@
