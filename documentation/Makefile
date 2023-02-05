@@ -40,8 +40,10 @@ $(NAME).html: $(INPUTS) $(FIGURES) $(wildcard *.css) highlight-listings.lisp
 	         --css-include=style-common.css \
 	         --css-include=style-single.css \
 	         $(NAME).texi
-	$(SBCL) --noinform --disable-debugger --no-sysinit --no-userinit \
-	        --load highlight-listings.lisp                           \
+	# TODO --no-userinit
+	$(SBCL) --noinform --disable-debugger --no-sysinit \
+	        --eval '(require :asdf)'                   \
+	        --load highlight-listings.lisp             \
 	        --quit
 
 clean:
