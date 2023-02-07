@@ -540,6 +540,10 @@
             (type-error-datum condition)
             (type-error-expected-type condition)))
 
+  (define-reporter ((condition namestring-syntax-error) stream)
+    (format stream "~@<Invalid namestring syntax~@[: ~A~].~@:>"
+            (message condition)))
+
 ;;; Conditions related to feature expressions
 
   (define-context :sharpsign-plus  "the #+ conditionalization reader macro")

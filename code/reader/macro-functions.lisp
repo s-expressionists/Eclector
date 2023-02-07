@@ -1285,7 +1285,16 @@
                   (unread-char (%character condition) stream)
                   ".")))))
       (cond ((stringp expression)
-             (values (parse-namestring expression)))
+             (handler-case
+                 (values (parse-namestring expression))
+               (sb-kernel:namestring-parse-error (condition)
+                 (let ((length (length expression))
+                       (offset (sb-kernel:namestring-parse-error-offset condition)))
+                   (%recoverable-reader-error
+                    stream 'namestring-syntax-error
+                    :message (sb-kernel::namestring-parse-error-complaint condition)
+                    :position-offset (- (1+ (- length offset))) :report 'replace-namestring)
+                   "."))))
             (t
              (%recoverable-reader-error
               stream 'non-string-following-sharpsign-p

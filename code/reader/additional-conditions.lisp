@@ -393,6 +393,11 @@
 (define-condition non-string-following-sharpsign-p (read-object-type-error)
   ())
 
+(define-condition namestring-syntax-error (stream-position-reader-error)
+  ((%message :initarg :message
+             :reader message
+             :initform nil)))
+
 ;;; Conditions related to feature expressions
 ;;;
 ;;; Can be evaluated without a stream context. Therefore each
