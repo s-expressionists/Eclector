@@ -297,7 +297,7 @@ returns.  By default, this function returns the object or
 @var{eof-value} returned by @var{thunk} as its sole value.
 
 @quotation Note
-This generic function may return more values in additional to the one
+This generic function may return more values in addition to the one
 described above.  Clients may use this feature to communicate additional
 information between methods (@pxref{Parse result construction
 features}).  Client defined methods on this generic function should
@@ -323,7 +323,7 @@ variable @t{eclector.base:*client*} and the corresponding parameters.
 By default, this generic function returns the objects as its sole value.
 
 @quotation Note
-This generic function may return more values in additional to the one
+This generic function may return more values in addition to the one
 described above.  Clients may use this feature to communicate additional
 information between methods (@pxref{Parse result construction
 features}).  Client defined methods on this generic function should
@@ -370,7 +370,7 @@ return a value.  In this case the function returns @t{nil} and
 @end deffn
 
 @quotation Note
-This generic function may return more values in additional to the ones
+This generic function may return more values in addition to the ones
 described above.  Clients may use this feature to communicate additional
 information between methods (@pxref{Parse result construction
 features}).  Client defined methods on this generic function should
