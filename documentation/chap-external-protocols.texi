@@ -1291,14 +1291,14 @@ the binding to remain unchanged.
 
 @cindex function
 
-@defgena {wrap-in-function,eclector.reader} client name
+@defgena {wrap-in-function,eclector.reader} client expression
 
 This generic function is called by the default @t{#'}-reader macro
 function to construct a form that applies the @t{function} special
-operator to the @var{name} expression.
+operator to @var{expression}.
 
 The default method on this generic function returns a result equivalent
-to @code{(list 'common-lisp:function @var{form})}.
+to @code{(list 'common-lisp:function @var{expression})}.
 @end deffn
 
 @node Readtable initialization

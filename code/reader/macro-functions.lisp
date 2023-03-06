@@ -345,25 +345,25 @@
     (unless (null parameter)
       (numeric-parameter-ignored
        stream 'sharpsign-single-quote parameter suppress))
-    (let ((name (with-forbidden-quasiquotation
-                    ('sharpsign-single-quote :keep (if allow-unquote :keep t))
-                  (handler-case
-                      (read stream t nil t)
-                    ((and end-of-file (not incomplete-construct)) (condition)
-                      (%recoverable-reader-error
-                       stream 'end-of-input-after-sharpsign-single-quote
-                       :stream-position (stream-position condition)
-                       :report 'inject-nil)
-                      nil)
-                    (end-of-list (condition)
-                      (%recoverable-reader-error
-                       stream 'object-must-follow-sharpsign-single-quote
-                       :position-offset -1 :report 'inject-nil)
-                      (unread-char (%character condition) stream)
-                      nil)))))
+    (let ((expression (with-forbidden-quasiquotation
+                          ('sharpsign-single-quote :keep (if allow-unquote :keep t))
+                        (handler-case
+                            (read stream t nil t)
+                          ((and end-of-file (not incomplete-construct)) (condition)
+                            (%recoverable-reader-error
+                             stream 'end-of-input-after-sharpsign-single-quote
+                             :stream-position (stream-position condition)
+                             :report 'inject-nil)
+                            nil)
+                          (end-of-list (condition)
+                            (%recoverable-reader-error
+                             stream 'object-must-follow-sharpsign-single-quote
+                             :position-offset -1 :report 'inject-nil)
+                            (unread-char (%character condition) stream)
+                            nil)))))
       (cond (suppress nil)
-            ((null name) nil)
-            (t (wrap-in-function client name))))))
+            ((null expression) nil)
+            (t (wrap-in-function client expression))))))
 
 ;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
 ;;; that is `#',(foo) is read as

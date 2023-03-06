@@ -197,7 +197,7 @@
     (declare (ignore client))
     (list 'unquote-splicing form)))
 
-(defgeneric wrap-in-function (client name)
-  (:method (client name)
+(defgeneric wrap-in-function (client expression)
+  (:method (client expression)
     (declare (ignore client))
-    (list 'function name)))
+    (list 'function expression)))
