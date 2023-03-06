@@ -212,6 +212,6 @@
   (:method ((client t) (form t))
     (list 'unquote-splicing form)))
 
-(defgeneric wrap-in-function (client name)
-  (:method ((client t) (name t))
-    (list 'function name)))
+(defgeneric wrap-in-function (client expression)
+  (:method ((client t) (expression t))
+    (list 'function expression)))
