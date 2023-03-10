@@ -34,13 +34,13 @@
           (t
            ;; We don't use
            ;;
-           ;;   (cst:reconstruct expression children client)
+           ;;   (cst:reconstruct client expression children)
            ;;
            ;; because we want SOURCE for the outer CONS-CST but not
            ;; any of its children.
            (destructuring-bind (car . cdr) expression
              (make-instance 'cst:cons-cst
                             :raw expression
-                            :first (cst:reconstruct car children client)
-                            :rest (cst:reconstruct cdr children client)
+                            :first (cst:reconstruct client car children)
+                            :rest (cst:reconstruct client cdr children)
                             :source source))))))
