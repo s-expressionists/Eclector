@@ -7,7 +7,7 @@
 
   :version     (:read-file-form "version.sexp")
   :depends-on  ("alexandria"
-                "concrete-syntax-tree"
+                (:version "concrete-syntax-tree" "0.2")
 
                 "eclector")
 
