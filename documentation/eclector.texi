@@ -47,6 +47,7 @@ This manual is for @sysname{} version @sysversion{}.
 * Interpretation of unclear parts of the specification::
 * Concept index::
 * Function and macro and variable and type index::
+* Changelog::
 @end menu
 
 @include chap-intro.texi
@@ -64,5 +65,7 @@ This manual is for @sysname{} version @sysversion{}.
 @unnumbered Function and macro and variable and type index
 
 @printindex fn
+
+@include chap-changelog.texi
 
 @bye

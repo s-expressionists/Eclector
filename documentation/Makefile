@@ -2,7 +2,7 @@ NAME=eclector
 
 SOURCES=$(NAME).texi $(wildcard chap-*.texi)
 
-GENERATED=version.texi
+GENERATED=version.texi chap-changelog.texi
 
 FIGURES=$(wildcard *.png)
 
@@ -19,6 +19,9 @@ version.texi: ../version.sexp
 	     --eval '(format t "@macro sysversion~%~A~%@end macro" (uiop:read-file-form "$<"))' \
 	     --quit                                                                             \
 	  > $@
+
+chap-changelog.texi: ../changes.sexp write-changelog.lisp
+	sbcl --script write-changelog.lisp > $@
 
 $(NAME).info: $(SOURCES) $(GENERATED) $(FIGURES)
 	makeinfo --output $@ $(NAME).texi
