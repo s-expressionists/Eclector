@@ -352,6 +352,7 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
   </ul></li>
   <li><a id="toc-Concept-index-1" href="#Concept-index" rel="index">Concept index</a></li>
   <li><a id="toc-Function-and-macro-and-variable-and-type-index-1" href="#Function-and-macro-and-variable-and-type-index" rel="index">Function and macro and variable and type index</a></li>
+  <li><a id="toc-Changelog-1" href="#Changelog">Changelog</a></li>
 </ul>
 </div>
 </div>
@@ -740,7 +741,7 @@ returns.  By default, this function returns the object or
 <var>eof-value</var> returned by <var>thunk</var> as its sole value.
 </p>
 <blockquote>
-<p><b>Note:</b> This generic function may return more values in additional to the one
+<p><b>Note:</b> This generic function may return more values in addition to the one
 described above.  Clients may use this feature to communicate additional
 information between methods (see <a href="#Parse-result-construction-features">Parse result construction features</a>).  Client defined methods on this generic function should
 accept such additional values when calling <var>thunk</var>, a next method or
@@ -764,7 +765,7 @@ variable <tt>eclector.base:*client*</tt> and the corresponding parameters.
 By default, this generic function returns the objects as its sole value.
 </p>
 <blockquote>
-<p><b>Note:</b> This generic function may return more values in additional to the one
+<p><b>Note:</b> This generic function may return more values in addition to the one
 described above.  Clients may use this feature to communicate additional
 information between methods (see <a href="#Parse-result-construction-features">Parse result construction features</a>).  Client defined methods on this generic function should
 accept such additional values when calling a next method or
@@ -806,7 +807,7 @@ return a value.  In this case the function returns <tt>nil</tt> and
 </dd></dl>
 
 <blockquote>
-<p><b>Note:</b> This generic function may return more values in additional to the ones
+<p><b>Note:</b> This generic function may return more values in addition to the ones
 described above.  Clients may use this feature to communicate additional
 information between methods (see <a href="#Parse-result-construction-features">Parse result construction features</a>).  Client defined methods on this generic function should
 accept such additional values when calling a next method and themselves
@@ -2519,7 +2520,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <div class="unnumbered" id="Function-and-macro-and-variable-and-type-index">
 <div class="header">
 <p>
-Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Changelog" accesskey="n" rel="next">Changelog</a>, Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Function-and-macro-and-variable-and-type-index-1"></span><h2 class="unnumbered">Function and macro and variable and type index</h2>
 
@@ -2662,6 +2663,390 @@ Previous: <a href="#Concept-index" accesskey="p" rel="prev">Concept index</a>, U
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-W"><b>W</b></a>
  &nbsp; 
 </td></tr></table>
+
+<hr>
+</div>
+<div class="unnumbered" id="Changelog">
+<div class="header">
+<p>
+Previous: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="p" rel="prev">Function and macro and variable and type index</a>, Up: <a href="#Top" accesskey="u" rel="up">Eclector User&rsquo;s Manual</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Changelog-1"></span><h2 class="unnumbered">Changelog</h2>
+
+<dl compact="compact">
+<dt><span>Release 0.9 (not yet released)</span></dt>
+<dd>
+<ul>
+<li> The deprecated function <tt>eclector.concrete-syntax-tree:cst-read</tt> has been
+removed.
+
+</li><li> <tt>eclector.reader:find-character</tt> receives characters names with unmodified
+case and is also called in the <tt>#\&lt;single character&gt;</tt> case so that clients
+have more control over character lookup.
+
+</li><li> The new generic function <tt>eclector.base:position-offset</tt> allows interested
+clients to refine the source positions of errors obtained by calling
+<tt>eclector.base:stream-position</tt>.
+
+</li><li> Some condition and restart reports have been improved.
+
+</li><li> A discussion of the relation between circular objects and custom reader macros
+has been added to the manual (See <a href="#Circular-objects-and-custom-reader-macros">Circular objects and custom reader macros</a>).
+
+</li><li> Problems in the <tt>eclector.reader:fixup</tt> method for hash tables have been
+fixed: keys were not checked for circular structure and circular structures in
+values were not fixed up in some cases.
+
+</li><li> Eclector provides a new protocol for handling labeled objects, that is the
+objects defined and referenced by the <tt>#=</tt> and <tt>##</tt> reader macros
+respectively (See <a href="#Labeled-objects-and-references">Labeled objects and references</a>).
+
+</li><li> Eclector now avoids unnecessary fixup processing in object graphs with
+complicated definitions and references.
+
+<p>Before this change, cases like
+</p>
+<div class="example">
+<pre class="example">#1=(1 #1# #2=(2 #2# ... #100=(100 #100#)))
+</pre></div>
+
+<p>or
+</p>
+<div class="example">
+<pre class="example">#1=(1 #2=(2 ... #2#) ... #1#)
+</pre></div>
+
+<p>lead to unnecessary and/or repeated traversals during fixup processing.
+</p>
+</li><li> Fixup processing is now performed in parse result objects.
+
+<p>Before this change, something like
+</p>
+<div class="example">
+<pre class="example">(eclector.concrete-syntax-tree:read-from-string &quot;#1=(#1#)&quot;)
+</pre></div>
+
+<p>produced a CST object, say <tt>cst</tt>, which failed to satisfy
+</p>
+<div class="example">
+<pre class="example">(eq (cst:first cst)       cst)
+(eq (cst:raw (first cst)) (cst:raw cst))
+</pre></div>
+
+<p>The properties now hold.
+</p>
+</li><li> Clients can use the new mixin classes
+<tt>eclector.concrete-syntax-tree:definition-csts-mixin</tt> and
+<tt>eclector.concrete-syntax-tree:reference-csts-mixin</tt> to represent labeled
+object definitions and references as instances of
+<tt>eclector.concrete-syntax-tree:definition-cst</tt> and
+<tt>eclector.concrete-syntax-tree:reference-cst</tt> respectively.
+
+</li><li> The stream position in conditions signaled by
+<tt>eclector.reader::sharpsign-colon</tt> is now always present.
+
+</li><li> When Eclector is used to produce parse results, it no longer confuses
+end-of-input with having read <tt>nil</tt> when <tt>nil</tt> is used as the <tt>eof-value</tt>
+(<tt>nil</tt> makes sense as an <tt>eof-value</tt> in that case since <tt>nil</tt> is
+generally not a possible parse result).
+
+</li><li> A detailed description of the constraints on return values of the generic
+functions in the Reader behavior protocol has been added to the manual
+(See <a href="#Reader-behavior-protocol">Reader behavior protocol</a>).
+
+</li><li> The <tt>eclector-concrete-syntax-tree</tt> system now works with and requires
+version 0.2 of the <tt>concrete-syntax-tree</tt> system.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.8 (2021-08-24)</span></dt>
+<dd>
+<ul>
+<li> The default <tt>eclector.reader:read-token</tt> method and the functions
+<tt>eclector.reader::sharpsign-colon</tt> and
+<tt>eclector.reader::sharpsign-backslash</tt> are now more efficient as well as less
+redundant in terms of repeated code.
+
+</li><li> The feature <tt>:eclector-define-cl-variables</tt> now controls whether the file
+<tt>code/reader/variables.lisp</tt> is loaded and thus whether the variables
+<tt>eclector.reader:*package*</tt>, <tt>eclector.reader:*read-eval*</tt>, etc. are
+defined.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.7 (2021-05-16)</span></dt>
+<dd>
+<ul>
+<li> The incorrectly committed generic function
+<tt>eclector.reader:check-symbol-token</tt> has been fixed.
+
+</li><li> Empty escape ranges like <tt>||</tt> are no longer interpreted as potential numbers.
+
+</li><li> The default <tt>eclector.reader:interpret-symbol</tt> method now signals specific
+conditions and offers restarts for recovering from situations related to
+non-existent packages and symbols as well as non-exported symbols.
+
+<p>The default error recovery strategy for invalid symbols now constructs an
+uninterned symbol of the given name instead of using <tt>nil</tt>.
+</p>
+</li><li> The &quot;consing dot&quot; is no longer accepted in sub-expressions of
+<tt>eclector.reader::left-parenthesis</tt>.
+
+<p>At the same time, it is now possible to recover from encountering the
+&quot;consing dot&quot; in invalid positions.
+</p>
+</li><li> The default <tt>eclector.reader:interpret-token</tt> method has been optimized
+substantially.
+
+</li><li> The <tt>eclector.reader:*client*</tt> variable and the source location protocol have
+been moved to a new <tt>base</tt> module and package <tt>eclector.base</tt> which the
+<tt>reader</tt> module and the <tt>eclector.reader</tt> package can use. This structure
+allows code in the <tt>reader</tt> module to work with source locations.
+
+<p>The name <tt>eclector.base:*client*</tt> remains exported as
+<tt>eclector.reader:*client*</tt>.
+</p>
+<p>The old names <tt>eclector.parse-result:source-position</tt> and
+<tt>eclector.parse-result:make-source-range</tt> still exist but are now deprecated
+and will be removed in a future release.
+</p>
+</li><li> Conditions signaled by code in the <tt>reader</tt> module now include source
+positions which are obtained by calling <tt>eclector.base:source-position</tt>.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.6 (2020-11-29)</span></dt>
+<dd>
+<ul>
+<li> Bogus <tt>nil</tt> parse results are no longer generated by
+<tt>eclector.parse-result:make-skipped-input-result</tt> calls when
+<tt>cl:*read-suppress*</tt> is true.
+
+</li><li> The new generic functions <tt>eclector.reader:read-maybe-nothing</tt> and
+<tt>eclector.reader:call-as-top-level-read</tt> give clients additional entry points
+to the reader as well as customization possibilities. With these functions, the
+chain of functions calls for a <tt>read</tt> call looks like this:
+
+<div class="example">
+<pre class="example">eclector.reader:read
+  eclector.reader:call-as-top-level-read
+    eclector.reader:read-common
+      eclector.reader:read-maybe-nothing
+        ...
+          eclector.reader:read-char
+          eclector.reader:peek-char
+</pre></div>
+
+<p>Diagrams which illustrate the relations between the new and existing functions
+have been added to the manual (<a href="#fig_003aread_002dcall_002dsequence_002dordinary">Figure 2.1</a>,
+<a href="#fig_003aread_002dcall_002dsequence_002dcustomization">Figure 2.2</a>,
+<a href="#fig_003aread_002dcall_002dsequence_002dparse_002dresult">Figure 2.5</a>).
+</p>
+</li><li> The function <tt>eclector.reader::read-rational</tt> now better respects the value
+of <tt>*read-suppress*</tt>.
+
+</li><li> Fix return value of <tt>eclector.readtable:set-syntax-from-char</tt>, fix
+<tt>(setf eclector.readtable:syntax-from-char)</tt> to also copy the macro character
+information.
+
+</li><li> The semicolon reader macro now consumes the terminating newline character.
+
+</li><li> Eclector now provides the generic function <tt>eclector.reader:wrap-in-function</tt>.
+
+</li><li> Reset <tt>eclector.reader::*list-reader*</tt> around recursive read in
+<tt>eclector.reader::sharpsign-dot</tt>.
+
+</li><li> Implement and default to relaxed syntax for <tt>eclector.reader::sharpsign-c</tt>.
+The strict version is still available as <tt>eclector.reader:strict-sharpsign-c</tt>
+and can be installed into a custom readtable.
+
+<p>A detailed discussion of the topic has been added to the manual
+(See <a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a>).
+</p>
+</li><li> Eclector can now recover from reading invalid inputs like <tt>..</tt> and <tt>...</tt>.
+
+</li><li> Implement and default to relaxed syntax for
+<tt>eclector.reader::sharpsign-single-quote</tt>. The strict version is still
+available as <tt>eclector.reader:strict-sharpsign-single-quote</tt> and can be
+installed into a custom readtable.
+
+<p>A detailed discussion of the topic has been added to the manual
+(See <a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">Interpretation of Backquote and Sharpsign Single Quote</a>).
+</p>
+</li><li> Eclector now provides the generic function
+<tt>eclector.reader:check-symbol-token</tt>.
+
+</li><li> Input of the form <tt>PACKAGE::||</tt> is now correctly read as a symbol.
+
+</li><li> Eclector can now recover from reading the invalid input <tt>:</tt>.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.5 (2020-06-09)</span></dt>
+<dd>
+<ul>
+<li> The generic function <tt>eclector.reader:call-with-current-package</tt> has been
+added.
+
+</li><li> The previously missing functions
+<tt>eclector.parse-result:read-preserving-whitespace</tt> and
+<tt>eclector.parse-result:read-from-string</tt> have been added.
+
+</li><li> The previously missing functions
+<tt>eclector.concrete-syntax-tree:read-preserving-whitespace</tt> and
+<tt>eclector.concrete-syntax-tree:read-from-string</tt> have been added.
+
+</li><li> The function <tt>eclector.concrete-syntax-tree:cst-read</tt> has been renamed to
+<tt>eclector.concrete-syntax-tree:read</tt>.
+<tt>eclector.concrete-syntax-tree:cst-read</tt> still exists but is deprecated and
+will be removed in a future version.
+
+</li><li> Quasiquote and unquote are now opt-out instead of opt-in. This allows
+quasiquotation in custom reader macros by default. The new macro
+<tt>eclector.reader::with-forbidden-quasiquotation</tt> is used by Eclector (and can
+be used in custom reader macros) to control this behavior.
+
+</li><li> A method on <tt>eclector.readtable:readtablep</tt> for the simple readtable
+implementation has been added.
+
+</li><li> The condition type <tt>eclector.base:end-of-file</tt> is now a subtype of
+<tt>cl:stream-error</tt> but not of <tt>cl:reader-error</tt>.
+
+</li><li> An error is now always signaled independently of the the value of the
+<tt>eof-error</tt> parameter when the end of input is encountered a after single
+escape or within a multiple escape. The new error conditions
+<tt>eclector.reader:unterminated-single-escape</tt> and
+<tt>eclector.reader:unterminated-multiple-escape</tt> are signaled in such
+situations.
+
+</li><li> The set invalid sub-characters for <tt>#</tt> now conforms to the specification.
+
+</li><li> The value of <tt>cl:*read-base*</tt> is now used correctly when distinguishing
+numbers and symbols.
+
+</li><li> When a number with a denominator of zero is read the new condition
+<tt>eclector.reader:zero-denominator</tt> is signaled.
+
+</li><li> The function <tt>eclector.reader:read-delimited-list</tt> has been added.
+
+</li><li> The reader macro function <tt>eclector.reader::sharpsign-s</tt> now accepts string
+designators as slot names.
+
+</li><li> The reader macro functions <tt>eclector.reader::sharpsign-equals</tt> and
+<tt>eclector.reader::sharpsign-sharpsign</tt> respect the value of
+<tt>cl:*read-suppress*</tt>.
+
+</li><li> The default methods on the generic function <tt>eclector.reader:fixup</tt> now works
+correctly for <tt>standard-object</tt> instances with unbound slots.
+
+</li><li> The reader macro function <tt>eclector.reader::left-parenthesis</tt> now always
+reads until <tt>#\)</tt>, not some &quot;opposite&quot; character.
+
+</li><li> <tt>eclector.reader:*skip-reason*</tt> is now set correctly when a line comment at
+the end of input is read.
+
+</li><li> In almost all situations in which Eclector signals a syntax error, a restart
+named <tt>eclector.reader:recover</tt> is now established which, when invoked
+performs some action which allows the remainder of the expression to be read.
+The convenience function <tt>eclector.reader:recover</tt> can be used to invoke the
+restart.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.4 (2019-05-11)</span></dt>
+<dd>
+<ul>
+<li> The reader macro function <tt>eclector.reader::sharpsign-plus-minus</tt> now sets
+<tt>eclector.reader:*skip-reason*</tt> so that parse results can be created with an
+accurate &quot;reason&quot; value.
+
+</li><li> Constituent traits are now represented and used properly.
+
+</li><li> The lambda lists of the functions <tt>eclector.reader:read-char</tt> and
+<tt>eclector.reader:peek-char</tt> have been fixed.
+
+</li><li> The function <tt>eclector.reader::read-rational</tt> now respects
+<tt>cl:*read-suppress*</tt> and handles inputs of the form <tt>1 2</tt> correctly.
+
+</li><li> The reader macro function <tt>eclector.reader::sharpsign-r</tt> now handles
+<tt>cl:*read-suppress*</tt> better.
+
+</li><li> The default method on the generic function <tt>eclector.reader:interpret-token</tt>
+now distinguishes positive and negative float zeros and uses radix 10 instead
+of the value of <tt>cl:*read-base*</tt> for float digits.
+
+</li><li> The input <tt>.||</tt> is now interpreted as a symbol instead of the &quot;consing dot&quot;.
+
+</li><li> Long lists are now read into concrete syntax tree results without relying on
+unbounded recursion.
+
+</li><li> Syntax errors in the initial contents part of <tt>#A</tt> expressions now signal
+appropriate errors.
+
+</li><li> Source ranges of parse results no longer include whitespace which followed the
+corresponding expression in the input.
+
+</li><li> The lambda list of the function <tt>eclector.parse-result:read</tt> is now accurate.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.3 (2018-11-28)</span></dt>
+<dd>
+<ul>
+<li> The function <tt>eclector.reader:peek-char</tt> has been added. The new function is
+like <tt>cl:peek-char</tt> but signals Eclector conditions and uses the Eclector
+readtable.
+
+</li><li> The function <tt>eclector.reader:read-from-string</tt> has been added. The new
+function is like <tt>cl:read-from-string</tt> but uses Eclector&rsquo;s reader
+implementation.
+
+</li><li> The reader macro function <tt>eclector.reader::sharpsign-s</tt> and the generic
+function <tt>eclector.reader:make-structure-instance</tt> have been added. Eclector
+does not define any methods on the latter generic function since there is no
+portable way of creating a structure instance when only the symbol naming the
+structure is known.
+
+</li><li> The generic function <tt>eclector.reader:interpret-symbol</tt> is now called when
+the reader creates uninterned symbols.
+
+</li><li> The generic function <tt>eclector.reader:fixup</tt> now accepts a client object as
+the the argument.
+
+</li><li> In the generic functions <tt>eclector.reader:wrap-in-quasiquote</tt>,
+<tt>eclector.reader:wrap-in-unquote</tt> and
+<tt>eclector.reader:wrap-in-unquote-splicing</tt>, the client parameter is now the
+first parameter.
+
+</li><li> The generic function <tt>eclector.reader:wrap-in-quote</tt> has been added.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.2 (2018-08-13)</span></dt>
+<dd>
+<ul>
+<li> The <tt>concrete-syntax-tree</tt> module has been generalized into a
+<tt>parse-result</tt> module which provides a protocol for constructing arbitrary
+custom parse results. The <tt>concrete-syntax-tree</tt> module is now based on this
+new module but can be used as before by clients.
+
+</li><li> The default value of the <tt>eof-error-p</tt> parameter of the
+<tt>eclector.reader:read-char</tt> function is now true.
+
+</li></ul>
+</dd>
+<dt><span>Release 0.1 (2018-08-10)</span></dt>
+<dd>
+<ul>
+<li> Eclector was created by extracting the reader module from the SICL repository.
+
+</li><li> The initial release includes many improvements over the original SICL reader,
+particularly in the areas of customizability, error reporting and constructing
+parse results.
+
+</li></ul>
+</dd>
+</dl>
 
 </div>
 </div>
