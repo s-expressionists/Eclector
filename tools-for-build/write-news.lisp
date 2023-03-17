@@ -13,7 +13,7 @@
 
 ;;; Write plaintext NEWS
 
-(defun write-paragraph (paragraph stream)
+(defun write-paragraph (paragraph stream format)
   (destructuring-bind (keyword &rest content) paragraph
     (assert (eq keyword :paragraph))
     (pprint-logical-block (stream content)
@@ -21,9 +21,13 @@
             do (etypecase chunk
                  ((cons (eql :when)))
                  ((cons (eql :symbol))
-                  (format stream "~:@(~A~)" (second chunk)))
+                  (if (eq format :markdown)
+                      (format stream "`~A`" (second chunk))
+                      (format stream "~:@(~A~)" (second chunk))))
                  ((cons (eql :tt))
-                  (write-string (second chunk) stream))
+                  (if (eq format :markdown)
+                      (format stream "`~A`" (second chunk))
+                      (write-string (second chunk) stream)))
                  (string
                   (write-string chunk stream)))
             when (and next
@@ -33,17 +37,24 @@
             do (write-string " " stream)
                (pprint-newline :fill stream)))))
 
-(defun write-code (code stream)
+(defun write-code (code stream format)
   (destructuring-bind (keyword content) code
     (assert (eq keyword :code))
-    (pprint-logical-block (stream code :per-line-prefix "  ")
+    (when (eq format :markdown)
+      (format stream "```lisp~@:_"))
+    (pprint-logical-block
+        (stream code :per-line-prefix (if (eq format :plaintext)
+                                          "  "
+                                          ""))
       (let ((lines (split-into-lines content)))
         (loop for (line next) on lines
               do (write-string line stream)
               when next
-                do (pprint-newline :mandatory stream))))))
+                do (pprint-newline :mandatory stream))))
+    (when (eq format :markdown)
+      (format stream "~@:_```"))))
 
-(defun write-item (item stream)
+(defun write-item (item stream format)
   (destructuring-bind (keyword &rest children) item
     (assert (eq keyword :item))
     (format stream "* ")
@@ -51,27 +62,33 @@
       (loop for (child next) on children
             do (etypecase child
                  ((cons (eql :paragraph))
-                  (write-paragraph child stream))
+                  (write-paragraph child stream format))
                  ((cons (eql :code))
-                  (write-code child stream)))
+                  (write-code child stream format)))
                (when next
                  (format stream "~@:_~@:_"))))
     (format stream "~@:_~@:_")))
 
-(defun write-release (release stream)
+(defun write-release (release stream format)
   (destructuring-bind (keyword version date &rest items) release
     (assert (eq keyword :release))
+    (when (eq format :markdown)
+      (format stream "# "))
     (format stream "Release ~A (~:[not yet released~;~:*~A~])~@:_~
                     ~@:_"
             version date)
     (dolist (item items)
-      (write-item item stream))))
+      (write-item item stream format))))
 
-(defun write-news (changes filename)
+(defun write-news (changes filename format &key count)
   (with-open-file (stream filename :direction :output
                                    :if-exists :supersede)
-    (pprint-logical-block (stream changes)
-      (destructuring-bind (keyword &rest releases) changes
-        (assert (eq keyword :changes))
-        (dolist (release releases)
-          (write-release release stream))))))
+    (let ((*print-right-margin* (if (eq format :markdown)
+                                    most-positive-fixnum
+                                    nil)))
+      (pprint-logical-block (stream changes)
+        (destructuring-bind (keyword &rest releases) changes
+          (assert (eq keyword :changes))
+          (loop repeat (or count (length releases))
+                for release in releases
+                do (write-release release stream format)))))))
