@@ -288,7 +288,7 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
 </div>
 <span id="Eclector-User_0027s-Manual"></span><h1 class="top">Eclector User&rsquo;s Manual</h1>
 
-<p>This manual is for Eclector version 0.9.0.
+<p>This manual is for Eclector version 0.10.0.
 </p>
 
 <div class="Contents_element" id="SEC_Contents">
@@ -313,9 +313,10 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
     <ul class="no-bullet">
       <li><a id="toc-Common-Lisp-reader-compatible-interface-1" href="#Common-Lisp-reader-compatible-interface">2.3.1 Common Lisp reader compatible interface</a></li>
       <li><a id="toc-Reader-behavior-protocol-1" href="#Reader-behavior-protocol">2.3.2 Reader behavior protocol</a></li>
-      <li><a id="toc-Labeled-objects-and-references-1" href="#Labeled-objects-and-references">2.3.3 Labeled objects and references</a></li>
-      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.3.4 S-expression creation and quasiquotation</a></li>
-      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.3.5 Readtable initialization</a></li>
+      <li><a id="toc-Reader-state-protocol-1" href="#Reader-state-protocol">2.3.3 Reader state protocol</a></li>
+      <li><a id="toc-Labeled-objects-and-references-1" href="#Labeled-objects-and-references">2.3.4 Labeled objects and references</a></li>
+      <li><a id="toc-S_002dexpression-creation-and-quasiquotation-1" href="#S_002dexpression-creation-and-quasiquotation">2.3.5 S-expression creation and quasiquotation</a></li>
+      <li><a id="toc-Readtable-initialization-1" href="#Readtable-initialization">2.3.6 Readtable initialization</a></li>
     </ul></li>
     <li><a id="toc-Readtable-features-1" href="#Readtable-features">2.4 Readtable features</a></li>
     <li><a id="toc-Parse-result-construction-features-1" href="#Parse-result-construction-features">2.5 Parse result construction features</a></li>
@@ -655,9 +656,10 @@ code.
 <ul class="section-toc">
 <li><a href="#Common-Lisp-reader-compatible-interface" accesskey="1">Common Lisp reader compatible interface</a></li>
 <li><a href="#Reader-behavior-protocol" accesskey="2">Reader behavior protocol</a></li>
-<li><a href="#Labeled-objects-and-references" accesskey="3">Labeled objects and references</a></li>
-<li><a href="#S_002dexpression-creation-and-quasiquotation" accesskey="4">S-expression creation and quasiquotation</a></li>
-<li><a href="#Readtable-initialization" accesskey="5">Readtable initialization</a></li>
+<li><a href="#Reader-state-protocol" accesskey="3">Reader state protocol</a></li>
+<li><a href="#Labeled-objects-and-references" accesskey="4">Labeled objects and references</a></li>
+<li><a href="#S_002dexpression-creation-and-quasiquotation" accesskey="5">S-expression creation and quasiquotation</a></li>
+<li><a href="#Readtable-initialization" accesskey="6">Readtable initialization</a></li>
 </ul>
 <hr>
 <div class="subsection" id="Common-Lisp-reader-compatible-interface">
@@ -707,7 +709,7 @@ function with the same name.
 <div class="subsection" id="Reader-behavior-protocol">
 <div class="header">
 <p>
-Next: <a href="#Labeled-objects-and-references" accesskey="n" rel="next">Labeled objects and references</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Reader-state-protocol" accesskey="n" rel="next">Reader state protocol</a>, Previous: <a href="#Common-Lisp-reader-compatible-interface" accesskey="p" rel="prev">Common Lisp reader compatible interface</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
 <span id="Reader-behavior-protocol-1"></span><h4 class="subsection">2.3.2 Reader behavior protocol</h4>
 
@@ -1041,6 +1043,14 @@ the structure type.
 <span id="Generic_002dFunction-eclector_002ereader_007ccall_002dwith_002dcurrent_002dpackage"></span><dl class="def">
 <dt id="index-call_002dwith_002dcurrent_002dpackage-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>call-with-current-package [eclector.reader]</strong> <em>client thunk  package-designator</em><a href='#index-call_002dwith_002dcurrent_002dpackage-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
 <dd>
+<blockquote>
+<p><b>Warning:</b> This generic function is deprecated as of Eclector 0.9 and will be
+removed in a future version.  Please use the generic function
+<tt>eclector.reader:call-with-state-value</tt> with the aspect designator
+<tt>'cl:*package*</tt> instead (see <a href="#Reader-state-protocol">Reader state protocol</a> for more
+information on the reader state protocol).
+</p></blockquote>
+
 <p>This generic function is called by the reader when input has to be
 read with a particular current package.  This is currently only the
 case in the <tt>#+</tt> and <tt>#-</tt> reader macro functions which
@@ -1114,12 +1124,162 @@ semantics for feature expressions.
 
 <hr>
 </div>
+<div class="subsection" id="Reader-state-protocol">
+<div class="header">
+<p>
+Next: <a href="#Labeled-objects-and-references" accesskey="n" rel="next">Labeled objects and references</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Reader-state-protocol-1"></span><h4 class="subsection">2.3.3 Reader state protocol</h4>
+
+<span id="index-reader-state"></span>
+<span id="index-aspect_002c-reader-state"></span>
+
+<p>The reader state protocol consists of generic functions which the reader
+and the client call to query and modify the values of reader state
+<em>aspects</em>.  Each aspect is named by a symbol and holds a current
+value and has a stack of shadowed values like a special variable.
+Aspects roughly correspond to the reader control variables defined in
+the Common Lisp specification.  Eclector defines the following
+aspects:
+</p>
+<span id="table_003aminimal_002dreader_002dstate_002daspects"></span><dl compact="compact">
+<dt><span><code>cl:*readtable*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*readtable*</tt> special variable, this aspects controls the
+readtable object in which the reader looks up the syntax types of
+characters, the case conversion mode as well as reader macros.  By
+default, values of this aspect must satisfy the
+<tt>eclector.readtable:readtablep</tt> predicate.
+</p>
+</dd>
+<dt><span><code>cl:*package*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*package*</tt> special variable, this aspects controls the
+package which the reader uses when it looks up or interns symbols in the
+current package.
+</p>
+</dd>
+<dt><span><code>cl:*read-suppress*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*read-suppress*</tt> special variable, this aspect controls
+whether the reader skips over expressions without detailed parsing.
+</p>
+</dd>
+<dt><span><code>cl:*read-eval*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*read-eval*</tt> special variable, this aspect controls
+whether the reader evaluates expressions in <tt>#.</tt> constructs.
+</p>
+</dd>
+<dt><span><code>cl:*features*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*features*</tt> special variable, this aspect controls the
+evaluation of features in feature expressions in <tt>#+</tt> and <tt>#-</tt>
+constructs.
+</p>
+</dd>
+<dt><span><code>cl:*read-base*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*read-base*</tt> special variable, this aspect controls the
+interpretation of tokens by the reader as being integers or ratios.
+</p>
+</dd>
+<dt><span><code>cl:*read-default-float-format*</code></span></dt>
+<dd>
+<p>Like the <tt>cl:*read-default-float-format*</tt> special variable, this
+aspect controls the floating-point format that the reader uses for
+floating-point numbers without exponent marker or the default exponent
+marker.
+</p>
+</dd>
+</dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cvalid_002dstate_002dvalue_002dp"></span><dl class="def">
+<dt id="index-valid_002dstate_002dvalue_002dp-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>valid-state-value-p [eclector.reader]</strong> <em>client aspect value</em><a href='#index-valid_002dstate_002dvalue_002dp-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called by the reader to determine whether
+<var>value</var> is a valid value for the reader state aspect designated by
+<var>aspect</var>.  The generic function returns true if, according to
+<var>client</var>, <var>value</var> is a valid value for the reader state aspect
+designated by <var>aspect</var>.  <var>aspect</var> must designate a reader state
+aspect that is recognized by <var>client</var>.  At least the aspects listed
+in the <a href="#table_003aminimal_002dreader_002dstate_002daspects">minimal reader state
+aspects table</a> must be recognized by any client.
+</p>
+<p>With the exceptions of <tt>cl:*readtable*</tt> and <tt>cl:*package*</tt>, the
+default methods on this generic function recognize state aspects and
+implement type restrictions informed by the Common Lisp specification:
+</p><table>
+<thead><tr><th width="30%">Aspect</th><th width="70%">Type</th></tr></thead>
+<tr><td width="30%"><tt>cl:*readtable*</tt></td><td width="70%"><tt>(satisfies eclector.readtable:readtablep)</tt></td></tr>
+<tr><td width="30%"><tt>cl:*package*</tt></td><td width="70%"><tt>(or cl:package cl:symbol cl:string cl:character)</tt> (package designator)</td></tr>
+<tr><td width="30%"><tt>cl:*read-suppress*</tt></td><td width="70%"><tt>t</tt> (generalized Boolean)</td></tr>
+<tr><td width="30%"><tt>cl:*read-eval*</tt></td><td width="70%"><tt>t</tt> (generalized Boolean)</td></tr>
+<tr><td width="30%"><tt>cl:*features*</tt></td><td width="70%"><tt>list</tt> (proper list)</td></tr>
+<tr><td width="30%"><tt>cl:*read-base*</tt></td><td width="70%"><tt>(integer 2 36)</tt> (radix)</td></tr>
+<tr><td width="30%"><tt>cl:*read-default-float-format*</tt></td><td width="70%"><tt>(member short-float single-float double-float long-float)</tt></td></tr>
+</table>
+</dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007cstate_002dvalue"></span><dl class="def">
+<dt id="index-state_002dvalue-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>state-value [eclector.reader]</strong> <em>client aspect</em><a href='#index-state_002dvalue-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>Return the current value of the reader state aspect designated by
+<var>aspect</var>.
+</p>
+<p><var>aspect</var> must designate a reader state aspect that is recognized by
+<var>client</var>.  At least the aspects listed in the
+<a href="#table_003aminimal_002dreader_002dstate_002daspects">minimal reader state aspects
+table</a> must be recognized by any client.
+</p>
+<p>The <tt>cl:*package*</tt> aspect mandates further explanation: When the
+client uses only the default methods of the reader state protocol, the
+return value of this generic function for the <tt>cl:*package*</tt> aspect is
+of type <tt>cl:package</tt> which is a strict subtype of the type of valid
+values for this aspect.  In other words, the defaults coerce package
+designators to package objects.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ereader_007ccall_002dwith_002dstate_002dvalue"></span><dl class="def">
+<dt id="index-call_002dwith_002dstate_002dvalue-_005beclector_002ereader_005d"><span class="category">Generic Function: </span><span><strong>call-with-state-value [eclector.reader]</strong> <em>client thunk aspect value</em><a href='#index-call_002dwith_002dstate_002dvalue-_005beclector_002ereader_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>Call <var>thunk</var> with the reader state aspect designated by <var>aspect</var>
+bound to <var>value</var>.
+</p>
+<p><var>aspect</var> must designate a reader state aspect that is recognized by
+<var>client</var>.  At least the aspects listed in the
+<a href="#table_003aminimal_002dreader_002dstate_002daspects">minimal reader state aspects
+table</a> must be recognized by any client.
+</p>
+<p>The following properties must hold:
+</p>
+<ul>
+<li> <var>value</var> has to be a valid value for <var>aspect</var> in the sense that
+<code>(eclector.reader:valid-state-value-p <var>client</var> <var>aspect</var>
+<var>value</var>)</code> must return true.
+
+</li><li> During the call to <var>thunk</var> and absent any intervening calls to
+<tt>eclector.reader:call-with-state-value</tt>, the expression
+<code>(eclector.reader:state-value <var>client</var> <var>aspect</var>)</code> must
+evaluate to <var>value</var>.
+</li></ul>
+
+<p>When Eclector calls this generic function with <tt>cl:*package*</tt> as the
+value of <var>aspect</var>, the <var>value</var> is a always a string designator
+and never a package object.  The default method on this generic function
+coerces such string designators to package objects so that a subsequent
+<tt>eclector.reader:state-value</tt> call returns the designated package
+object.
+</p></dd></dl>
+
+<hr>
+</div>
 <div class="subsection" id="Labeled-objects-and-references">
 <div class="header">
 <p>
-Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel="next">S-expression creation and quasiquotation</a>, Previous: <a href="#Reader-behavior-protocol" accesskey="p" rel="prev">Reader behavior protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="n" rel="next">S-expression creation and quasiquotation</a>, Previous: <a href="#Reader-state-protocol" accesskey="p" rel="prev">Reader state protocol</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Labeled-objects-and-references-1"></span><h4 class="subsection">2.3.3 Labeled objects and references</h4>
+<span id="Labeled-objects-and-references-1"></span><h4 class="subsection">2.3.4 Labeled objects and references</h4>
 
 <span id="index-labeled-object"></span>
 
@@ -1484,7 +1644,7 @@ those classes in the obvious way.
 <p>
 Next: <a href="#Readtable-initialization" accesskey="n" rel="next">Readtable initialization</a>, Previous: <a href="#Labeled-objects-and-references" accesskey="p" rel="prev">Labeled objects and references</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.3.4 S-expression creation and quasiquotation</h4>
+<span id="S_002dexpression-creation-and-quasiquotation-1"></span><h4 class="subsection">2.3.5 S-expression creation and quasiquotation</h4>
 
 <span id="index-quotation"></span>
 
@@ -1580,7 +1740,7 @@ to <code>(list 'common-lisp:function <var>form</var>)</code>.
 <p>
 Previous: <a href="#S_002dexpression-creation-and-quasiquotation" accesskey="p" rel="prev">S-expression creation and quasiquotation</a>, Up: <a href="#Ordinary-reader-features" accesskey="u" rel="up">Ordinary reader features</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Concept-index" title="Index" rel="index">Index</a>]</p>
 </div>
-<span id="Readtable-initialization-1"></span><h4 class="subsection">2.3.5 Readtable initialization</h4>
+<span id="Readtable-initialization-1"></span><h4 class="subsection">2.3.6 Readtable initialization</h4>
 
 <span id="index-readtable-1"></span>
 
@@ -2286,10 +2446,10 @@ syntax as:
 invocation while the description for Sharpsign S gives a character-level
 pattern with meta-syntactic variables.  It is possible that this is an
 oversight and the syntax was intended to be uniform between the two
-reader macros.  Whatever the case may be, in order to provide conforming
-behavior, Eclector is forced to implement Sharpsign C with a recursive
-<tt>read</tt> invocation and Sharpsign S with a stricter enforcement of the
-specified syntax.
+reader macros.  Whatever the case may be, in order to handle existing
+code without inconveniencing clients, Eclector implements both
+Sharpsign C and Sharpsign S with a recursive <tt>read</tt> invocation which
+corresponds to permissive behavior.
 </p>
 <p>More concretely, Eclector behaves as summarized in the following table:
 </p>
@@ -2301,10 +2461,10 @@ specified syntax.
 <tr><td width="50%"><tt>#C#.(list 1 (+ 2 3))</tt></td><td width="50%">Read as <tt>#C(1 5)</tt></td></tr>
 <tr><td width="50%"><tt>#C[1 2]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
 <tr><td width="50%"><tt>#S(foo)</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
-<tr><td width="50%"><tt>#S (foo)</tt></td><td width="50%">Rejected</td></tr>
-<tr><td width="50%"><tt>#S#||#(foo)</tt></td><td width="50%">Rejected</td></tr>
-<tr><td width="50%"><tt>#S#.(list 'foo)</tt></td><td width="50%">Rejected</td></tr>
-<tr><td width="50%"><tt>#S[foo]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S (foo)</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
+<tr><td width="50%"><tt>#S#||#(foo)</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
+<tr><td width="50%"><tt>#S#.(list 'foo)</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
+<tr><td width="50%"><tt>#S[foo]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
 </table>
 
 <p>Eclector provides a strict version of the Sharpsign C macro function
@@ -2318,6 +2478,19 @@ follows:
 <tr><td width="50%"><tt>#C#||#(1 2)</tt></td><td width="50%">Rejected</td></tr>
 <tr><td width="50%"><tt>#C#.(list 1 (+ 2 3))</tt></td><td width="50%">Rejected</td></tr>
 <tr><td width="50%"><tt>#C[1 2]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Read as <tt>#C(1 2)</tt></td></tr>
+</table>
+
+<p>Eclector provides a strict version of the Sharpsign S macro function
+under the name <tt>eclector.reader:strict-sharpsign-s</tt> which behaves as
+follows:
+</p>
+<table>
+<thead><tr><th width="50%">Input</th><th width="50%">Behavior</th></tr></thead>
+<tr><td width="50%"><tt>#S(foo)</tt></td><td width="50%">Read as <tt>#S(foo)</tt></td></tr>
+<tr><td width="50%"><tt>#S (foo)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S#||#(foo)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S#.(list 'foo)</tt></td><td width="50%">Rejected</td></tr>
+<tr><td width="50%"><tt>#S[foo]</tt> for left-parenthesis syntax on <tt>[</tt></td><td width="50%">Rejected</td></tr>
 </table>
 
 <hr>
@@ -2429,7 +2602,9 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 </div>
 <span id="Concept-index-1"></span><h2 class="unnumbered">Concept index</h2>
 
-<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-E"><b>E</b></a>
  &nbsp; 
@@ -2448,6 +2623,9 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 </td></tr></table>
 <table class="index-cp" border="0">
 <tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Concept-index_cp_letter-A">A</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-aspect_002c-reader-state">aspect, reader state</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-state-protocol">Reader state protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Concept-index_cp_letter-C">C</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-client">client</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
@@ -2483,6 +2661,7 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><th id="Concept-index_cp_letter-R">R</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-reader-macro">reader macro</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-reader-macro-1">reader macro</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Backquote-and-Sharpsign-Single-Quote">Interpretation of Backquote and Sharpsign Single Quote</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-reader-state">reader state</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-state-protocol">Reader state protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Package-for-readtable-features">Package for readtable features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable-1">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-readtable-2">readtable</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-features">Readtable features</a></td></tr>
@@ -2497,7 +2676,9 @@ Next: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="n" re
 <tr><td></td><td valign="top"><a href="#index-structure-literal">structure literal</a>:</td><td>&nbsp;</td><td valign="top"><a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 </table>
-<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Concept-index_cp_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Concept-index_cp_letter-C"><b>C</b></a>
  &nbsp; 
 <a class="summary-letter" href="#Concept-index_cp_letter-E"><b>E</b></a>
  &nbsp; 
@@ -2547,6 +2728,8 @@ Next: <a href="#Changelog" accesskey="n" rel="next">Changelog</a>, Previous: <a 
  &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-S"><b>S</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-V"><b>V</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-W"><b>W</b></a>
  &nbsp; 
 </td></tr></table>
@@ -2562,6 +2745,7 @@ Next: <a href="#Changelog" accesskey="n" rel="next">Changelog</a>, Previous: <a 
 <tr><td></td><td valign="top"><a href="#index-call_002dreader_002dmacro-_005beclector_002ereader_005d"><code>call-reader-macro [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-call_002dwith_002dcurrent_002dpackage-_005beclector_002ereader_005d"><code>call-with-current-package [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-call_002dwith_002dlabel_002dtracking-_005beclector_002ereader_005d"><code>call-with-label-tracking [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Labeled-objects-and-references">Labeled objects and references</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-call_002dwith_002dstate_002dvalue-_005beclector_002ereader_005d"><code>call-with-state-value [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-state-protocol">Reader state protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-check_002dfeature_002dexpression-_005beclector_002ereader_005d"><code>check-feature-expression [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-check_002dsymbol_002dtoken-_005beclector_002ereader_005d"><code>check-symbol-token [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-behavior-protocol">Reader behavior protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
@@ -2625,8 +2809,12 @@ Next: <a href="#Changelog" accesskey="n" rel="next">Changelog</a>, Previous: <a 
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dand_002dmacros-_005beclector_002ereader_005d"><code>set-standard-syntax-and-macros [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-set_002dstandard_002dsyntax_002dtypes-_005beclector_002ereader_005d"><code>set-standard-syntax-types [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Readtable-initialization">Readtable initialization</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-source_002dposition-_005beclector_002ebase_005d"><code>source-position [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-state_002dvalue-_005beclector_002ereader_005d"><code>state-value [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-state-protocol">Reader state protocol</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-stream_002dposition-_005beclector_002ebase_005d"><code>stream-position [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-stream_002dposition_002dcondition-_005beclector_002ebase_005d"><code>stream-position-condition [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-V">V</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-valid_002dstate_002dvalue_002dp-_005beclector_002ereader_005d"><code>valid-state-value-p [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Reader-state-protocol">Reader state protocol</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-W">W</th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-with_002dforbidden_002dquasiquotation-_005beclector_002ereader_005d"><code>with-forbidden-quasiquotation [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#S_002dexpression-creation-and-quasiquotation">S-expression creation and quasiquotation</a></td></tr>
@@ -2660,6 +2848,8 @@ Next: <a href="#Changelog" accesskey="n" rel="next">Changelog</a>, Previous: <a 
  &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-S"><b>S</b></a>
  &nbsp; 
+<a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-V"><b>V</b></a>
+ &nbsp; 
 <a class="summary-letter" href="#Function-and-macro-and-variable-and-type-index_fn_letter-W"><b>W</b></a>
  &nbsp; 
 </td></tr></table>
@@ -2674,7 +2864,12 @@ Previous: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="p
 <span id="Changelog-1"></span><h2 class="unnumbered">Changelog</h2>
 
 <dl compact="compact">
-<dt><span>Release 0.9 (not yet released)</span></dt>
+<dt><span>Release 0.10 (not yet released)</span></dt>
+<dd>
+<ul>
+</ul>
+</dd>
+<dt><span>Release 0.9 (2023-03-19)</span></dt>
 <dd>
 <ul>
 <li> The deprecated function <tt>eclector.concrete-syntax-tree:cst-read</tt> has been
@@ -2706,30 +2901,30 @@ complicated definitions and references.
 
 <p>Before this change, cases like
 </p>
-<div class="example">
-<pre class="example">#1=(1 #1# #2=(2 #2# ... #100=(100 #100#)))
+<div class="example lisp">
+<pre class="lisp">#1=(1 #1# #2=(2 #2# ... #100=(100 #100#)))
 </pre></div>
 
 <p>or
 </p>
-<div class="example">
-<pre class="example">#1=(1 #2=(2 ... #2#) ... #1#)
+<div class="example lisp">
+<pre class="lisp">#1=(1 #2=(2 ... #2#) ... #1#)
 </pre></div>
 
-<p>lead to unnecessary and/or repeated traversals during fixup processing.
+<p>led to unnecessary and/or repeated traversals during fixup processing.
 </p>
 </li><li> Fixup processing is now performed in parse result objects.
 
 <p>Before this change, something like
 </p>
-<div class="example">
-<pre class="example">(eclector.concrete-syntax-tree:read-from-string &quot;#1=(#1#)&quot;)
+<div class="example lisp">
+<pre class="lisp">(eclector.concrete-syntax-tree:read-from-string &quot;#1=(#1#)&quot;)
 </pre></div>
 
 <p>produced a CST object, say <tt>cst</tt>, which failed to satisfy
 </p>
-<div class="example">
-<pre class="example">(eq (cst:first cst)       cst)
+<div class="example lisp">
+<pre class="lisp">(eq (cst:first cst)       cst)
 (eq (cst:raw (first cst)) (cst:raw cst))
 </pre></div>
 
@@ -2757,6 +2952,31 @@ functions in the Reader behavior protocol has been added to the manual
 </li><li> The <tt>eclector-concrete-syntax-tree</tt> system now works with and requires
 version 0.2 of the <tt>concrete-syntax-tree</tt> system.
 
+</li><li> Eclector provides a new protocol for querying and binding behavior-changing
+aspects of the current state of the reader such as the current package, the
+current readtable and the current read base (See <a href="#Reader-state-protocol">Reader state protocol</a>).
+
+<p>Clients can use this protocol to control the reader state in other ways than
+binding the Common Lisp variables, for example by storing the values of reader
+state aspects in context objects.
+</p>
+<p>Furthermore, implementations which use Eclector as the Common Lisp reader can
+use this protocol to tie the <tt>cl:*readtable*</tt> aspect to the
+<tt>cl:*readtable*</tt> variable instead of the <tt>eclector.reader:*readtable*</tt>
+variable.
+</p>
+<p>The new protocol subsumes the purpose of the generic function
+<tt>eclector.reader:call-with-current-package</tt> which is deprecated as of this
+Eclector version.
+</p>
+</li><li> Eclector now provides and uses by default a relaxed version of the
+<tt>eclector.reader::sharpsign-s</tt> reader macro function which requires the input
+following <tt>#S</tt> to be read as a list but not necessarily be literally written
+as <tt>(TYPE INITARG₁ VALUE₁ …)</tt>.
+
+<p>A detailed discussion of the topic has been added to the manual
+(See <a href="#Interpretation-of-Sharpsign-C-and-Sharpsign-S">Interpretation of Sharpsign C and Sharpsign S</a>).
+</p>
 </li></ul>
 </dd>
 <dt><span>Release 0.8 (2021-08-24)</span></dt>
