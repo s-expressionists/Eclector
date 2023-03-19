@@ -12,7 +12,10 @@
                 ;; Do not use (is (typep ...)) so the number of checks does
                 ;; not vary with source code changes.
                 (unless (typep parse-result '#1=concrete-syntax-tree:cst)
-                  (fail "~@<~S is not of type ~S.~@:>" parse-result '#1#)))
+                  (fail "~@<~S is not of type ~S.~@:>" parse-result '#1#))
+                (unless (valid-cst-parse-result-p client parse-result)
+                  (fail "~@<~S is not a valid CST parse result.~@:>"
+                        client parse-result)))
               (lambda (&rest args)
                 (let ((eclector.base:*client* client))
                   (apply #'eclector.concrete-syntax-tree:read args)))))))

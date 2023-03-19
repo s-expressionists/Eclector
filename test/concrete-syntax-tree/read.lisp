@@ -20,6 +20,8 @@
            (declare (ignore orphan-results))
            ;; CST result and its raw content.
            (is (typep result 'cst:cst))
+           (is-true (valid-cst-parse-result-p
+                     eclector.concrete-syntax-tree::*cst-client* result))
            (is-consistent-with-raw result)
            (let ((raw (cst:raw result)))
              (expect "raw result" (equal* expected-raw raw)))
@@ -60,6 +62,9 @@
           (t
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (typep result 'cst:cst))
+             (is-true (valid-cst-parse-result-p
+                       eclector.concrete-syntax-tree::*cst-client* result))
+             (is-consistent-with-raw result)
              (let ((raw (cst:raw result)))
                (expect "raw results" (equal expected-result raw)))
              (expect "orphan results" (eq  '()               orphan-results))
@@ -88,6 +93,9 @@
           (t
            (multiple-value-bind (result position) (do-it)
              (is (typep result 'cst:cst))
+             (is-true (valid-cst-parse-result-p
+                       eclector.concrete-syntax-tree::*cst-client* result))
+             (is-consistent-with-raw result)
              (let ((raw (cst:raw result)))
                (expect "raw result" (equal expected-value raw)))
              (expect "position" (eql expected-position position))))))

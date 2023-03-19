@@ -54,7 +54,12 @@
 (defclass reference-csts-mixin () ())
 
 (defmethod eclector.reader:fixup ((client cst-client)
-                                  (object wrapper-cst)
+                                  (object definition-cst)
+                                  seen-objects)
+  (eclector.reader:fixup client (target object) seen-objects))
+
+(defmethod eclector.reader:fixup ((client cst-client)
+                                  (object reference-cst)
                                   seen-objects)
   (declare (ignore seen-objects))) ; nothing to do
 

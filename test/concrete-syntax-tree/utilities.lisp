@@ -22,3 +22,21 @@
                        (rec cst-car)
                        (rec cst-cdr)))))))
       (rec cst))))
+
+(defun valid-cst-parse-result-p (client root-cst)
+  (let ((seen (make-hash-table :test #'eq)))
+    (labels ((rec (cst)
+               (cond ((gethash cst seen)
+                      t)
+                     (t
+                      (setf (gethash cst seen) t)
+                      (typecase cst
+                        (cst:atom-cst
+                         (not (eclector.reader:labeled-object-state
+                               client (cst:raw cst))))
+                        (cst:cons-cst
+                         (and (rec (cst:first cst))
+                              (rec (cst:rest cst))))
+                        (eclector.concrete-syntax-tree:wrapper-cst
+                         (rec (eclector.concrete-syntax-tree:target cst))))))))
+      (rec root-cst))))

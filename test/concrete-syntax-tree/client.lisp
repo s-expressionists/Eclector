@@ -11,14 +11,18 @@
 
 (test labeled-object-annotation
   "Test custom labeled object reference processing."
-  (is (equal* '(a #1=(b (:circular-reference #1#)
-                      c (:another-circular-reference #1#)
-                      d)
-                e (:ordinary-reference #1#) f)
-              (let ((eclector.base:*client*
-                      (make-instance 'annotating-cst-client)))
-                (cst:raw (eclector.concrete-syntax-tree:read-from-string
-                          "(A #1=(b #1# c #1# d) e #1# f)"))))))
+  (let* ((input "(A #1=(b #1# c #1# d) e #1# f)")
+         (client (make-instance 'annotating-cst-client))
+         (result (let ((eclector.base:*client* client))
+                   (eclector.concrete-syntax-tree:read-from-string input))))
+    (is-true (valid-cst-parse-result-p client result)
+             "~@<For input ~S, the result CST ~A is not valid.~@:>"
+             input result)
+    (is (equal* '(a #1=(b (:circular-reference #1#)
+                        c (:another-circular-reference #1#)
+                        d)
+                  e (:ordinary-reference #1#) f)
+                (cst:raw result)))))
 
 ;;; Test wrapper CST classes
 
@@ -40,9 +44,22 @@
           (*max-trials* 10000))
       (for-all ((expression (gen-labels-and-references)))
         (let* ((input (prin1-to-string expression))
-               (result (let ((eclector.base:*client*
-                               (make-instance 'wrapper-cst-client)))
+               (client (make-instance 'wrapper-cst-client))
+               (result (let ((eclector.base:*client* client))
                          (eclector.concrete-syntax-tree:read-from-string input))))
           (assert (equal* expression (read-from-string input)))
+          (is-true (valid-cst-parse-result-p client result)
+                   "~@<For input ~S, the result CST ~A is not valid.~@:>"
+                   input result)
           (is (equal* expression (cst:raw result)))
           (is (equal* expression (raw* result))))))))
+
+(test wrapper-labeled-object-csts/missed-labeled-object
+  "Check that no labeled objects remain in the parse result tree."
+  (let* ((input "#1=(#2=(#1#))")
+         (client (make-instance 'wrapper-cst-client))
+         (result (let ((eclector.base:*client* client))
+                   (eclector.concrete-syntax-tree:read-from-string input))))
+    (is (valid-cst-parse-result-p client result)
+        "~@<For input ~S, the result CST ~A is not valid.~@:>"
+        input result)))
