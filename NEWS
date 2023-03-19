@@ -70,6 +70,22 @@ Release 0.9 (not yet released)
 * The eclector-concrete-syntax-tree system now works with and requires version
   0.2 of the concrete-syntax-tree system.
 
+* Eclector provides a new protocol for querying and binding behavior-changing
+  aspects of the current state of the reader such as the current package, the
+  current readtable and the current read base.
+
+  Clients can use this protocol to control the reader state in other ways than
+  binding the Common Lisp variables, for example by storing the values of
+  reader state aspects in context objects.
+
+  Furthermore, implementations which use Eclector as the Common Lisp reader can
+  use this protocol to tie the CL:*READTABLE* aspect to the CL:*READTABLE*
+  variable instead of the ECLECTOR.READER:*READTABLE* variable.
+
+  The new protocol subsumes the purpose of the generic function
+  ECLECTOR.READER:CALL-WITH-CURRENT-PACKAGE which is deprecated as of this
+  Eclector version.
+
 Release 0.8 (2021-08-24)
 
 * The default ECLECTOR.READER:READ-TOKEN method and the functions

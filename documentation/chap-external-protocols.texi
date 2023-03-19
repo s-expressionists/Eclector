@@ -613,6 +613,14 @@ the structure type.
 @defgena {call-with-current-package,eclector.reader} client thunk@
   package-designator
 
+@quotation Warning
+This generic function is deprecated as of @sysname{} 0.9 and will be
+removed in a future version.  Please use the generic function
+@t{eclector.reader:call-with-state-value} with the aspect designator
+@t{'cl:*package*} instead (@pxref{Reader state protocol} for more
+information on the reader state protocol).
+@end quotation
+
 This generic function is called by the reader when input has to be
 read with a particular current package.  This is currently only the
 case in the @t{#+} and @t{#-} reader macro functions which
@@ -681,6 +689,143 @@ The default method on this generic function first calls
 @var{feature-expression}.  It then evaluates
 @var{feature-expression} according to standard @commonlisp{}
 semantics for feature expressions.
+@end deffn
+
+@node Reader state protocol
+@subsection Reader state protocol
+
+@cindex reader state
+@cindex aspect, reader state
+
+The reader state protocol consists of generic functions which the reader
+and the client call to query and modify the values of reader state
+@emph{aspects}.  Each aspect is named by a symbol and holds a current
+value and has a stack of shadowed values like a special variable.
+Aspects roughly correspond to the reader control variables defined in
+the @commonlisp{} specification.  @sysname{} defines the following
+aspects:
+
+@anchor{table:minimal-reader-state-aspects}
+@table @code
+@item cl:*readtable*
+
+Like the @t{cl:*readtable*} special variable, this aspects controls the
+readtable object in which the reader looks up the syntax types of
+characters, the case conversion mode as well as reader macros.  By
+default, values of this aspect must satisfy the
+@t{eclector.readtable:readtablep} predicate.
+
+@item cl:*package*
+
+Like the @t{cl:*package*} special variable, this aspects controls the
+package which the reader uses when it looks up or interns symbols in the
+current package.
+
+@item cl:*read-suppress*
+
+Like the @t{cl:*read-suppress*} special variable, this aspect controls
+whether the reader skips over expressions without detailed parsing.
+
+@item cl:*read-eval*
+
+Like the @t{cl:*read-eval*} special variable, this aspect controls
+whether the reader evaluates expressions in @t{#.} constructs.
+
+@item cl:*features*
+
+Like the @t{cl:*features*} special variable, this aspect controls the
+evaluation of features in feature expressions in @t{#+} and @t{#-}
+constructs.
+
+@item cl:*read-base*
+
+Like the @t{cl:*read-base*} special variable, this aspect controls the
+interpretation of tokens by the reader as being integers or ratios.
+
+@item cl:*read-default-float-format*
+
+Like the @t{cl:*read-default-float-format*} special variable, this
+aspect controls the floating-point format that the reader uses for
+floating-point numbers without exponent marker or the default exponent
+marker.
+
+@end table
+
+@defgena{valid-state-value-p,eclector.reader} client aspect value
+
+This generic function is called by the reader to determine whether
+@var{value} is a valid value for the reader state aspect designated by
+@var{aspect}.  The generic function returns true if, according to
+@var{client}, @var{value} is a valid value for the reader state aspect
+designated by @var{aspect}.  @var{aspect} must designate a reader state
+aspect that is recognized by @var{client}.  At least the aspects listed
+in the @ref{table:minimal-reader-state-aspects,,minimal reader state
+aspects table} must be recognized by any client.
+
+With the exceptions of @t{cl:*readtable*} and @t{cl:*package*}, the
+default methods on this generic function recognize state aspects and
+implement type restrictions informed by the @commonlisp{} specification:
+@multitable @columnfractions .3 .7
+@headitem Aspect                             @tab Type
+@item     @t{cl:*readtable*}                 @tab @t{(satisfies eclector.readtable:readtablep)}
+@item     @t{cl:*package*}                   @tab @t{(or cl:package cl:symbol cl:string cl:character)} (package designator)
+@item     @t{cl:*read-suppress*}             @tab @t{t} (generalized Boolean)
+@item     @t{cl:*read-eval*}                 @tab @t{t} (generalized Boolean)
+@item     @t{cl:*features*}                  @tab @t{list} (proper list)
+@item     @t{cl:*read-base*}                 @tab @t{(integer 2 36)} (radix)
+@item     @t{cl:*read-default-float-format*} @tab @t{(member short-float single-float double-float long-float)}
+@end multitable
+@end deffn
+
+@defgena{state-value,eclector.reader} client aspect
+
+Return the current value of the reader state aspect designated by
+@var{aspect}.
+
+@var{aspect} must designate a reader state aspect that is recognized by
+@var{client}.  At least the aspects listed in the
+@ref{table:minimal-reader-state-aspects,,minimal reader state aspects
+table} must be recognized by any client.
+
+The @t{cl:*package*} aspect mandates further explanation: When the
+client uses only the default methods of the reader state protocol, the
+return value of this generic function for the @t{cl:*package*} aspect is
+of type @t{cl:package} which is a strict subtype of the type of valid
+values for this aspect.  In other words, the defaults coerce package
+designators to package objects.
+@end deffn
+
+@defgena{call-with-state-value,eclector.reader} client thunk aspect value
+
+Call @var{thunk} with the reader state aspect designated by @var{aspect}
+bound to @var{value}.
+
+@var{aspect} must designate a reader state aspect that is recognized by
+@var{client}.  At least the aspects listed in the
+@ref{table:minimal-reader-state-aspects,,minimal reader state aspects
+table} must be recognized by any client.
+
+The following properties must hold:
+
+@itemize
+@item
+@var{value} has to be a valid value for @var{aspect} in the sense that
+@code{(eclector.reader:valid-state-value-p @var{client} @var{aspect}
+@var{value})} must return true.
+
+@item
+During the call to @var{thunk} and absent any intervening calls to
+@t{eclector.reader:call-with-state-value}, the expression
+@code{(eclector.reader:state-value @var{client} @var{aspect})} must
+evaluate to @var{value}.
+@end itemize
+
+When @sysname{} calls this generic function with @t{cl:*package*} as the
+value of @var{aspect}, the @var{value} is a always a string designator
+and never a package object.  The default method on this generic function
+coerces such string designators to package objects so that a subsequent
+@t{eclector.reader:state-value} call returns the designated package
+object.
 @end deffn
 
 @node Labeled objects and references

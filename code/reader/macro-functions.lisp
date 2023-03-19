@@ -107,7 +107,7 @@
   (let ((result (make-array 100 :element-type 'character
                                 :adjustable t
                                 :fill-pointer 0)))
-    (loop with readtable = *readtable*
+    (loop with readtable = (state-value *client* 'cl:*readtable*)
           for char2 = (read-char-or-recoverable-error
                        stream char 'unterminated-string
                        :delimiter char :report 'use-partial-string)
@@ -166,35 +166,37 @@
 
 (defun backquote (stream char)
   (declare (ignore char))
-  (alexandria:when-let ((context *quasiquote-forbidden*))
-    (unless *read-suppress*
-      (%recoverable-reader-error
-       stream 'backquote-in-invalid-context
-       :position-offset -1 :context context :report 'ignore-quasiquote)
-      (return-from backquote
-        (let ((*backquote-depth* 0))
-          (read stream t nil t)))))
-  (let ((material (let ((*backquote-depth* (1+ *backquote-depth*))
-                        (*unquote-forbidden* nil))
-                    (handler-case
-                        (read stream t nil t)
-                      ((and end-of-file (not incomplete-construct)) (condition)
-                        (%recoverable-reader-error
-                         stream 'end-of-input-after-backquote
-                         :stream-position (stream-position condition)
-                         :report 'inject-nil)
-                        nil)
-                      (end-of-list (condition)
-                        (%recoverable-reader-error
-                         stream 'object-must-follow-backquote
-                         :position-offset -1 :report 'inject-nil)
-                        (unread-char (%character condition) stream)
-                        nil)))))
-    (wrap-in-quasiquote *client* material)))
+  (let ((client *client*))
+    (alexandria:when-let ((context *quasiquote-forbidden*))
+      (unless (state-value client '*read-suppress*)
+        (%recoverable-reader-error
+         stream 'backquote-in-invalid-context
+         :position-offset -1 :context context :report 'ignore-quasiquote)
+        (return-from backquote
+          (let ((*backquote-depth* 0))
+            (read stream t nil t)))))
+    (let ((material (let ((*backquote-depth* (1+ *backquote-depth*))
+                          (*unquote-forbidden* nil))
+                      (handler-case
+                          (read stream t nil t)
+                        ((and end-of-file (not incomplete-construct)) (condition)
+                          (%recoverable-reader-error
+                           stream 'end-of-input-after-backquote
+                           :stream-position (stream-position condition)
+                           :report 'inject-nil)
+                          nil)
+                        (end-of-list (condition)
+                          (%recoverable-reader-error
+                           stream 'object-must-follow-backquote
+                           :position-offset -1 :report 'inject-nil)
+                          (unread-char (%character condition) stream)
+                          nil)))))
+      (wrap-in-quasiquote client material))))
 
 (defun comma (stream char)
   (declare (ignore char))
-  (let* ((depth *backquote-depth*)
+  (let* ((client *client*)
+         (depth *backquote-depth*)
          (char2 (read-char stream nil nil t))
          (splicing-p (case char2
                        ((#\@ #\.) t)
@@ -223,7 +225,7 @@
          :splicing-p splicing-p :report 'ignore-unquote)
         (return-from comma (read-material)))
       (alexandria:when-let ((context *unquote-forbidden*))
-        (unless *read-suppress*
+        (unless (state-value client '*read-suppress*)
           (%recoverable-reader-error
            stream 'unquote-in-invalid-context
            :position-offset (if splicing-p -2 -1)
@@ -232,8 +234,8 @@
       (let* ((*backquote-depth* (1- depth))
              (form (read-material)))
         (if splicing-p
-            (wrap-in-unquote-splicing *client* form)
-            (wrap-in-unquote *client* form))))))
+            (wrap-in-unquote-splicing client form)
+            (wrap-in-unquote client form))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -318,30 +320,30 @@
 
 (defun %sharpsign-single-quote (stream char parameter allow-unquote)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-single-quote parameter))
-  (let ((name (with-forbidden-quasiquotation
-                  ('sharpsign-single-quote :keep (if allow-unquote :keep t))
-                (handler-case
-                    (read stream t nil t)
-                  ((and end-of-file (not incomplete-construct)) (condition)
-                    (%recoverable-reader-error
-                     stream 'end-of-input-after-sharpsign-single-quote
-                     :stream-position (stream-position condition)
-                     :report 'inject-nil)
-                    nil)
-                  (end-of-list (condition)
-                    (%recoverable-reader-error
-                     stream 'object-must-follow-sharpsign-single-quote
-                     :position-offset -1 :report 'inject-nil)
-                    (unread-char (%character condition) stream)
-                    nil)))))
-    (cond (*read-suppress*
-           nil)
-          ((null name)
-           nil)
-          (t
-           (wrap-in-function *client* name)))))
+  (let* ((client *client*)
+         (suppress (state-value client '*read-suppress*)))
+    (unless (null parameter)
+      (numeric-parameter-ignored
+       stream 'sharpsign-single-quote parameter suppress))
+    (let ((name (with-forbidden-quasiquotation
+                    ('sharpsign-single-quote :keep (if allow-unquote :keep t))
+                  (handler-case
+                      (read stream t nil t)
+                    ((and end-of-file (not incomplete-construct)) (condition)
+                      (%recoverable-reader-error
+                       stream 'end-of-input-after-sharpsign-single-quote
+                       :stream-position (stream-position condition)
+                       :report 'inject-nil)
+                      nil)
+                    (end-of-list (condition)
+                      (%recoverable-reader-error
+                       stream 'object-must-follow-sharpsign-single-quote
+                       :position-offset -1 :report 'inject-nil)
+                      (unread-char (%character condition) stream)
+                      nil)))))
+      (cond (suppress nil)
+            ((null name) nil)
+            (t (wrap-in-function client name))))))
 
 ;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
 ;;; that is `#',(foo) is read as
@@ -376,49 +378,50 @@
                 :stream-position (stream-position condition)
                 :delimiter #\) :report 'use-partial-vector)
                (values nil nil)))))
-    (cond (*read-suppress*
-           (loop for elementp = (nth-value 1 (next-element))
-                 while elementp))
-          ((null parameter)
-           (loop with result = (make-array 10 :adjustable t :fill-pointer 0)
-                 for (element elementp) = (multiple-value-list (next-element))
-                 while elementp
-                 do (vector-push-extend element result)
-                 finally (return (coerce result 'simple-vector))))
-          (t
-           (loop with result = (make-array parameter)
-                 with excess-position = nil
-                 for index from 0
-                 for (element elementp) = (multiple-value-list
-                                           (next-element))
-                 while elementp
-                 if (< index parameter)
-                   do (setf (aref result index) element)
-                 else
-                   do (setf excess-position (eclector.base:source-position
-                                             *client* stream))
-                 finally (cond ((and (zerop index) (plusp parameter))
-                                (%recoverable-reader-error
-                                 stream 'no-elements-found
-                                 :position-offset -1
-                                 :array-type 'vector :expected-number parameter
-                                 :report 'use-empty-vector)
-                                (setf result (make-array 0)
-                                      index parameter))
-                               ((> index parameter)
-                                (%recoverable-reader-error
-                                 stream 'too-many-elements
-                                 :stream-position excess-position ; inaccurate
-                                 :position-offset -1
-                                 :array-type 'vector
-                                 :expected-number parameter
-                                 :number-found index
-                                 :report 'ignore-excess-elements)))
-                         (return
-                           (if (< index parameter)
-                               (fill result (aref result (1- index))
-                                     :start index)
-                               result)))))))
+    (let ((client *client*))
+      (cond ((state-value client '*read-suppress*)
+             (loop for elementp = (nth-value 1 (next-element))
+                   while elementp))
+            ((null parameter)
+             (loop with result = (make-array 10 :adjustable t :fill-pointer 0)
+                   for (element elementp) = (multiple-value-list (next-element))
+                   while elementp
+                   do (vector-push-extend element result)
+                   finally (return (coerce result 'simple-vector))))
+            (t
+             (loop with result = (make-array parameter)
+                   with excess-position = nil
+                   for index from 0
+                   for (element elementp) = (multiple-value-list
+                                             (next-element))
+                   while elementp
+                   if (< index parameter)
+                     do (setf (aref result index) element)
+                   else
+                     do (setf excess-position (eclector.base:source-position
+                                               client stream))
+                   finally (cond ((and (zerop index) (plusp parameter))
+                                  (%recoverable-reader-error
+                                   stream 'no-elements-found
+                                   :position-offset -1
+                                   :array-type 'vector :expected-number parameter
+                                   :report 'use-empty-vector)
+                                  (setf result (make-array 0)
+                                        index parameter))
+                                 ((> index parameter)
+                                  (%recoverable-reader-error
+                                   stream 'too-many-elements
+                                   :stream-position excess-position ; inaccurate
+                                   :position-offset -1
+                                   :array-type 'vector
+                                   :expected-number parameter
+                                   :number-found index
+                                   :report 'ignore-excess-elements)))
+                           (return
+                             (if (< index parameter)
+                                 (fill result (aref result (1- index))
+                                       :start index)
+                                 result))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -426,37 +429,39 @@
 
 (defun sharpsign-dot (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-dot parameter))
-  (cond ((not *read-eval*)
-         (%reader-error stream 'read-time-evaluation-inhibited))
-        (*read-suppress*
-         (read stream t nil t))
-        (t
-         (let ((expression (with-forbidden-quasiquotation (nil nil nil)
-                             (let ((*list-reader* nil))
-                               (handler-case
-                                   (read stream t nil t)
-                                 ((and end-of-file (not incomplete-construct)) (condition)
-                                   (%recoverable-reader-error
-                                    stream 'end-of-input-after-sharpsign-dot
-                                    :stream-position (stream-position condition)
-                                    :report 'inject-nil)
-                                   nil)
-                                 (end-of-list (condition)
-                                   (%recoverable-reader-error
-                                    stream 'object-must-follow-sharpsign-dot
-                                    :position-offset -1 :report 'inject-nil)
-                                   (unread-char (%character condition) stream)
-                                   nil))))))
-           (handler-case
-               (evaluate-expression *client* expression)
-             (error (condition)
-               (%recoverable-reader-error
-                stream 'read-time-evaluation-error
-                :expression expression :original-condition condition
-                :report 'inject-nil)
-               nil))))))
+  (let* ((client *client*)
+         (suppress (state-value client '*read-suppress*)))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-dot parameter suppress))
+    (cond ((not (state-value client '*read-eval*))
+           (%reader-error stream 'read-time-evaluation-inhibited))
+          (suppress
+           (read stream t nil t))
+          (t
+           (let ((expression (with-forbidden-quasiquotation (nil nil nil)
+                               (let ((*list-reader* nil))
+                                 (handler-case
+                                     (read stream t nil t)
+                                   ((and end-of-file (not incomplete-construct)) (condition)
+                                     (%recoverable-reader-error
+                                      stream 'end-of-input-after-sharpsign-dot
+                                      :stream-position (stream-position condition)
+                                      :report 'inject-nil)
+                                     nil)
+                                   (end-of-list (condition)
+                                     (%recoverable-reader-error
+                                      stream 'object-must-follow-sharpsign-dot
+                                      :position-offset -1 :report 'inject-nil)
+                                     (unread-char (%character condition) stream)
+                                     nil))))))
+             (handler-case
+                 (evaluate-expression client expression)
+               (error (condition)
+                 (%recoverable-reader-error
+                  stream 'read-time-evaluation-error
+                  :expression expression :original-condition condition
+                  :report 'inject-nil)
+                 nil)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -479,192 +484,203 @@
 
 (defun sharpsign-backslash (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-backslash parameter))
-  (let ((char1 (read-char-or-recoverable-error
-                stream nil 'end-of-input-after-backslash
-                :report '(use-replacement-character #1=#\?))))
-    (when (null char1) ; can happen when recovering
-      (return-from sharpsign-backslash #1#))
-    (with-token-info (push-char () finalize :lazy t)
-      (labels ((handle-char (char escapep)
-                 (declare (ignore escapep))
-                 (when (not (null char1))
-                   (push-char char1)
-                   (setf char1 nil))
-                 (push-char char))
-               (unterminated-single-escape (escape-char)
-                 (%recoverable-reader-error
-                  stream 'unterminated-single-escape-in-character-name
-                  :escape-char escape-char :report 'use-partial-character-name))
-               (unterminated-multiple-escape (delimiter)
-                 (%recoverable-reader-error
-                  stream 'unterminated-multiple-escape-in-character-name
-                  :delimiter delimiter :report 'use-partial-character-name))
-               (lookup (name)
-                 (let ((character (find-character *client* name)))
-                   (cond ((null character)
-                          (%recoverable-reader-error
-                           stream 'unknown-character-name
-                           :position-offset (- (if (characterp name)
-                                                   1
-                                                   (length name)))
-                           :name name
-                           :report '(use-replacement-character #2=#\?))
-                          #2#)
-                         (t
-                          character))))
-               (terminate-character ()
-                 (return-from sharpsign-backslash
-                   (cond (*read-suppress* nil)
-                         ((not (null char1)) ; no additional characters pushed (same as (null token))
-                          (lookup char1))
-                         (t
-                          (lookup (finalize)))))))
-        (token-state-machine
-         stream *readtable* handle-char nil nil
-         unterminated-single-escape unterminated-multiple-escape
-         terminate-character)))))
+  (let* ((client *client*)
+         (readtable (state-value client 'cl:*readtable*))
+         (suppress (state-value client '*read-suppress*)))
+    (unless (null parameter)
+      (numeric-parameter-ignored
+       stream 'sharpsign-backslash parameter suppress))
+    (let ((char1 (read-char-or-recoverable-error
+                  stream nil 'end-of-input-after-backslash
+                  :report '(use-replacement-character #1=#\?))))
+      (when (null char1) ; can happen when recovering
+        (return-from sharpsign-backslash #1#))
+      (with-token-info (push-char () finalize :lazy t)
+        (labels ((handle-char (char escapep)
+                   (declare (ignore escapep))
+                   (when (not (null char1))
+                     (push-char char1)
+                     (setf char1 nil))
+                   (push-char char))
+                 (unterminated-single-escape (escape-char)
+                   (%recoverable-reader-error
+                    stream 'unterminated-single-escape-in-character-name
+                    :escape-char escape-char :report 'use-partial-character-name))
+                 (unterminated-multiple-escape (delimiter)
+                   (%recoverable-reader-error
+                    stream 'unterminated-multiple-escape-in-character-name
+                    :delimiter delimiter :report 'use-partial-character-name))
+                 (lookup (name)
+                   (let ((character (find-character client name)))
+                     (cond ((null character)
+                            (%recoverable-reader-error
+                             stream 'unknown-character-name
+                             :position-offset (- (if (characterp name)
+                                                     1
+                                                     (length name)))
+                             :name name
+                             :report '(use-replacement-character #2=#\?))
+                            #2#)
+                           (t
+                            character))))
+                 (terminate-character ()
+                   (return-from sharpsign-backslash
+                     (cond (suppress nil)
+                           ((not (null char1)) ; no additional characters pushed (same as (null token))
+                            (lookup char1))
+                           (t
+                            (lookup (finalize)))))))
+          (token-state-machine
+           stream readtable handle-char nil nil
+           unterminated-single-escape unterminated-multiple-escape
+           terminate-character))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Reader macro for sharpsign B, X, O and R.
 
-(defun read-rational (stream base)
-  (let ((readtable *readtable*)
-        (read-suppress *read-suppress*))
-    (labels ((next-char (eof-error-p)
-               (let ((char (read-char stream nil nil t)))
-                 (cond ((not (null char))
-                        (values char (eclector.readtable:syntax-type
-                                      readtable char)))
-                       ((and eof-error-p (not read-suppress))
-                        (%recoverable-reader-error
-                         stream 'end-of-input-before-digit
-                         :base base :report 'replace-invalid-digit)
-                        (values #\1 :constituent))
-                       (t
-                        (values nil nil)))))
-             (digit-expected (char type recover-value)
-               (%recoverable-reader-error
-                stream 'digit-expected
-                :position-offset -1
-                :character-found char :base base
-                :report 'replace-invalid-digit)
-               (unless (eq type :constituent)
-                 (unread-char char stream))
-               recover-value)
-             (ensure-digit (char type)
-               (let ((value (digit-char-p char base)))
-                 (if (null value)
-                     (digit-expected char type 1)
-                     value)))
-             (maybe-sign ()
-               (multiple-value-bind (char type) (next-char t)
-                 (cond (read-suppress
-                        (values 1 0))
-                       ((not (eq type :constituent))
-                        (digit-expected char type nil))
-                       ((char= char #\-)
-                        (values -1 0))
-                       (t
-                        (values 1 (ensure-digit char type))))))
-             (integer (empty-allowed /-allowed initial-value)
-               (let ((value initial-value))
-                 (tagbody
-                    (when empty-allowed (go rest)) ; also when READ-SUPPRESS
-                    (multiple-value-bind (char type) (next-char t)
-                      (case type
-                        (:constituent
-                         (setf value (ensure-digit char type)))
-                        (t
-                         (digit-expected char type nil)
-                         (return-from integer value))))
-                  rest
-                    (multiple-value-bind (char type) (next-char nil)
-                      (ecase type
-                        ((nil)
-                         (return-from integer value))
-                        (:whitespace
-                         (unread-char char stream)
-                         (return-from integer value))
-                        (:terminating-macro
-                         (unread-char char stream)
-                         (return-from integer value))
-                        ((:non-terminating-macro
-                          :single-escape :multiple-escape)
-                         (cond (read-suppress
-                                (go rest))
-                               (t
-                                (digit-expected char type nil)
-                                (return-from integer value))))
-                        (:constituent
-                         (cond (read-suppress
-                                (go rest))
-                               ((and /-allowed (eql char #\/))
-                                (return-from integer (values value t)))
-                               (t
-                                (setf value (+ (* base (or value 0))
-                                               (ensure-digit char type)))
-                                (go rest)))))))))
-             (read-denominator ()
-               (let ((value (integer nil nil nil)))
-                 (cond ((eql value 0)
-                        (%recoverable-reader-error
-                         stream 'zero-denominator
-                         :position-offset -1 :report 'replace-invalid-digit)
-                        nil)
-                       (t
-                        value)))))
-      (multiple-value-bind (sign numerator) (maybe-sign)
-        (if (null sign)
-            0
-            (multiple-value-bind (numerator slashp)
-                (integer (= sign 1) t numerator)
-              (unless read-suppress ; When READ-SUPPRESS, / has been consumed
-                (let ((denominator (when slashp (read-denominator))))
-                  (* sign (if denominator
-                              (/ numerator denominator)
-                              numerator))))))))))
+(defun read-rational (stream readtable base suppress)
+  (labels ((next-char (eof-error-p)
+             (let ((char (read-char stream nil nil t)))
+               (cond ((not (null char))
+                      (values char (eclector.readtable:syntax-type
+                                    readtable char)))
+                     ((and eof-error-p (not suppress))
+                      (%recoverable-reader-error
+                       stream 'end-of-input-before-digit
+                       :base base :report 'replace-invalid-digit)
+                      (values #\1 :constituent))
+                     (t
+                      (values nil nil)))))
+           (digit-expected (char type recover-value)
+             (%recoverable-reader-error
+              stream 'digit-expected
+              :position-offset -1
+              :character-found char :base base
+              :report 'replace-invalid-digit)
+             (unless (eq type :constituent)
+               (unread-char char stream))
+             recover-value)
+           (ensure-digit (char type)
+             (let ((value (digit-char-p char base)))
+               (if (null value)
+                   (digit-expected char type 1)
+                   value)))
+           (maybe-sign ()
+             (multiple-value-bind (char type) (next-char t)
+               (cond (suppress
+                      (values 1 0))
+                     ((not (eq type :constituent))
+                      (digit-expected char type nil))
+                     ((char= char #\-)
+                      (values -1 0))
+                     (t
+                      (values 1 (ensure-digit char type))))))
+           (integer (empty-allowed /-allowed initial-value)
+             (let ((value initial-value))
+               (tagbody
+                  (when empty-allowed (go rest)) ; also when READ-SUPPRESS
+                  (multiple-value-bind (char type) (next-char t)
+                    (case type
+                      (:constituent
+                       (setf value (ensure-digit char type)))
+                      (t
+                       (digit-expected char type nil)
+                       (return-from integer value))))
+                rest
+                  (multiple-value-bind (char type) (next-char nil)
+                    (ecase type
+                      ((nil)
+                       (return-from integer value))
+                      (:whitespace
+                       (unread-char char stream)
+                       (return-from integer value))
+                      (:terminating-macro
+                       (unread-char char stream)
+                       (return-from integer value))
+                      ((:non-terminating-macro
+                        :single-escape :multiple-escape)
+                       (cond (suppress
+                              (go rest))
+                             (t
+                              (digit-expected char type nil)
+                              (return-from integer value))))
+                      (:constituent
+                       (cond (suppress
+                              (go rest))
+                             ((and /-allowed (eql char #\/))
+                              (return-from integer (values value t)))
+                             (t
+                              (setf value (+ (* base (or value 0))
+                                             (ensure-digit char type)))
+                              (go rest)))))))))
+           (read-denominator ()
+             (let ((value (integer nil nil nil)))
+               (cond ((eql value 0)
+                      (%recoverable-reader-error
+                       stream 'zero-denominator
+                       :position-offset -1 :report 'replace-invalid-digit)
+                      nil)
+                     (t
+                      value)))))
+    (multiple-value-bind (sign numerator) (maybe-sign)
+      (if (null sign)
+          0
+          (multiple-value-bind (numerator slashp)
+              (integer (= sign 1) t numerator)
+            (unless suppress ; When READ-SUPPRESS, / has been consumed
+              (let ((denominator (when slashp (read-denominator))))
+                (* sign (if denominator
+                            (/ numerator denominator)
+                            numerator)))))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-b parameter))
-  (read-rational stream 2.))
+  (let* ((client *client*)
+         (suppress (state-value client '*read-suppress*)))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-b parameter suppress))
+    (read-rational stream (state-value client 'cl:*readtable*) 2. suppress)))
 
 (defun sharpsign-x (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-x parameter))
-  (read-rational stream 16.))
+  (let* ((client *client*)
+         (suppress (state-value client '*read-suppress*)))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-x parameter suppress))
+    (read-rational stream (state-value client 'cl:*readtable*) 16. suppress)))
 
 (defun sharpsign-o (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-o parameter))
-  (read-rational stream 8.))
+  (let* ((client *client*)
+         (suppress (state-value client '*read-suppress*)))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-o parameter suppress))
+    (read-rational stream (state-value client 'cl:*readtable*) 8. suppress)))
 
 (defun sharpsign-r (stream char parameter)
   (declare (ignore char))
-  (let ((radix (cond ((not parameter)
-                      (numeric-parameter-not-supplied stream 'sharpsign-r)
-                      36)
-                     ((not (<= 2 parameter 36))
-                      (unless *read-suppress*
-                        (%recoverable-reader-error
-                         stream 'invalid-radix
-                         :position-offset (- (+ (parameter-length parameter) 1))
-                         :radix parameter :report 'use-replacement-radix))
-                      36)
-                     (t
-                      parameter))))
-    (read-rational stream radix)))
+  (let* ((client *client*)
+         (suppress (state-value client '*read-suppress*))
+         (radix (cond ((not parameter)
+                       (numeric-parameter-not-supplied stream 'sharpsign-r suppress)
+                       36)
+                      ((not (<= 2 parameter 36))
+                       (unless suppress
+                         (%recoverable-reader-error
+                          stream 'invalid-radix
+                          :position-offset (- (+ (parameter-length parameter) 1))
+                          :radix parameter :report 'use-replacement-radix))
+                       36)
+                      (t
+                       parameter))))
+    (read-rational stream (state-value client 'cl:*readtable*) radix suppress)))
 
 (defun sharpsign-asterisk (stream char parameter)
   (declare (ignore char))
-  (let ((read-suppress *read-suppress*)
-        (readtable *readtable*))
+  (let* ((client *client*)
+         (read-suppress (state-value client '*read-suppress*))
+         (readtable (state-value client 'cl:*readtable*)))
     (flet ((next-bit ()
              (let ((char (read-char stream nil nil t)))
                (multiple-value-bind (syntax-type value)
@@ -727,7 +743,9 @@
 
 (defun sharpsign-vertical-bar (stream sub-char parameter)
   (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-vertical-bar parameter))
+    (let ((suppress (state-value *client* '*read-suppress*)))
+      (numeric-parameter-ignored
+       stream 'sharpsign-vertical-bar parameter suppress)))
   (handler-case
       (loop for char = (read-char stream t nil t)
             do (cond ((eql char #\#)
@@ -815,11 +833,11 @@
 
   (defun sharpsign-a (stream char parameter)
     (declare (ignore char))
-    (when *read-suppress*
+    (when (state-value *client* '*read-suppress*)
       (return-from sharpsign-a (read stream t nil t)))
-
     (let ((rank (cond ((null parameter)
-                       (numeric-parameter-not-supplied stream 'sharpsign-a)
+                       (numeric-parameter-not-supplied
+                        stream 'sharpsign-a nil)
                        0)
                       (t
                        parameter))))
@@ -838,29 +856,34 @@
 ;;;
 ;;; Reader macro for sharpsign colon.
 
-(defun symbol-from-token (stream token token-escapes package-marker)
-  (when *read-suppress*
+(defun symbol-from-token
+    (client stream readtable suppress token token-escapes package-marker)
+  (when suppress
     (return-from symbol-from-token nil))
   (when package-marker
     (%recoverable-reader-error
      stream 'uninterned-symbol-must-not-contain-package-marker
      :stream-position package-marker :position-offset -1
      :token token :report 'treat-as-escaped))
-  (convert-according-to-readtable-case token token-escapes)
-  (interpret-symbol *client* stream nil (copy-seq token) nil))
+  (convert-according-to-readtable-case readtable token token-escapes)
+  (interpret-symbol client stream nil (copy-seq token) nil))
 
 (defun sharpsign-colon (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-colon parameter))
-  (with-token-info (push-char (start-escape end-escape) finalize)
-    (let ((package-marker nil))
+  (let* ((client *client*)
+         (readtable (state-value client 'cl:*readtable*))
+         (suppress (state-value client '*read-suppress*))
+         (package-marker nil))
+    (unless (null parameter)
+      (numeric-parameter-ignored
+       stream 'sharpsign-colon parameter suppress))
+    (with-token-info (push-char (start-escape end-escape) finalize)
       (labels ((handle-char (char escapep)
                  (when (and (not escapep)
                             (char= char #\:)
                             (not package-marker))
                    (setf package-marker (eclector.base:source-position
-                                         *client* stream)))
+                                         client stream)))
                  (push-char char))
                (unterminated-single-escape (escape-char)
                  (%recoverable-reader-error
@@ -873,9 +896,11 @@
                (return-symbol ()
                  (return-from sharpsign-colon
                    (multiple-value-bind (token escape-ranges) (finalize)
-                     (symbol-from-token stream token escape-ranges package-marker)))))
+                     (symbol-from-token
+                      client stream readtable suppress
+                      token escape-ranges package-marker)))))
         (token-state-machine
-         stream *readtable* handle-char start-escape end-escape
+         stream readtable handle-char start-escape end-escape
          unterminated-single-escape unterminated-multiple-escape
          return-symbol)))))
 
@@ -885,123 +910,124 @@
 
 (defun %sharpsign-c (stream char parameter allow-non-list)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-c parameter))
-  (when *read-suppress*
-    (read stream t nil t)
-    (return-from %sharpsign-c nil))
-  ;; When we get here, we have to read a list of the form
-  ;; (REAL-PART-REAL-NUMBER-LITERAL IMAGINARY-PART-REAL-NUMBER) that
-  ;; is, a list of exactly two elements of type REAL.
-  ;;
-  ;; We call %READ-LIST-ELEMENTS which calls the local function PART
-  ;; for each list element as well as the events such as the end of
-  ;; the list or the end of input. The variable PART keeps track of
-  ;; the currently expected part which can be :REAL, :IMAGINARY, :END
-  ;; or :PAST-END (the latter only comes into play when reading more
-  ;; than two list elements due to error recovery).
-  (let ((listp nil)
-        (part :real)
-        (real 1) (imaginary 1))
-    (labels ((check-value (value)
-               (typecase value
-                 ((eql #1=#.(gensym "END-OF-LIST"))
-                  (%recoverable-reader-error
-                   stream 'complex-part-expected
-                   :position-offset -1
-                   :which part :report 'use-partial-complex)
-                  1)
-                 ((eql #2=#.(gensym "END-OF-INPUT"))
-                  (%recoverable-reader-error
-                   stream 'end-of-input-before-complex-part
-                   :which part :report 'use-partial-complex)
-                  1)
-                 (real
-                  value)
-                 (t
-                  (%recoverable-reader-error stream 'read-object-type-error
-                                             :datum value :expected-type 'real
-                                             :report 'use-replacement-part)
-                  1)))
-             (part (kind value)
-               (declare (ignore kind))
-               (case part
-                 (:real
-                  (setf real (check-value value)
-                        part :imaginary)
-                  t)
-                 (:imaginary
-                  (setf imaginary (check-value value)
-                        part :end)
-                  t)
-                 ((:end :past-end)
-                  (case value
-                    (#1# t)
-                    (#2# nil)
-                    (t
-                     (when (eq part :end)
-                       (%recoverable-reader-error
-                        stream 'too-many-complex-parts
-                        :position-offset -1
-                        :report 'ignore-excess-parts)
-                       (setf part :past-end))
-                     t)))))
-             (read-parts (stream char)
-               ;; If this is called, the input started with "#C(" (or,
-               ;; generally, "#C" followed by any input resulting in a
-               ;; LEFT-PARENTHESIS call).  We record that fact (for
-               ;; error reporting) by setting LISTP.  We reset
-               ;; *LIST-READER* so lists appearing in the complex
-               ;; parts are processed normally instead of with
-               ;; READ-PARTS.
-               (setf listp t)
-               (let ((*list-reader* nil))
-                 (%read-list-elements stream #'part '#1# '#2# char nil))
-               nil)) ; unused, but must not return (values)
-      (handler-case
-          ;; Depending on ALLOW-NON-LIST, we call either READ or
-          ;; %READ-MAYBE-NOTHING.  Calling %READ-MAYBE-NOTHING will:
-          ;; - not skip whitespace or comments (the spec is not clear
-          ;;   about whether #C<skippable things>(...) is valid syntax)
-          ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
-          ;;   initiate reading a list
-          ;; - not behave like a full READ call in terms of e.g. parse
-          ;;   result construction so (1 2) will not appear as a list
-          ;;   result with two atom result children.
-          ;; We bind *LIST-READER* to use READ-PARTS for reading lists.
-          (with-forbidden-quasiquotation ('sharpsign-c)
-            (let ((*list-reader* #'read-parts))
-              (values (if allow-non-list
-                          (read stream t nil t)
-                          (%read-maybe-nothing *client* stream t nil)))))
-        ((and end-of-file (not incomplete-construct)) (condition)
-          (%recoverable-reader-error
-           stream 'end-of-input-after-sharpsign-c
-           :stream-position (stream-position condition)
-           :report 'use-replacement-part))
-        (end-of-list (condition) ; (... #C)
-          (%recoverable-reader-error
-           stream 'complex-parts-must-follow-sharpsign-c
-           :position-offset -1 :report 'use-partial-complex)
-          (unread-char (%character condition) stream))
-        (:no-error (object)
-          ;; If we got here, we managed to read an object.
-          (cond (listp)
-                ((or (not allow-non-list) (not (typep object 'cons)))
-                 (%recoverable-reader-error
-                  stream 'non-list-following-sharpsign-c
-                  :position-offset -1 ; inaccurate
-                  :report 'use-replacement-part))
-                ((typep object #3='(cons real (cons real null)))
-                 (setf real (first object)
-                       imaginary (second object)))
-                (t
-                 (%recoverable-reader-error
-                  stream 'read-object-type-error
-                  :position-offset -1 ; inaccurate
-                  :datum object :expected-type #3#
-                  :report 'use-replacement-part)))))
-      (complex real imaginary))))
+  (let ((client *client*))
+    (when (state-value client '*read-suppress*)
+      (read stream t nil t)
+      (return-from %sharpsign-c nil))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-c parameter nil))
+    ;; When we get here, we have to read a list of the form
+    ;; (REAL-PART-REAL-NUMBER-LITERAL IMAGINARY-PART-REAL-NUMBER) that
+    ;; is, a list of exactly two elements of type REAL.
+    ;;
+    ;; We call %READ-LIST-ELEMENTS which calls the local function PART
+    ;; for each list element as well as the events such as the end of
+    ;; the list or the end of input. The variable PART keeps track of
+    ;; the currently expected part which can be :REAL, :IMAGINARY, :END
+    ;; or :PAST-END (the latter only comes into play when reading more
+    ;; than two list elements due to error recovery).
+    (let ((listp nil)
+          (part :real)
+          (real 1) (imaginary 1))
+      (labels ((check-value (value)
+                 (typecase value
+                   ((eql #1=#.(gensym "END-OF-LIST"))
+                    (%recoverable-reader-error
+                     stream 'complex-part-expected
+                     :position-offset -1
+                     :which part :report 'use-partial-complex)
+                    1)
+                   ((eql #2=#.(gensym "END-OF-INPUT"))
+                    (%recoverable-reader-error
+                     stream 'end-of-input-before-complex-part
+                     :which part :report 'use-partial-complex)
+                    1)
+                   (real
+                    value)
+                   (t
+                    (%recoverable-reader-error stream 'read-object-type-error
+                                               :datum value :expected-type 'real
+                                               :report 'use-replacement-part)
+                    1)))
+               (part (kind value)
+                 (declare (ignore kind))
+                 (case part
+                   (:real
+                    (setf real (check-value value)
+                          part :imaginary)
+                    t)
+                   (:imaginary
+                    (setf imaginary (check-value value)
+                          part :end)
+                    t)
+                   ((:end :past-end)
+                    (case value
+                      (#1# t)
+                      (#2# nil)
+                      (t
+                       (when (eq part :end)
+                         (%recoverable-reader-error
+                          stream 'too-many-complex-parts
+                          :position-offset -1
+                          :report 'ignore-excess-parts)
+                         (setf part :past-end))
+                       t)))))
+               (read-parts (stream char)
+                 ;; If this is called, the input started with "#C(" (or,
+                 ;; generally, "#C" followed by any input resulting in a
+                 ;; LEFT-PARENTHESIS call).  We record that fact (for
+                 ;; error reporting) by setting LISTP.  We reset
+                 ;; *LIST-READER* so lists appearing in the complex
+                 ;; parts are processed normally instead of with
+                 ;; READ-PARTS.
+                 (setf listp t)
+                 (let ((*list-reader* nil))
+                   (%read-list-elements stream #'part '#1# '#2# char nil))
+                 nil)) ; unused, but must not return (values)
+        (handler-case
+            ;; Depending on ALLOW-NON-LIST, we call either READ or
+            ;; %READ-MAYBE-NOTHING.  Calling %READ-MAYBE-NOTHING will:
+            ;; - not skip whitespace or comments (the spec is not clear
+            ;;   about whether #C<skippable things>(...) is valid syntax)
+            ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
+            ;;   initiate reading a list
+            ;; - not behave like a full READ call in terms of e.g. parse
+            ;;   result construction so (1 2) will not appear as a list
+            ;;   result with two atom result children.
+            ;; We bind *LIST-READER* to use READ-PARTS for reading lists.
+            (with-forbidden-quasiquotation ('sharpsign-c)
+              (let ((*list-reader* #'read-parts))
+                (values (if allow-non-list
+                            (read stream t nil t)
+                            (%read-maybe-nothing client stream t nil)))))
+          ((and end-of-file (not incomplete-construct)) (condition)
+            (%recoverable-reader-error
+             stream 'end-of-input-after-sharpsign-c
+             :stream-position (stream-position condition)
+             :report 'use-replacement-part))
+          (end-of-list (condition) ; (... #C)
+            (%recoverable-reader-error
+             stream 'complex-parts-must-follow-sharpsign-c
+             :position-offset -1 :report 'use-partial-complex)
+            (unread-char (%character condition) stream))
+          (:no-error (object)
+            ;; If we got here, we managed to read an object.
+            (cond (listp)
+                  ((or (not allow-non-list) (not (typep object 'cons)))
+                   (%recoverable-reader-error
+                    stream 'non-list-following-sharpsign-c
+                    :position-offset -1 ; inaccurate
+                    :report 'use-replacement-part))
+                  ((typep object #3='(cons real (cons real null)))
+                   (setf real (first object)
+                         imaginary (second object)))
+                  (t
+                   (%recoverable-reader-error
+                    stream 'read-object-type-error
+                    :position-offset -1 ; inaccurate
+                    :datum object :expected-type #3#
+                    :report 'use-replacement-part)))))
+        (complex real imaginary)))))
 
 (defun sharpsign-c (stream char parameter)
   (%sharpsign-c stream char parameter t))
@@ -1021,125 +1047,126 @@
 
 (defun sharpsign-s (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-s parameter))
-  (when *read-suppress*
-    (read stream t nil t)
-    (return-from sharpsign-s nil))
-  ;; When we get here, we have to read a list of the form
-  ;; (STRUCTURE-TYPE-NAME SLOT-NAME SLOT-VALUE …). We call
-  ;; %READ-LIST-ELEMENTS which calls the local function ELEMENT for
-  ;; each list element as well as events such as the end of the list
-  ;; or the end of input. The variable ELEMENT keeps track of the
-  ;; currently expected ELEMENT which can be :TYPE, :SLOT-NAME, or
-  ;; :SLOT-VALUE.
-  (let ((old-quasiquote-forbidden *quasiquote-forbidden*)
-        (listp nil)
-        (element :type)
-        (type)
-        (slot-name)
-        (initargs '()))
-    (labels ((element (kind value)
-               (declare (ignore kind))
-               (case element
-                 (:type
-                  (typecase value
-                    ((eql #1=#.(gensym "END-OF-LIST"))
-                     (%recoverable-reader-error
-                      stream 'no-structure-type-name-found
-                      :position-offset -1 :report 'inject-nil))
-                    ((eql #2=#.(gensym "END-OF-INPUT"))
-                     (%recoverable-reader-error
-                      stream 'end-of-input-before-structure-type-name
-                      :report 'inject-nil))
-                    (symbol
-                     (setf type value))
-                    (t
-                     (%recoverable-reader-error
-                      stream 'structure-type-name-is-not-a-symbol
-                      :position-offset -1 :datum value :report 'inject-nil)))
-                  (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
-                        *unquote-forbidden* 'sharpsign-s-slot-name
-                        element :name))
-                 (:name
-                  (typecase value
-                    ((eql #1#))
-                    ((eql #2#)
-                     (%recoverable-reader-error
-                      stream 'end-of-input-before-slot-name
-                      :report 'use-partial-initargs))
-                    (alexandria:string-designator
-                     (setf slot-name value))
-                    (t
-                     (%recoverable-reader-error
-                      stream 'slot-name-is-not-a-string-designator
-                      :position-offset -1 :datum value :report 'skip-slot)
-                     (setf slot-name value)))
-                  (setf *quasiquote-forbidden* old-quasiquote-forbidden
-                        *unquote-forbidden* 'sharpsign-s-slot-value
-                        element :object))
-                 (:object
-                  (typecase value
-                    ((eql #1#)
-                     (%recoverable-reader-error
-                      stream 'no-slot-value-found
-                      :position-offset -1
-                      :slot-name slot-name :report 'skip-slot))
-                    ((eql #2#)
-                     (%recoverable-reader-error
-                      stream 'end-of-input-before-slot-value
-                      :slot-name slot-name :report 'skip-slot))
-                    (t
-                     (push slot-name initargs)
-                     (push value initargs)))
-                  (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
-                        *unquote-forbidden* 'sharpsign-s-slot-name
-                        element :name))))
-             (read-constructor (stream char)
-               ;; If this is called, the input started with "#S(" (or,
-               ;; generally, "#S" followed by any input resulting in a
-               ;; LEFT-PARENTHESIS call).  We record that fact (for
-               ;; error reporting) by setting LISTP.  We reset
-               ;; *LIST-READER* so lists appearing in the constructor
-               ;; parts are processed normally instead of with
-               ;; READ-CONSTRUCTOR.
-               (setf listp t)
-               (setf *quasiquote-forbidden* 'sharpsign-s-type
-                     *unquote-forbidden* 'sharpsign-s-type)
-               (let ((*list-reader* nil))
-                 (%read-list-elements stream #'element '#1# '#2# char nil))))
-      (handler-case
-          ;; Instead of READ we call %READ-MAYBE-NOTHING which will
-          ;; - not skip whitespace or comments (the spec is not clear
-          ;;   about whether #S<skippable things>(...) is valid syntax)
-          ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
-          ;;   initiate reading a list
-          ;; - not behave like a full READ call in terms of e.g. parse
-          ;;   result construction so (foo :bar 2) will not appear as
-          ;;   a list result with three atom result children.
-          ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
-          (with-forbidden-quasiquotation ('sharpsign-s)
-            (let ((*list-reader* #'read-constructor))
-              (%read-maybe-nothing *client* stream t nil)))
-        ((and end-of-file (not incomplete-construct)) (condition)
-          (%recoverable-reader-error
-           stream 'end-of-input-after-sharpsign-s
-           :stream-position (stream-position condition)
-           :report 'inject-nil))
-        (end-of-list (condition)
-          (%recoverable-reader-error
-           stream 'structure-constructor-must-follow-sharpsign-s
-           :position-offset -1 :report 'inject-nil)
-          (unread-char (%character condition) stream))
-        (:no-error (&rest values)
-          (declare (ignore values))
-          (unless listp
+  (let ((client *client*))
+    (when (state-value client '*read-suppress*)
+      (read stream t nil t)
+      (return-from sharpsign-s nil))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-s parameter nil))
+    ;; When we get here, we have to read a list of the form
+    ;; (STRUCTURE-TYPE-NAME SLOT-NAME SLOT-VALUE …). We call
+    ;; %READ-LIST-ELEMENTS which calls the local function ELEMENT for
+    ;; each list element as well as events such as the end of the list
+    ;; or the end of input. The variable ELEMENT keeps track of the
+    ;; currently expected ELEMENT which can be :TYPE, :SLOT-NAME, or
+    ;; :SLOT-VALUE.
+    (let ((old-quasiquote-forbidden *quasiquote-forbidden*)
+          (listp nil)
+          (element :type)
+          (type)
+          (slot-name)
+          (initargs '()))
+      (labels ((element (kind value)
+                 (declare (ignore kind))
+                 (case element
+                   (:type
+                    (typecase value
+                      ((eql #1=#.(gensym "END-OF-LIST"))
+                       (%recoverable-reader-error
+                        stream 'no-structure-type-name-found
+                        :position-offset -1 :report 'inject-nil))
+                      ((eql #2=#.(gensym "END-OF-INPUT"))
+                       (%recoverable-reader-error
+                        stream 'end-of-input-before-structure-type-name
+                        :report 'inject-nil))
+                      (symbol
+                       (setf type value))
+                      (t
+                       (%recoverable-reader-error
+                        stream 'structure-type-name-is-not-a-symbol
+                        :position-offset -1 :datum value :report 'inject-nil)))
+                    (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
+                          *unquote-forbidden* 'sharpsign-s-slot-name
+                          element :name))
+                   (:name
+                    (typecase value
+                      ((eql #1#))
+                      ((eql #2#)
+                       (%recoverable-reader-error
+                        stream 'end-of-input-before-slot-name
+                        :report 'use-partial-initargs))
+                      (alexandria:string-designator
+                       (setf slot-name value))
+                      (t
+                       (%recoverable-reader-error
+                        stream 'slot-name-is-not-a-string-designator
+                        :position-offset -1 :datum value :report 'skip-slot)
+                       (setf slot-name value)))
+                    (setf *quasiquote-forbidden* old-quasiquote-forbidden
+                          *unquote-forbidden* 'sharpsign-s-slot-value
+                          element :object))
+                   (:object
+                    (typecase value
+                      ((eql #1#)
+                       (%recoverable-reader-error
+                        stream 'no-slot-value-found
+                        :position-offset -1
+                        :slot-name slot-name :report 'skip-slot))
+                      ((eql #2#)
+                       (%recoverable-reader-error
+                        stream 'end-of-input-before-slot-value
+                        :slot-name slot-name :report 'skip-slot))
+                      (t
+                       (push slot-name initargs)
+                       (push value initargs)))
+                    (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
+                          *unquote-forbidden* 'sharpsign-s-slot-name
+                          element :name))))
+               (read-constructor (stream char)
+                 ;; If this is called, the input started with "#S(" (or,
+                 ;; generally, "#S" followed by any input resulting in a
+                 ;; LEFT-PARENTHESIS call).  We record that fact (for
+                 ;; error reporting) by setting LISTP.  We reset
+                 ;; *LIST-READER* so lists appearing in the constructor
+                 ;; parts are processed normally instead of with
+                 ;; READ-CONSTRUCTOR.
+                 (setf listp t)
+                 (setf *quasiquote-forbidden* 'sharpsign-s-type
+                       *unquote-forbidden* 'sharpsign-s-type)
+                 (let ((*list-reader* nil))
+                   (%read-list-elements stream #'element '#1# '#2# char nil))))
+        (handler-case
+            ;; Instead of READ we call %READ-MAYBE-NOTHING which will
+            ;; - not skip whitespace or comments (the spec is not clear
+            ;;   about whether #S<skippable things>(...) is valid syntax)
+            ;; - invoke reader macros, in particular LEFT-PARENTHESIS to
+            ;;   initiate reading a list
+            ;; - not behave like a full READ call in terms of e.g. parse
+            ;;   result construction so (foo :bar 2) will not appear as
+            ;;   a list result with three atom result children.
+            ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
+            (with-forbidden-quasiquotation ('sharpsign-s)
+              (let ((*list-reader* #'read-constructor))
+                (%read-maybe-nothing client stream t nil)))
+          ((and end-of-file (not incomplete-construct)) (condition)
             (%recoverable-reader-error
-             stream 'non-list-following-sharpsign-s
-             :position-offset -1 :report 'inject-nil))))
-      (if (not (null type))
-          (make-structure-instance *client* type (nreverse initargs))
-          nil))))
+             stream 'end-of-input-after-sharpsign-s
+             :stream-position (stream-position condition)
+             :report 'inject-nil))
+          (end-of-list (condition)
+            (%recoverable-reader-error
+             stream 'structure-constructor-must-follow-sharpsign-s
+             :position-offset -1 :report 'inject-nil)
+            (unread-char (%character condition) stream))
+          (:no-error (&rest values)
+            (declare (ignore values))
+            (unless listp
+              (%recoverable-reader-error
+               stream 'non-list-following-sharpsign-s
+               :position-offset -1 :report 'inject-nil))))
+        (if (not (null type))
+            (make-structure-instance client type (nreverse initargs))
+            nil)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -1147,11 +1174,11 @@
 
 (defun sharpsign-p (stream char parameter)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-p parameter))
-  (when *read-suppress*
+  (when (state-value *client* '*read-suppress*)
     (read stream t nil t)
     (return-from sharpsign-p nil))
+  (unless (null parameter)
+    (numeric-parameter-ignored stream 'sharpsign-p parameter nil))
   (let ((expression
           (with-forbidden-quasiquotation ('sharpsign-p)
             (handler-case
@@ -1215,14 +1242,14 @@
                 :features (cdr feature-expression)))))))
 
 (defun evaluate-standard-feature-expression
-    (feature-expression
-     &key
-     (check 'check-standard-feature-expression)
-     (recurse 'evaluate-standard-feature-expression))
+    (client feature-expression
+     &key (check 'check-standard-feature-expression)
+          (recurse 'evaluate-standard-feature-expression))
   (funcall check feature-expression)
   (typecase feature-expression
     (symbol
-     (member feature-expression *features* :test #'eq))
+     (let ((features (state-value client '*features*)))
+       (member feature-expression features :test #'eq)))
     ((cons (eql :not))
      (not (funcall recurse (second feature-expression))))
     ((cons (eql :or))
@@ -1232,11 +1259,14 @@
 
 (defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-plus-minus parameter))
-  (let ((context (if invertp
+  (let ((client *client*)
+        (context (if invertp
                      :sharpsign-minus
                      :sharpsign-plus)))
+    (unless (null parameter)
+      (let ((suppress (state-value client '*read-suppress*)))
+        (numeric-parameter-ignored
+         stream 'sharpsign-plus-minus parameter suppress)))
     (flet ((read-expression (end-of-file-condition end-of-list-condition
                              fallback-value)
              (handler-case
@@ -1253,17 +1283,15 @@
                   :position-offset -1 :context context :report 'inject-nil)
                  (unread-char (%character condition) stream)
                  fallback-value))))
-      (let* ((client *client*)
-             (feature-expression
-               (call-with-current-package
-                client (lambda ()
-                         (let ((*read-suppress* nil))
-                           (with-forbidden-quasiquotation (context)
-                             (read-expression
-                              'end-of-input-after-sharpsign-plus-minus
-                              'feature-expression-must-follow-sharpsign-plus-minus
-                              '(:and)))))
-                '#:keyword)))
+      (let ((feature-expression
+              (with-state-values
+                  (client '*package*       '#:keyword
+                          '*read-suppress* nil)
+                (with-forbidden-quasiquotation (context)
+                  (read-expression
+                   'end-of-input-after-sharpsign-plus-minus
+                   'feature-expression-must-follow-sharpsign-plus-minus
+                   '(:and))))))
         (if (alexandria:xor
              (with-simple-restart
                  (recover (recovery-description 'treat-as-false))
@@ -1275,7 +1303,7 @@
                              nil)
             (progn
               (setf *skip-reason* (cons context feature-expression))
-              (let ((*read-suppress* t))
+              (with-state-values (client '*read-suppress* t)
                 (read-expression 'end-of-input-after-feature-expression
                                  'object-must-follow-feature-expression
                                  nil))
@@ -1330,12 +1358,12 @@
                 :position-offset -1 :report 'inject-nil)
                (unread-char (%character condition) stream)
                nil))))
-    (when *read-suppress*
-      (return-from sharpsign-equals (read-object)))
-    (when (null parameter)
-      (numeric-parameter-not-supplied stream 'sharpsign-equals)
-      (return-from sharpsign-equals (read-object)))
     (let ((client *client*))
+      (when (state-value client '*read-suppress*)
+        (return-from sharpsign-equals (read-object)))
+      (when (null parameter)
+        (numeric-parameter-not-supplied stream 'sharpsign-equals nil)
+        (return-from sharpsign-equals (read-object)))
       (unless (null (find-labeled-object client parameter))
         (%recoverable-reader-error
          stream 'sharpsign-equals-label-defined-more-than-once
@@ -1367,20 +1395,20 @@
 
 (defun sharpsign-sharpsign (stream char parameter)
   (declare (ignore char))
-  (when *read-suppress*
-    (return-from sharpsign-sharpsign nil))
-  (when (null parameter)
-    (numeric-parameter-not-supplied stream 'sharpsign-equals)
-    (return-from sharpsign-sharpsign nil))
-  (let* ((client *client*)
-         (labeled-object (find-labeled-object client parameter)))
-    (when (null labeled-object)
-      (%recoverable-reader-error
-       stream 'sharpsign-sharpsign-undefined-label
-       :position-offset (- (+ 1 (parameter-length parameter) 1))
-       :label parameter :report 'inject-nil)
+  (let ((client *client*))
+    (when (state-value client '*read-suppress*)
       (return-from sharpsign-sharpsign nil))
-    (reference-labeled-object client stream labeled-object)))
+    (when (null parameter)
+      (numeric-parameter-not-supplied stream 'sharpsign-equals nil)
+      (return-from sharpsign-sharpsign nil))
+    (let ((labeled-object (find-labeled-object client parameter)))
+      (when (null labeled-object)
+        (%recoverable-reader-error
+         stream 'sharpsign-sharpsign-undefined-label
+         :position-offset (- (+ 1 (parameter-length parameter) 1))
+         :label parameter :report 'inject-nil)
+        (return-from sharpsign-sharpsign nil))
+      (reference-labeled-object client stream labeled-object))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

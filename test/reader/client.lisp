@@ -230,20 +230,26 @@
       ("#+(and my-special-feature) 1 2" 1)
       ("#+(version-at-least \"1\") 1 2" 1))))
 
-;;; Test customizing CALL-WITH-CURRENT-PACKAGE
+;;; Test customizing CALL-WITH-STATE-VALUE
+;;;
+;;; The client ignores intercepts requests to change the current
+;;; package and changes the current package to some other, fixed
+;;; package.
 
-(defclass with-current-package-client ()
+(defclass with-state-value-client ()
   ())
 
-(defmethod eclector.reader:call-with-current-package
-    ((client with-current-package-client)
+(defmethod eclector.reader:call-with-state-value
+    ((client with-state-value-client)
      (thunk t)
-     (package-designator t))
-  (let ((*package* (find-package '#:eclector.reader.test)))
-    (funcall thunk)))
+     (aspect (eql '*package*))
+     (value t))
+  ;; VALUE is a string designator, but the default method accepts
+  ;; package designators, so supplying a package object is fine.
+  (call-next-method client thunk aspect (find-package '#:eclector.reader.test)))
 
 (defmethod eclector.reader:check-feature-expression
-    ((client with-current-package-client)
+    ((client with-state-value-client)
      (feature-expression t))
   (labels ((check (expression)
              (typecase expression
@@ -256,16 +262,19 @@
     (check feature-expression)))
 
 (defmethod eclector.reader:evaluate-feature-expression
-    ((client with-current-package-client)
+    ((client with-state-value-client)
      (feature-expression t))
   (eclector.reader:check-feature-expression client feature-expression)
   t)
 
-(test call-with-current-package/customize
-  "Test customizing the behavior of CALL-WITH-CURRENT-PACKAGE."
+(test call-with-state-value/customize
+  "Test customizing the behavior of CALL-WITH-STATE-VALUE."
+  ;; The custom client should intern the symbols within the feature
+  ;; expressions into this test package instead of the keyword
+  ;; package.  The check that this works is in the
+  ;; CHECK-FEATURE-EXPRESSION method.
   (do-input-cases (input)
-    (let ((eclector.reader:*client*
-            (make-instance 'with-current-package-client)))
+    (let ((eclector.reader:*client* (make-instance 'with-state-value-client)))
       (eclector.reader:read-from-string input))
     '(("#+foo       1 2")
       ("#+(bar baz) 1 2"))))

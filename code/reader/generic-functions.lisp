@@ -13,6 +13,71 @@
   (:method ((client t) (input-stream t) (reason t))
     (declare (ignore client input-stream reason))))
 
+;;; Reader state protocol
+
+(defgeneric valid-state-value-p (client aspect value))
+
+(defgeneric state-value (client aspect))
+
+(defgeneric call-with-state-value (client thunk aspect value))
+
+;;; Default methods for the reader state protocol
+
+(defmethod valid-state-value-p ((client t) (aspect (eql '*package*)) (value t))
+  (typep value '(or package alexandria:string-designator)))
+
+(defmethod state-value ((client t) (aspect (eql '*package*)))
+  *package*)
+
+(defmethod call-with-state-value ((client t)
+                                  (thunk t)
+                                  (aspect (eql '*package*))
+                                  (value t))
+  (call-with-current-package client thunk value))
+
+(macrolet ((define (aspect &key (variable aspect) predicate)
+             `(progn
+                (defmethod valid-state-value-p ((client t)
+                                                (aspect (eql ',aspect))
+                                                (value t))
+                  ,(if (null predicate)
+                       't
+                       `(,predicate value)))
+
+                (defmethod state-value ((client t)
+                                        (aspect (eql ',aspect)))
+                  ,variable)
+
+                (defmethod call-with-state-value ((client t)
+                                                  (thunk t)
+                                                  (aspect (eql ',aspect))
+                                                  (value t))
+                  (let ((,variable value))
+                    (funcall thunk))))))
+  (define cl:*readtable*              :variable eclector.reader:*readtable*
+                                      :predicate eclector.readtable:readtablep)
+  (define *read-suppress*)
+  (define *read-eval*)
+  (define *features*                  :predicate listp)
+  (define *read-base*)
+  (define *read-default-float-format*))
+
+;;; Evaluate BODY in the context of CALL-WITH-STATE-VALUE calls for
+;;; all aspect-value pairs in BINDINGS.
+(defmacro with-state-values ((client &rest bindings) &body body)
+  (alexandria:once-only (client)
+    (labels ((rec (remainder)
+               (destructuring-bind (&optional aspect value &rest rest)
+                   remainder
+                 (if (null aspect)
+                     `(progn ,@body)
+                     (alexandria:with-unique-names (thunk)
+                       `(flet ((,thunk () ,(rec rest)))
+                          (declare (dynamic-extent (function ,thunk)))
+                          (call-with-state-value
+                           ,client (function ,thunk) ,aspect ,value)))))))
+      (rec bindings))))
+
 ;;; Reading tokens
 
 (defgeneric read-token (client input-stream eof-error-p eof-value))
@@ -47,11 +112,6 @@
 
 (defgeneric make-structure-instance (client name initargs))
 
-(defgeneric call-with-current-package (client thunk package-designator)
-  (:method ((client t) (thunk t) (package-designator t))
-    (let ((*package* (find-package package-designator)))
-      (funcall thunk))))
-
 (defgeneric evaluate-expression (client expression)
   (:method ((client t) (expression t))
     (declare (ignore client))
@@ -65,9 +125,11 @@
 (defgeneric evaluate-feature-expression (client feature-expression)
   (:method ((client t) (feature-expression t))
     (evaluate-standard-feature-expression
-     feature-expression
+     client feature-expression
      :check (alexandria:curry #'check-feature-expression client)
      :recurse (alexandria:curry #'evaluate-feature-expression client))))
+
+;;; Labeled objects and fixup
 
 (defgeneric call-with-label-tracking (client thunk))
 

@@ -70,6 +70,7 @@
                               (:file "macro-functions")
                               (:file "init")
                               (:file "quasiquote-macro")
+                              (:file "deprecation")
                               ;; Translatable messages
                               (:file "messages-english")))
 
@@ -140,6 +141,8 @@
                               (:file "client")
 
                               (:file "recover")
+
+                              (:file "deprecation")
 
                               (:file "read-code")))
 

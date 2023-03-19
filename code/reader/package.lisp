@@ -80,8 +80,16 @@
    #:call-as-top-level-read
    #:read-common
    #:read-maybe-nothing
-   #:note-skipped-input
+   #:note-skipped-input)
 
+  ;; Reader state protocol
+  (:export
+   #:valid-state-value-p
+   #:state-value
+   #:call-with-state-value)
+
+  ;; Reader behavior protocol
+  (:export
    #:read-token
    #:interpret-token
    #:check-symbol-token

@@ -107,7 +107,31 @@
    (:paragraph
     "The" (:tt "eclector-concrete-syntax-tree") "system" "now" "works"
     "with" "and" "requires" "version" "0.2" "of" "the"
-    (:tt "concrete-syntax-tree") "system" ".")))
+    (:tt "concrete-syntax-tree") "system" "."))
+  (:item
+   (:paragraph
+    "Eclector" "provides" "a" "new" "protocol" "for" "querying" "and"
+    "binding" "behavior-changing" "aspects" "of" "the" "current" "state" "of"
+    "the" "reader" "such" "as" "the" "current" "package" "," "the" "current"
+    "readtable" "and" "the" "current" "read" "base"
+    (:when "manual"
+      "(" (:ref :section "Reader state protocol") ")")
+    ".")
+   (:paragraph
+    "Clients" "can" "use" "this" "protocol" "to" "control" "the" "reader"
+    "state" "in" "other" "ways" "than" "binding" "the" "Common" "Lisp"
+    "variables" "," "for" "example" "by" "storing" "the" "values" "of"
+    "reader" "state" "aspects" "in" "context" "objects" ".")
+   (:paragraph
+    "Furthermore" "," "implementations" "which" "use" "Eclector" "as" "the"
+    "Common" "Lisp" "reader" "can" "use" "this" "protocol" "to" "tie" "the"
+    (:symbol "cl:*readtable*") "aspect" "to" "the" (:symbol "cl:*readtable*")
+    "variable" "instead" "of" "the" (:symbol "eclector.reader:*readtable*")
+    "variable" ".")
+   (:paragraph
+    "The" "new" "protocol" "subsumes" "the" "purpose" "of" "the" "generic"
+    "function" (:symbol "eclector.reader:call-with-current-package") "which"
+    "is" "deprecated" "as" "of" "this" "Eclector" "version" ".")))
 
  (:release "0.8" "2021-08-24"
   (:item

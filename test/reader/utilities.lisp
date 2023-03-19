@@ -9,12 +9,11 @@
   (mapc (lambda (foo)
           (destructuring-bind (token escape-ranges case expected) foo
             (let ((token (copy-seq token))
-                  (eclector.reader:*readtable* (eclector.readtable:copy-readtable
-                                                eclector.reader:*readtable*)))
-              (setf (eclector.readtable:readtable-case eclector.reader:*readtable*)
-                    case)
+                  (readtable (eclector.readtable:copy-readtable
+                              eclector.reader:*readtable*)))
+              (setf (eclector.readtable:readtable-case readtable) case)
               (is (string= expected (convert-according-to-readtable-case
-                                     token escape-ranges))))))
+                                     readtable token escape-ranges))))))
         '((""    ()        :upcase   "")
           ("!"   ()        :upcase   "!")
           ("foo" ()        :upcase   "FOO")
@@ -56,12 +55,11 @@
 
 (test skip-whitespace/smoke
   "Smoke test for the SKIP-WHITESPACE function."
-
   (mapc (lambda (input-and-expected)
           (destructuring-bind (input expected-value expected-position)
               input-and-expected
             (let* ((stream (make-string-input-stream input))
-                   (value (skip-whitespace stream))
+                   (value (skip-whitespace stream eclector.reader:*readtable*))
                    (position (file-position stream)))
               (is (equal expected-value     value))
               (is (eql   expected-position  position)))))
@@ -73,12 +71,11 @@
 
 (test skip-whitespace*/smoke
   "Smoke test for the SKIP-WHITESPACE* function."
-
   (mapc (lambda (input-and-expected)
           (destructuring-bind (input expected-value expected-position)
               input-and-expected
             (let* ((stream (make-string-input-stream input))
-                   (value (skip-whitespace* stream))
+                   (value (skip-whitespace* stream eclector.reader:*readtable*))
                    (position (file-position stream)))
               (is (equal expected-value     value))
               (is (eql   expected-position  position)))))

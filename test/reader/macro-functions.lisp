@@ -346,8 +346,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
   (do-stream-input-cases ((length) base
                           expected &optional (expected-position length))
     (flet ((do-it ()
-             (with-stream (stream)
-               (eclector.reader::read-rational stream base))))
+             (let ((readtable eclector.reader:*readtable*))
+               (with-stream (stream)
+                 (eclector.reader::read-rational stream readtable base nil)))))
       (error-case (expected expected-position)
         (error (do-it))
         (t

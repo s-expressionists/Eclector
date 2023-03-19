@@ -17,7 +17,7 @@
                   (return-from peek-char eof-value)))))
     (if (not (eq peek-type t))
         (done (cl:peek-char peek-type input-stream nil '#1# recursive-p))
-        (loop with readtable = *readtable*
+        (loop with readtable = (state-value *client* 'cl:*readtable*)
               for char = (cl:peek-char nil input-stream nil '#1# recursive-p)
               while (and (not (eq char '#1#))
                          (eq (eclector.readtable:syntax-type readtable char)
@@ -36,7 +36,8 @@
     ;; whitespace-preserving way. So we skip zero to one whitespace
     ;; characters here if requested via PRESERVE-WHITESPACE-P.
     (unless preserve-whitespace-p
-      (skip-whitespace input-stream))))
+      (let ((readtable (state-value client 'cl:*readtable*)))
+        (skip-whitespace input-stream readtable)))))
 
 (defmethod read-common (client input-stream eof-error-p eof-value)
   (loop for (value what . rest) = (multiple-value-list
@@ -51,10 +52,10 @@
   (let ((char (read-char input-stream eof-error-p)))
     (when (null char)
       (return-from %read-maybe-nothing (values eof-value :eof)))
-    (let ((readtable *readtable*))
+    (let ((readtable (state-value client 'cl:*readtable*)))
       (case (eclector.readtable:syntax-type readtable char)
         (:whitespace
-         (skip-whitespace* input-stream)
+         (skip-whitespace* input-stream readtable)
          (values nil :whitespace))
         ((:terminating-macro :non-terminating-macro)
          ;; There is no need to consider the value of EOF-ERROR-P in
@@ -72,7 +73,7 @@
                   (values nil :skip))
                  ;; This case takes care of reader macro not returning
                  ;; nil when *READ-SUPPRESS* is true.
-                 (*read-suppress*
+                 ((state-value client '*read-suppress*)
                   (note-skipped-input client input-stream
                                       (or *skip-reason* '*read-suppress*))
                   (values nil :suppress))
@@ -89,7 +90,9 @@
                    :position-offset -1 :report 'skip-token)
                   (values nil :skip))
                  (t
-                  (values object (if *read-suppress* :suppress :object))))))))))
+                  (values object (if (state-value client '*read-suppress*)
+                                     :suppress
+                                     :object))))))))))
 
 (defmethod read-maybe-nothing (client input-stream eof-error-p eof-value)
   (%read-maybe-nothing client input-stream eof-error-p eof-value))

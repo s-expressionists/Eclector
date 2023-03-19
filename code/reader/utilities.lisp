@@ -141,7 +141,7 @@
            finally (return (and (not (null ,escape-range-place))
                                 (<= (the array-index (car ,escape-range-place)) ,index))))))
 
-(defun convert-according-to-readtable-case (token escape-ranges)
+(defun convert-according-to-readtable-case (readtable token escape-ranges)
   (declare (type token-string token))
   (macrolet
       ((do-token ((index-var escapep-var) &body body)
@@ -167,7 +167,7 @@
                  (do-token (i escapep)
                    (unless escapep
                      (setf (aref token i) (,char-function (aref token i)))))))))
-    (ecase (eclector.readtable:readtable-case *readtable*)
+    (ecase (eclector.readtable:readtable-case readtable)
       (:upcase
        (change-case nstring-upcase char-upcase))
       (:downcase
@@ -205,11 +205,11 @@
 ;;; Skip zero to one whitespace characters in STREAM. Return NIL when
 ;;; end-of-input is encountered before reading a character, return T
 ;;; otherwise.
-(defun skip-whitespace (stream)
+(defun skip-whitespace (stream readtable)
   (let ((char (read-char stream nil nil t)))
     (cond ((null char)
            nil)
-          ((not (eq (eclector.readtable:syntax-type *readtable* char)
+          ((not (eq (eclector.readtable:syntax-type readtable char)
                     :whitespace))
            (unread-char char stream)
            t)
@@ -219,9 +219,8 @@
 ;;; Skip zero or more consecutive whitespace characters in
 ;;; STREAM. Return NIL when end-of-input is encountered before a
 ;;; non-whitespace character, return T otherwise.
-(defun skip-whitespace* (stream)
-  (loop with readtable = *readtable*
-        for i from 0
+(defun skip-whitespace* (stream readtable)
+  (loop for i from 0
         for char = (read-char stream nil nil t)
         when (null char)
           do (return nil)

@@ -73,8 +73,8 @@
   ((%parameter :initarg :parameter :reader parameter)
    (%macro-name :initarg :macro-name :reader macro-name)))
 
-(defun numeric-parameter-ignored (stream macro-name parameter)
-  (unless *read-suppress*
+(defun numeric-parameter-ignored (stream macro-name parameter suppress)
+  (unless suppress
     (%recoverable-reader-error
      stream 'numeric-parameter-supplied-but-ignored
      :position-offset -2
@@ -83,8 +83,8 @@
 (define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
   ((%macro-name :initarg :macro-name :reader macro-name)))
 
-(defun numeric-parameter-not-supplied (stream macro-name)
-  (unless *read-suppress*
+(defun numeric-parameter-not-supplied (stream macro-name suppress)
+  (unless suppress
     (%recoverable-reader-error
      stream 'numeric-parameter-not-supplied-but-required
      :position-offset -1
