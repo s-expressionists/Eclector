@@ -8,7 +8,7 @@ following the Common Lisp specification.
 **``eclector`` is under active development. Its ASDF system structure,
 package structure, exported symbols and protocols may change at any
 time but are becoming less and less likely to do so in incompatible
-ways. Consult the NEWS file or the "Changelog" sectio nof the manual
+ways. Consult the NEWS file or the "Changelog" section of the manual
 for lists of changes in specific versions.**
 
 This document only gives a very brief overview and highlights some

@@ -36,7 +36,7 @@ Release 0.9 (2023-03-19)
 
     #1=(1 #2=(2 ... #2#) ... #1#)
 
-  lead to unnecessary and/or repeated traversals during fixup processing.
+  led to unnecessary and/or repeated traversals during fixup processing.
 
 * Fixup processing is now performed in parse result objects.
 

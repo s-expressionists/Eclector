@@ -57,7 +57,7 @@
    (:code :common-lisp
     "#1=(1 #2=(2 ... #2#) ... #1#)")
    (:paragraph
-    "lead" "to" "unnecessary" "and/or" "repeated" "traversals" "during"
+    "led" "to" "unnecessary" "and/or" "repeated" "traversals" "during"
     "fixup" "processing" "."))
   (:item
    (:paragraph
