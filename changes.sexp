@@ -1,5 +1,5 @@
 (:changes
- (:release "0.9" nil
+ (:release "0.9" "2023-03-19"
   (:item
    (:paragraph
     "The" "deprecated" "function"
