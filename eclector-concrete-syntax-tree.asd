@@ -34,6 +34,7 @@
                  :pathname "test/concrete-syntax-tree"
                  :serial t
                  :components ((:file "package")
+                              (:file "utilities")
                               (:file "read")
                               (:file "client")
                               (:file "labeled-objects")

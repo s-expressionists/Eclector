@@ -2,30 +2,7 @@
 
 (in-suite :eclector.concrete-syntax-tree)
 
-(defmacro both ((operator cst))
-  (let ((cst-operator (find-symbol (symbol-name operator)
-                                   (find-package '#:cst))))
-    (alexandria:once-only (cst)
-      `(values (,cst-operator ,cst) (,operator (cst:raw ,cst))))))
-
 ;;; Smoke test
-
-(defun is-consistent-with-raw (cst)
-  (let ((seen (make-hash-table :test #'eq)))
-    (labels ((rec (cst)
-               (if (gethash cst seen)
-                   (return-from rec)
-                   (setf (gethash cst seen) t))
-               (multiple-value-bind (cst-atom-p raw-atom-p) (both (atom cst))
-                 (is (eq raw-atom-p cst-atom-p))
-                 (unless raw-atom-p
-                   (multiple-value-bind (cst-car raw-car) (both (first cst))
-                     (multiple-value-bind (cst-cdr raw-cdr) (both (rest cst))
-                       (is (eq raw-car (cst:raw cst-car)))
-                       (is (eq raw-cdr (cst:raw cst-cdr)))
-                       (rec cst-car)
-                       (rec cst-cdr)))))))
-      (rec cst))))
 
 (test read/smoke
   "Smoke test for the READ function."
