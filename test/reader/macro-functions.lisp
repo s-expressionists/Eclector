@@ -169,9 +169,9 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
 \"strict\" variant, that is STRICT-SHARPSIGN-SINGLE-QUOTE."
   (do-stream-input-cases ((length) parameter read-suppress
                           expected-relaxed
-                          &optional (expected-strict expected-relaxed)
-                                    (expected-position-relaxed length)
-                                    (expected-position-strict length))
+                          &optional (expected-position-relaxed length)
+                                    (expected-strict expected-relaxed)
+                                    (expected-position-strict expected-position-relaxed))
     (labels ((do-call (function)
                (with-stream (stream)
                  (let ((*read-suppress* read-suppress)
@@ -190,19 +190,13 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
                   expected-strict expected-position-strict))
     '(;; Errors
       (""                nil nil eclector.reader:end-of-input-after-sharpsign-single-quote)
-      (")"               nil nil eclector.reader:object-must-follow-sharpsign-single-quote
-                                 eclector.reader:object-must-follow-sharpsign-single-quote
-                                 0 0)
+      (")"               nil nil eclector.reader:object-must-follow-sharpsign-single-quote 0)
       ("5"               nil nil (function 5))
-      ("X"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored
-                                 eclector.reader:numeric-parameter-supplied-but-ignored
-                                 -2 -2)
-      (",foo"            nil nil (function (eclector.reader:unquote foo))
-                                 eclector.reader:unquote-in-invalid-context
-                                 4 0)
-      ("(lambda () ,1)"  nil nil (function (lambda () (eclector.reader:unquote 1)))
-                                 eclector.reader:unquote-in-invalid-context
-                                 14 11)
+      ("X"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored -2)
+      (",foo"            nil nil (function (eclector.reader:unquote foo))   4
+                                 eclector.reader:unquote-in-invalid-context 0)
+      ("(lambda () ,1)"  nil nil (function (lambda () (eclector.reader:unquote 1))) 14
+                                 eclector.reader:unquote-in-invalid-context         11)
       ;; Valid
       ("X"               nil nil (function X))
       ("CL-USER::X"      nil nil (function cl-user::x))
@@ -210,7 +204,7 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
       ("(lambda () `,1)" nil nil (function (lambda ()
                                    (eclector.reader:quasiquote
                                     (eclector.reader:unquote 1)))))
-      ("X "              nil nil (function x) (function x) 1 1)
+      ("X "              nil nil (function x) 1 (function x) 1)
       ;; With *READ-SUPPRESS* bound to T
       ("X"               nil t   nil)
       ("5"               nil t   nil)
@@ -701,8 +695,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
   "Smoke test for the SHARPSIGN-C reader macro function."
   (do-stream-input-cases ((length) parameter read-suppress
                           expected-relaxed
-                          &optional (expected-strict expected-relaxed)
-                                    (expected-position length))
+                          &optional (expected-position-relaxed length)
+                                    (expected-strict expected-relaxed)
+                                    (expected-position-strict expected-position-relaxed))
     (labels ((do-call (function)
                (with-stream (stream)
                  (let ((*read-suppress* read-suppress)
@@ -716,47 +711,25 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                     (expect "value"    (equal expected value))
                     (expect "position" (equal length   position)))))))
       (do-variant 'eclector.reader::sharpsign-c
-                  expected-relaxed expected-position)
+                  expected-relaxed expected-position-relaxed)
       (do-variant 'eclector.reader:strict-sharpsign-c
-                  expected-strict expected-position))
+                  expected-strict expected-position-strict))
     '(;; Errors
       (""               nil nil eclector.reader:end-of-input-after-sharpsign-c)
-      (")"              nil nil eclector.reader:complex-parts-must-follow-sharpsign-c
-                                eclector.reader:complex-parts-must-follow-sharpsign-c
-                                0)
-      ("\"foo\""        nil nil eclector.reader:non-list-following-sharpsign-c
-                                eclector.reader:non-list-following-sharpsign-c
-                                4)
+      (")"              nil nil eclector.reader:complex-parts-must-follow-sharpsign-c 0)
+      ("\"foo\""        nil nil eclector.reader:non-list-following-sharpsign-c 4)
       ("("              nil nil eclector.reader:end-of-input-before-complex-part)
-      ("()"             nil nil eclector.reader:complex-part-expected
-                                eclector.reader:complex-part-expected
-                                1)
+      ("()"             nil nil eclector.reader:complex-part-expected 1)
       ("(0"             nil nil eclector.reader:end-of-input-before-complex-part)
-      ("(0)"            nil nil eclector.reader:complex-part-expected
-                                eclector.reader:complex-part-expected
-                                2)
+      ("(0)"            nil nil eclector.reader:complex-part-expected 2)
       ("(0 0"           nil nil eclector.reader:unterminated-list)
-      ("(0 0 0)"        nil nil eclector.reader:too-many-complex-parts
-                                eclector.reader:too-many-complex-parts
-                                5)
-      ("#(0 0)"         nil nil eclector.reader:non-list-following-sharpsign-c
-                                eclector.reader:non-list-following-sharpsign-c
-                                5)
-      ("(:a 0)"         nil nil eclector.reader:read-object-type-error
-                                eclector.reader:read-object-type-error
-                                3)
-      ("(0 :a)"         nil nil eclector.reader:read-object-type-error
-                                eclector.reader:read-object-type-error
-                                5)
-      ("(0 0)"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored
-                                eclector.reader:numeric-parameter-supplied-but-ignored
-                                -2)
-      ("(`,0 0)"        nil nil eclector.reader:backquote-in-invalid-context
-                                eclector.reader:backquote-in-invalid-context
-                                1)
-      ("(,0 0)"         nil nil eclector.reader:unquote-in-invalid-context
-                                eclector.reader:unquote-in-invalid-context
-                                1)
+      ("(0 0 0)"        nil nil eclector.reader:too-many-complex-parts 5)
+      ("#(0 0)"         nil nil eclector.reader:non-list-following-sharpsign-c 5)
+      ("(:a 0)"         nil nil eclector.reader:read-object-type-error 3)
+      ("(0 :a)"         nil nil eclector.reader:read-object-type-error 5)
+      ("(0 0)"          1   nil eclector.reader:numeric-parameter-supplied-but-ignored -2)
+      ("(`,0 0)"        nil nil eclector.reader:backquote-in-invalid-context 1)
+      ("(,0 0)"         nil nil eclector.reader:unquote-in-invalid-context 1)
       ;; Valid
       ("(0 1)"          nil nil #C(0 1))
       ("(-1 1)"         nil nil #C(-1 1))
@@ -765,13 +738,15 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("(0 #.(+ 1 2))"  nil nil #C(0 3)) ; since we bind *LIST-READER*
       ;; Invalid for relaxed and strict versions for different
       ;; reasons
-      ("#.(list 1 2 3)" nil nil eclector.reader:read-object-type-error
-                                eclector.reader:non-list-following-sharpsign-c
-                                13)
+      ("#.(list 1 2 3)" nil nil eclector.reader:read-object-type-error         13
+                                eclector.reader:non-list-following-sharpsign-c 13)
       ;; Valid only for relaxed version
-      (" (1 2)"         nil nil #C(1 2) eclector.reader:non-list-following-sharpsign-c 0)
-      ("#||# (1 2)"     nil nil #C(1 2) eclector.reader:non-list-following-sharpsign-c 3)
-      ("#.(list 1 2)"   nil nil #C(1 2) eclector.reader:non-list-following-sharpsign-c 11)
+      (" (1 2)"         nil nil #C(1 2)                                        0
+                                eclector.reader:non-list-following-sharpsign-c)
+      ("#||# (1 2)"     nil nil #C(1 2)                                        3
+                                eclector.reader:non-list-following-sharpsign-c)
+      ("#.(list 1 2)"   nil nil #C(1 2)                                        11
+                                eclector.reader:non-list-following-sharpsign-c)
       ;; With *READ-SUPPRESS* bound to T
       ("(0)"            nil t   nil)
       ("(0 0 0)"        nil t   nil)
