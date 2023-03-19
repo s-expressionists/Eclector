@@ -13,15 +13,25 @@
 
 (cl:in-package #:eclector.tools-for-build.release)
 
+;;; Utilities
+
+(defvar *level* 0)
+
+(defun message (format-control &rest format-arguments)
+  (format *trace-output* "~V@T~?~%" (* 2 *level*) format-control format-arguments))
+
 ;;; Git actions
 
 (defun tag (name)
+  (message "Creating tag ~S" name)
   (shell:run `("git" "tag" ,name)))
 
 (defun checkout (name)
   (shell:run `("git" "checkout" ,name)))
 
 (defun commit (message)
+  (message "Committing with message ~S"
+           (string-right-trim '(#\Newline) message))
   (shell:run `("git" "commit" "-a" "-m" ,message)))
 
 ;;;
@@ -53,9 +63,9 @@
           (error "~@<There already is a release date in the entry for ~
                   release ~A.~@:>"
                  version))
-        (format *trace-output* "Finalizing release notes for version ~A, ~
-                                date is ~D-~2,'0D-~2,'0D~%"
-                version year month day)
+        (message "Finalizing release notes for version ~A, ~
+                  date is ~D-~2,'0D-~2,'0D"
+                 version year month day)
         (setf content (format nil "~A~
                                    \"~D-~2,'0D-~2,'0D\"~
                                    ~A"
@@ -71,7 +81,7 @@
                     (eclector.concrete-syntax-tree:read stream)))
          (release (cst:second cst))
          (start   (car (cst:source release))))
-    (format *trace-output* "Adding empty change log section for ~A~%" version)
+    (message "Adding empty change log section for ~A" version)
     (setf content (format nil "~A~
                                ~(~S~)~@
                                ~@
@@ -90,29 +100,34 @@
                                       (subseq this-version/list 0 2)))
          (next-release/string (format nil "~{~D~^.~}"
                                       (subseq next-version/list 0 2))))
-    ;; Add release date to current section in changes.sexp and write
-    ;; release notes.
-    (add-release-date)
-    (let ((changes (changes:read-changes "changes.sexp")))
-      (flet ((write-release-notes (release-notes-file &rest args)
-               (format *trace-output* "Writing release notes ~A~%" release-notes-file)
-               (apply #'news:write-news changes release-notes-file args)))
+    (flet ((write-release-notes (release-notes-file &rest args)
+             (let ((changes (changes:read-changes "changes.sexp")))
+               (message "Writing release notes ~A" release-notes-file)
+               (apply #'news:write-news changes release-notes-file args))))
+      ;; Add release date to current section in changes.sexp and write
+      ;; release notes.
+      (message "Performing pre-release actions for release ~A"
+               this-release/string)
+      (let ((*level* 1))
+        (add-release-date)
         (write-release-notes "NEWS" :plaintext)
-        (write-release-notes "NEWS.md" :markdown :count 1)))
-    (commit (format nil "Add date to ~A release in changes.sexp~%"
-                    this-release/string))
-    ;; Create release tag.
-    (let ((tag-name (format nil "~A.0" this-release/string)))
-      (format *trace-output* "Creating tag ~S~%" tag-name)
-      (tag tag-name))
+        (write-release-notes "NEWS.md" :markdown :count 1)
+        (commit (format nil "Add date to ~A release in changes.sexp~%"
+                        this-release/string))
+        ;; Create release tag.
+        (let ((tag-name (format nil "~A.0" this-release/string)))
+          (tag tag-name)))
 
-    ;; Bump version in version-string.sexp and create new section in
-    ;; changes.sexp
-    (format *trace-output* "Bumping version ~{~A~^.~} → ~{~A~^.~}~%"
-            this-version/list next-version/list)
-    (bump-version next-version/list)
-    (add-release next-release/string)
-    (commit (format nil "Version bump ~A -> ~A~%"
-                    this-release/string next-release/string))))
+      ;; Bump version in version-string.sexp and create new section in
+      ;; changes.sexp
+      (message "Performing post-release actions")
+      (let ((*level* 1))
+       (message "Bumping version ~{~A~^.~} → ~{~A~^.~}"
+                this-version/list next-version/list)
+        (bump-version next-version/list)
+        (add-release next-release/string)
+        (write-release-notes "NEWS" :plaintext)
+        (commit (format nil "Version bump ~A -> ~A~%"
+                        this-release/string next-release/string))))))
 
 (release)
