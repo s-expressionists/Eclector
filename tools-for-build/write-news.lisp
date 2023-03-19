@@ -38,10 +38,13 @@
                (pprint-newline :fill stream)))))
 
 (defun write-code (code stream format)
-  (destructuring-bind (keyword content) code
+  (destructuring-bind (keyword language content) code
     (assert (eq keyword :code))
     (when (eq format :markdown)
-      (format stream "```lisp~@:_"))
+      (format stream "```~@[~A~]~@:_"
+              (ecase language
+                ((nil) nil)
+                (:common-lisp "cl"))))
     (pprint-logical-block
         (stream code :per-line-prefix (if (eq format :plaintext)
                                           "  "

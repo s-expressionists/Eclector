@@ -44,11 +44,14 @@
   (format stream "~@:_~@:_"))
 
 (defun write-code (code stream)
-  (destructuring-bind (keyword content) code
+  (destructuring-bind (keyword language content) code
     (assert (eq keyword :code))
-    (format stream "@example~@:_")
-    (write-string content)
-    (format stream "~@:_@end example~@:_~@:_")))
+    (let ((command (ecase language
+                     ((nil) "example")
+                     (:common-lisp "lisp"))))
+     (format stream "@~A~@:_" command)
+     (write-string content)
+     (format stream "~@:_@end ~A~@:_~@:_" command))))
 
 (defun write-item (item stream)
   (destructuring-bind (keyword &rest children) item

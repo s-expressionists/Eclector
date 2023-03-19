@@ -49,10 +49,10 @@
     ".")
    (:paragraph
     "Before" "this" "change" "," "cases" "like")
-   (:code
+   (:code :common-lisp
     "#1=(1 #1# #2=(2 #2# ... #100=(100 #100#)))")
    (:paragraph "or")
-   (:code
+   (:code :common-lisp
     "#1=(1 #2=(2 ... #2#) ... #1#)")
    (:paragraph
     "lead" "to" "unnecessary" "and/or" "repeated" "traversals" "during"
@@ -62,12 +62,12 @@
     "Fixup" "processing" "is" "now" "performed" "in" "parse" "result" "objects" ".")
    (:paragraph
     "Before" "this" "change" "," "something" "like")
-   (:code
+   (:code :common-lisp
     "(eclector.concrete-syntax-tree:read-from-string \"#1=(#1#)\")")
    (:paragraph
     "produced" "a" "CST" "object" "," "say" (:tt "cst") "," "which" "failed"
     "to" "satisfy")
-   (:code
+   (:code :common-lisp
     "(eq (cst:first cst)       cst)
 (eq (cst:raw (first cst)) (cst:raw cst))")
    (:paragraph
@@ -193,7 +193,7 @@
     "customization" "possibilities" "." "With" "these" "functions" "," "the"
     "chain" "of" "functions" "calls" "for" "a" (:symbol "read") "call"
     "looks" "like" "this:")
-   (:code "eclector.reader:read
+   (:code nil "eclector.reader:read
   eclector.reader:call-as-top-level-read
     eclector.reader:read-common
       eclector.reader:read-maybe-nothing
