@@ -102,7 +102,7 @@
     (commit (format nil "Add date to ~A release in changes.sexp~%"
                     this-release/string))
     ;; Create release tag.
-    (let ((tag-name (format nil "release-~A" this-release/string)))
+    (let ((tag-name (format nil "~A.0" this-release/string)))
       (format *trace-output* "Creating tag ~S~%" tag-name)
       (tag tag-name))
 
