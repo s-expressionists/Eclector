@@ -282,4 +282,5 @@
   ;; Reader macro functions
   (:export
    #:strict-sharpsign-single-quote
-   #:strict-sharpsign-c))
+   #:strict-sharpsign-c
+   #:strict-sharpsign-s))

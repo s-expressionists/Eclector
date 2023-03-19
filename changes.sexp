@@ -131,7 +131,20 @@
    (:paragraph
     "The" "new" "protocol" "subsumes" "the" "purpose" "of" "the" "generic"
     "function" (:symbol "eclector.reader:call-with-current-package") "which"
-    "is" "deprecated" "as" "of" "this" "Eclector" "version" ".")))
+    "is" "deprecated" "as" "of" "this" "Eclector" "version" "."))
+  (:item
+   (:paragraph
+    "Eclector" "now" "provides" "and" "uses" "by" "default" "a" "relaxed"
+    "version" "of" "the" (:symbol "eclector.reader::sharpsign-s") "reader"
+    "macro" "function" "which" "requires" "the" "input" "following"
+    (:tt "#S") "to" "be" "read" "as" "a" "list" "but" "not" "necessarily"
+    "be" "literally" "written" "as" (:tt "(TYPE INITARG₁ VALUE₁ …)") ".")
+   (:paragraph
+    "A" "detailed" "discussion" "of" "the" "topic" "has" "been" "added" "to"
+    "the" "manual"
+    (:when "manual"
+      "(" (:ref :section "Interpretation of Sharpsign C and Sharpsign S") ")")
+    ".")))
 
  (:release "0.8" "2021-08-24"
   (:item

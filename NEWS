@@ -86,6 +86,13 @@ Release 0.9 (not yet released)
   ECLECTOR.READER:CALL-WITH-CURRENT-PACKAGE which is deprecated as of this
   Eclector version.
 
+* Eclector now provides and uses by default a relaxed version of the
+  ECLECTOR.READER::SHARPSIGN-S reader macro function which requires the input
+  following #S to be read as a list but not necessarily be literally written as
+  (TYPE INITARG₁ VALUE₁ …).
+
+  A detailed discussion of the topic has been added to the manual.
+
 Release 0.8 (2021-08-24)
 
 * The default ECLECTOR.READER:READ-TOKEN method and the functions

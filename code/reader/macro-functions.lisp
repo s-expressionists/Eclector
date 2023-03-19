@@ -1045,12 +1045,12 @@
 ;;; since a strict reading of this would also preclude "#S(…)" we
 ;;; assume that the intention is to allow whitespace after "#s".
 
-(defun sharpsign-s (stream char parameter)
+(defun %sharpsign-s (stream char parameter allow-non-list)
   (declare (ignore char))
   (let ((client *client*))
     (when (state-value client '*read-suppress*)
       (read stream t nil t)
-      (return-from sharpsign-s nil))
+      (return-from %sharpsign-s nil))
     (unless (null parameter)
       (numeric-parameter-ignored stream 'sharpsign-s parameter nil))
     ;; When we get here, we have to read a list of the form
@@ -1070,58 +1070,65 @@
                  (declare (ignore kind))
                  (case element
                    (:type
-                    (typecase value
-                      ((eql #1=#.(gensym "END-OF-LIST"))
-                       (%recoverable-reader-error
-                        stream 'no-structure-type-name-found
-                        :position-offset -1 :report 'inject-nil))
-                      ((eql #2=#.(gensym "END-OF-INPUT"))
-                       (%recoverable-reader-error
-                        stream 'end-of-input-before-structure-type-name
-                        :report 'inject-nil))
-                      (symbol
-                       (setf type value))
-                      (t
-                       (%recoverable-reader-error
-                        stream 'structure-type-name-is-not-a-symbol
-                        :position-offset -1 :datum value :report 'inject-nil)))
+                    (collect-type value)
                     (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
                           *unquote-forbidden* 'sharpsign-s-slot-name
                           element :name))
                    (:name
-                    (typecase value
-                      ((eql #1#))
-                      ((eql #2#)
-                       (%recoverable-reader-error
-                        stream 'end-of-input-before-slot-name
-                        :report 'use-partial-initargs))
-                      (alexandria:string-designator
-                       (setf slot-name value))
-                      (t
-                       (%recoverable-reader-error
-                        stream 'slot-name-is-not-a-string-designator
-                        :position-offset -1 :datum value :report 'skip-slot)
-                       (setf slot-name value)))
+                    (collect-name value)
                     (setf *quasiquote-forbidden* old-quasiquote-forbidden
                           *unquote-forbidden* 'sharpsign-s-slot-value
                           element :object))
                    (:object
-                    (typecase value
-                      ((eql #1#)
-                       (%recoverable-reader-error
-                        stream 'no-slot-value-found
-                        :position-offset -1
-                        :slot-name slot-name :report 'skip-slot))
-                      ((eql #2#)
-                       (%recoverable-reader-error
-                        stream 'end-of-input-before-slot-value
-                        :slot-name slot-name :report 'skip-slot))
-                      (t
-                       (push slot-name initargs)
-                       (push value initargs)))
+                    (collect-value value)
                     (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
                           *unquote-forbidden* 'sharpsign-s-slot-name
                           element :name))))
+               (collect-type (value)
+                 (typecase value
+                   ((eql #1=#.(gensym "END-OF-LIST"))
+                    (%recoverable-reader-error
+                     stream 'no-structure-type-name-found
+                     :position-offset -1 :report 'inject-nil))
+                   ((eql #2=#.(gensym "END-OF-INPUT"))
+                    (%recoverable-reader-error
+                     stream 'end-of-input-before-structure-type-name
+                     :report 'inject-nil))
+                   (symbol
+                    (setf type value))
+                   (t
+                    (%recoverable-reader-error
+                     stream 'structure-type-name-is-not-a-symbol
+                     :position-offset -1 :datum value :report 'inject-nil))))
+               (collect-name (value)
+                 (typecase value
+                   ((eql #1#))
+                   ((eql #2#)
+                    (%recoverable-reader-error
+                     stream 'end-of-input-before-slot-name
+                     :report 'use-partial-initargs))
+                   (alexandria:string-designator
+                    (setf slot-name value))
+                   (t
+                    (%recoverable-reader-error
+                     stream 'slot-name-is-not-a-string-designator
+                     :position-offset -1 :datum value :report 'skip-slot)
+                    (setf slot-name nil))))
+               (collect-value (value)
+                 (typecase value
+                   ((eql #1#)
+                    (%recoverable-reader-error
+                     stream 'no-slot-value-found
+                     :position-offset -1
+                     :slot-name slot-name :report 'skip-slot))
+                   ((eql #2#)
+                    (%recoverable-reader-error
+                     stream 'end-of-input-before-slot-value
+                     :slot-name slot-name :report 'skip-slot))
+                   (t
+                    (unless (null slot-name) ; due to error recovery
+                      (push slot-name initargs)
+                      (push value initargs)))))
                (read-constructor (stream char)
                  ;; If this is called, the input started with "#S(" (or,
                  ;; generally, "#S" followed by any input resulting in a
@@ -1147,7 +1154,9 @@
             ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
             (with-forbidden-quasiquotation ('sharpsign-s)
               (let ((*list-reader* #'read-constructor))
-                (%read-maybe-nothing client stream t nil)))
+                (values (if allow-non-list
+                            (read stream t nil t)
+                            (%read-maybe-nothing client stream t nil)))))
           ((and end-of-file (not incomplete-construct)) (condition)
             (%recoverable-reader-error
              stream 'end-of-input-after-sharpsign-s
@@ -1158,15 +1167,28 @@
              stream 'structure-constructor-must-follow-sharpsign-s
              :position-offset -1 :report 'inject-nil)
             (unread-char (%character condition) stream))
-          (:no-error (&rest values)
-            (declare (ignore values))
-            (unless listp
-              (%recoverable-reader-error
-               stream 'non-list-following-sharpsign-s
-               :position-offset -1 :report 'inject-nil))))
+          (:no-error (object)
+            (cond (listp)
+                  ((or (not allow-non-list) (not (typep object 'cons)))
+                   (%recoverable-reader-error
+                    stream 'non-list-following-sharpsign-s
+                    :position-offset -1 :report 'inject-nil))
+                  (t
+                   (collect-type (first object))
+                   (unless (null type) ; due to error recovery
+                     (loop for (name . rest) on (rest object) by #'cddr
+                           for value = (if (null rest) '#2# (first rest))
+                           do (collect-name name)
+                              (collect-value value)))))))
         (if (not (null type))
             (make-structure-instance client type (nreverse initargs))
             nil)))))
+
+(defun sharpsign-s (stream char parameter)
+  (%sharpsign-s stream char parameter t))
+
+(defun strict-sharpsign-s (stream char parameter)
+  (%sharpsign-s stream char parameter nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

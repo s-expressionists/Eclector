@@ -42,10 +42,10 @@ Note how the description for Sharpsign C relies on a recursive @t{read}
 invocation while the description for Sharpsign S gives a character-level
 pattern with meta-syntactic variables.  It is possible that this is an
 oversight and the syntax was intended to be uniform between the two
-reader macros.  Whatever the case may be, in order to provide conforming
-behavior, @sysname{} is forced to implement Sharpsign C with a recursive
-@t{read} invocation and Sharpsign S with a stricter enforcement of the
-specified syntax.
+reader macros.  Whatever the case may be, in order to handle existing
+code without inconveniencing clients, @sysname{} implements both
+Sharpsign C and Sharpsign S with a recursive @t{read} invocation which
+corresponds to permissive behavior.
 
 More concretely, @sysname{} behaves as summarized in the following table:
 
@@ -58,10 +58,10 @@ More concretely, @sysname{} behaves as summarized in the following table:
 @item @t{#C[1 2]} for left-parenthesis syntax on @t{[} @tab Read as @t{#C(1 2)}
 
 @item @t{#S(foo)}                                      @tab Read as @t{#S(foo)}
-@item @t{#S (foo)}                                     @tab Rejected
-@item @t{#S#||#(foo)}                                  @tab Rejected
-@item @t{#S#.(list 'foo)}                              @tab Rejected
-@item @t{#S[foo]} for left-parenthesis syntax on @t{[} @tab Rejected
+@item @t{#S (foo)}                                     @tab Read as @t{#S(foo)}
+@item @t{#S#||#(foo)}                                  @tab Read as @t{#S(foo)}
+@item @t{#S#.(list 'foo)}                              @tab Read as @t{#S(foo)}
+@item @t{#S[foo]} for left-parenthesis syntax on @t{[} @tab Read as @t{#S(foo)}
 @end multitable
 
 @sysname{} provides a strict version of the Sharpsign C macro function
@@ -75,6 +75,19 @@ follows:
 @item @t{#C#||#(1 2)}                                  @tab Rejected
 @item @t{#C#.(list 1 (+ 2 3))}                         @tab Rejected
 @item @t{#C[1 2]} for left-parenthesis syntax on @t{[} @tab Read as @t{#C(1 2)}
+@end multitable
+
+@sysname{} provides a strict version of the Sharpsign S macro function
+under the name @t{eclector.reader:strict-sharpsign-s} which behaves as
+follows:
+
+@multitable @columnfractions .5 .5
+@headitem Input                                        @tab Behavior
+@item @t{#S(foo)}                                      @tab Read as @t{#S(foo)}
+@item @t{#S (foo)}                                     @tab Rejected
+@item @t{#S#||#(foo)}                                  @tab Rejected
+@item @t{#S#.(list 'foo)}                              @tab Rejected
+@item @t{#S[foo]} for left-parenthesis syntax on @t{[} @tab Rejected
 @end multitable
 
 @node Interpretation of Backquote and Sharpsign Single Quote

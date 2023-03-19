@@ -757,22 +757,33 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("#.(list 1 2 3)" nil t   nil))))
 
 (test sharpsign-s/smoke
-  "Smoke test for the SHARPSIGN-S reader macro function."
+  "Smoke test for the SHARPSIGN-S reader macro function.
+
+Tests the \"relaxed\" variant, that is SHARPSIGN-S, and the \"strict\"
+variant, that is STRICT-SHARPSIGN-S."
   (do-stream-input-cases ((length) parameter read-suppress
-                          expected &optional (expected-position length))
-    (flet ((do-it ()
-             (with-stream (stream)
-               (let ((*read-suppress* read-suppress)
-                     (eclector.reader::*backquote-depth* 1)
-                     (eclector.reader::*client*
-                       (make-instance 'sharpsign-s-client)))
-                 (eclector.reader::sharpsign-s stream #\S parameter)))))
-      (error-case (expected expected-position)
-        (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "value"    (relaxed-equalp expected value))
-           (expect "position" (equal          length   position))))))
+                          expected-relaxed
+                          &optional (expected-position-relaxed length)
+                                    (expected-strict           expected-relaxed)
+                                    (expected-position-strict  expected-position-relaxed))
+    (labels ((do-call (function)
+               (with-stream (stream)
+                 (let ((*read-suppress* read-suppress)
+                       (eclector.reader::*backquote-depth* 1)
+                       (eclector.reader::*client*
+                         (make-instance 'sharpsign-s-client)))
+                   (funcall function stream #\S parameter))))
+             (do-variant (function expected expected-position)
+               (error-case (expected expected-position)
+                 (error (do-call function))
+                 (t
+                  (multiple-value-bind (value position) (do-call function)
+                    (expect "value"    (relaxed-equalp expected value))
+                    (expect "position" (equal          length   position)))))))
+      (do-variant 'eclector.reader::sharpsign-s
+                  expected-relaxed expected-position-relaxed)
+      (do-variant 'eclector.reader:strict-sharpsign-s
+                  expected-strict expected-position-strict))
     '(;; Errors
       ("(foo)"           1   nil eclector.reader:numeric-parameter-supplied-but-ignored -2)
 
@@ -783,8 +794,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("(foo . 1)"       nil nil eclector.reader:invalid-context-for-consing-dot 5)
 
       ("("               nil nil eclector.reader:end-of-input-before-structure-type-name)
-      (" (foo)"          nil nil eclector.reader:non-list-following-sharpsign-s 0) ; unclear in the spec. we do not allow it
-      ("#.(list 'foo)"   nil nil eclector.reader:non-list-following-sharpsign-s 12) ; same
       ("()"              nil nil eclector.reader:no-structure-type-name-found 1)
       ("(1)"             nil nil eclector.reader:structure-type-name-is-not-a-symbol 1)
 
@@ -808,12 +817,25 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("(foo #\\b 1)"    nil nil (foo #\b 1))
       ("(foo :bar `,1)"  nil nil (foo :bar (eclector.reader:quasiquote
                                             (eclector.reader:unquote 1))))
-      ("(#.(quote foo))" nil nil (foo)) ; since we bind *LIST-READER*
+
       ;; With *READ-SUPPRESS* bound to T
       ("(foo)"           nil t   nil)
       ("(foo 1 2)"       nil t   nil)
       ("(foo :bar)"      nil t   nil)
-      ("(foo)"           1   t   nil))))
+      ("(foo)"           1   t   nil)
+      ;; Differences between relaxed and strict
+      (" (foo)"          nil nil (foo)                                          0
+                                 eclector.reader:non-list-following-sharpsign-s)  ; unclear in the spec. we do not allow it
+      ("(#.(quote foo))" nil nil (foo)
+                                 eclector.reader:non-list-following-sharpsign-s) ; since we bind *LIST-READER*
+      ("#.1"             nil nil eclector.reader:non-list-following-sharpsign-s 2
+                                 eclector.reader:non-list-following-sharpsign-s)
+      ("#.(list 'foo)"   nil nil (foo)                                          12
+                                 eclector.reader:non-list-following-sharpsign-s) ; unclear in the spec. we do not allow it
+      ("#.(list 1)"      nil nil eclector.reader:structure-type-name-is-not-a-symbol 9
+                                 eclector.reader:non-list-following-sharpsign-s)
+      ("#.(list 'foo 1)" nil nil eclector.reader:slot-name-is-not-a-string-designator 14
+                                 eclector.reader:non-list-following-sharpsign-s))))
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
