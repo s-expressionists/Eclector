@@ -54,18 +54,16 @@
                    (:current (error "not implemented"))
                    (:keyword (gethash "KEYWORD" *mock-packages*))
                    (t (or (gethash package-indicator *mock-packages*)
-                          (eclector.reader::%reader-error
-                           input-stream 'eclector.reader:package-does-not-exist
-                           :package-name package-indicator))))))
+                          (eclector.reader::package-does-not-exist
+                           input-stream package-indicator symbol-name
+                           internp))))))
     (if internp
         (alexandria:ensure-gethash
          symbol-name (%symbols package)
          (%make-symbol symbol-name package))
         (or (gethash symbol-name (%symbols package))
-            (eclector.reader::%reader-error
-             input-stream 'eclector.reader:symbol-does-not-exist
-             :package package
-             :symbol-name symbol-name)))))
+            (eclector.reader::symbol-does-not-exist
+             input-stream package symbol-name)))))
 
 (test interpret-symbol/customize
   "Test customizing the behavior of INTERPRET-SYMBOL."
@@ -92,7 +90,7 @@
         ("#:foo"    nil       "FOO")
 
         ;; Non-existent package
-        ("baz:baz"  eclector.reader:package-does-not-exist 7)
+        ("baz:baz"  eclector.reader:package-does-not-exist 0)
 
         ;; Keyword
         (":foo"     "KEYWORD" "FOO")
@@ -103,7 +101,7 @@
 
         ;; User package
         ("bar:baz"  "BAR"     "BAZ")
-        ("bar:fez"  eclector.reader:symbol-does-not-exist 7)
+        ("bar:fez"  eclector.reader:symbol-does-not-exist 4)
         ("bar::fez" "BAR"     "FEZ")))))
 
 ;;; Test customizing FIND-CHARACTER
