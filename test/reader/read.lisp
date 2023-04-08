@@ -12,7 +12,7 @@
                (let ((*standard-input* stream))
                  (apply #'eclector.reader:read-char
                         (substitute stream :stream args))))))
-      (error-case (input expected error-position)
+      (error-case (input expected error-position 0)
         (error (do-it))
         (t (expect "result" (equal expected (do-it))))))
     '((""  ()                 eclector.reader:end-of-file)
@@ -38,9 +38,9 @@
       (case expected
         (eclector.reader:end-of-file
          (eclector.test:check-signals-error
-          input 'eclector.reader:end-of-file expected-position #'do-it)
+          input 'eclector.reader:end-of-file expected-position 0 #'do-it)
          (eclector.test:check-signals-error
-          input 'end-of-file nil #'do-it/host))
+          input 'end-of-file nil nil #'do-it/host))
         (t
          (expect "value"      (equal expected (do-it)))
          (expect "host value" (equal expected (do-it/host))))))
@@ -88,18 +88,18 @@
   ;; reader since the individual parts in isolation are handled by
   ;; more specific tests.
   (do-stream-input-cases ((input length) read-suppress
-                          expected &optional (expected-position length))
+                          expected &optional (expected-position length)
+                                             (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader:read stream)))))
-      (error-case (input expected expected-position)
+      (error-case (input expected expected-position expected-length)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
              (expect "position" (eql   expected-position position))))))
     `(("(cons 1 2)"                 nil (cons 1 2))
-
       ("#+(or) `1 2"                nil 2)
       ("#+(or) #.(error \"foo\") 2" nil 2)
       ;; Some context-sensitive cases.
@@ -108,7 +108,7 @@
       ("#+`,common-lisp 1"          nil eclector.reader:backquote-in-invalid-context 2)
       ("#+#.`,:common-lisp 1"       nil 1)
       (",foo"                       nil eclector.reader:unquote-not-inside-backquote 0)
-      (",@foo"                      nil eclector.reader:unquote-not-inside-backquote 0)
+      (",@foo"                      nil eclector.reader:unquote-not-inside-backquote 0 2)
       ("`(,)"                       nil eclector.reader:object-must-follow-unquote 3)
       ("`(,@)"                      nil eclector.reader:object-must-follow-unquote 4)
       ("`(,.)"                      nil eclector.reader:object-must-follow-unquote 4)
@@ -130,8 +130,8 @@
       ("#!"                         nil eclector.reader:unknown-macro-sub-character 1)
       ("#!"                         t   eclector.reader:unknown-macro-sub-character 1)
       ;; End of input while trying to read macro sub character.
-      ("#"                          nil eclector.reader:unterminated-dispatch-macro 1)
-      ("#"                          t   eclector.reader:unterminated-dispatch-macro 1))))
+      ("#"                          nil eclector.reader:unterminated-dispatch-macro 1 0)
+      ("#"                          t   eclector.reader:unterminated-dispatch-macro 1 0))))
 
 (defclass unbound-slot-class ()
   ((%unbound-slot)))
@@ -161,18 +161,19 @@
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
   (do-stream-input-cases ((input length) eof-error-p eof-value
-                          expected-result &optional (expected-position length))
+                          expected-result &optional (expected-position length)
+                                                    (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.reader:read-preserving-whitespace
                 stream eof-error-p eof-value))))
-      (error-case (input expected-result expected-position)
+      (error-case (input expected-result expected-position expected-length)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected-result   result))
              (expect "position" (equal expected-position position))))))
     '(;; End of input situations
-      (""        t   nil  eclector.reader:end-of-file)
+      (""        t   nil  eclector.reader:end-of-file 0 0)
       (""        nil :eof :eof)
       ;; Valid
       (":foo"    t   nil  :foo)
@@ -184,16 +185,18 @@
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
-  (do-input-cases (input args expected-value &optional expected-position)
+  (do-input-cases (input args
+                   expected-value &optional (expected-position (length input))
+                                            (expected-length 1))
       (flet ((do-it ()
                (apply #'eclector.reader:read-from-string input args)))
-        (error-case (input expected-value expected-position)
+        (error-case (input expected-value expected-position expected-length)
           (error (do-it))
           (t (multiple-value-bind (value position) (do-it)
                (expect "value"    (equal expected-value    value))
                (expect "position" (eql   expected-position position))))))
     '(;; End of input situations
-      (""         ()                               eclector.reader:end-of-file 0)
+      (""         ()                               eclector.reader:end-of-file 0 0)
       (""         (nil :eof)                       :eof                        0)
       ;; Valid
       (":foo 1 2" ()                               :foo                        5)
@@ -218,8 +221,9 @@
 (test read-maybe-nothing/smoke
   "Smoke test for the READ-MAYBE-NOTHING function."
   (do-stream-input-cases ((input length) (eof-error-p read-suppress)
-                          expected-value
-                          &optional expected-kind (expected-position length))
+                          expected-value &optional expected-kind
+                                                   (expected-position length)
+                                                   (expected-length 1))
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.reader:call-as-top-level-read
@@ -228,16 +232,16 @@
                           (eclector.reader:read-maybe-nothing
                            nil stream eof-error-p :eof)))
                   stream eof-error-p :eof t))))
-        (error-case (input expected-value expected-position)
+        (error-case (input expected-value expected-position expected-length)
           (error (do-it))
           (t (multiple-value-bind (value kind position) (do-it)
                (expect "value"    (equal expected-value    value))
                (expect "kind"     (eq    expected-kind     kind))
                (expect "position" (eql   expected-position position))))))
     '(;; End of input situations
-      (""       (nil nil) :eof :eof       0)
-      (""       (t   nil) eclector.reader:end-of-file)
-      ("."      (nil nil) eclector.reader:invalid-context-for-consing-dot nil 0)
+      (""       (nil nil) :eof                                            :eof 0)
+      (""       (t   nil) eclector.reader:end-of-file                     nil  0 0)
+      ("."      (nil nil) eclector.reader:invalid-context-for-consing-dot nil  0)
       ;; Valid
       ("   "    (nil nil) nil :whitespace 3)
       ("   "    (nil nil) nil :whitespace 3)
@@ -260,7 +264,8 @@
   "Smoke test for the READ-DELIMITED-LIST function."
   (do-stream-input-cases ((input length) char expected1
                           &optional (expected2 expected1)
-                                    (expected-position length))
+                                    (expected-position length)
+                                    (expected-length 1))
     (flet ((do-it (install-macro-p)
              (let ((readtable (eclector.readtable:copy-readtable
                                eclector.reader:*readtable*)))
@@ -272,23 +277,27 @@
                  (with-stream (stream)
                    (eclector.reader:read-delimited-list char stream nil))))))
       ;; Test with #\] behaving like #\).
-      (error-case (input expected1 expected-position)
+      (error-case (input expected1 expected-position expected-length)
         (error (do-it t))
         (t (expect "result1" (relaxed-equalp expected1 (do-it t)))))
       ;; Test with #\] having constituent syntax type.
-      (error-case (input expected2 expected-position)
+      (error-case (input expected2 expected-position expected-length)
         (error (do-it nil))
         (t (expect "result2" (relaxed-equalp expected2 (do-it nil))))))
-    '((""             #\] eclector.reader:unterminated-list)
+    '((""             #\] eclector.reader:unterminated-list
+                          eclector.reader:unterminated-list
+                          0 0)
       (")"            #\] eclector.reader:invalid-context-for-right-parenthesis
                           eclector.reader:invalid-context-for-right-parenthesis
                           0)
       ("]"            #\] ())
-      ("1"            #\] eclector.reader:unterminated-list)
+      ("1"            #\] eclector.reader:unterminated-list
+                          eclector.reader:unterminated-list
+                          1 0)
       ("."            #\] eclector.reader:invalid-context-for-consing-dot
                           eclector.reader:invalid-context-for-consing-dot
                           0)
-      ("1]"           #\] (1) eclector.reader:unterminated-list)
+      ("1]"           #\] (1) eclector.reader:unterminated-list 2 0)
       ("1 ]"          #\] (1))
       ("1 #|2|# ]"    #\] (1))
       ("1 #+(or) 2 ]" #\] (1))

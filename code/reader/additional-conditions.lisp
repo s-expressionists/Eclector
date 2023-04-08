@@ -75,10 +75,11 @@
 
 (defun numeric-parameter-ignored (stream macro-name parameter suppress)
   (unless suppress
-    (%recoverable-reader-error
-     stream 'numeric-parameter-supplied-but-ignored
-     :position-offset -2
-     :parameter parameter :macro-name macro-name :report 'ignore-parameter)))
+    (let ((length (numeric-token-length parameter)))
+      (%recoverable-reader-error
+       stream 'numeric-parameter-supplied-but-ignored
+       :position-offset (- (1+ length)) :length length
+       :parameter parameter :macro-name macro-name :report 'ignore-parameter))))
 
 (define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
   ((%macro-name :initarg :macro-name :reader macro-name)))

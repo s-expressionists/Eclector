@@ -459,6 +459,7 @@
                (error (condition)
                  (%recoverable-reader-error
                   stream 'read-time-evaluation-error
+                  :position-offset -1 ; inaccurate
                   :expression expression :original-condition condition
                   :report 'inject-nil)
                  nil)))))))
@@ -667,10 +668,11 @@
                        36)
                       ((not (<= 2 parameter 36))
                        (unless suppress
-                         (%recoverable-reader-error
-                          stream 'invalid-radix
-                          :position-offset (- (+ (parameter-length parameter) 1))
-                          :radix parameter :report 'use-replacement-radix))
+                         (let ((length (numeric-token-length parameter)))
+                           (%recoverable-reader-error
+                            stream 'invalid-radix
+                            :position-offset (- (+ length 1)) :length length
+                            :radix parameter :report 'use-replacement-radix)))
                        36)
                       (t
                        parameter))))
@@ -725,13 +727,15 @@
                                   (setf result (make-array 0 :element-type 'bit)
                                         index parameter))
                                  ((> index parameter)
-                                  (%recoverable-reader-error
-                                   stream 'too-many-elements
-                                   :position-offset (- (- index parameter))
-                                   :array-type 'bit-vector
-                                   :expected-number parameter
-                                   :number-found index
-                                   :report 'ignore-excess-elements)))
+                                  (let ((excess-count (- index parameter)))
+                                    (%recoverable-reader-error
+                                     stream 'too-many-elements
+                                     :position-offset (- excess-count)
+                                     :length excess-count
+                                     :array-type 'bit-vector
+                                     :expected-number parameter
+                                     :number-found index
+                                     :report 'ignore-excess-elements))))
                            (return
                              (if (< index parameter)
                                  (fill result (sbit result (1- index))
@@ -801,6 +805,7 @@
                             ((not (eql (length initial-contents) (or first 0)))
                              (%recoverable-reader-error
                               stream 'incorrect-initialization-length
+                              :position-offset -1 ; inaccurate
                               :array-type 'array :axis axis
                               :expected-length first :datum initial-contents
                               :report 'use-empty-array)
@@ -943,6 +948,7 @@
                     value)
                    (t
                     (%recoverable-reader-error stream 'read-object-type-error
+                                               :position-offset -1 ; inaccurate
                                                :datum value :expected-type 'real
                                                :report 'use-replacement-part)
                     1)))
@@ -1384,10 +1390,11 @@
         (numeric-parameter-not-supplied stream 'sharpsign-equals nil)
         (return-from sharpsign-equals (read-object)))
       (unless (null (find-labeled-object client parameter))
-        (%recoverable-reader-error
-         stream 'sharpsign-equals-label-defined-more-than-once
-         :position-offset (- (+ 1 (parameter-length parameter) 1))
-         :label parameter :report 'ignore-label)
+        (let ((length (numeric-token-length parameter)))
+          (%recoverable-reader-error
+           stream 'sharpsign-equals-label-defined-more-than-once
+           :position-offset (- (1+ length)) :length length
+           :label parameter :report 'ignore-label))
         (return-from sharpsign-equals (read-object)))
       ;; Make a labeled object for the label PARAMETER and read the
       ;; following object. Reading the object may encounter references
@@ -1422,10 +1429,11 @@
       (return-from sharpsign-sharpsign nil))
     (let ((labeled-object (find-labeled-object client parameter)))
       (when (null labeled-object)
-        (%recoverable-reader-error
-         stream 'sharpsign-sharpsign-undefined-label
-         :position-offset (- (+ 1 (parameter-length parameter) 1))
-         :label parameter :report 'inject-nil)
+        (let ((length (numeric-token-length parameter)))
+          (%recoverable-reader-error
+           stream 'sharpsign-sharpsign-undefined-label
+           :position-offset (- (1+ length)) :length length
+           :label parameter :report 'inject-nil))
         (return-from sharpsign-sharpsign nil))
       (reference-labeled-object client stream labeled-object))))
 

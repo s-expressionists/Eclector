@@ -68,11 +68,12 @@
   "Test customizing the behavior of INTERPRET-SYMBOL."
   (let ((*mock-packages* (make-mock-packages)))
     (do-stream-input-cases ((input length) expected-package-or-condition
-                            &optional (expected-symbol-or-position length))
+                            &optional (expected-symbol-or-position length)
+                                      (expected-length 1))
       (flet ((do-it ()
                (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
                  (with-stream (stream) (eclector.reader:read stream)))))
-        (error-case (input expected-package-or-condition expected-symbol-or-position)
+        (error-case (input expected-package-or-condition expected-symbol-or-position expected-length)
           (error (do-it))
           ((nil)
            (let ((result (do-it)))
@@ -89,7 +90,7 @@
       '(;; Uninterned
         ("#:foo"    nil       "FOO")
         ;; Non-existent package
-        ("baz:baz"  eclector.reader:package-does-not-exist 0)
+        ("baz:baz"  eclector.reader:package-does-not-exist 0 3)
         ;; Keyword
         (":foo"     "KEYWORD" "FOO")
         ;; COMMON-LISP package
@@ -97,7 +98,7 @@
         ("cl:list"  "CL"      "LIST")
         ;; User package
         ("bar:baz"  "BAR"     "BAZ")
-        ("bar:fez"  eclector.reader:symbol-does-not-exist 4)
+        ("bar:fez"  eclector.reader:symbol-does-not-exist 4 3)
         ("bar::fez" "BAR"     "FEZ")))))
 
 ;;; Test customizing FIND-CHARACTER
@@ -117,17 +118,19 @@
 
 (test find-character/customize
   "Test customizing the behavior of FIND-CHARACTER."
-  (do-stream-input-cases ((input) expected &optional expected-position)
+  (do-stream-input-cases ((input length)
+                          expected &optional (expected-position length)
+                                             (expected-length 1))
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'find-character-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case (input expected expected-position)
+      (error-case (input expected expected-position expected-length)
         (error (do-it))
         (t (expect "character" (equal expected (do-it))))))
     '(;; Errors
-      ("#\\no_such_character" eclector.reader:unknown-character-name 2)
-      ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name 2)
+      ("#\\no_such_character" eclector.reader:unknown-character-name 2 17)
+      ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name 2 17)
       ;; Single character
       ("#\\a"                 #\a)
       ("#\\A"                 #\A)
@@ -163,7 +166,7 @@
         (error (do-it))
         (t (is (equal expected (do-it))))))
     '(;; Errors
-      ("(1 #.1 3)"          eclector.reader:read-time-evaluation-error 6)
+      ("(1 #.1 3)"          eclector.reader:read-time-evaluation-error 5)
       ;; No errors
       ("(1 #.2 3)"          (1 nil 3))
       ("(1 #.(list #.2) 3)" (1 nil 3)))))

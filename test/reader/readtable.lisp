@@ -9,14 +9,15 @@
    (lambda (setup-cases)
      (destructuring-bind (setup &rest cases) setup-cases
        (do-stream-input-cases ((input length)
-                               expected &optional (expected-position length))
+                               expected &optional (expected-position length)
+                                                  (expected-length 1))
          (flet ((do-it ()
                   (let ((eclector.reader:*readtable*
                           (funcall setup (eclector.readtable:copy-readtable
                                           eclector.reader:*readtable*))))
                     (with-stream (stream)
                       (eclector.reader:read stream)))))
-           (error-case (input expected expected-position)
+           (error-case (input expected expected-position expected-length)
              (error (do-it))
              (t (multiple-value-bind (result position) (do-it)
                   (expect "result"   (equal expected          result))
@@ -38,8 +39,8 @@
      (,(lambda (readtable)
          (setf (eclector.readtable:syntax-from-char #\Space readtable readtable) #\A)
          readtable)
-      (" "  eclector.reader:invalid-constituent-character)
-      ("b " eclector.reader:invalid-constituent-character))
+      (" "  eclector.reader:invalid-constituent-character 0 1)
+      ("b " eclector.reader:invalid-constituent-character 1 1))
      ;; Change [ to the syntax of (. The left-parenthesis reader macro
      ;; is specified to read until a closing parenthesis (not some
      ;; "opposite" character of the character the reader macro
@@ -49,9 +50,9 @@
           readtable #\[ (eclector.readtable:get-macro-character readtable #\())
          readtable)
       ("[1 2)"   (1 2))
-      ("[1 2]"   eclector.reader:unterminated-list)
+      ("[1 2]"   eclector.reader:unterminated-list 5 0)
       ("#C[1 2)" #C(1 2))
-      ("#C[1 2]" eclector.reader:read-object-type-error))
+      ("#C[1 2]" eclector.reader:read-object-type-error 6 1))
      ;; To define a proper alternate list syntax, the combination of
      ;; using READ-DELIMITED-LIST for [ and copying ) for ] must be
      ;; used.

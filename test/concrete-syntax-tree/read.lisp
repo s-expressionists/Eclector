@@ -8,11 +8,12 @@
   "Smoke test for the READ function."
   (do-stream-input-cases ((input length) eof-error expected-raw
                           &optional expected-location
-                                    (expected-position length))
+                                    (expected-position length)
+                                    (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.concrete-syntax-tree:read stream eof-error :eof))))
-      (error-case (input expected-raw expected-position)
+      (error-case (input expected-raw expected-position expected-length)
         (error (do-it))
         (:eof (is (eq :eof (do-it))))
         (t
@@ -30,9 +31,9 @@
            ;; Consumed all input.
            (expect "position" (eql length position))))))
     '(;; End of input
-      (""                    t   eclector.reader:end-of-file)
+      (""                    t   eclector.reader:end-of-file nil 0 0)
       (""                    nil :eof)
-      ("; comment"           t   eclector.reader:end-of-file)
+      ("; comment"           t   eclector.reader:end-of-file nil 9 0)
       ("; comment"           nil :eof)
       ;; Actually reading something
       ("(cons 1 2)"          t   (cons 1 2)          ( 0 . 10))
@@ -47,12 +48,13 @@
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
   (do-stream-input-cases ((input length) eof-error-p eof-value
-                          expected-result &optional (expected-position length))
+                          expected-result &optional (expected-position length)
+                                                    (expected-length 1))
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.concrete-syntax-tree:read-preserving-whitespace
                   stream eof-error-p eof-value))))
-        (error-case (input expected-result expected-position)
+        (error-case (input expected-result expected-position expected-length)
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
@@ -70,7 +72,7 @@
              (expect "orphan results" (eq  '()               orphan-results))
              (expect "position"       (eql expected-position position))))))
     '(;; End of input
-      (""        t   nil  eclector.reader:end-of-file)
+      (""        t   nil  eclector.reader:end-of-file 0 0)
       (""        nil :eof :eof)
       ;; Valid
       (":foo"    t   nil  :foo)
@@ -80,12 +82,13 @@
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
-  (do-input-cases ((input length) args expected-value
-                   &optional (expected-position length))
+  (do-input-cases ((input length) args
+                   expected-value &optional (expected-position length)
+                                            (expected-length 1))
       (flet ((do-it ()
                (apply #'eclector.concrete-syntax-tree:read-from-string
                       input args)))
-        (error-case (input expected-value expected-position)
+        (error-case (input expected-value expected-position expected-length)
           (error (do-it))
           (:eof
            (multiple-value-bind (result position) (do-it)
@@ -101,7 +104,7 @@
                (expect "raw result" (equal expected-value raw)))
              (expect "position" (eql expected-position position))))))
     '(;; End of input
-      (""         ()                               eclector.reader:end-of-file)
+      (""         ()                               eclector.reader:end-of-file  0 0)
       (""         (nil :eof)                       :eof                         0)
       ;; Valid
       (":foo 1 2" ()                               :foo                         5)

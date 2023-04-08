@@ -112,7 +112,10 @@ This generic function can be called by clients in order to obtain the
 approximate position in the input stream to which @var{condition}
 pertains.  The type and interpretation of the returned object depend on
 the client, namely the presence of client-specific methods on the
-@t{source-position} generic function.
+@t{source-position} generic function.  The information returned by the
+functions @t{position-offset} and @t{range-length} can be used to refine
+the approximate position and compute a range in the input stream
+respectively.
 
 Applicable methods exist for all conditions of type
 @t{stream-position-condition}.
@@ -121,13 +124,30 @@ Applicable methods exist for all conditions of type
 @defgena {position-offset,eclector.base} condition
 
 This generic function is called in order to compute the exact position
-in the input stream to which @var{condition} pertains by refining the
-approximate position obtained by calling @t{stream-position}.  The
-returned value is an integer (possibly negative) which indicates the
-offset in characters from the approximate position to the exact
-position.  Since the representation of the approximate position is
-chosen by the client, applying the offset to that position in a suitable
-way is also the responsibility of the client.
+(or start of a range) in the input stream to which @var{condition}
+pertains by refining the approximate position obtained by calling
+@t{stream-position}.  The returned value is an integer (possibly
+negative) which indicates the offset in characters from the approximate
+position to the exact position.  Since the representation of the
+approximate position is chosen by the client, applying the offset to
+that position in a suitable way is also the responsibility of the
+client.  Assuming the object returned by @t{(stream-position
+@var{condition})} is suitable for arithmetic, the exact position is
+@math{stream-position + position-offset}.
+
+Applicable methods exist for all conditions of type
+@t{stream-position-condition}.
+@end deffn
+
+@defgena {range-length,eclector.base} condition
+
+This generic function is called in order to compute the length of the
+range in the input stream to which @var{condition} pertains.  The
+returned value is a non-negative integer which indicates the length of
+the range in characters.  Therefore, assuming the object returned by
+@t{(stream-position @var{condition})} is suitable for arithmetic, the
+range covers input the positions @math{[start, start + range-length]}
+where @math{start = stream-position + position-offset}.
 
 Applicable methods exist for all conditions of type
 @t{stream-position-condition}.

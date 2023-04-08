@@ -20,6 +20,7 @@
    #:stream-position-reader-error
    #:stream-position
    #:position-offset
+   #:range-length
 
    #:end-of-file
 

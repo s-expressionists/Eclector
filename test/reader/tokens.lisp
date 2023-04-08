@@ -6,45 +6,46 @@
 (test read-token/smoke
   "Smoke test for the default method on READ-TOKEN."
   (do-stream-input-cases ((input length) eof-error-p eof-value
-                          expected &optional (expected-position length))
+                          expected &optional (expected-position length)
+                                             (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*package* (find-package '#:eclector.reader.test))) ; TODO use a client that does not intern in INTERPRET-TOKEN
                  (eclector.reader:read-token
                   t stream eof-error-p eof-value)))))
-      (error-case (input expected expected-position)
+      (error-case (input expected expected-position expected-length)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "value"    (equalp expected          value))
              (expect "position" (eql    expected-position position))))))
-    `((,(format nil "~C" #\Backspace)            t   nil eclector.reader:invalid-constituent-character)
-      (,(format nil "cl-user::~C" #\Backspace)   t   nil eclector.reader:invalid-constituent-character)
-      (,(format nil "~C" #\Rubout)               t   nil eclector.reader:invalid-constituent-character)
-      (,(format nil "cl-user::~C" #\Rubout)      t   nil eclector.reader:invalid-constituent-character)
+    `((,(format nil "~C" #\Backspace)            t   nil eclector.reader:invalid-constituent-character 0)
+      (,(format nil "cl-user::~C" #\Backspace)   t   nil eclector.reader:invalid-constituent-character 9)
+      (,(format nil "~C" #\Rubout)               t   nil eclector.reader:invalid-constituent-character 0)
+      (,(format nil "cl-user::~C" #\Rubout)      t   nil eclector.reader:invalid-constituent-character 9)
       ("a"                                       t   nil |A|)
       ("cl-user::a"                              t   nil cl-user::|A|)
-      ("\\"                                      t   nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("cl-user::\\"                             t   nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("\\"                                      nil nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("cl-user::\\"                             nil nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("\\"                                      t   nil eclector.reader:unterminated-single-escape-in-symbol 1 0)
+      ("cl-user::\\"                             t   nil eclector.reader:unterminated-single-escape-in-symbol 10 0)
+      ("\\"                                      nil nil eclector.reader:unterminated-single-escape-in-symbol 1 0)
+      ("cl-user::\\"                             nil nil eclector.reader:unterminated-single-escape-in-symbol 10 0)
       ("\\a"                                     t   nil |a|)
       ("cl-user::\\a"                            t   nil cl-user::|a|)
       (,(format nil "\\~C" #\Backspace)          t   nil ,(intern (format nil "~C" #\Backspace)))
       (,(format nil "cl-user::\\~C" #\Backspace) t   nil ,(intern (format nil "~C" #\Backspace)
                                                                   '#:cl-user))
 
-      (,(format nil "a~C" #\Backspace)           t   nil eclector.reader:invalid-constituent-character)
-      (,(format nil "cl-user::a~C" #\Backspace)  t   nil eclector.reader:invalid-constituent-character)
-      (,(format nil "a~C" #\Rubout)              t   nil eclector.reader:invalid-constituent-character)
-      (,(format nil "cl-user::a~C" #\Rubout)     t   nil eclector.reader:invalid-constituent-character)
+      (,(format nil "a~C" #\Backspace)           t   nil eclector.reader:invalid-constituent-character 1)
+      (,(format nil "cl-user::a~C" #\Backspace)  t   nil eclector.reader:invalid-constituent-character 10)
+      (,(format nil "a~C" #\Rubout)              t   nil eclector.reader:invalid-constituent-character 1)
+      (,(format nil "cl-user::a~C" #\Rubout)     t   nil eclector.reader:invalid-constituent-character 10)
       ("aa"                                      t   nil |AA|)
       ("cl-user::aa"                             t   nil cl-user::|AA|)
       ("a#"                                      t   nil |A#|)
       ("cl-user::a#"                             t   nil cl-user::|A#|)
-      ("a\\"                                     t   nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("cl-user::a\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("a\\"                                     nil nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("cl-user::a\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol)
+      ("a\\"                                     t   nil eclector.reader:unterminated-single-escape-in-symbol 2 0)
+      ("cl-user::a\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol 11 0)
+      ("a\\"                                     nil nil eclector.reader:unterminated-single-escape-in-symbol 2 0)
+      ("cl-user::a\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol 11 0)
       ("a\\a"                                    t   nil |Aa|)
       ("cl-user::a\\a"                           t   nil cl-user::|Aa|)
       ("a|a|"                                    t   nil |Aa|)
@@ -54,10 +55,10 @@
       ("a "                                      t   nil |A|           1)
       ("cl-user::a "                             t   nil cl-user::|A| 10)
 
-      ("|"                                       t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
-      ("cl-user::|"                              t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
-      ("|"                                       nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
-      ("cl-user::|"                              nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
+      ("|"                                       t   nil eclector.reader:unterminated-multiple-escape-in-symbol 1 0)
+      ("cl-user::|"                              t   nil eclector.reader:unterminated-multiple-escape-in-symbol 10 0)
+      ("|"                                       nil nil eclector.reader:unterminated-multiple-escape-in-symbol 1 0)
+      ("cl-user::|"                              nil nil eclector.reader:unterminated-multiple-escape-in-symbol 10 0)
       ("||"                                      t   nil ||)
       ("cl-user::||"                             t   nil cl-user::||)
       ("||a"                                     t   nil |A|)
@@ -72,14 +73,14 @@
       ("cl-user::| |"                            t   nil cl-user::| |)
       (,(format nil "cl-user::|~C|" #\Backspace) t   nil ,(intern (format nil "~C" #\Backspace)
                                                                   '#:cl-user))
-      ("|\\"                                     t   nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("cl-user::|\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("|\\"                                     nil nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("cl-user::|\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol)
-      ("|\\|"                                    t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
-      ("cl-user::|\\|"                           t   nil eclector.reader:unterminated-multiple-escape-in-symbol)
-      ("|\\|"                                    nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
-      ("cl-user::|\\|"                           nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
+      ("|\\"                                     t   nil eclector.reader:unterminated-single-escape-in-symbol 2 0)
+      ("cl-user::|\\"                            t   nil eclector.reader:unterminated-single-escape-in-symbol 11 0)
+      ("|\\"                                     nil nil eclector.reader:unterminated-single-escape-in-symbol 2 0)
+      ("cl-user::|\\"                            nil nil eclector.reader:unterminated-single-escape-in-symbol 11 0)
+      ("|\\|"                                    t   nil eclector.reader:unterminated-multiple-escape-in-symbol 3 0)
+      ("cl-user::|\\|"                           t   nil eclector.reader:unterminated-multiple-escape-in-symbol 12 0)
+      ("|\\|"                                    nil nil eclector.reader:unterminated-multiple-escape-in-symbol 3 0)
+      ("cl-user::|\\|"                           nil nil eclector.reader:unterminated-multiple-escape-in-symbol 12 0)
       ("|\\||"                                   t   nil |\||)
       ("cl-user::|\\||"                          t   nil cl-user::|\||)
 
@@ -101,7 +102,9 @@
   "Smoke test for the default method on CHECK-SYMBOL-TOKEN."
   (mapc (lambda (arguments-package-expected)
           (destructuring-bind (token escape-ranges marker1 marker2 package
-                               &optional signals (error-position (length token)))
+                               &optional signals
+                                         (expected-position (length token))
+                                         (expected-length 1))
               arguments-package-expected
             (let ((*package* (or package *package*)))
               (flet ((do-it ()
@@ -109,7 +112,7 @@
                          (loop :repeat (length token) :do (read-char stream))
                          (eclector.reader:check-symbol-token
                           nil stream token escape-ranges marker1 marker2))))
-                (error-case (token signals error-position)
+                (error-case (token signals expected-position expected-length)
                   (error (do-it))
                   (t (multiple-value-bind (new-token new-marker1 new-marker2)
                          (do-it)
@@ -130,9 +133,9 @@
           ("CL:NIL"                         ()        2   nil nil)
           ("ECLECTOR.READER.TEST:INTERNAL"  ()        20  nil nil)
 
-          ("::"                             ()        0   1   nil eclector.reader:symbol-name-must-not-be-only-package-markers 0)
-          ("::"                             ((2 . 2)) 0   1   nil eclector.reader:two-package-markers-must-not-be-first 0)
-          ("::A"                            ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first 0)
+          ("::"                             ()        0   1   nil eclector.reader:symbol-name-must-not-be-only-package-markers 0 2)
+          ("::"                             ((2 . 2)) 0   1   nil eclector.reader:two-package-markers-must-not-be-first 0 2)
+          ("::A"                            ()        0   1   nil eclector.reader:two-package-markers-must-not-be-first 0 2)
           ("CL::NIL"                        ()        2   3   nil)
           ("ECLECTOR.READER.TEST::INTERNAL" ()        20  21  nil))))
 
@@ -140,7 +143,8 @@
   "Smoke test for the default method on INTERPRET-SYMBOL-TOKEN."
   (mapc (lambda (arguments-package-expected)
           (destructuring-bind (token marker1 marker2 package expected
-                               &optional (error-position (length token)))
+                               &optional (expected-position (length token))
+                                         (expected-length 1))
               arguments-package-expected
             (let ((*package* (or package *package*)))
               (flet ((do-it ()
@@ -148,7 +152,7 @@
                          (loop :repeat (length token) :do (read-char stream))
                          (eclector.reader:interpret-symbol-token
                           nil stream token marker1 marker2))))
-                (error-case (token expected error-position)
+                (error-case (token expected expected-position expected-length)
                   (error (do-it))
                   (t (is (equal expected (do-it)))))))))
         '((""                               nil nil nil ||)
@@ -159,20 +163,21 @@
           (":"                              0   nil nil :||)
           (":a"                             0   nil nil :|a|)
           (":A"                             0   nil nil :a)
-          ("NP:NIX"                         2   nil nil eclector.reader:package-does-not-exist 0)
-          ("CL:NIX"                         2   nil nil eclector.reader:symbol-does-not-exist 3)
-          ("ECLECTOR.READER.TEST:INTERNAL"  20  nil nil eclector.reader:symbol-is-not-external 21)
+          ("NP:NIX"                         2   nil nil eclector.reader:package-does-not-exist 0 2)
+          ("CL:NIX"                         2   nil nil eclector.reader:symbol-does-not-exist 3 3)
+          ("ECLECTOR.READER.TEST:INTERNAL"  20  nil nil eclector.reader:symbol-is-not-external 21 8)
           ("CL:NIL"                         2   nil nil nil)
           ("CL:ABS"                         2   nil nil abs)
 
-          ("NP::NIX"                        2   3   nil eclector.reader:package-does-not-exist 0)
+          ("NP::NIX"                        2   3   nil eclector.reader:package-does-not-exist 0 2)
           ("ECLECTOR.READER.TEST::INTERNAL" 20  21  nil internal)
           ("CL::NIL"                        2   3   nil nil)
           ("CL::ABS"                        2   3   nil abs))))
 
 (defun do-interpret-token-test-case (arguments-context-expected)
   (destructuring-bind (token token-escapes *read-base* case expected
-                       &optional error-position)
+                       &optional (expected-position (length token))
+                                 (expected-length 1))
       arguments-context-expected
     (let ((table (eclector.readtable:copy-readtable
                   eclector.reader:*readtable*)))
@@ -183,7 +188,7 @@
                  (let ((eclector.reader:*readtable* table))
                    (eclector.reader:interpret-token
                     nil stream (copy-seq token) token-escapes)))))
-        (error-case (token expected error-position)
+        (error-case (token expected expected-position expected-length)
           (error (do-it))
           (t
            (unless (or token-escapes
@@ -216,8 +221,8 @@
             (".."         ((1 . 1))         10 :upcase   |..|) ; .||.
             ("."          ((1 . 1))         10 :upcase   |.|)  ; .||
             ("..a"        ()                10 :upcase   |..A|)
-            (".."         ()                10 :upcase   eclector.reader:too-many-dots 0)
-            ("..."        ()                10 :upcase   eclector.reader:too-many-dots 0)
+            (".."         ()                10 :upcase   eclector.reader:too-many-dots 0 2)
+            ("..."        ()                10 :upcase   eclector.reader:too-many-dots 0 3)
             ;; readtable case
             ("abc"        ()                10 :upcase   |ABC|)
             ("ABC"        ()                10 :upcase   |ABC|)
@@ -266,7 +271,7 @@
             ("1/a"        ((2 . 3))         10 :upcase   |1/a|)
             ("1/:"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker 2)
             ("1/a"        ()                10 :upcase   1/a)
-            ("1/0"        ()                10 :upcase   eclector.reader:zero-denominator)
+            ("1/0"        ()                10 :upcase   eclector.reader:zero-denominator 2 1)
             ("1/2a"       ((3 . 4))         10 :upcase   |1/2a|)
             ("1/2:"       ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker 3)
             ("1/2a"       ()                10 :upcase   1/2a)
@@ -299,15 +304,15 @@
             (":"          ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers 0)
             (":"          ((1 . 1))         10 :upcase   :||)
             (":"          ((0 . 1))         10 :upcase   |:|)
-            ("::"         ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers 0)
+            ("::"         ()                10 :upcase   eclector.reader:symbol-name-must-not-be-only-package-markers 0 2)
             ("a:"         ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker 1)
             ("a:"         ((1 . 2))         10 :upcase   |A:|)
             ("a::"        ()                10 :upcase   eclector.reader:symbol-name-must-not-end-with-package-marker 2)
             ("a:::"       ()                10 :upcase   eclector.reader:symbol-can-have-at-most-two-package-markers 3)
             ("a::bb:cc"   ()                10 :upcase   eclector.reader:symbol-can-have-at-most-two-package-markers 5)
-            ("a:a:"       ()                10 :upcase   eclector.reader:two-package-markers-must-be-adjacent 3)
-            ("a:bb:cc"    ()                10 :upcase   eclector.reader:two-package-markers-must-be-adjacent 4)
-            ("::a"        ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first 0)
+            ("a:a:"       ()                10 :upcase   eclector.reader:two-package-markers-must-be-adjacent 1 3)
+            ("a:bb:cc"    ()                10 :upcase   eclector.reader:two-package-markers-must-be-adjacent 1 4)
+            ("::a"        ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first 0 2)
             ("keyword:b"  ()                10 :upcase   :b)
             ("keyword::b" ()                10 :upcase   :b)
             ;; decimal-integer
@@ -398,5 +403,5 @@
   "Test default float format handling in the default method on INTERPRET-TOKEN."
   (let ((*read-default-float-format* 'rational))
     (mapc #'do-interpret-token-test-case
-          '(("1.0" () 10 :upcase eclector.reader:invalid-default-float-format)
-            ("1e0" () 10 :upcase eclector.reader:invalid-default-float-format)))))
+          '(("1.0" () 10 :upcase eclector.reader:invalid-default-float-format 3 0)
+            ("1e0" () 10 :upcase eclector.reader:invalid-default-float-format 1 1)))))

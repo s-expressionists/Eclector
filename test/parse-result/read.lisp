@@ -97,12 +97,13 @@
   "Smoke test for the READ function."
   (do-stream-input-cases ((input length) eof-error expected-raw
                           &optional expected-location
-                                    (expected-position length))
+                                    (expected-position length)
+                                    (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.parse-result:read
                 (make-instance 'simple-result-client) stream eof-error :eof))))
-      (error-case (input expected-raw expected-position)
+      (error-case (input expected-raw expected-position expected-length)
         (error (do-it))
         (:eof
          (multiple-value-bind (result orphan-results position) (do-it)
@@ -117,9 +118,9 @@
            (expect "orphan results"  (equal  '()               orphan-results))
            (expect "position"        (eql    expected-position position))))))
     '(;; End of input
-      (""                    t   eclector.reader:end-of-file)
+      (""                    t   eclector.reader:end-of-file nil 0 0)
       (""                    nil :eof)
-      ("; comment"           t   eclector.reader:end-of-file)
+      ("; comment"           t   eclector.reader:end-of-file nil 9 0)
       ("; comment"           nil :eof)
       ;; Actually reading something
       ("1"                   t   1                   ( 0 .  1))
@@ -177,13 +178,14 @@
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
   (do-stream-input-cases ((input length) eof-error-p eof-value expected-raw
                           &optional expected-location
-                                    (expected-position length))
+                                    (expected-position length)
+                                    (expected-length 1))
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.parse-result:read-preserving-whitespace
                   (make-instance 'simple-result-client)
                   stream eof-error-p eof-value))))
-        (error-case (input expected-raw expected-position)
+        (error-case (input expected-raw expected-position expected-length)
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
@@ -198,24 +200,26 @@
              (expect "orphan results"  (equal '()               orphan-results))
              (expect "position"        (eql   expected-position position))))))
     '(;; End of input
-      (""        t   nil  eclector.reader:end-of-file)
-      (""        nil :eof :eof nil     0)
+      (""        t   nil  eclector.reader:end-of-file nil     0 0)
+      (""        nil :eof :eof                        nil     0)
       ;; Valid
-      (":foo"    t   nil  :foo (0 . 4) 4)
-      (":foo "   t   nil  :foo (0 . 4) 4)
-      (":foo  "  t   nil  :foo (0 . 4) 4)
-      (":foo  1" t   nil  :foo (0 . 4) 4)
-      ("#*11 "   t   nil  #*11 (0 . 4) 4)
-      ("#1*1 "   t   nil  #1*1 (0 . 4) 4))))
+      (":foo"    t   nil  :foo                        (0 . 4) 4)
+      (":foo "   t   nil  :foo                        (0 . 4) 4)
+      (":foo  "  t   nil  :foo                        (0 . 4) 4)
+      (":foo  1" t   nil  :foo                        (0 . 4) 4)
+      ("#*11 "   t   nil  #*11                        (0 . 4) 4)
+      ("#1*1 "   t   nil  #1*1                        (0 . 4) 4))))
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
-  (do-input-cases ((input length) args expected-raw
-                   &optional expected-location (expected-position length))
+  (do-input-cases ((input length) args
+                   expected-raw &optional expected-location
+                                          (expected-position length)
+                                          (expected-length 1))
     (flet ((do-it ()
              (apply #'eclector.parse-result:read-from-string
                     (make-instance 'simple-result-client) input args)))
-      (error-case (input expected-raw expected-position)
+      (error-case (input expected-raw expected-position expected-length)
         (error (do-it))
         (:eof
          (multiple-value-bind (result position orphan-results) (do-it)
@@ -229,7 +233,7 @@
            (expect "orphan results"  (equal '()               orphan-results))
            (expect "position"        (eql   expected-position position))))))
     '(;; End of input
-      (""         ()                               eclector.reader:end-of-file)
+      (""         ()                               eclector.reader:end-of-file nil 0 0)
       (""         (nil :eof)                       :eof)
       ;; Valid
       (":foo 1 2" ()                               :foo (0 . 4) 5)
@@ -264,7 +268,8 @@
   (do-stream-input-cases ((input length) (eof-error-p read-suppress)
                           expected-value &optional expected-kind
                                                    expected-parse-result
-                                                   (expected-position length))
+                                                   (expected-position length)
+                                                   (expected-length 1))
       (flet ((do-it ()
                (let ((client (make-instance 'list-result-client)))
                  (with-stream (stream)
@@ -280,7 +285,7 @@
                                    (values value kind)))
                       stream eof-error-p :eof t)
                      (values value kind parse-result))))))
-        (error-case (input expected-value expected-position)
+        (error-case (input expected-value expected-position expected-length)
           (error (do-it))
           (t (multiple-value-bind (value kind parse-result position)
                  (do-it)
@@ -289,7 +294,7 @@
                (expect "parse result" (equal expected-parse-result parse-result))
                (expect "position"     (eql   expected-position     position))))))
     '(;; End of input
-      (""       (t   nil) eclector.reader:end-of-file)
+      (""       (t   nil) eclector.reader:end-of-file nil nil 0 0)
       (""       (nil nil) :eof :eof)
       ;; Whitespace
       ("   "    (nil nil) nil :whitespace)

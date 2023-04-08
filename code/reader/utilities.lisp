@@ -1,5 +1,8 @@
 (cl:in-package #:eclector.reader)
 
+(defun numeric-token-length (token)
+  (with-standard-io-syntax (length (prin1-to-string token))))
+
 ;;; Token utilities
 
 (deftype token-string ()
@@ -228,8 +231,3 @@
                       :whitespace))
           do (unread-char char stream)
              (return t)))
-
-;;; Error reporting utilities
-
-(defun parameter-length (parameter)
-  (with-standard-io-syntax (length (prin1-to-string parameter))))

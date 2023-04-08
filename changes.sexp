@@ -1,5 +1,13 @@
 (:changes
- (:release "0.10" nil)
+ (:release "0.10" nil
+  (:item
+   (:paragraph
+    "The" "new" "reader" (:symbol "eclector.base:range-length") "can" "be"
+    "applied" "to" "conditions" "of" "type"
+    (:symbol "eclector.base:stream-position-condition") "(" "which"
+    "includes" "almost" "all" "conditions" "related" "to" "syntax" "errors"
+    ")" "to" "determine" "the" "length" "of" "the" "sub-sequence" "of" "the"
+    "input" "to" "which" "the" "condition" "in" "question" "pertains" ".")))
 
  (:release "0.9" "2023-03-19"
   (:item

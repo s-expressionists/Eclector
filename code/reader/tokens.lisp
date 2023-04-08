@@ -203,11 +203,18 @@
                  (multiple-value-bind (type default-format)
                      (reader-float-format client exponent-marker)
                    (when (null type)
-                     (%recoverable-reader-error
-                      input-stream 'invalid-default-float-format
-                      :exponent-marker exponent-marker
-                      :float-format default-format
-                      :report 'use-replacement-float-format)
+                     (multiple-value-bind (offset length)
+                         (if exponentp
+                             (values
+                              (- (+ 1 (numeric-token-length (exponent))))
+                              1)
+                             (values 0 0))
+                       (%recoverable-reader-error
+                        input-stream 'invalid-default-float-format
+                        :position-offset offset :length length
+                        :exponent-marker exponent-marker
+                        :float-format default-format
+                        :report 'use-replacement-float-format))
                      (setf type 'single-float))
                    (let ((magnitude (* (decimal-mantissa)
                                        (expt 10 (- (if exponentp
@@ -229,6 +236,7 @@
                                         (char-invalid-p ,char-var))
                                    (%recoverable-reader-error
                                     input-stream 'invalid-constituent-character
+                                    :position-offset -1
                                     :token (string ,char-var)
                                     :report 'replace-invalid-character)
                                    (setf (aref token index) #\_)
@@ -418,7 +426,7 @@
                         (t
                          (%recoverable-reader-error
                           input-stream 'symbol-can-have-at-most-two-package-markers
-                          :position-offset (- (- (length token) index))
+                          :position-offset (- (- (length token) index)) :length 1
                           :token token :report 'treat-as-escaped)))
                   (go symbol))))))))))
 
@@ -474,15 +482,16 @@
                     (1- position-package-marker-2)))
            (%recoverable-reader-error
             input-stream 'two-package-markers-must-be-adjacent
-            :position-offset (+ (- (length token))
-                                position-package-marker-2)
+            :position-offset (+ (- (length token)) position-package-marker-1)
+            :length (1+ (- position-package-marker-2
+                           position-package-marker-1))
             :token token :report 'treat-as-escaped)
            (setf position-package-marker-2 nil))
           ((and position-package-marker-2
                 (= position-package-marker-1 0))
            (%recoverable-reader-error
             input-stream 'two-package-markers-must-not-be-first
-            :position-offset (- (length token))
+            :position-offset (- (length token)) :length 2
             :token token :report 'treat-as-escaped))
           ;; The symbol token must not end with a package marker (or
           ;; two package markers).
@@ -524,11 +533,14 @@
 
 (defun package-does-not-exist (input-stream package-indicator symbol-name internp)
   (restart-case
-      (%reader-error input-stream 'package-does-not-exist
-                     :position-offset (- (+ (length package-indicator) ; inaccurate when escapes are present
-                                            (if internp 2 1)
-                                            (length symbol-name)))
-                     :package-name package-indicator)
+      (let ((package-length (length package-indicator))
+            (symbol-length (length symbol-name)))
+        (%reader-error input-stream 'package-does-not-exist
+                       :position-offset (- (+ package-length ; inaccurate when escapes are present
+                                              (if internp 2 1)
+                                              symbol-length))
+                       :length package-length
+                       :package-name package-indicator))
     (recover ()
       :report (lambda (stream)
                 (format-recovery-report stream 'use-uninterned-symbol

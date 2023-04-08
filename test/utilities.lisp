@@ -99,7 +99,8 @@
 
 ;;; Checking expected errors
 
-(defun check-signals-error (input expected-condition-type expected-position thunk)
+(defun check-signals-error
+    (input expected-condition-type expected-position expected-length thunk)
   (handler-case
       (funcall thunk)
     (error (condition)
@@ -127,6 +128,12 @@
               "~@<When reading ~S and condition ~S was signaled, expected ~
                position ~S, but got ~S.~@:>"
               input condition  expected-position effective-position)))
+      (unless (null expected-length)
+        (let ((length (eclector.base:range-length condition)))
+          (is (= expected-length length)
+              "~@<When reading ~S and condition ~S was signaled, expected ~
+               length ~S, but got ~S.~@:>"
+              input condition expected-length length)))
       ;; Make sure CONDITION prints properly.
       (is (not (string= "" (princ-to-string condition)))
           "~@<When printing the signaled condition ~S expected a non-empty ~
@@ -152,18 +159,20 @@
               (subtypep expected 'condition))
          expected)))
 
-(defun maybe-check-signals-error (input expected expected-position thunk)
+(defun maybe-check-signals-error
+    (input expected expected-position expected-length thunk)
   ;; If EXPECTED designates an Eclector condition type, ensure that a
   ;; condition of that type is signaled, otherwise decline so that
   ;; EXPECTED is interpreted as an expected normal return value.
   (if-let ((expected-condition-type (%expected-condition-type expected)))
     (progn
       (check-signals-error
-       input expected-condition-type expected-position thunk)
+       input expected-condition-type expected-position expected-length thunk)
       t)
     nil))
 
-(defmacro error-case ((input expected-expression &optional expected-position)
+(defmacro error-case ((input expected-expression
+                       &optional expected-position (expected-length 1))
                       &body clauses)
   (let* ((error-clause (find 'error clauses :key #'first))
          (error-body (rest error-clause))
@@ -172,7 +181,7 @@
       ;; EXPECTED-EXPRESSION either designates an expected signaled
       ;; condition or an expected return value.
       `(or (maybe-check-signals-error
-            ,input ,expected-expression ,expected-position
+            ,input ,expected-expression ,expected-position ,expected-length
             (lambda () ,@error-body))
            (case ,expected-expression
              ,@other-clauses)))))
