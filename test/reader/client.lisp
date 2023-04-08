@@ -58,9 +58,8 @@
                            input-stream package-indicator symbol-name
                            internp))))))
     (if internp
-        (alexandria:ensure-gethash
-         symbol-name (%symbols package)
-         (%make-symbol symbol-name package))
+        (alexandria:ensure-gethash symbol-name (%symbols package)
+                                   (%make-symbol symbol-name package))
         (or (gethash symbol-name (%symbols package))
             (eclector.reader::symbol-does-not-exist
              input-stream package symbol-name)))))
@@ -68,37 +67,34 @@
 (test interpret-symbol/customize
   "Test customizing the behavior of INTERPRET-SYMBOL."
   (let ((*mock-packages* (make-mock-packages)))
-    (do-stream-input-cases ((length) expected-package &optional (expected-symbol length))
+    (do-stream-input-cases ((length) expected-package-or-condition
+                            &optional (expected-symbol-or-position length))
       (flet ((do-it ()
                (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
                  (with-stream (stream) (eclector.reader:read stream)))))
-        (error-case (expected-package expected-symbol)
+        (error-case (expected-package-or-condition expected-symbol-or-position)
           (error (do-it))
           ((nil)
            (let ((result (do-it)))
              (is (null (%package result)))
-             (expect "name" (equal expected-symbol (name result)))))
+             (expect "name" (equal expected-symbol-or-position (name result)))))
           (t
            (let* ((result (do-it))
-                  (expected-package (gethash expected-package
+                  (expected-package (gethash expected-package-or-condition
                                              *mock-packages*))
-                  (expected-symbol (gethash expected-symbol
+                  (expected-symbol (gethash expected-symbol-or-position
                                             (%symbols expected-package))))
              (expect "name"    (eq expected-symbol result))
              (expect "package" (eq expected-package (%package result)))))))
       '(;; Uninterned
         ("#:foo"    nil       "FOO")
-
         ;; Non-existent package
         ("baz:baz"  eclector.reader:package-does-not-exist 0)
-
         ;; Keyword
         (":foo"     "KEYWORD" "FOO")
-
         ;; COMMON-LISP package
         ("cl:nil"   "CL"      "NIL")
         ("cl:list"  "CL"      "LIST")
-
         ;; User package
         ("bar:baz"  "BAR"     "BAZ")
         ("bar:fez"  eclector.reader:symbol-does-not-exist 4)
@@ -128,18 +124,15 @@
                (with-stream (stream) (eclector.reader:read stream)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (expect "character" (equal expected (do-it))))))
+        (t (expect "character" (equal expected (do-it))))))
     '(;; Errors
       ("#\\no_such_character" eclector.reader:unknown-character-name 2)
       ("#\\NO_SUCH_CHARACTER" eclector.reader:unknown-character-name 2)
-
       ;; Single character
       ("#\\a"                 #\a)
       ("#\\A"                 #\A)
       ("#\\b"                 #\b)
       ("#\\B"                 #\C)
-
       ;; Multiple characters
       ("#\\name"              #\a)
       ("#\\Name"              #\a)
@@ -167,8 +160,7 @@
                (with-stream (stream) (eclector.reader:read stream)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (is (equal expected (do-it))))))
+        (t (is (equal expected (do-it))))))
     '(;; Errors
       ("(1 #.1 3)"          eclector.reader:read-time-evaluation-error 6)
       ;; No errors
@@ -215,8 +207,7 @@
                (with-stream (stream) (eclector.reader:read stream)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (expect result (eq expected (do-it))))))
+        (t (expect result (eq expected (do-it))))))
     '(;; Errors
       ("#+(not a b)                1 2" eclector.reader:single-feature-expected       10)
       ("#+(version-at-least)       1 2" eclector.reader:feature-expression-type-error 19)

@@ -14,8 +14,7 @@
                (eclector.concrete-syntax-tree:read stream eof-error :eof))))
       (error-case (expected-raw expected-position)
         (error (do-it))
-        (:eof
-         (is (eq :eof (do-it))))
+        (:eof (is (eq :eof (do-it))))
         (t
          (multiple-value-bind (result orphan-results position) (do-it)
            (declare (ignore orphan-results))
@@ -30,7 +29,7 @@
            (expect "source location" (equal expected-location (cst:source result)))
            ;; Consumed all input.
            (expect "position" (eql length position))))))
-    '(;; End of file
+    '(;; End of input
       (""                    t   eclector.reader:end-of-file)
       (""                    nil :eof)
       ("; comment"           t   eclector.reader:end-of-file)
@@ -70,9 +69,10 @@
                (expect "raw results" (equal expected-result raw)))
              (expect "orphan results" (eq  '()               orphan-results))
              (expect "position"       (eql expected-position position))))))
-    '((""        t   nil  eclector.reader:end-of-file)
+    '(;; End of input
+      (""        t   nil  eclector.reader:end-of-file)
       (""        nil :eof :eof)
-
+      ;; Valid
       (":foo"    t   nil  :foo)
       (":foo "   t   nil  :foo                        4)
       (":foo  "  t   nil  :foo                        4)
@@ -100,15 +100,14 @@
              (let ((raw (cst:raw result)))
                (expect "raw result" (equal expected-value raw)))
              (expect "position" (eql expected-position position))))))
-    '((""         ()                               eclector.reader:end-of-file)
+    '(;; End of input
+      (""         ()                               eclector.reader:end-of-file)
       (""         (nil :eof)                       :eof                         0)
-
+      ;; Valid
       (":foo 1 2" ()                               :foo                         5)
-
       ;; Start and end
       (":foo 1 2" (t nil :start 4)                 1                            7)
       (":foo 1 2" (t nil :end 3)                   :fo                          3)
-
       ;; Preserving whitespace
       (":foo 1"   (t nil :preserve-whitespace nil) :foo                         5)
       (":foo 1 "  (t nil :preserve-whitespace nil) :foo                         5)
@@ -130,14 +129,13 @@
   (labels ((check (cst expected)
              (destructuring-bind (expected-location . children) expected
                (is (equal expected-location (cst:source cst)))
-               (cond
-                 ((not children)
-                  (is-true (cst:atom cst)))
-                 ((not (cst:consp cst))
-                  (fail "Expected CONS CST, but got ~S" cst))
-                 (t
-                  (check (cst:first cst) (first children))
-                  (check (cst:rest cst) (rest children)))))))
+               (cond ((not children)
+                      (is-true (cst:atom cst)))
+                     ((not (cst:consp cst))
+                      (fail "Expected CONS CST, but got ~S" cst))
+                     (t
+                      (check (cst:first cst) (first children))
+                      (check (cst:rest cst) (rest children)))))))
     (check cst expected-source-locations)))
 
 (test read/source-locations
@@ -157,35 +155,30 @@
                                        (scons ()
                                               (scons (5 6)) ; 3
                                               (scons ())))))
-
         ;; EQL children
         ("(1 1)"        ,(scons (0 5)
                                 (scons (1 2)) ; first 1
                                 (scons ()
                                        (scons (3 4)) ; second 1
                                        (scons ()))))
-
         ;; Simple reader macro
         ("#.(list 1 2)" ,(scons (0 12)
                                 (scons (8 9)) ; 1
                                 (scons ()
                                        (scons (10 11)) ; 2
                                        (scons ()))))
-
         ;; Nested reader macros
         ("#.(list* 1 '#.(list 2))" ,(scons (0 23)
                                            (scons (9 10)) ; 1
                                            (scons (12 22) ; #.(...)
                                                   (scons (20 21)) ; 2
                                                   (scons ()))))
-
         ;; Heuristic fails here
         ("#.(list 1 1)" ,(scons (0 12)
                                 (scons (10 11)) ; second 1 (arbitrarily)
                                 (scons ()
                                        (scons (10 11)) ; second 1 (arbitrarily)
                                        (scons ()))))
-
         ;; Quote injects expressions
         ("'(123)"       ,(scons (0 6)
                                 (scons ()) ; quote, no source
@@ -267,7 +260,7 @@
 
 (test make-expression-result/long-list
   "The method on MAKE-EXPRESSION-RESULT used to blow the stack for
-   long lists."
+long lists."
   (let* ((length 200000)
          (input (format nil "(~{~A~^ ~})" (alexandria:iota length)))
          (result (with-input-from-string (stream input)

@@ -13,8 +13,7 @@
                (macroexpand-1 form)))
         (error-case (expected)
           (error (do-it))
-          (t
-           (expect "evaluated result" (relaxed-equalp expected (eval (do-it))))))))
+          (t (expect "evaluated result" (relaxed-equalp expected (eval (do-it))))))))
     '(("`,1"           1)
       ("`,@1"          eclector.reader:unquote-splicing-at-top)
       ("`,.1"          eclector.reader:unquote-splicing-at-top)

@@ -14,8 +14,7 @@
                         (substitute stream :stream args))))))
       (error-case (expected error-position)
         (error (do-it))
-        (t
-         (expect "result" (equal expected (do-it))))))
+        (t (expect "result" (equal expected (do-it))))))
     '((""  ()                 eclector.reader:end-of-file)
       (""  (:stream)          eclector.reader:end-of-file)
       (""  (:stream nil)      nil)
@@ -57,7 +56,6 @@
       (" a" (t :stream)            #\a)
       (" a" (t :stream nil)        #\a)
       (" a" (t :stream nil :eof)   #\a)
-
       ;; Peek type NIL
       (""   ()                     eclector.reader:end-of-file)
       (""   (nil :stream)          eclector.reader:end-of-file)
@@ -71,7 +69,6 @@
       (" a" (nil :stream)          #\Space)
       (" a" (nil :stream nil)      #\Space)
       (" a" (nil :stream nil :eof) #\Space)
-
       ;; Peek type CHAR
       (""   (#\a :stream)          eclector.reader:end-of-file)
       (""   (#\a :stream nil)      nil)
@@ -98,15 +95,13 @@
                  (eclector.reader:read stream)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
     `(("(cons 1 2)"                 nil (cons 1 2))
 
       ("#+(or) `1 2"                nil 2)
       ("#+(or) #.(error \"foo\") 2" nil 2)
-
       ;; Some context-sensitive cases.
       ("#C(1 `,2)"                  nil eclector.reader:backquote-in-invalid-context 5)
       ("#C(#.`,(+ 1 2) 2)"          nil #C(3 2))
@@ -118,17 +113,14 @@
       ("`(,@)"                      nil eclector.reader:object-must-follow-unquote 4)
       ("`(,.)"                      nil eclector.reader:object-must-follow-unquote 4)
       ("#1=`(,2)"                   nil (eclector.reader:quasiquote ((eclector.reader:unquote 2))))
-
       ;; Consing dot
       ("(1 . 2)"                    nil (1 . 2))
       ("(1 .||)"                    nil (1 |.|))
       ("(1 .|| 2)"                  nil (1 |.| 2))
       ("(1 #(.))"                   nil eclector.reader:invalid-context-for-consing-dot 5)
-
       ;; Interaction between *READ-SUPPRESS* and reader macros.
       ("#+(or) #|skipme|# 1 2"      nil 2)
       ("#+(or) ; skipme~%1 2"       nil 2)
-
       ;; Invalid macro sub-character.
       (,(format nil "#~C" #\Tab)    nil eclector.reader:sharpsign-invalid 1)
       (,(format nil "#~C" #\Tab)    t   eclector.reader:sharpsign-invalid 1)
@@ -176,13 +168,13 @@
                 stream eof-error-p eof-value))))
       (error-case (expected-result expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected-result   result))
-           (expect "position" (equal expected-position position))))))
-    '((""        t   nil  eclector.reader:end-of-file)
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected-result   result))
+             (expect "position" (equal expected-position position))))))
+    '(;; End of input situations
+      (""        t   nil  eclector.reader:end-of-file)
       (""        nil :eof :eof)
-
+      ;; Valid
       (":foo"    t   nil  :foo)
       (":foo "   t   nil  :foo                        4)
       (":foo  "  t   nil  :foo                        4)
@@ -197,19 +189,17 @@
                (apply #'eclector.reader:read-from-string input args)))
         (error-case (expected-value expected-position)
           (error (do-it))
-          (t
-           (multiple-value-bind (value position) (do-it)
-             (expect "value"    (equal expected-value    value))
-             (expect "position" (eql   expected-position position))))))
-    '((""         ()                               eclector.reader:end-of-file 0)
+          (t (multiple-value-bind (value position) (do-it)
+               (expect "value"    (equal expected-value    value))
+               (expect "position" (eql   expected-position position))))))
+    '(;; End of input situations
+      (""         ()                               eclector.reader:end-of-file 0)
       (""         (nil :eof)                       :eof                        0)
-
+      ;; Valid
       (":foo 1 2" ()                               :foo                        5)
-
       ;; Start and end
       (":foo 1 2" (t nil :start 4)                 1                           7)
       (":foo 1 2" (t nil :end 3)                   :fo                         3)
-
       ;; Preserving whitespace
       (":foo 1"   (t nil :preserve-whitespace nil) :foo                        5)
       (":foo 1 "  (t nil :preserve-whitespace nil) :foo                        5)
@@ -240,15 +230,15 @@
                   stream eof-error-p :eof t))))
         (error-case (expected-value expected-position)
           (error (do-it))
-          (t
-           (multiple-value-bind (value kind position) (do-it)
-             (expect "value"    (equal expected-value    value))
-             (expect "kind"     (eq    expected-kind     kind))
-             (expect "position" (eql   expected-position position))))))
-    '((""       (nil nil) :eof :eof       0)
+          (t (multiple-value-bind (value kind position) (do-it)
+               (expect "value"    (equal expected-value    value))
+               (expect "kind"     (eq    expected-kind     kind))
+               (expect "position" (eql   expected-position position))))))
+    '(;; End of input situations
+      (""       (nil nil) :eof :eof       0)
       (""       (t   nil) eclector.reader:end-of-file)
       ("."      (nil nil) eclector.reader:invalid-context-for-consing-dot nil 0)
-
+      ;; Valid
       ("   "    (nil nil) nil :whitespace 3)
       ("   "    (nil nil) nil :whitespace 3)
 
@@ -284,13 +274,11 @@
       ;; Test with #\] behaving like #\).
       (error-case (expected1 expected-position)
         (error (do-it t))
-        (t
-         (expect "result1" (relaxed-equalp expected1 (do-it t)))))
+        (t (expect "result1" (relaxed-equalp expected1 (do-it t)))))
       ;; Test with #\] having constituent syntax type.
       (error-case (expected2 expected-position)
         (error (do-it nil))
-        (t
-         (expect "result2" (relaxed-equalp expected2 (do-it nil))))))
+        (t (expect "result2" (relaxed-equalp expected2 (do-it nil))))))
     '((""             #\] eclector.reader:unterminated-list)
       (")"            #\] eclector.reader:invalid-context-for-right-parenthesis
                           eclector.reader:invalid-context-for-right-parenthesis
@@ -308,7 +296,6 @@
       ("1 #(.)]"      #\] eclector.reader:invalid-context-for-consing-dot
                           eclector.reader:invalid-context-for-consing-dot
                           4)
-
       ;; We call READ-DELIMITED-LIST with RECURSIVE-P being false, so
       ;; labels and references should work between and within list
       ;; elements.

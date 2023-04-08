@@ -14,10 +14,9 @@
                   t stream eof-error-p eof-value)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "value"    (equalp expected          value))
-           (expect "position" (eql    expected-position position))))))
+        (t (multiple-value-bind (value position) (do-it)
+             (expect "value"    (equalp expected          value))
+             (expect "position" (eql    expected-position position))))))
     `((,(format nil "~C" #\Backspace)            t   nil eclector.reader:invalid-constituent-character)
       (,(format nil "cl-user::~C" #\Backspace)   t   nil eclector.reader:invalid-constituent-character)
       (,(format nil "~C" #\Rubout)               t   nil eclector.reader:invalid-constituent-character)
@@ -112,12 +111,11 @@
                           nil stream token escape-ranges marker1 marker2))))
                 (error-case (signals error-position)
                   (error (do-it))
-                  (t
-                   (multiple-value-bind (new-token new-marker1 new-marker2)
-                       (do-it)
-                     (is (equal token new-token))
-                     (is (eql   marker1 new-marker1))
-                     (is (eql   marker2 new-marker2)))))))))
+                  (t (multiple-value-bind (new-token new-marker1 new-marker2)
+                         (do-it)
+                       (is (equal token new-token))
+                       (is (eql   marker1 new-marker1))
+                       (is (eql   marker2 new-marker2)))))))))
         '((""                               ()        nil nil nil)
           ("a"                              ()        nil nil nil)
           ("A"                              ()        nil nil nil)
@@ -152,8 +150,7 @@
                           nil stream token marker1 marker2))))
                 (error-case (expected error-position)
                   (error (do-it))
-                  (t
-                   (is (equal expected (do-it)))))))))
+                  (t (is (equal expected (do-it)))))))))
         '((""                               nil nil nil ||)
           ("a"                              nil nil nil |a|)
           ("A"                              nil nil nil a)
@@ -205,7 +202,6 @@
     (mapc #'do-interpret-token-test-case
           `(;; empty
             (""           ()                10 :upcase   ||)
-
             ;; Empty escape ranges
             ("a"          ((0 . 0))         10 :upcase   |A|)
             ("a"          ((1 . 1))         10 :upcase   |A|)
@@ -214,7 +210,6 @@
             ("abc"        ((0 . 0) (1 . 2)) 10 :downcase |abc|)
             ("abc"        ((0 . 0) (1 . 2)) 10 :preserve |abc|)
             ("abc"        ((0 . 0) (1 . 2)) 10 :invert   |AbC|)
-
             ;; "consing dot"
             ("."          ()                10 :upcase   ,eclector.reader::*consing-dot*)
             (".."         ((1 . 2))         10 :upcase   |..|) ; .\.
@@ -223,7 +218,6 @@
             ("..a"        ()                10 :upcase   |..A|)
             (".."         ()                10 :upcase   eclector.reader:too-many-dots 0)
             ("..."        ()                10 :upcase   eclector.reader:too-many-dots 0)
-
             ;; readtable case
             ("abc"        ()                10 :upcase   |ABC|)
             ("ABC"        ()                10 :upcase   |ABC|)
@@ -240,7 +234,6 @@
             ("abc"        ()                10 :invert   |ABC|)
             ("ABC"        ()                10 :invert   |abc|)
             ("aBc"        ()                10 :invert   |aBc|)
-
             ;; symbol
             ("a"          ((0 . 1))         10 :upcase   |a|)
             ("-"          ()                10 :upcase   -)
@@ -317,20 +310,17 @@
             ("::a"        ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first 0)
             ("keyword:b"  ()                10 :upcase   :b)
             ("keyword::b" ()                10 :upcase   :b)
-
             ;; decimal-integer
             ("1"          ()                10 :upcase      1)
             ("-1"         ()                10 :upcase     -1)
             ("-12"        ()                10 :upcase    -12)
 
             ("1."         ()                10 :upcase      1)
-
             ;; ratio
             ("+1/2"       ()                10 :upcase      1/2)
             ("-1/2"       ()                10 :upcase     -1/2)
             ("1/2"        ()                10 :upcase      1/2)
             ("1/23"       ()                10 :upcase      1/23)
-
             ;; float-no-exponent
             ("-.0"        ()                10 :upcase      -.0f0)
             ("+.0"        ()                10 :upcase      +.0f0)
@@ -342,7 +332,6 @@
             ("+1.234"     ()                10 :upcase      1.234f0)
             ("-1.234"     ()                10 :upcase     -1.234f0)
             ("1.234"      ()                10 :upcase      1.234f0)
-
             ;; float-exponent
             ("-.0e1"      ()                10 :upcase      -.0f0)
             ("+.0e1"      ()                10 :upcase      +.0f0)
@@ -357,7 +346,6 @@
             ("1.e2"       ()                10 :upcase    100.0f0)
             ("1e2"        ()                10 :upcase    100.0f0)
             ("1e01"       ()                10 :upcase     10.0f0)
-
             ;; Nondefault *READ-BASE*
             ("2"          ()                2  :upcase    |2|)
             ("2/1"        ()                2  :upcase    |2/1|)

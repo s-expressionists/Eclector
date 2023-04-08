@@ -116,7 +116,7 @@
            (expect "source location" (equal  expected-location (source result)))
            (expect "orphan results"  (equal  '()               orphan-results))
            (expect "position"        (eql    expected-position position))))))
-    '(;; End of file
+    '(;; End of input
       (""                    t   eclector.reader:end-of-file)
       (""                    nil :eof)
       ("; comment"           t   eclector.reader:end-of-file)
@@ -160,14 +160,14 @@
          (is (equal expected-location (source parse-result)))))
       (is (eql   expected-position       position))
       (is (equal expected-orphan-results orphan-results)))
-    '(;; End of file situations
+    '(;; End of input
       (""             nil   :eof)
       (""             #:eof :eof)
       ("#+(or) t"     nil   :eof nil       8 (((:sharpsign-plus :or) (0 . 8))))
       ("#+(or) t"     #:eof :eof nil       8 (((:sharpsign-plus :or) (0 . 8))))
       ("#|foo|#"      nil   :eof nil       7 ((:block-comment (0 . 7))))
       ("#|foo|#"      #:eof :eof nil       7 ((:block-comment (0 . 7))))
-      ;;
+      ;; Valid
       ("nil"          nil   nil)
       ("nil"          #:eof nil)
       ("#+(or) t nil" nil   nil  (9 . 12) 12 (((:sharpsign-plus :or) (0 . 8))))
@@ -197,9 +197,10 @@
              (expect "source location" (equal expected-location (source result)))
              (expect "orphan results"  (equal '()               orphan-results))
              (expect "position"        (eql   expected-position position))))))
-    '((""        t   nil  eclector.reader:end-of-file)
+    '(;; End of input
+      (""        t   nil  eclector.reader:end-of-file)
       (""        nil :eof :eof nil     0)
-
+      ;; Valid
       (":foo"    t   nil  :foo (0 . 4) 4)
       (":foo "   t   nil  :foo (0 . 4) 4)
       (":foo  "  t   nil  :foo (0 . 4) 4)
@@ -211,27 +212,27 @@
   "Smoke test for the READ-FROM-STRING function."
   (do-input-cases ((input length) args expected-raw
                    &optional expected-location (expected-position length))
-      (flet ((do-it ()
-               (apply #'eclector.parse-result:read-from-string
-                      (make-instance 'simple-result-client) input args)))
-        (error-case (expected-raw expected-position)
-          (error (do-it))
-          (:eof
-           (multiple-value-bind (result position orphan-results) (do-it)
-             (expect "result"          (eq    expected-raw      result))
-             (expect "orphan results"  (equal '()               orphan-results))
-             (expect "position"        (eql   expected-position position))))
-          (t
-           (multiple-value-bind (result position orphan-results) (do-it)
-             (expect "value"           (equal expected-raw      (raw result)))
-             (expect "source location" (equal expected-location (source result)))
-             (expect "orphan results"  (equal '()               orphan-results))
-             (expect "position"        (eql   expected-position position))))))
-    '((""         ()                               eclector.reader:end-of-file)
+    (flet ((do-it ()
+             (apply #'eclector.parse-result:read-from-string
+                    (make-instance 'simple-result-client) input args)))
+      (error-case (expected-raw expected-position)
+        (error (do-it))
+        (:eof
+         (multiple-value-bind (result position orphan-results) (do-it)
+           (expect "result"          (eq    expected-raw      result))
+           (expect "orphan results"  (equal '()               orphan-results))
+           (expect "position"        (eql   expected-position position))))
+        (t
+         (multiple-value-bind (result position orphan-results) (do-it)
+           (expect "value"           (equal expected-raw      (raw result)))
+           (expect "source location" (equal expected-location (source result)))
+           (expect "orphan results"  (equal '()               orphan-results))
+           (expect "position"        (eql   expected-position position))))))
+    '(;; End of input
+      (""         ()                               eclector.reader:end-of-file)
       (""         (nil :eof)                       :eof)
-
+      ;; Valid
       (":foo 1 2" ()                               :foo (0 . 4) 5)
-
       ;; Start and end
       ;;
       ;; Implementations do not agree regarding what
@@ -245,7 +246,6 @@
                                                         #+ecl (5 . 6)
                                                         7)
       (":foo 1 2" (t nil :end 3)                   :fo  (0 . 3) 3)
-
       ;; Preserving whitespace
       (":foo 1"   (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
       (":foo 1  " (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
@@ -282,26 +282,26 @@
                      (values value kind parse-result))))))
         (error-case (expected-value expected-position)
           (error (do-it))
-          (t
-           (multiple-value-bind (value kind parse-result position)
-               (do-it)
-             (expect "value"        (equal expected-value        value))
-             (expect "kind"         (eq    expected-kind         kind))
-             (expect "parse result" (equal expected-parse-result parse-result))
-             (expect "position"     (eql   expected-position     position))))))
-    '((""       (nil nil) :eof :eof)
+          (t (multiple-value-bind (value kind parse-result position)
+                 (do-it)
+               (expect "value"        (equal expected-value        value))
+               (expect "kind"         (eq    expected-kind         kind))
+               (expect "parse result" (equal expected-parse-result parse-result))
+               (expect "position"     (eql   expected-position     position))))))
+    '(;; End of input
       (""       (t   nil) eclector.reader:end-of-file)
-
+      (""       (nil nil) :eof :eof)
+      ;; Whitespace
       ("   "    (nil nil) nil :whitespace)
       ("   "    (nil nil) nil :whitespace)
-
+      ;; Skip
       (";  "    (nil nil) nil :skip       (:reason (:line-comment . 1) :source (0 . 3))  )
 
       ("#||#"   (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))       )
       ("#||# "  (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))      4)
       ("#||#  " (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))      4)
       ("#||#"   (nil t)   nil :skip       (:reason :block-comment :source (0 . 4))       )
-
+      ;; Object
       ("1"      (nil nil) 1   :object     (:result 1 :children () :source (0 . 1))       )
       ("1 "     (nil nil) 1   :object     (:result 1 :children () :source (0 . 1))      1)
       ("1"      (nil t)   nil :suppress   (:reason *read-suppress* :source (0 . 1))      )
@@ -313,14 +313,13 @@
   (labels ((check (result expected)
              (destructuring-bind (expected-location . children) expected
                (is (equal expected-location (source result)))
-               (cond
-                 ((not children)
-                  (is (typep result 'atom-result)))
-                 ((not (typep result 'cons-result))
-                  (fail "Expected CONS-RESULT, but got ~S" result))
-                 (t
-                  (check (first-child result) (first children))
-                  (check (rest-child result) (rest children)))))))
+               (cond ((not children)
+                      (is (typep result 'atom-result)))
+                     ((not (typep result 'cons-result))
+                      (fail "Expected CONS-RESULT, but got ~S" result))
+                     (t
+                      (check (first-child result) (first children))
+                      (check (rest-child result) (rest children)))))))
     (check result expected-source-locations))
   (is (not (null result))))
 
@@ -342,28 +341,24 @@
                                        (scons ()
                                               (scons (5 6)) ; 3
                                               (scons ())))))
-
         ;; EQL children
         ("(1 1)"        ,(scons (0 5)
                                 (scons (1 2)) ; first 1
                                 (scons ()
                                        (scons (3 4)) ; second 1
                                        (scons ()))))
-
         ;; Simple reader macro
         ("#.(list 1 2)" ,(scons (0 12)
                                 (scons nil) ; 1
                                 (scons ()
                                        (scons nil) ; 2
                                        (scons ()))))
-
         ;; Nested reader macros
         ("#.(list* 1 '#.(list 2))" ,(scons (0 23)
                                            (scons nil) ; 1
                                            (scons nil ; #.(...)
                                                   (scons nil) ; 2
                                                   (scons ()))))
-
         ;; Heuristic fails here
         ("#.(list 1 1)" ,(scons (0 12)
                                 (scons nil) ; second 1 (arbitrarily)
@@ -427,7 +422,6 @@
       (" 1"               nil 1)
       ("1 "               nil 1)
       ("1 2"              nil 1 () 2)
-
       ;; Toplevel comments
       ("#||# 1"           nil 1                          ((:block-comment (0 . 4))))
       ("#||# 1"           t   (*read-suppress* (5 . 6))  ((:block-comment (0 . 4))))
@@ -438,7 +432,6 @@
       ;; Toplevel reader conditionals
       ("#+(or) 1 2"       nil 2                          (((:sharpsign-plus . (:or)) (0 . 8))))
       ("#-(and) 1 2"      nil 2                          (((:sharpsign-minus . (:and)) (0 . 9))))
-
       ;; Non-toplevel comments
       ("(#||# 1)"         nil ((1) . ((:block-comment (1 . 5))
                                       1)))
@@ -450,13 +443,11 @@
                                       1)))
       ;; Non-toplevel reader conditionals
       ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 9)) 2)))
-
       ;; Order of skipped inputs
       ("#|1|# #|2|# 3"    nil 3                           ((:block-comment (0 . 5))
                                                            (:block-comment (6 . 11))))
       ("#|1|# #|2|# 3"    t   (*read-suppress* (12 . 13)) ((:block-comment (0 . 5))
                                                            (:block-comment (6 . 11))))
-
       ;; Non-toplevel suppressed objects
       ("(nil)"            t   (*read-suppress* (0 . 5))  ())
       ("#|1|# (nil)"      t   (*read-suppress* (6 . 11)) ((:block-comment (0 . 5)))))))

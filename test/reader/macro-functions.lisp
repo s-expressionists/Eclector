@@ -27,10 +27,9 @@
                (eclector.reader::single-quote stream #\'))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
     '((""  eclector.reader:end-of-input-after-quote)
       (")" eclector.reader:object-must-follow-quote 0)
 
@@ -45,10 +44,9 @@
                (eclector.reader::double-quote stream #\"))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
     '((""       eclector.reader:unterminated-string)
       ("\\"     eclector.reader:unterminated-single-escape-in-string 0)
 
@@ -79,10 +77,9 @@
                  (eclector.reader::backquote stream #\`)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
     '(;; Errors
       (""   nil eclector.reader:end-of-input-after-backquote)
       (")"  nil eclector.reader:object-must-follow-backquote 0)
@@ -106,10 +103,9 @@
                  (eclector.reader::comma stream #\,)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
     '(;; Errors
       (""       nil 1 eclector.reader:end-of-input-after-unquote)
       ("@"      nil 1 eclector.reader:end-of-input-after-unquote)
@@ -134,23 +130,20 @@
                (eclector.reader::left-parenthesis stream #\())))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
-
-    '((""        eclector.reader:unterminated-list)
-
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
+    '(;; Errors
+      (""        eclector.reader:unterminated-list)
       ("."       eclector.reader:invalid-context-for-consing-dot         0)
       ("1 ."     eclector.reader:end-of-input-after-consing-dot)
       ("1 . )"   eclector.reader:object-must-follow-consing-dot          4)
       ("1 . 2 3" eclector.reader:multiple-objects-following-consing-dot  6)
       ("1 . ."   eclector.reader:invalid-context-for-consing-dot         4)
-
+      ;; Valid
       (")"       ())
       ("1)"      (1))
       ("1 2)"    (1 2))
-
       ;; Trailing whitespace. Not consuming it seems to be
       ;; permitted irregardless of whether we were asked to
       ;; preserve whitespace.
@@ -180,10 +173,9 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
              (do-variant (function expected expected-position)
                (error-case (expected expected-position)
                  (error (do-call function))
-                 (t
-                  (multiple-value-bind (result position) (do-call function)
-                    (expect "result"   (equal expected          result))
-                    (expect "position" (eql   expected-position position)))))))
+                 (t (multiple-value-bind (result position) (do-call function)
+                      (expect "result"   (equal expected          result))
+                      (expect "position" (eql   expected-position position)))))))
       (do-variant 'eclector.reader::sharpsign-single-quote
                   expected-relaxed expected-position-relaxed)
       (do-variant 'eclector.reader:strict-sharpsign-single-quote
@@ -232,10 +224,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                   stream #\( parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equalp expected          result))
-           (expect "position" (eql    expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equalp expected          result))
+             (expect "position" (eql    expected-position position))))))
     '(;; Errors
       (""       nil nil eclector.reader:unterminated-vector)
       ("1"      nil nil eclector.reader:unterminated-vector)
@@ -268,10 +259,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                  (eclector.reader::sharpsign-dot stream #\. parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected result))
-           (expect "position" (eql   length   position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected result))
+             (expect "position" (eql   length   position))))))
     '(;; Error cases
       (""                nil nil t   eclector.reader:end-of-input-after-sharpsign-dot)
       (")"               nil nil t   eclector.reader:object-must-follow-sharpsign-dot 0)
@@ -281,7 +271,6 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ;; Good inputs
       ("1"               nil nil t   1)
       ("(+ 1 2)"         nil nil t   3)
-
       ("`1"              nil nil t   1)
       ;; With *READ-SUPPRESS* bound to T
       ("(error \"foo\")" nil t   t   nil)
@@ -298,10 +287,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                   stream #\\ parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected          result))
-           (expect "position" (eql   expected-position position))))))
+        (t (multiple-value-bind (result position) (do-it)
+             (expect "result"   (equal expected          result))
+             (expect "position" (eql   expected-position position))))))
     '(;; Error cases
       (""                  nil nil eclector.reader:end-of-input-after-backslash)
       ("x\\"               nil nil eclector.reader:unterminated-single-escape-in-character-name)
@@ -345,10 +333,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                  (eclector.reader::read-rational stream readtable base nil)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "value"    (eql expected          value))
-           (expect "position" (eql expected-position position))))))
+        (t (multiple-value-bind (value position) (do-it)
+             (expect "value"    (eql expected          value))
+             (expect "position" (eql expected-position position))))))
     '(;; Error cases
       (""       10 eclector.reader:end-of-input-before-digit)
       (" "      10 eclector.reader:digit-expected 0)
@@ -386,17 +373,17 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("1/23 "  10 1/23  4)
       ("-1/23 " 10 -1/23 5)
       ("1 2"    10 1     1)
-      ;; Base
+      ;; Base 10
       ("1"      10 1)
       ("10"     10 10)
       ("a"      10 eclector.reader:digit-expected 0)
       ("z"      10 eclector.reader:digit-expected 0)
-
+      ;; Base 16
       ("1"      16 1)
       ("10"     16 16)
       ("a"      16 10)
       ("z"      16 eclector.reader:digit-expected 0)
-
+      ;; Base 36
       ("1"      36 1)
       ("10"     36 36)
       ("a"      36 10)
@@ -417,10 +404,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                            (,function-name stream ,char parameter)))))
                 (error-case (expected expected-position)
                   (error (do-it))
-                  (t
-                   (multiple-value-bind (value position) (do-it)
-                     (expect "value"    (equalp expected value))
-                     (expect "position" (equal expected-position position))))))
+                  (t (multiple-value-bind (value position) (do-it)
+                       (expect "value"    (equalp expected value))
+                       (expect "position" (equal expected-position position))))))
               ,cases)))))
 
   (define-rational-reader-macro-test #\B
@@ -538,10 +524,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                  (eclector.reader::sharpsign-asterisk stream #\* parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "value"    (equalp expected value))
-           (expect "position" (equal expected-position position))))))
+        (t (multiple-value-bind (value position) (do-it)
+             (expect "value"    (equalp expected value))
+             (expect "position" (equal expected-position position))))))
     '(;; Errors
       ("a"   nil nil eclector.reader:digit-expected 0)
       ("2"   nil nil eclector.reader:digit-expected 0)
@@ -582,10 +567,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                    stream #\| parameter))))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (values position) (do-it)
-           (expect "values"   (equalp expected values))
-           (expect "position" (equal expected-position position))))))
+        (t (multiple-value-bind (values position) (do-it)
+             (expect "values"   (equalp expected values))
+             (expect "position" (equal expected-position position))))))
     '(;; Errors
       (""         nil nil eclector.reader:unterminated-block-comment)
       ("a"        nil nil eclector.reader:unterminated-block-comment)
@@ -614,10 +598,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                  (eclector.reader::sharpsign-a stream #\A parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "value"    (equalp expected value))
-           (expect "position" (equal  length   position))))))
+        (t (multiple-value-bind (value position) (do-it)
+             (expect "value"    (equalp expected value))
+             (expect "position" (equal  length   position))))))
     '(;; Errors
       (""          1   nil eclector.reader:end-of-input-after-sharpsign-a)
       (")"         1   nil eclector.reader:object-must-follow-sharpsign-a 0)
@@ -665,10 +648,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                  (eclector.reader::sharpsign-colon stream #\. parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "name"     (string= (symbol-name expected) (symbol-name value)))
-           (expect "position" (equal expected-position position))))))
+        (t (multiple-value-bind (value position) (do-it)
+             (expect "name"     (string= (symbol-name expected) (symbol-name value)))
+             (expect "position" (equal expected-position position))))))
     '(;; Errors
       ("\\"      nil nil eclector.reader:unterminated-single-escape-in-symbol)
       ("|"       nil nil eclector.reader:unterminated-multiple-escape-in-symbol)
@@ -706,10 +688,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
              (do-variant (function expected expected-position)
                (error-case (expected expected-position)
                  (error (do-call function))
-                 (t
-                  (multiple-value-bind (value position) (do-call function)
-                    (expect "value"    (equal expected value))
-                    (expect "position" (equal length   position)))))))
+                 (t (multiple-value-bind (value position) (do-call function)
+                      (expect "value"    (equal expected value))
+                      (expect "position" (equal length   position)))))))
       (do-variant 'eclector.reader::sharpsign-c
                   expected-relaxed expected-position-relaxed)
       (do-variant 'eclector.reader:strict-sharpsign-c
@@ -776,10 +757,9 @@ variant, that is STRICT-SHARPSIGN-S."
              (do-variant (function expected expected-position)
                (error-case (expected expected-position)
                  (error (do-call function))
-                 (t
-                  (multiple-value-bind (value position) (do-call function)
-                    (expect "value"    (relaxed-equalp expected value))
-                    (expect "position" (equal          length   position)))))))
+                 (t (multiple-value-bind (value position) (do-call function)
+                      (expect "value"    (relaxed-equalp expected value))
+                      (expect "position" (equal          length   position)))))))
       (do-variant 'eclector.reader::sharpsign-s
                   expected-relaxed expected-position-relaxed)
       (do-variant 'eclector.reader:strict-sharpsign-s
@@ -817,7 +797,6 @@ variant, that is STRICT-SHARPSIGN-S."
       ("(foo #\\b 1)"    nil nil (foo #\b 1))
       ("(foo :bar `,1)"  nil nil (foo :bar (eclector.reader:quasiquote
                                             (eclector.reader:unquote 1))))
-
       ;; With *READ-SUPPRESS* bound to T
       ("(foo)"           nil t   nil)
       ("(foo 1 2)"       nil t   nil)
@@ -848,10 +827,9 @@ variant, that is STRICT-SHARPSIGN-S."
                  (eclector.reader::sharpsign-p stream #\P parameter)))))
       (error-case (expected expected-position)
         (error (do-it))
-        (t
-         (multiple-value-bind (value position) (do-it)
-           (expect "value"    (equal expected value))
-           (expect "position" (equal length   position))))))
+        (t (multiple-value-bind (value position) (do-it)
+             (expect "value"    (equal expected value))
+             (expect "position" (equal length   position))))))
     '(;; Errors
       ("\"foo\""   1   nil eclector.reader:numeric-parameter-supplied-but-ignored -2)
 
@@ -883,10 +861,9 @@ variant, that is STRICT-SHARPSIGN-S."
              (do-one (which expected)
                (error-case (expected expected-position)
                  (error (do-it which))
-                 (t
-                  (multiple-value-bind (values position) (do-it which)
-                    (expect "values"   (equal expected values))
-                    (expect "position" (equal length   position)))))))
+                 (t (multiple-value-bind (values position) (do-it which)
+                      (expect "values"   (equal expected values))
+                      (expect "position" (equal length   position)))))))
       (do-one :plus  plus-expected)
       (do-one :minus minus-expected))
     '(;; Errors

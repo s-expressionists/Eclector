@@ -18,10 +18,9 @@
                       (eclector.reader:read stream)))))
            (error-case (expected expected-position)
              (error (do-it))
-             (t
-              (multiple-value-bind (result position) (do-it)
-                (expect "result"   (equal expected          result))
-                (expect "position" (eql   expected-position position))))))
+             (t (multiple-value-bind (result position) (do-it)
+                  (expect "result"   (equal expected          result))
+                  (expect "position" (eql   expected-position position))))))
          cases)))
    `(;; Change syntax of a character
      (,(lambda (readtable)
@@ -35,14 +34,12 @@
          readtable)
       ("123456789" 123456 6)
       ("7~%123"    123    5))
-
      ;; Change syntax from whitespace to (invalid) constituent
      (,(lambda (readtable)
          (setf (eclector.readtable:syntax-from-char #\Space readtable readtable) #\A)
          readtable)
       (" "  eclector.reader:invalid-constituent-character)
       ("b " eclector.reader:invalid-constituent-character))
-
      ;; Change [ to the syntax of (. The left-parenthesis reader macro
      ;; is specified to read until a closing parenthesis (not some
      ;; "opposite" character of the character the reader macro
@@ -55,7 +52,6 @@
       ("[1 2]"   eclector.reader:unterminated-list)
       ("#C[1 2)" #C(1 2))
       ("#C[1 2]" eclector.reader:read-object-type-error))
-
      ;; To define a proper alternate list syntax, the combination of
      ;; using READ-DELIMITED-LIST for [ and copying ) for ] must be
      ;; used.
