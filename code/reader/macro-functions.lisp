@@ -683,26 +683,23 @@
          (readtable (state-value client 'cl:*readtable*)))
     (flet ((next-bit ()
              (let ((char (read-char stream nil nil t)))
-               (multiple-value-bind (syntax-type value)
-                   (unless (null char)
-                     (values (eclector.readtable:syntax-type
-                              readtable char)
-                             (digit-char-p char 2)))
-                 (when (eq syntax-type :terminating-macro)
-                   (unread-char char stream))
-                 (cond ((member syntax-type '(nil :whitespace :terminating-macro))
-                        nil)
-                       (read-suppress
-                        t)
-                       ((null value)
-                        (%recoverable-reader-error
-                         stream 'digit-expected
-                         :position-offset -1
-                         :character-found char :base 2.
-                         :report 'replace-invalid-digit)
-                        0)
-                       (t
-                        value))))))
+               (cond ((null char)
+                      nil)
+                     ((member (eclector.readtable:syntax-type
+                               readtable char)
+                              '(:whitespace :terminating-macro))
+                      (unread-char char stream)
+                      nil)
+                     (read-suppress
+                      t)
+                     ((digit-char-p char 2))
+                     (t
+                      (%recoverable-reader-error
+                       stream 'digit-expected
+                       :position-offset -1
+                       :character-found char :base 2.
+                       :report 'replace-invalid-digit)
+                      0)))))
       (cond (read-suppress
              (loop for value = (next-bit) while value))
             ((null parameter)
@@ -718,7 +715,7 @@
                    for value = (next-bit)
                    while value
                    when (< index parameter)
-                   do (setf (sbit result index) value)
+                     do (setf (sbit result index) value)
                    finally (cond ((and (zerop index) (plusp parameter))
                                   (%recoverable-reader-error
                                    stream 'no-elements-found

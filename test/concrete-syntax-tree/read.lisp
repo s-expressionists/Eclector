@@ -113,11 +113,15 @@
       (":foo 1 "  (t nil :preserve-whitespace nil) :foo                         5)
       (":foo 1  " (t nil :preserve-whitespace nil) :foo                         5)
       (":foo 1 2" (t nil :preserve-whitespace nil) :foo                         5)
+      ("#*11 "    (t nil :preserve-whitespace nil) #*11                         5)
+      ("#1*1 "    (t nil :preserve-whitespace nil) #1*1                         5)
 
       (":foo 1"   (t nil :preserve-whitespace t)   :foo                         4)
       (":foo 1 "  (t nil :preserve-whitespace t)   :foo                         4)
       (":foo 1  " (t nil :preserve-whitespace t)   :foo                         4)
-      (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4))))
+      (":foo 1 2" (t nil :preserve-whitespace t)   :foo                         4)
+      ("#*11 "    (t nil :preserve-whitespace t)   #*11                         4)
+      ("#1*1 "    (t nil :preserve-whitespace t)   #1*1                         4))))
 
 ;;; Source locations
 

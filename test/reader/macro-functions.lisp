@@ -550,15 +550,15 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("111" 1   nil eclector.reader:too-many-elements 1)
       ;; Valid
       (""    nil nil #*)
-      (" "   nil nil #*)
+      (" "   nil nil #*   0)
       (")"   nil nil #*   0)
       ("11"  nil nil #*11)
-      ("11 " nil nil #*11)
+      ("11 " nil nil #*11 2)
       ("11)" nil nil #*11 2)
       (""    0   nil #0*)
       ("1"   1   nil #1*1)
       ("1"   2   nil #2*1)
-      ("1 "  2   nil #2*1)
+      ("1 "  2   nil #2*1 1)
       ("1)"  2   nil #2*1 1)
       ;; With *READ-SUPPRESS* bound to T
       (""    nil t   nil)

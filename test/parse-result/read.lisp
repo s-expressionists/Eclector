@@ -203,7 +203,9 @@
       (":foo"    t   nil  :foo (0 . 4) 4)
       (":foo "   t   nil  :foo (0 . 4) 4)
       (":foo  "  t   nil  :foo (0 . 4) 4)
-      (":foo  1" t   nil  :foo (0 . 4) 4))))
+      (":foo  1" t   nil  :foo (0 . 4) 4)
+      ("#*11 "   t   nil  #*11 (0 . 4) 4)
+      ("#1*1 "   t   nil  #1*1 (0 . 4) 4))))
 
 (test read-from-string/smoke
   "Smoke test for the READ-FROM-STRING function."
@@ -248,10 +250,14 @@
       (":foo 1"   (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
       (":foo 1  " (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
       (":foo 1 2" (t nil :preserve-whitespace nil) :foo (0 . 4) 5)
+      ("#*11 "    (t nil :preserve-whitespace nil) #*11 (0 . 4) 5)
+      ("#1*1 "    (t nil :preserve-whitespace nil) #1*1 (0 . 4) 5)
 
       (":foo 1"   (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
       (":foo 1  " (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
-      (":foo 1 2" (t nil :preserve-whitespace t)   :foo (0 . 4) 4))))
+      (":foo 1 2" (t nil :preserve-whitespace t)   :foo (0 . 4) 4)
+      ("#*11 "    (t nil :preserve-whitespace t)   #*11 (0 . 4) 4)
+      ("#1*1 "    (t nil :preserve-whitespace t)   #1*1 (0 . 4) 4))))
 
 (test read-maybe-nothing/smoke
   "Smoke test for the READ-MAYBE-NOTHING function."
