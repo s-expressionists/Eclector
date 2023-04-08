@@ -7,7 +7,8 @@
 (test read/smoke
   "Smoke test for the READ function."
   (do-stream-input-cases ((length) eof-error expected-raw
-                          &optional expected-location expected-position)
+                          &optional expected-location
+                                    (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.concrete-syntax-tree:read stream eof-error :eof))))

@@ -90,17 +90,18 @@
   ;; This test focuses on interactions between different parts of the
   ;; reader since the individual parts in isolation are handled by
   ;; more specific tests.
-  (do-stream-input-cases ((length) read-suppress expected &optional position)
+  (do-stream-input-cases ((length) read-suppress
+                          expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader:read stream)))))
-      (error-case (expected position)
+      (error-case (expected expected-position)
         (error (do-it))
         (t
          (multiple-value-bind (result position) (do-it)
-           (expect "result"   (equal expected result))
-           (expect "position" (eql   length   position))))))
+           (expect "result"   (equal expected          result))
+           (expect "position" (eql   expected-position position))))))
     `(("(cons 1 2)"                 nil (cons 1 2))
 
       ("#+(or) `1 2"                nil 2)

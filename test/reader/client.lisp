@@ -68,7 +68,7 @@
 (test interpret-symbol/customize
   "Test customizing the behavior of INTERPRET-SYMBOL."
   (let ((*mock-packages* (make-mock-packages)))
-    (do-stream-input-cases (() expected-package &optional expected-symbol)
+    (do-stream-input-cases ((length) expected-package &optional (expected-symbol length))
       (flet ((do-it ()
                (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
                  (with-stream (stream) (eclector.reader:read stream)))))
@@ -160,7 +160,7 @@
 
 (test evaluate-expression/customize
   "Test customizing the behavior of EVALUATE-EXPRESSION."
-  (do-stream-input-cases (() expected &optional expected-position)
+  (do-stream-input-cases ((length) expected &optional (expected-position length))
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'evaluate-expression-client)))
@@ -208,7 +208,7 @@
 
 (test evaluate-feature-expression/customize
   "Test customizing the behavior of EVALUATE-FEATURE-EXPRESSION."
-  (do-stream-input-cases (() expected &optional expected-position)
+  (do-stream-input-cases ((length) expected &optional (expected-position length))
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'feature-expression-client)))
