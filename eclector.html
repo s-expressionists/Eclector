@@ -550,7 +550,10 @@ the exact position.
 approximate position in the input stream to which <var>condition</var>
 pertains.  The type and interpretation of the returned object depend on
 the client, namely the presence of client-specific methods on the
-<tt>source-position</tt> generic function.
+<tt>source-position</tt> generic function.  The information returned by the
+functions <tt>position-offset</tt> and <tt>range-length</tt> can be used to refine
+the approximate position and compute a range in the input stream
+respectively.
 </p>
 <p>Applicable methods exist for all conditions of type
 <tt>stream-position-condition</tt>.
@@ -560,13 +563,31 @@ the client, namely the presence of client-specific methods on the
 <dt id="index-position_002doffset-_005beclector_002ebase_005d"><span class="category">Generic Function: </span><span><strong>position-offset [eclector.base]</strong> <em>condition</em><a href='#index-position_002doffset-_005beclector_002ebase_005d' class='copiable-anchor'> &para;</a></span></dt>
 <dd>
 <p>This generic function is called in order to compute the exact position
-in the input stream to which <var>condition</var> pertains by refining the
-approximate position obtained by calling <tt>stream-position</tt>.  The
-returned value is an integer (possibly negative) which indicates the
-offset in characters from the approximate position to the exact
-position.  Since the representation of the approximate position is
-chosen by the client, applying the offset to that position in a suitable
-way is also the responsibility of the client.
+(or start of a range) in the input stream to which <var>condition</var>
+pertains by refining the approximate position obtained by calling
+<tt>stream-position</tt>.  The returned value is an integer (possibly
+negative) which indicates the offset in characters from the approximate
+position to the exact position.  Since the representation of the
+approximate position is chosen by the client, applying the offset to
+that position in a suitable way is also the responsibility of the
+client.  Assuming the object returned by <tt>(stream-position
+<var>condition</var>)</tt> is suitable for arithmetic, the exact position is
+<em class='math'>stream-position + position-offset</em>.
+</p>
+<p>Applicable methods exist for all conditions of type
+<tt>stream-position-condition</tt>.
+</p></dd></dl>
+
+<span id="Generic_002dFunction-eclector_002ebase_007crange_002dlength"></span><dl class="def">
+<dt id="index-range_002dlength-_005beclector_002ebase_005d"><span class="category">Generic Function: </span><span><strong>range-length [eclector.base]</strong> <em>condition</em><a href='#index-range_002dlength-_005beclector_002ebase_005d' class='copiable-anchor'> &para;</a></span></dt>
+<dd>
+<p>This generic function is called in order to compute the length of the
+range in the input stream to which <var>condition</var> pertains.  The
+returned value is a non-negative integer which indicates the length of
+the range in characters.  Therefore, assuming the object returned by
+<tt>(stream-position <var>condition</var>)</tt> is suitable for arithmetic, the
+range covers input the positions <em class='math'>[start, start + range-length]</em>
+where <em class='math'>start = stream-position + position-offset</em>.
 </p>
 <p>Applicable methods exist for all conditions of type
 <tt>stream-position-condition</tt>.
@@ -2786,6 +2807,7 @@ Next: <a href="#Changelog" accesskey="n" rel="next">Changelog</a>, Previous: <a 
 <tr><td></td><td valign="top"><a href="#index-position_002doffset-_005beclector_002ebase_005d"><code>position-offset [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td colspan="4"> <hr></td></tr>
 <tr><th id="Function-and-macro-and-variable-and-type-index_fn_letter-R">R</th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-range_002dlength-_005beclector_002ebase_005d"><code>range-length [eclector.base]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Basic-features">Basic features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-read-_005beclector_002econcrete_002dsyntax_002dtree_005d"><code>read [eclector.concrete-syntax-tree]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#CST-reader-features">CST reader features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-read-_005beclector_002eparse_002dresult_005d"><code>read [eclector.parse-result]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Parse-result-construction-features">Parse result construction features</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-read-_005beclector_002ereader_005d"><code>read [eclector.reader]</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#Common-Lisp-reader-compatible-interface">Common Lisp reader compatible interface</a></td></tr>
@@ -2867,7 +2889,12 @@ Previous: <a href="#Function-and-macro-and-variable-and-type-index" accesskey="p
 <dt><span>Release 0.10 (not yet released)</span></dt>
 <dd>
 <ul>
-</ul>
+<li> The new reader <tt>eclector.base:range-length</tt> can be applied to conditions of
+type <tt>eclector.base:stream-position-condition</tt> (which includes almost all
+conditions related to syntax errors) to determine the length of the
+sub-sequence of the input to which the condition in question pertains.
+
+</li></ul>
 </dd>
 <dt><span>Release 0.9 (2023-03-19)</span></dt>
 <dd>
