@@ -95,14 +95,14 @@
 
 (test read/smoke
   "Smoke test for the READ function."
-  (do-stream-input-cases ((length) eof-error expected-raw
+  (do-stream-input-cases ((input length) eof-error expected-raw
                           &optional expected-location
                                     (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.parse-result:read
                 (make-instance 'simple-result-client) stream eof-error :eof))))
-      (error-case (expected-raw expected-position)
+      (error-case (input expected-raw expected-position)
         (error (do-it))
         (:eof
          (multiple-value-bind (result orphan-results position) (do-it)
@@ -143,7 +143,7 @@
 
 (test read/eof-value
   "Ensure that different eof-values work for READing into parse results."
-  (do-stream-input-cases ((length) eof-value expected-raw
+  (do-stream-input-cases ((input length) eof-value expected-raw
                           &optional (expected-location (cons 0 length))
                                     (expected-position length)
                                     (expected-orphan-results '()))
@@ -175,7 +175,7 @@
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
-  (do-stream-input-cases ((length) eof-error-p eof-value expected-raw
+  (do-stream-input-cases ((input length) eof-error-p eof-value expected-raw
                           &optional expected-location
                                     (expected-position length))
       (flet ((do-it ()
@@ -183,7 +183,7 @@
                  (eclector.parse-result:read-preserving-whitespace
                   (make-instance 'simple-result-client)
                   stream eof-error-p eof-value))))
-        (error-case (expected-raw expected-position)
+        (error-case (input expected-raw expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
@@ -215,7 +215,7 @@
     (flet ((do-it ()
              (apply #'eclector.parse-result:read-from-string
                     (make-instance 'simple-result-client) input args)))
-      (error-case (expected-raw expected-position)
+      (error-case (input expected-raw expected-position)
         (error (do-it))
         (:eof
          (multiple-value-bind (result position orphan-results) (do-it)
@@ -261,7 +261,7 @@
 
 (test read-maybe-nothing/smoke
   "Smoke test for the READ-MAYBE-NOTHING function."
-  (do-stream-input-cases ((length) (eof-error-p read-suppress)
+  (do-stream-input-cases ((input length) (eof-error-p read-suppress)
                           expected-value &optional expected-kind
                                                    expected-parse-result
                                                    (expected-position length))
@@ -280,7 +280,7 @@
                                    (values value kind)))
                       stream eof-error-p :eof t)
                      (values value kind parse-result))))))
-        (error-case (expected-value expected-position)
+        (error-case (input expected-value expected-position)
           (error (do-it))
           (t (multiple-value-bind (value kind parse-result position)
                  (do-it)
@@ -404,7 +404,7 @@
 
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
-  (do-stream-input-cases ((length) read-suppress expected-result
+  (do-stream-input-cases ((input length) read-suppress expected-result
                           &optional (expected-orphan-results '())
                                     (expected-position length))
     (flet ((do-it ()

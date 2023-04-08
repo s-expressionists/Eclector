@@ -5,14 +5,14 @@
 
 (test read-token/smoke
   "Smoke test for the default method on READ-TOKEN."
-  (do-stream-input-cases ((length) eof-error-p eof-value
+  (do-stream-input-cases ((input length) eof-error-p eof-value
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*package* (find-package '#:eclector.reader.test))) ; TODO use a client that does not intern in INTERPRET-TOKEN
                  (eclector.reader:read-token
                   t stream eof-error-p eof-value)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "value"    (equalp expected          value))
@@ -109,7 +109,7 @@
                          (loop :repeat (length token) :do (read-char stream))
                          (eclector.reader:check-symbol-token
                           nil stream token escape-ranges marker1 marker2))))
-                (error-case (signals error-position)
+                (error-case (token signals error-position)
                   (error (do-it))
                   (t (multiple-value-bind (new-token new-marker1 new-marker2)
                          (do-it)
@@ -148,7 +148,7 @@
                          (loop :repeat (length token) :do (read-char stream))
                          (eclector.reader:interpret-symbol-token
                           nil stream token marker1 marker2))))
-                (error-case (expected error-position)
+                (error-case (token expected error-position)
                   (error (do-it))
                   (t (is (equal expected (do-it)))))))))
         '((""                               nil nil nil ||)
@@ -183,7 +183,7 @@
                  (let ((eclector.reader:*readtable* table))
                    (eclector.reader:interpret-token
                     nil stream (copy-seq token) token-escapes)))))
-        (error-case (expected error-position)
+        (error-case (token expected error-position)
           (error (do-it))
           (t
            (unless (or token-escapes

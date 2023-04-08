@@ -8,7 +8,7 @@
   (mapc
    (lambda (setup-cases)
      (destructuring-bind (setup &rest cases) setup-cases
-       (do-stream-input-cases ((length)
+       (do-stream-input-cases ((input length)
                                expected &optional (expected-position length))
          (flet ((do-it ()
                   (let ((eclector.reader:*readtable*
@@ -16,7 +16,7 @@
                                           eclector.reader:*readtable*))))
                     (with-stream (stream)
                       (eclector.reader:read stream)))))
-           (error-case (expected expected-position)
+           (error-case (input expected expected-position)
              (error (do-it))
              (t (multiple-value-bind (result position) (do-it)
                   (expect "result"   (equal expected          result))

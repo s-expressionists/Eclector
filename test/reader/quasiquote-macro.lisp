@@ -6,12 +6,12 @@
 (test expand-quasiquote/smoke
   "Smoke test for QUASIQUOTE expansion. This covers some of the error
    cases the random test cannot."
-  (do-stream-input-cases (() expected)
+  (do-stream-input-cases ((input) expected)
     (let ((form (with-stream (stream)
                   (eclector.reader:read stream))))
       (flet ((do-it ()
                (macroexpand-1 form)))
-        (error-case (expected)
+        (error-case (input expected)
           (error (do-it))
           (t (expect "evaluated result" (relaxed-equalp expected (eval (do-it))))))))
     '(("`,1"           1)

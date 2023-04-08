@@ -6,13 +6,13 @@
 
 (test read/smoke
   "Smoke test for the READ function."
-  (do-stream-input-cases ((length) eof-error expected-raw
+  (do-stream-input-cases ((input length) eof-error expected-raw
                           &optional expected-location
                                     (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.concrete-syntax-tree:read stream eof-error :eof))))
-      (error-case (expected-raw expected-position)
+      (error-case (input expected-raw expected-position)
         (error (do-it))
         (:eof (is (eq :eof (do-it))))
         (t
@@ -46,13 +46,13 @@
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
-  (do-stream-input-cases ((length) eof-error-p eof-value
+  (do-stream-input-cases ((input length) eof-error-p eof-value
                           expected-result &optional (expected-position length))
       (flet ((do-it ()
                (with-stream (stream)
                  (eclector.concrete-syntax-tree:read-preserving-whitespace
                   stream eof-error-p eof-value))))
-        (error-case (expected-result expected-position)
+        (error-case (input expected-result expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result orphan-results position) (do-it)
@@ -85,7 +85,7 @@
       (flet ((do-it ()
                (apply #'eclector.concrete-syntax-tree:read-from-string
                       input args)))
-        (error-case (expected-value expected-position)
+        (error-case (input expected-value expected-position)
           (error (do-it))
           (:eof
            (multiple-value-bind (result position) (do-it)
@@ -221,7 +221,7 @@
 
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
-  (do-stream-input-cases ((length) read-suppress expected)
+  (do-stream-input-cases ((input length) read-suppress expected)
     (flet ((do-it ()
              (let ((client
                      (make-instance 'skipped-input-recording-client)))

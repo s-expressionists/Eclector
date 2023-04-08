@@ -67,12 +67,12 @@
 (test interpret-symbol/customize
   "Test customizing the behavior of INTERPRET-SYMBOL."
   (let ((*mock-packages* (make-mock-packages)))
-    (do-stream-input-cases ((length) expected-package-or-condition
+    (do-stream-input-cases ((input length) expected-package-or-condition
                             &optional (expected-symbol-or-position length))
       (flet ((do-it ()
                (let ((eclector.reader:*client* (make-instance 'mock-symbol-client)))
                  (with-stream (stream) (eclector.reader:read stream)))))
-        (error-case (expected-package-or-condition expected-symbol-or-position)
+        (error-case (input expected-package-or-condition expected-symbol-or-position)
           (error (do-it))
           ((nil)
            (let ((result (do-it)))
@@ -84,7 +84,7 @@
                                              *mock-packages*))
                   (expected-symbol (gethash expected-symbol-or-position
                                             (%symbols expected-package))))
-             (expect "name"    (eq expected-symbol result))
+             (expect "name"    (eq expected-symbol  result))
              (expect "package" (eq expected-package (%package result)))))))
       '(;; Uninterned
         ("#:foo"    nil       "FOO")
@@ -117,12 +117,12 @@
 
 (test find-character/customize
   "Test customizing the behavior of FIND-CHARACTER."
-  (do-stream-input-cases (() expected &optional expected-position)
+  (do-stream-input-cases ((input) expected &optional expected-position)
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'find-character-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (expect "character" (equal expected (do-it))))))
     '(;; Errors
@@ -153,12 +153,13 @@
 
 (test evaluate-expression/customize
   "Test customizing the behavior of EVALUATE-EXPRESSION."
-  (do-stream-input-cases ((length) expected &optional (expected-position length))
+  (do-stream-input-cases ((input length)
+                          expected &optional (expected-position length))
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'evaluate-expression-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (is (equal expected (do-it))))))
     '(;; Errors
@@ -200,12 +201,13 @@
 
 (test evaluate-feature-expression/customize
   "Test customizing the behavior of EVALUATE-FEATURE-EXPRESSION."
-  (do-stream-input-cases ((length) expected &optional (expected-position length))
+  (do-stream-input-cases ((input length)
+                          expected &optional (expected-position length))
     (flet ((do-it ()
              (let ((eclector.reader:*client*
                      (make-instance 'feature-expression-client)))
                (with-stream (stream) (eclector.reader:read stream)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (expect result (eq expected (do-it))))))
     '(;; Errors

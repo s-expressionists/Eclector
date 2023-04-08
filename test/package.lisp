@@ -8,10 +8,8 @@
    #:equal*
    #:code-equal
 
+   #:check-signals-error
    #:error-case)
-
-  (:export
-   #:signals-printable)
 
   (:export
    #:gen-labels-and-references)

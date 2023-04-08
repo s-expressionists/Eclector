@@ -5,14 +5,14 @@
 
 (test read-char/smoke
   "Smoke test for the READ-CHAR function."
-  (do-stream-input-cases ((length) args
+  (do-stream-input-cases ((input length) args
                           expected &optional (error-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*standard-input* stream))
                  (apply #'eclector.reader:read-char
                         (substitute stream :stream args))))))
-      (error-case (expected error-position)
+      (error-case (input expected error-position)
         (error (do-it))
         (t (expect "result" (equal expected (do-it))))))
     '((""  ()                 eclector.reader:end-of-file)
@@ -24,7 +24,7 @@
 
 (test peek-char/smoke
   "Smoke test for the PEEK-CHAR function."
-  (do-stream-input-cases ((length) args
+  (do-stream-input-cases ((input length) args
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
@@ -37,10 +37,10 @@
                  (apply #'cl:peek-char (substitute stream :stream args))))))
       (case expected
         (eclector.reader:end-of-file
-         (signals-printable eclector.reader:end-of-file expected-position
-           (do-it))
-         (signals-printable end-of-file nil
-           (do-it/host)))
+         (eclector.test:check-signals-error
+          input 'eclector.reader:end-of-file expected-position #'do-it)
+         (eclector.test:check-signals-error
+          input 'end-of-file nil #'do-it/host))
         (t
          (expect "value"      (equal expected (do-it)))
          (expect "host value" (equal expected (do-it/host))))))
@@ -87,13 +87,13 @@
   ;; This test focuses on interactions between different parts of the
   ;; reader since the individual parts in isolation are handled by
   ;; more specific tests.
-  (do-stream-input-cases ((length) read-suppress
+  (do-stream-input-cases ((input length) read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader:read stream)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -148,7 +148,7 @@
 
 (test read/runtime-recursive-p
   "Test READ with RECURSIVE-P being unknown until runtime."
-  (do-stream-input-cases ((length) recursive-p
+  (do-stream-input-cases ((input length) recursive-p
                           expected-result &optional (expected-position length))
       (multiple-value-bind (result position)
           (with-stream (stream)
@@ -160,13 +160,13 @@
 
 (test read-preserving-whitespace/smoke
   "Smoke test for the READ-PRESERVING-WHITESPACE function."
-  (do-stream-input-cases ((length) eof-error-p eof-value
+  (do-stream-input-cases ((input length) eof-error-p eof-value
                           expected-result &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.reader:read-preserving-whitespace
                 stream eof-error-p eof-value))))
-      (error-case (expected-result expected-position)
+      (error-case (input expected-result expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected-result   result))
@@ -187,7 +187,7 @@
   (do-input-cases (input args expected-value &optional expected-position)
       (flet ((do-it ()
                (apply #'eclector.reader:read-from-string input args)))
-        (error-case (expected-value expected-position)
+        (error-case (input expected-value expected-position)
           (error (do-it))
           (t (multiple-value-bind (value position) (do-it)
                (expect "value"    (equal expected-value    value))
@@ -217,7 +217,7 @@
 
 (test read-maybe-nothing/smoke
   "Smoke test for the READ-MAYBE-NOTHING function."
-  (do-stream-input-cases ((length) (eof-error-p read-suppress)
+  (do-stream-input-cases ((input length) (eof-error-p read-suppress)
                           expected-value
                           &optional expected-kind (expected-position length))
       (flet ((do-it ()
@@ -228,7 +228,7 @@
                           (eclector.reader:read-maybe-nothing
                            nil stream eof-error-p :eof)))
                   stream eof-error-p :eof t))))
-        (error-case (expected-value expected-position)
+        (error-case (input expected-value expected-position)
           (error (do-it))
           (t (multiple-value-bind (value kind position) (do-it)
                (expect "value"    (equal expected-value    value))
@@ -258,7 +258,7 @@
 
 (test read-delimited-list/smoke
   "Smoke test for the READ-DELIMITED-LIST function."
-  (do-stream-input-cases ((length) char expected1
+  (do-stream-input-cases ((input length) char expected1
                           &optional (expected2 expected1)
                                     (expected-position length))
     (flet ((do-it (install-macro-p)
@@ -272,11 +272,11 @@
                  (with-stream (stream)
                    (eclector.reader:read-delimited-list char stream nil))))))
       ;; Test with #\] behaving like #\).
-      (error-case (expected1 expected-position)
+      (error-case (input expected1 expected-position)
         (error (do-it t))
         (t (expect "result1" (relaxed-equalp expected1 (do-it t)))))
       ;; Test with #\] having constituent syntax type.
-      (error-case (expected2 expected-position)
+      (error-case (input expected2 expected-position)
         (error (do-it nil))
         (t (expect "result2" (relaxed-equalp expected2 (do-it nil))))))
     '((""             #\] eclector.reader:unterminated-list)
@@ -304,7 +304,7 @@
 
 (test read-delimited-list/runtime-recursive-p
   "Test READ-DELIMITED-LIST with RECURSIVE-P being unknown until runtime."
-  (do-stream-input-cases ((length) recursive-p
+  (do-stream-input-cases ((input length) recursive-p
                           expected-result &optional (expected-position length))
       (multiple-value-bind (result position)
           (with-stream (stream)

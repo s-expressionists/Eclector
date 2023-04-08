@@ -12,7 +12,7 @@
    #:equal*
    #:do-input-cases        #:expect
    #:do-stream-input-cases #:with-stream
-   #:signals-printable
+   #:check-signals-error
    #:error-case
 
    #:gen-labels-and-references)

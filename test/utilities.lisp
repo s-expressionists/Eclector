@@ -77,91 +77,102 @@
                    ,(wrap-in-expect input-var form))))
              ,cases))))
 
-(defmacro do-stream-input-cases (((&optional length-var) &rest lambda-list)
+(defmacro do-stream-input-cases (((&optional (input-var (gensym "INPUT"))
+                                             length-var)
+                                  &rest lambda-list)
                                  form cases)
-  (alexandria:with-unique-names (parameter input)
+  (alexandria:with-unique-names (parameter)
     `(mapc (lambda (,parameter)
-             (let* ((,input (format nil (first ,parameter)))
+             (let* ((,input-var (format nil (first ,parameter)))
                     ,@(when length-var
-                        `((,length-var (length ,input)))))
+                        `((,length-var (length ,input-var)))))
                (destructuring-bind (,@lambda-list) (rest ,parameter)
                  (macrolet ((with-stream ((stream-var) &body body)
-                              `(with-input-from-string (,stream-var ,',input)
+                              `(with-input-from-string (,stream-var ,',input-var)
                                  (let ((values (multiple-value-list
                                                 (progn ,@body))))
                                    (multiple-value-call #'values
                                      (values-list values)
                                      (file-position ,stream-var))))))
-                   ,(wrap-in-expect input form)))))
+                   ,(wrap-in-expect input-var form)))))
            ,cases)))
 
 ;;; Checking expected errors
 
-(defun %expected-condition-type (condition-type)
-  (case condition-type
-    (eclector.reader:feature-expression-type-error
-     'eclector.reader::feature-expression-type-error/reader)
-    (eclector.reader:single-feature-expected
-     'eclector.reader::single-feature-expected/reader)
-    (t
-     condition-type)))
+(defun check-signals-error (input expected-condition-type expected-position thunk)
+  (handler-case
+      (funcall thunk)
+    (error (condition)
+      ;; The caller must specify the exact expected condition type,
+      ;; not some supertype.
+      (is (type= expected-condition-type (type-of condition))
+          "~@<When reading ~S, expected a condition of ~S, but got ~S~@:>"
+          input expected-condition-type condition)
+      ;; Check that STREAM-ERROR conditions contain a stream.
+      (when (typep condition
+                   `(and stream-error
+                         (not (or eclector.reader:unquote-splicing-in-dotted-list
+                                  eclector.reader:unquote-splicing-at-top))))
+        (is (not (null (stream-error-stream condition)))
+            "~@<When reading ~S and condition ~S was signaled, expected a ~
+             non-null stream in the condition, but got ~S.~@:>"
+            input condition nil))
+      ;; Check effective stream position in CONDITION against expected
+      ;; position.
+      (unless (null expected-position)
+        (let ((effective-position
+                (+ (eclector.base:stream-position condition)
+                   (eclector.base:position-offset condition))))
+          (is (= expected-position effective-position)
+              "~@<When reading ~S and condition ~S was signaled, expected ~
+               position ~S, but got ~S.~@:>"
+              input condition  expected-position effective-position)))
+      ;; Make sure CONDITION prints properly.
+      (is (not (string= "" (princ-to-string condition)))
+          "~@<When printing the signaled condition ~S expected a non-empty ~
+           string, but got an empty string.~@:>"
+          input condition))
+    (:no-error (&rest values)
+      (declare (ignore values))
+      (fail "~@<When reading ~S, expected a condition of type ~S to be ~
+             signaled but no condition was signaled.~@:>"
+            expected-condition-type))))
 
-(defun %signals-printable (condition-type position thunk)
-  (handler-bind
-      ((condition (lambda (condition)
-                    (when (typep condition condition-type)
-                      ;; The test should specify the exact expected
-                      ;; condition type, not some supertype.
-                      (is (type= (%expected-condition-type condition-type)
-                                 (type-of condition)))
-                      (when (typep condition
-                                   `(and stream-error
-                                         (not (or eclector.reader:unquote-splicing-in-dotted-list
-                                                  eclector.reader:unquote-splicing-at-top))))
-                        (is (not (null (stream-error-stream condition)))))
-                      ;; Check effective stream position in CONDITION
-                      ;; against expected position.
-                      (unless (null position)
-                        (let ((effective-position
-                               (+ (eclector.base:stream-position condition)
-                                  (eclector.base:position-offset condition))))
-                         (is (= position effective-position))))
-                      ;; Make sure CONDITION prints properly.
-                      (is (not (string= "" (princ-to-string condition))))
-                      (return-from %signals-printable)))))
-    (funcall thunk)))
+(defun %expected-condition-type (expected)
+  (cond ((eq expected 'eclector.reader:feature-expression-type-error)
+         'eclector.reader::feature-expression-type-error/reader)
+        ((eq expected 'eclector.reader:single-feature-expected)
+         'eclector.reader::single-feature-expected/reader)
+        ((and (symbolp expected)
+              (let ((package (symbol-package expected)))
+                (and package (member (package-name package)
+                                     '(#:eclector.base #:eclector.reader
+                                       #:eclector.readtable)
+                                     :test #'string=)))
+              (subtypep expected 'condition))
+         expected)))
 
-(defmacro signals-printable (condition position &body body)
-  (let ((do-it (gensym "DO-IT")))
-    `(flet ((,do-it () ,@body))
-       (signals ,condition (,do-it))
-       (%signals-printable ',condition ,position #',do-it))))
+(defun maybe-check-signals-error (input expected expected-position thunk)
+  ;; If EXPECTED designates an Eclector condition type, ensure that a
+  ;; condition of that type is signaled, otherwise decline so that
+  ;; EXPECTED is interpreted as an expected normal return value.
+  (if-let ((expected-condition-type (%expected-condition-type expected)))
+    (progn
+      (check-signals-error
+       input expected-condition-type expected-position thunk)
+      t)
+    nil))
 
-(defun handle-expected-error (expected position thunk)
-  (macrolet ((cases ()
-               (flet ((condition-names ()
-                        (let ((result '()))
-                          (do-external-symbols (symbol '#:eclector.reader)
-                            (when (and (find-class symbol nil)
-                                       (subtypep symbol 'condition))
-                              (push symbol result)))
-                          result))
-                      (do-type (type)
-                        `(,type
-                          (signals ,type (funcall thunk))
-                          (%signals-printable ',type position thunk)
-                          t)))
-                 `(case expected
-                    ,@(map 'list #'do-type (condition-names))
-                    (t nil)))))
-    (cases)))
-
-(defmacro error-case ((expression &optional position) &body clauses)
+(defmacro error-case ((input expected-expression &optional expected-position)
+                      &body clauses)
   (let* ((error-clause (find 'error clauses :key #'first))
          (error-body (rest error-clause))
          (other-clauses (remove 'error clauses :key #'first)))
-    (once-only (expression)
-      `(or (handle-expected-error
-            ,expression ,position (lambda () ,@error-body))
-           (case ,expression
+    (once-only (expected-expression)
+      ;; EXPECTED-EXPRESSION either designates an expected signaled
+      ;; condition or an expected return value.
+      `(or (maybe-check-signals-error
+            ,input ,expected-expression ,expected-position
+            (lambda () ,@error-body))
+           (case ,expected-expression
              ,@other-clauses)))))

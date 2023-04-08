@@ -5,7 +5,7 @@
 
 (test semicolon/smoke
   "Smoke test for the SEMICOLON reader macro function."
-  (do-stream-input-cases ((length) expected
+  (do-stream-input-cases ((input length) expected
                           &optional (expected-position length))
     (multiple-value-bind (result position)
         (with-stream (stream)
@@ -20,12 +20,12 @@
 
 (test single-quote/smoke
   "Smoke test for the SINGLE-QUOTE reader macro function."
-  (do-stream-input-cases ((length) expected
+  (do-stream-input-cases ((input length) expected
                           &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.reader::single-quote stream #\'))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -37,12 +37,12 @@
 
 (test double-quote/smoke
   "Smoke test for the DOUBLE-QUOTE reader macro function."
-  (do-stream-input-cases ((length) expected
+  (do-stream-input-cases ((input length) expected
                           &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.reader::double-quote stream #\"))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -63,7 +63,7 @@
 
 (test backquote/smoke
   "Smoke test for the BACKQUOTE reader macro function."
-  (do-stream-input-cases ((length) quasiquote-forbidden expected
+  (do-stream-input-cases ((input length) quasiquote-forbidden expected
                           &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
@@ -75,7 +75,7 @@
                        'eclector.reader::sharpsign-a)
                      (eclector.reader::*backquote-depth* 0))
                  (eclector.reader::backquote stream #\`)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -90,7 +90,7 @@
 
 (test comma/smoke
   "Smoke test for the COMMA reader macro function."
-  (do-stream-input-cases ((length) unquote-forbidden backquote-depth
+  (do-stream-input-cases ((input length) unquote-forbidden backquote-depth
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
@@ -101,7 +101,7 @@
                      (eclector.reader::*backquote-depth*
                        backquote-depth))
                  (eclector.reader::comma stream #\,)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -123,12 +123,12 @@
 
 (test left-parenthesis/smoke
   "Smoke test for the LEFT-PARENTHESIS reader macro function."
-  (do-stream-input-cases ((length)
+  (do-stream-input-cases ((input length)
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (eclector.reader::left-parenthesis stream #\())))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -151,16 +151,18 @@
 
 (test right-parenthesis/smoke
   "Smoke test for the RIGHT-PARENTHESIS reader macro function."
-  (signals-printable eclector.reader:invalid-context-for-right-parenthesis -1
-    (with-input-from-string (stream "")
-      (eclector.reader::right-parenthesis stream #\)))))
+  (eclector.test:check-signals-error
+   "" 'eclector.reader:invalid-context-for-right-parenthesis -1
+   (lambda ()
+     (with-input-from-string (stream "")
+       (eclector.reader::right-parenthesis stream #\))))))
 
 (test sharpsign-single-quote/smoke
   "Smoke test for the SHARPSIGN-SINGLE-QUOTE reader macro function.
 
 Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
 \"strict\" variant, that is STRICT-SHARPSIGN-SINGLE-QUOTE."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected-relaxed
                           &optional (expected-position-relaxed length)
                                     (expected-strict expected-relaxed)
@@ -171,7 +173,7 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
                        (eclector.reader::*backquote-depth* 1))
                    (funcall function stream #\' parameter))))
              (do-variant (function expected expected-position)
-               (error-case (expected expected-position)
+               (error-case (input expected expected-position)
                  (error (do-call function))
                  (t (multiple-value-bind (result position) (do-call function)
                       (expect "result"   (equal expected          result))
@@ -215,14 +217,14 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-left-parenthesis/smoke
   "Smoke test for the SHARPSIGN-LEFT-PARENTHESIS reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader::sharpsign-left-parenthesis
                   stream #\( parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equalp expected          result))
@@ -250,14 +252,14 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-dot/smoke
   "Smoke test for the SHARPSIGN-DOT reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress read-eval
+  (do-stream-input-cases ((input length) parameter read-suppress read-eval
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress)
                      (*read-eval* read-eval))
                  (eclector.reader::sharpsign-dot stream #\. parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected result))
@@ -278,14 +280,14 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-backslash/smoke
   "Smoke test for the SHARPSIGN-BACKSLASH reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader::sharpsign-backslash
                   stream #\\ parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (result position) (do-it)
              (expect "result"   (equal expected          result))
@@ -325,13 +327,13 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test read-rational/smoke
   "Smoke test for the READ-RATIONAL reader macro function."
-  (do-stream-input-cases ((length) base
+  (do-stream-input-cases ((input length) base
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (let ((readtable eclector.reader:*readtable*))
                (with-stream (stream)
                  (eclector.reader::read-rational stream readtable base nil)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "value"    (eql expected          value))
@@ -396,13 +398,13 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
               (test-name (alexandria:symbolicate function-name '#:/smoke)))
          `(test ,test-name
             ,(format nil "Smoke test for the ~A function." function-name)
-            (do-stream-input-cases ((length) parameter read-suppress
+            (do-stream-input-cases ((input length) parameter read-suppress
                                     expected &optional (expected-position length))
               (flet ((do-it ()
                        (with-stream (stream)
                          (let ((*read-suppress* read-suppress))
                            (,function-name stream ,char parameter)))))
-                (error-case (expected expected-position)
+                (error-case (input expected expected-position)
                   (error (do-it))
                   (t (multiple-value-bind (value position) (do-it)
                        (expect "value"    (equalp expected value))
@@ -516,13 +518,13 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-asterisk/smoke
   "Smoke test for the SHARPSIGN-ASTERISK function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader::sharpsign-asterisk stream #\* parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "value"    (equalp expected value))
@@ -557,7 +559,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-vertical-bar/smoke
   "Smoke test for the SHARPSIGN-VERTICAL-BAR function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
@@ -565,7 +567,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                  (multiple-value-list
                   (eclector.reader::sharpsign-vertical-bar
                    stream #\| parameter))))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (values position) (do-it)
              (expect "values"   (equalp expected values))
@@ -589,14 +591,14 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-a/smoke
   "Smoke test for the SHARPSIGN-A reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           &optional expected (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((eclector.reader::*backquote-depth* 1)
                      (*read-suppress* read-suppress))
                  (eclector.reader::sharpsign-a stream #\A parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "value"    (equalp expected value))
@@ -640,13 +642,13 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-colon/smoke
   "Smoke test for the SHARPSIGN-COLON reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader::sharpsign-colon stream #\. parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "name"     (string= (symbol-name expected) (symbol-name value)))
@@ -675,7 +677,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 (test sharpsign-c/smoke
   "Smoke test for the SHARPSIGN-C reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected-relaxed
                           &optional (expected-position-relaxed length)
                                     (expected-strict expected-relaxed)
@@ -686,7 +688,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                        (eclector.reader::*backquote-depth* 1))
                    (funcall function stream #\C parameter))))
              (do-variant (function expected expected-position)
-               (error-case (expected expected-position)
+               (error-case (input expected expected-position)
                  (error (do-call function))
                  (t (multiple-value-bind (value position) (do-call function)
                       (expect "value"    (equal expected value))
@@ -742,7 +744,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
 
 Tests the \"relaxed\" variant, that is SHARPSIGN-S, and the \"strict\"
 variant, that is STRICT-SHARPSIGN-S."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected-relaxed
                           &optional (expected-position-relaxed length)
                                     (expected-strict           expected-relaxed)
@@ -755,7 +757,7 @@ variant, that is STRICT-SHARPSIGN-S."
                          (make-instance 'sharpsign-s-client)))
                    (funcall function stream #\S parameter))))
              (do-variant (function expected expected-position)
-               (error-case (expected expected-position)
+               (error-case (input expected expected-position)
                  (error (do-call function))
                  (t (multiple-value-bind (value position) (do-call function)
                       (expect "value"    (relaxed-equalp expected value))
@@ -818,14 +820,14 @@ variant, that is STRICT-SHARPSIGN-S."
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
-  (do-stream-input-cases ((length) parameter read-suppress
+  (do-stream-input-cases ((input length) parameter read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress)
                      (eclector.reader::*backquote-depth* 1))
                  (eclector.reader::sharpsign-p stream #\P parameter)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (t (multiple-value-bind (value position) (do-it)
              (expect "value"    (equal expected value))
@@ -846,7 +848,7 @@ variant, that is STRICT-SHARPSIGN-S."
 
 (test sharpsign-plus-minus/smoke
   "Smoke test for the SHARPSIGN-{PLUS,MINUS} functions."
-  (do-stream-input-cases ((length) parameter *read-suppress*
+  (do-stream-input-cases ((input length) parameter *read-suppress*
                           plus-expected &optional (minus-expected plus-expected)
                                                   (expected-position length))
     (labels ((do-it (which)
@@ -859,7 +861,7 @@ variant, that is STRICT-SHARPSIGN-S."
                       (:minus (eclector.reader::sharpsign-minus
                                stream #\- parameter)))))))
              (do-one (which expected)
-               (error-case (expected expected-position)
+               (error-case (input expected expected-position)
                  (error (do-it which))
                  (t (multiple-value-bind (values position) (do-it which)
                       (expect "values"   (equal expected values))
@@ -924,21 +926,23 @@ variant, that is STRICT-SHARPSIGN-S."
 
 (test sharpsign-invalid/smoke
   "Smoke test for the SHARPSIGN-INVALID function."
-  (signals-printable eclector.reader:sharpsign-invalid -1
-    (with-input-from-string (stream "")
-      (eclector.reader::sharpsign-invalid stream #\< nil))))
+  (eclector.test:check-signals-error
+   "" 'eclector.reader:sharpsign-invalid -1
+   (lambda ()
+     (with-input-from-string (stream "")
+       (eclector.reader::sharpsign-invalid stream #\< nil)))))
 
 ;;; Reader macros for sharpsign equals and sharpsign sharpsign.
 
 (test sharpsign-{equal\,sharpsign}/smoke
   "Smoke test for the SHARPSIGN-{EQUAL,SHARPSIGN} functions."
-  (do-stream-input-cases ((length) read-suppress
+  (do-stream-input-cases ((input length) read-suppress
                           expected &optional (expected-position length))
     (flet ((do-it ()
              (with-stream (stream)
                (let ((*read-suppress* read-suppress))
                  (eclector.reader:read stream)))))
-      (error-case (expected expected-position)
+      (error-case (input expected expected-position)
         (error (do-it))
         (recursive-cons
          (let ((result (do-it)))
