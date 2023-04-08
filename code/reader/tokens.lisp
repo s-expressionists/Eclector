@@ -245,184 +245,182 @@
                ;; If we have a token of length 0, it must be a symbol in
                ;; the current package.
                (next-cond (char t)
-                          ((eql char #\.)
-                           (go dot))
-                          ((not (null escape-ranges))
-                           ;; Cannot be a potential number according to HyperSpec
-                           ;; section 2.3.1.1.1 (Escape Characters and Potential
-                           ;; Numbers).
-                           (go symbol))
-                          ((eql char #\+)
-                           (go sign))
-                          ((eql char #\-)
-                           (setf sign -1)
-                           (go sign))
-                          ((decimal-mantissa char)
-                           (numerator* char t)
-                           (go decimal-integer))
-                          ((numerator* char)
-                           (go integer)))
-             sign         ; We have a sign, i.e., #\+ or #\-.
+                 ((eql char #\.)
+                  (go dot))
+                 ((not (null escape-ranges))
+                  ;; Cannot be a potential number according to HyperSpec
+                  ;; section 2.3.1.1.1 (Escape Characters and Potential
+                  ;; Numbers).
+                  (go symbol))
+                 ((eql char #\+)
+                  (go sign))
+                 ((eql char #\-)
+                  (setf sign -1)
+                  (go sign))
+                 ((decimal-mantissa char)
+                  (numerator* char t)
+                  (go decimal-integer))
+                 ((numerator* char)
+                  (go integer)))
+             sign ; We have a sign, i.e., #\+ or #\-.
                ;; If a sign is all we have, it is a symbol.
                (next-cond (char t)
-                          ((decimal-mantissa char)
-                           (numerator* char t)
-                           (go decimal-integer))
-                          ((numerator* char)
-                           (go integer))
-                          ((eql char #\.)
-                           (go sign-dot)))
+                 ((decimal-mantissa char)
+                  (numerator* char t)
+                  (go decimal-integer))
+                 ((numerator* char)
+                  (go integer))
+                 ((eql char #\.)
+                  (go sign-dot)))
              dot
                (next-cond (char)
-                          ((not char)
-                           (return-from interpret-token
-                             (if (null escape-ranges)
-                                 *consing-dot*
-                                 (symbol))))
-                          ((not (null escape-ranges))
-                           ;; Cannot be a potential number according to HyperSpec
-                           ;; section 2.3.1.1.1 (Escape Characters and Potential
-                           ;; Numbers).
-                           (go symbol))
-                          ((eql char #\.)
-                           (go maybe-too-many-dots))
-                          ((decimal-mantissa char)
-                           (incf decimal-exponent)
-                           (go float-no-exponent)))
+                 ((not char)
+                  (return-from interpret-token
+                    (if (null escape-ranges)
+                        *consing-dot*
+                        (symbol))))
+                 ((not (null escape-ranges))
+                  ;; Cannot be a potential number according to HyperSpec
+                  ;; section 2.3.1.1.1 (Escape Characters and Potential
+                  ;; Numbers).
+                  (go symbol))
+                 ((eql char #\.)
+                  (go maybe-too-many-dots))
+                 ((decimal-mantissa char)
+                  (incf decimal-exponent)
+                  (go float-no-exponent)))
              maybe-too-many-dots
                ;; According to HyperSpec section 2.3.3 (The Consing Dot),
                ;; a token consisting solely of multiple dots (more than
                ;; one dot, no escapes) is illegal.
                (next-cond (char)
-                          ((not char)
-                           (%recoverable-reader-error input-stream 'too-many-dots
-                                                      :position-offset (- (length token))
-                                                      :report 'treat-as-escaped)
-                           (push (cons 0 (length token)) escape-ranges)
-                           (return-from interpret-token (symbol)))
-                          ((eql char #\.)
-                           (go maybe-too-many-dots)))
-             sign-dot                   ; sign decimal-point
+                 ((not char)
+                  (%recoverable-reader-error input-stream 'too-many-dots
+                                             :position-offset (- (length token))
+                                             :report 'treat-as-escaped)
+                  (push (cons 0 (length token)) escape-ranges)
+                  (return-from interpret-token (symbol)))
+                 ((eql char #\.)
+                  (go maybe-too-many-dots)))
+             sign-dot ; sign decimal-point
                ;; If all we have is a sign followed by a dot, it must be a
                ;; symbol in the current package.
                (next-cond (char t)
-                          ((decimal-mantissa char)
-                           (incf decimal-exponent)
-                           (go float-no-exponent)))
-             decimal-integer            ; [sign] decimal-digit+
+                 ((decimal-mantissa char)
+                  (incf decimal-exponent)
+                  (go float-no-exponent)))
+             decimal-integer ; [sign] decimal-digit+
                (next-cond (char)
-                          ((not char)
-                           (return-from interpret-token
-                             (alexandria:if-let ((value (numerator*)))
-                               (* sign value)
-                               (symbol))))
-                          ((eql char #\.)
-                           (go decimal-integer-final))
-                          ((decimal-mantissa char)
-                           (numerator* char t)
-                           (go decimal-integer))
-                          ((numerator* char)
-                           (go integer))
-                          ((eql char #\/)
-                           (go ratio-start))
-                          ((char-float-exponent-marker-p char)
-                           (setf exponent-marker char)
-                           (go float-exponent-start)))
+                 ((not char)
+                  (return-from interpret-token
+                    (alexandria:if-let ((value (numerator*)))
+                      (* sign value)
+                      (symbol))))
+                 ((eql char #\.)
+                  (go decimal-integer-final))
+                 ((decimal-mantissa char)
+                  (numerator* char t)
+                  (go decimal-integer))
+                 ((numerator* char)
+                  (go integer))
+                 ((eql char #\/)
+                  (go ratio-start))
+                 ((char-float-exponent-marker-p char)
+                  (setf exponent-marker char)
+                  (go float-exponent-start)))
              decimal-integer-final ; [sign] decimal-digit+ decimal-point
                (next-cond (char)
-                          ((not char)
-                           (return-from interpret-token
-                             (* sign (decimal-mantissa))))
-                          ((decimal-mantissa char)
-                           (incf decimal-exponent)
-                           (go float-no-exponent))
-                          ((char-float-exponent-marker-p char)
-                           (setf exponent-marker char)
-                           (go float-exponent-start)))
+                 ((not char)
+                  (return-from interpret-token (* sign (decimal-mantissa))))
+                 ((decimal-mantissa char)
+                  (incf decimal-exponent)
+                  (go float-no-exponent))
+                 ((char-float-exponent-marker-p char)
+                  (setf exponent-marker char)
+                  (go float-exponent-start)))
              integer ; [sign] digit+ (At least one digit is not decimal)
                (next-cond (char)
-                          ((not char)
-                           (return-from interpret-token
-                             (* sign (numerator*))))
-                          ((numerator* char)
-                           (go integer))
-                          ((eql char #\/)
-                           (go ratio-start)))
-             ratio-start                ; [sign] digit+ /
+                 ((not char)
+                  (return-from interpret-token (* sign (numerator*))))
+                 ((numerator* char)
+                  (go integer))
+                 ((eql char #\/)
+                  (go ratio-start)))
+             ratio-start ; [sign] digit+ /
                (next-cond (char t)
-                          ((denominator* char)
-                           (go ratio)))
-             ratio                      ; [sign] digit+ / digit+
+                 ((denominator* char)
+                  (go ratio)))
+             ratio ; [sign] digit+ / digit+
                (next-cond (char)
-                          ((not char)
-                           (return-from interpret-token
-                             (alexandria:if-let ((numerator (numerator*)))
-                               (let ((denominator (denominator*)))
-                                 (when (zerop denominator)
-                                   (%recoverable-reader-error
-                                    input-stream 'zero-denominator
-                                    :position-offset -1 :report 'replace-invalid-digit)
-                                   (setf denominator 1))
-                                 (* sign (/ numerator denominator)))
-                               (symbol))))
-                          ((denominator* char)
-                           (go ratio)))
+                 ((not char)
+                  (return-from interpret-token
+                    (alexandria:if-let ((numerator (numerator*)))
+                      (let ((denominator (denominator*)))
+                        (when (zerop denominator)
+                          (%recoverable-reader-error
+                           input-stream 'zero-denominator
+                           :position-offset -1 :report 'replace-invalid-digit)
+                          (setf denominator 1))
+                        (* sign (/ numerator denominator)))
+                      (symbol))))
+                 ((denominator* char)
+                  (go ratio)))
              float-no-exponent
                ;; [sign] decimal-digit* decimal-point decimal-digit+
                (next-cond (char)
-                          ((not char)
-                           (return-float))
-                          ((decimal-mantissa char)
-                           (incf decimal-exponent)
-                           (go float-no-exponent))
-                          ((char-float-exponent-marker-p char)
-                           (setf exponent-marker char)
-                           (go float-exponent-start)))
+                 ((not char)
+                  (return-float))
+                 ((decimal-mantissa char)
+                  (incf decimal-exponent)
+                  (go float-no-exponent))
+                 ((char-float-exponent-marker-p char)
+                  (setf exponent-marker char)
+                  (go float-exponent-start)))
              float-exponent-start
                ;; [sign] decimal-digit+ exponent-marker
                ;; or
                ;; [sign] decimal-digit* decimal-point decimal-digit+ exponent-marker
                (next-cond (char t)
-                          ((eq char #\+)
-                           (go float-exponent-sign))
-                          ((eq char #\-)
-                           (setf exponent-sign -1)
-                           (go float-exponent-sign))
-                          ((exponent char)
-                           (go float-exponent)))
+                 ((eq char #\+)
+                  (go float-exponent-sign))
+                 ((eq char #\-)
+                  (setf exponent-sign -1)
+                  (go float-exponent-sign))
+                 ((exponent char)
+                  (go float-exponent)))
              float-exponent-sign
                ;; [sign] decimal-digit+ exponent-marker sign
                ;; or
                ;; [sign] decimal-digit* decimal-point decimal-digit+ exponent-marker sign
                (next-cond (char t)
-                          ((exponent char)
-                           (go float-exponent)))
+                 ((exponent char)
+                  (go float-exponent)))
              float-exponent
                ;; [sign] decimal-digit+ exponent-marker [sign] digit+
                ;; or
                ;; [sign] decimal-digit* decimal-point decimal-digit+
                ;; exponent-marker [sign] digit+
                (next-cond (char)
-                          ((not char)
-                           (return-float t))
-                          ((exponent char)
-                           (go float-exponent)))
+                 ((not char)
+                  (return-float t))
+                 ((exponent char)
+                  (go float-exponent)))
              symbol
                ;; a sequence of characters denoting a valid symbol name,
                ;; except that the last character might be a package
                ;; marker.
                (next-cond (char t nil)
-                          ((eq char #\:)
-                           (cond ((null position-package-marker-1)
-                                  (setf position-package-marker-1 index))
-                                 ((null position-package-marker-2)
-                                  (setf position-package-marker-2 index))
-                                 (t
-                                  (%recoverable-reader-error
-                                   input-stream 'symbol-can-have-at-most-two-package-markers
-                                   :position-offset (- (- (length token) index))
-                                   :token token :report 'treat-as-escaped)))
-                           (go symbol))))))))))
+                 ((eq char #\:)
+                  (cond ((null position-package-marker-1)
+                         (setf position-package-marker-1 index))
+                        ((null position-package-marker-2)
+                         (setf position-package-marker-2 index))
+                        (t
+                         (%recoverable-reader-error
+                          input-stream 'symbol-can-have-at-most-two-package-markers
+                          :position-offset (- (- (length token) index))
+                          :token token :report 'treat-as-escaped)))
+                  (go symbol))))))))))
 
 ;;; Symbol token interpretation
 
