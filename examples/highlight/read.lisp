@@ -285,9 +285,7 @@
              (let* ((offset (eclector.base:position-offset condition))
                     (start  (+ (eclector.base:stream-position condition)
                                offset))
-                    (end    (if (typep condition 'end-of-file)
-                                start
-                                (1+ start))))
+                    (end    (+ start (eclector.base:range-length condition))))
                (push (cst:make-syntax-error start end condition) errors))))
       (handler-bind ((eclector.base:stream-position-reader-error
                        (lambda (condition)
