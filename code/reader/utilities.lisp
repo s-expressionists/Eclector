@@ -33,42 +33,45 @@
 ;;; FINALIZE to local functions that perform the accumulation of token
 ;;; characters and, optionally, escape ranges. If LAZY is true, the
 ;;; array of token characters is allocated lazily.
+(defconstant +short-token-length+ 32)
 (defmacro with-token-info
     ((push-char (&optional start-escape end-escape) finalize &key lazy)
      &body body)
-  `(let ((token ,(if lazy
-                     'nil
-                     '(make-array 10 :element-type 'character)))
-         (index 0)
-         ,@(when start-escape
-             `((escape-ranges '()))))
-     (declare (type ,(if lazy '(or null token-string) 'token-string) token)
-              (type array-index index))
+  `(let* (,@(unless lazy
+              `((initial-storage (make-array +short-token-length+
+                                             :element-type 'character))))
+          (buffer ,(if lazy 'nil 'initial-storage))
+          (size +short-token-length+)
+          (index 0)
+          ,@(when start-escape
+              `((escape-ranges '()))))
+     (declare (type ,(if lazy '(or null token-string) 'token-string) buffer)
+              (type array-index index size)
+              ,@(unless lazy
+                  `((dynamic-extent initial-storage))))
      (labels ((,push-char (char)
                 (cond ,@(when lazy
-                          `(((null token)
-                             (setf token (make-array 10 :element-type 'character)))))
-                      ((let ((length (length token)))
-                         (unless (< index length)
-                           (setf token (adjust-array token (* 2 length)))))))
-                (setf (aref token index) char)
+                          `(((null buffer)
+                             (setf buffer (make-array +short-token-length+
+                                                      :element-type 'character)))))
+                      ((= index size)
+                       (setf size (* 2 size)
+                             buffer (adjust-array buffer size))))
+                (setf (aref buffer index) char)
                 (incf index)
                 char)
               ,@(when start-escape
                   `((,start-escape (char)
-                      (declare (ignore char))
-                      (push (cons index nil) escape-ranges))))
+                                   (declare (ignore char))
+                                   (push (cons index nil) escape-ranges))))
               ,@(when end-escape
                   `((,end-escape ()
-                      (setf (cdr (first escape-ranges)) index))))
+                                 (setf (cdr (first escape-ranges)) index))))
               (,finalize ()
-                (values (if (= index (length token))
-                            token
-                            (subseq token 0 index))
-                        ,@(when start-escape
-                            `((if (null escape-ranges)
-                                  escape-ranges
-                                  (nreverse escape-ranges)))))))
+                (values buffer index ,@(when start-escape
+                                         `((if (null escape-ranges)
+                                               escape-ranges
+                                               (nreverse escape-ranges)))))))
        ,@body)))
 
 ;;; This macro generates a state machine for reading a token and in

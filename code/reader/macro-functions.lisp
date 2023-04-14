@@ -564,7 +564,8 @@
                            ((not (null char1)) ; no additional characters pushed (same as (null token))
                             (lookup char1))
                            (t
-                            (lookup (finalize)))))))
+                            (multiple-value-bind (buffer length) (finalize)
+                              (lookup (subseq buffer 0 length))))))))
           (declare (dynamic-extent #'terminate-character))
           (token-state-machine
            stream readtable handle-char nil nil
@@ -936,10 +937,12 @@
                   :delimiter delimiter :report 'use-partial-symbol))
                (return-symbol ()
                  (return-from sharpsign-colon
-                   (multiple-value-bind (token escape-ranges) (finalize)
-                     (symbol-from-token
-                      client stream readtable suppress
-                      token escape-ranges package-marker)))))
+                   (multiple-value-bind (buffer length escape-ranges)
+                       (finalize)
+                     (let ((token (subseq buffer 0 length)))
+                       (symbol-from-token
+                        client stream readtable suppress
+                        token escape-ranges package-marker))))))
         (declare (dynamic-extent #'return-symbol))
         (token-state-machine
          stream readtable handle-char start-escape end-escape
