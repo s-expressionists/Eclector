@@ -23,8 +23,11 @@
                                             (or *skip-reason* '*read-suppress*))
                         nil)
                        (t
-                        (multiple-value-bind (token escape-ranges) (finalize)
-                          (interpret-token client input-stream token escape-ranges)))))))
+                        (multiple-value-bind (buffer length escape-ranges)
+                            (finalize)
+                          (let ((token (subseq buffer 0 length)))
+                            (interpret-token
+                             client input-stream token escape-ranges))))))))
       (declare (dynamic-extent #'terminate-token))
       (let ((readtable (state-value client 'cl:*readtable*)))
         (token-state-machine
