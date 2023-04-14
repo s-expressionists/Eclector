@@ -118,24 +118,44 @@
 ;;; HyperSpec says that we must return a SIMPLE-STRING.  For that
 ;;; reason, we call COPY-SEQ in the end.  COPY-SEQ is guaranteed to
 ;;; return a simple vector.
-
+(defconstant +short-string-length+ 1024)
 (defun double-quote (stream char)
-  (let ((result (make-array 100 :element-type 'character
-                                :adjustable t
-                                :fill-pointer 0)))
-    (loop with readtable = (state-value *client* 'cl:*readtable*)
-          for char2 = (read-char-or-recoverable-error
-                       stream char 'unterminated-string
-                       :delimiter char :report 'use-partial-string)
-          until (eql char2 char)
-          when (eq (eclector.readtable:syntax-type readtable char2) :single-escape)
-            do (setf char2 (read-char-or-recoverable-error
-                            stream nil 'unterminated-single-escape-in-string
-                            :position-offset -1
-                            :escape-char char2 :report 'use-partial-string))
-          when char2
-            do (vector-push-extend char2 result)
-          finally (return (copy-seq result)))))
+  (let ((readtable (state-value *client* 'cl:*readtable*))
+        (result (make-array +short-string-length+ :element-type 'character)))
+    (declare (dynamic-extent result))
+    (macrolet ((string-content-loop (shortp)
+                 `(loop ,@(if shortp
+                              `(with i of-type array-index = 0)
+                              `(with result = (replace
+                                               (make-array (* 2 +short-string-length+)
+                                                           :element-type 'character
+                                                           :adjustable t
+                                                           :fill-pointer +short-string-length+)
+                                               result)))
+                        for char2 of-type (or null character)
+                           = (read-char-or-recoverable-error
+                              stream char 'unterminated-string
+                              :delimiter char :report 'use-partial-string)
+                        until (eql char2 char)
+                        when (eq (eclector.readtable:syntax-type readtable char2)
+                                 :single-escape)
+                          do (setf char2 (read-char-or-recoverable-error
+                                          stream nil 'unterminated-single-escape-in-string
+                                          :position-offset -1
+                                          :escape-char char2 :report 'use-partial-string))
+                        when char2
+                        ,@(if shortp
+                              `(do (setf (aref result i) char2)
+                                   (incf i)
+                                when (= i +short-string-length+)
+                                  do (go long-string)
+                                finally (return-from double-quote (subseq result 0 i)))
+                              `(do (vector-push-extend char2 result)
+                                finally (return-from double-quote (copy-seq result)))))))
+      (tagbody
+         (string-content-loop t)
+       long-string
+         (string-content-loop bil)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
