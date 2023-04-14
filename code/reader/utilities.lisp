@@ -105,6 +105,7 @@
                            (,terminate))
                           (t
                            (,terminate))))))
+           (declare (dynamic-extent #'read-char-handling-eof))
            (tagbody
             even-escapes
               (multiple-value-bind (char syntax-type)

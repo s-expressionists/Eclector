@@ -25,6 +25,7 @@
                        (t
                         (multiple-value-bind (token escape-ranges) (finalize)
                           (interpret-token client input-stream token escape-ranges)))))))
+      (declare (dynamic-extent #'terminate-token))
       (let ((readtable (state-value client 'cl:*readtable*)))
         (token-state-machine
          input-stream readtable handle-char start-escape end-escape

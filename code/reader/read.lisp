@@ -149,6 +149,7 @@
              (case state
                (:proper (push value reversed-result))
                (:tail (setf tail value)))))
+      (declare (dynamic-extent #'element))
       (%read-list-elements stream #'element nil nil close-char t))
     (nreconc reversed-result tail)))
 
