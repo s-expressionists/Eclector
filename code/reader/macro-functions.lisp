@@ -565,6 +565,7 @@
                             (lookup char1))
                            (t
                             (lookup (finalize)))))))
+          (declare (dynamic-extent #'terminate-character))
           (token-state-machine
            stream readtable handle-char nil nil
            unterminated-single-escape unterminated-multiple-escape
@@ -939,6 +940,7 @@
                      (symbol-from-token
                       client stream readtable suppress
                       token escape-ranges package-marker)))))
+        (declare (dynamic-extent #'return-symbol))
         (token-state-machine
          stream readtable handle-char start-escape end-escape
          unterminated-single-escape unterminated-multiple-escape
