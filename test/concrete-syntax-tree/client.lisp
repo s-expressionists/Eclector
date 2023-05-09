@@ -39,11 +39,12 @@
                 (raw* (eclector.concrete-syntax-tree:target cst)))
                (t
                 (cst:raw cst)))))
-    (let ((*test-dribble* (make-broadcast-stream))
+    (let ((*test-dribble* (make-broadcast-stream)) ; too much output otherwise
           (*num-trials* 10000)
           (*max-trials* 10000))
       (for-all ((expression (gen-labels-and-references)))
-        (let* ((input (prin1-to-string expression))
+        (let* ((input (let ((*print-circle* t))
+                        (prin1-to-string expression)))
                (client (make-instance 'wrapper-cst-client))
                (result (let ((eclector.base:*client* client))
                          (eclector.concrete-syntax-tree:read-from-string input))))
