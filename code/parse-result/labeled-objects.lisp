@@ -94,7 +94,11 @@
                 ((not (null (%wrapper-parse-result wrapper))) ; parse result in labeled object
                  (make-expression-result client **reference** wrapper source))
                 ((not (null children)) ; inner finalized, no parse result, child
-                 (setf (%wrapper-parse-result wrapper) (first children))
+                 ;; CHILDREN can have multiple elements if we skipped
+                 ;; over some material before reading an object.  The
+                 ;; object will be the final child.
+                 (setf (%wrapper-parse-result wrapper)
+                       (alexandria:lastcar children))
                  ;; The outermost wrapping labeled object may have
                  ;; more information regarding when to fix things up.
                  (let ((outer (%wrapper-outer wrapper)))

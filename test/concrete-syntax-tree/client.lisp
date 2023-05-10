@@ -64,3 +64,30 @@
     (is (valid-cst-parse-result-p client result)
         "~@<For input ~S, the result CST ~A is not valid.~@:>"
         input result)))
+
+;;; Test the interaction between wrapper CSTs for labeled objects and
+;;; explicitly represented skipped input.  The potential problem
+;;; affects only definitions of labeled objects since references
+;;; cannot syntactically contain skipped material.
+
+(defclass skipped-input+wrapper-cst-client (wrapper-cst-client) ())
+
+(defmethod eclector.parse-result:make-skipped-input-result
+    ((client skipped-input+wrapper-cst-client)
+     (stream t)
+     (reason t)
+     (source t))
+  ;; The representation does not matter here.  We just need some
+  ;; representation of the skipped input.
+  (list reason t))
+
+(test wrapper-labeled-object-csts/skipped-input-children
+  "Check that children which represent skipped input do not throw off
+labeled object definition wrapper CSTs."
+  (let* ((client (make-instance 'skipped-input+wrapper-cst-client))
+         (result (let ((eclector.base:*client* client))
+                   (eclector.concrete-syntax-tree:read-from-string
+                    "#1=#|foo|#2")))
+         (target (eclector.concrete-syntax-tree:target result)))
+    (is (cst:atom target))
+    (is (eql 2 (cst:raw target)))))
