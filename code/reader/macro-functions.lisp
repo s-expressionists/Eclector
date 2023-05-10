@@ -933,13 +933,13 @@
           (real 1) (imaginary 1))
       (labels ((check-value (value)
                  (typecase value
-                   ((eql #1=#.(gensym "END-OF-LIST"))
+                   ((eql #1=#.(make-symbol "END-OF-LIST"))
                     (%recoverable-reader-error
                      stream 'complex-part-expected
                      :position-offset -1
                      :which part :report 'use-partial-complex)
                     1)
-                   ((eql #2=#.(gensym "END-OF-INPUT"))
+                   ((eql #2=#.(make-symbol "END-OF-INPUT"))
                     (%recoverable-reader-error
                      stream 'end-of-input-before-complex-part
                      :which part :report 'use-partial-complex)
@@ -1089,11 +1089,11 @@
                           element :name))))
                (collect-type (value)
                  (typecase value
-                   ((eql #1=#.(gensym "END-OF-LIST"))
+                   ((eql #1=#.(make-symbol "END-OF-LIST"))
                     (%recoverable-reader-error
                      stream 'no-structure-type-name-found
                      :position-offset -1 :report 'inject-nil))
-                   ((eql #2=#.(gensym "END-OF-INPUT"))
+                   ((eql #2=#.(make-symbol "END-OF-INPUT"))
                     (%recoverable-reader-error
                      stream 'end-of-input-before-structure-type-name
                      :report 'inject-nil))

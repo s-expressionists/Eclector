@@ -5,8 +5,7 @@
 (test read-code/host-equivalence
   "Compare Eclector code read with Eclector and read with the host reader."
   (flet ((collect-expressions (reader)
-           (let ((result '())
-                 (*gensym-counter* 0))
+           (let ((result '()))
              (map-all-system-expressions
               (lambda (filename i expression)
                 (push (list filename i expression) result))

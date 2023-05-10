@@ -9,17 +9,17 @@
                             eof-value
                             recursive-p)
   (flet ((done (value)
-           (cond ((not (eq value '#1=#.(gensym "EOF")))
+           (cond ((not (eq value input-stream))
                   (return-from peek-char value))
                  (eof-error-p
                   (%reader-error input-stream 'end-of-file))
                  (t
                   (return-from peek-char eof-value)))))
     (if (not (eq peek-type t))
-        (done (cl:peek-char peek-type input-stream nil '#1# recursive-p))
+        (done (cl:peek-char peek-type input-stream nil input-stream recursive-p))
         (loop with readtable = (state-value *client* 'cl:*readtable*)
-              for char = (cl:peek-char nil input-stream nil '#1# recursive-p)
-              while (and (not (eq char '#1#))
+              for char = (cl:peek-char nil input-stream nil input-stream recursive-p)
+              while (and (not (eq char input-stream))
                          (eq (eclector.readtable:syntax-type readtable char)
                              :whitespace))
               do (read-char input-stream) ; consume whitespace char

@@ -12,9 +12,8 @@
                             eof-value
                             recursive-p)
   (if eof-error-p
-      (let ((result (cl:read-char input-stream
-                                  nil '#1=#.(gensym "EOF") recursive-p)))
-        (if (eq result '#1#)
+      (let ((result (cl:read-char input-stream nil input-stream recursive-p)))
+        (if (eq result input-stream)
             (%reader-error input-stream 'end-of-file)
             result))
       (cl:read-char input-stream nil eof-value recursive-p)))
@@ -29,15 +28,15 @@
       whole))
 
 (defun read-char-or-error (input-stream datum &rest arguments)
-  (let ((result (cl:read-char input-stream nil '#1=#.(gensym "EOF") t)))
-    (if (eq result '#1#)
+  (let ((result (cl:read-char input-stream nil input-stream t)))
+    (if (eq result input-stream)
         (apply #'%reader-error input-stream datum arguments)
         result)))
 
 (defun read-char-or-recoverable-error (input-stream recover-value
                                        datum &rest arguments)
-  (let ((result (cl:read-char input-stream nil '#1=#.(gensym "EOF") t)))
-    (if (eq result '#1#)
+  (let ((result (cl:read-char input-stream nil input-stream t)))
+    (if (eq result input-stream)
         (progn
           (apply #'%recoverable-reader-error input-stream datum arguments)
           recover-value)
