@@ -7,7 +7,36 @@
     (:symbol "eclector.base:stream-position-condition") "(" "which"
     "includes" "almost" "all" "conditions" "related" "to" "syntax" "errors"
     ")" "to" "determine" "the" "length" "of" "the" "sub-sequence" "of" "the"
-    "input" "to" "which" "the" "condition" "in" "question" "pertains" ".")))
+    "input" "to" "which" "the" "condition" "in" "question" "pertains" "."))
+
+  (:item
+   (:paragraph
+    "Minor" "incompatible" "change")
+   (:paragraph
+    "The" "part" "of" "the" "labeled" "objects" "protocol" "that" "allows"
+    "clients" "to" "construct" "parse" "results" "which" "represent"
+    "labeled" "objects" "has" "been" "changed" "in" "an" "incompatible" "way"
+    "." "The" "change" "allows" "parse" "results" "which" "represent"
+    "labeled" "objects" "to" "have" "child" "parse" "results" "but" "requires"
+    "that" "clients" "construct" "parse" "results" "which" "represent"
+    "labeled" "objects" "differently" ":" "instead" "of" "eql-specializing"
+    "the" (:tt "result") "parameters" "of" "methods" "on"
+    (:symbol "eclector.parse-result:make-expression-result") "to"
+    (:symbol "eclector.parse-result:**definition**") "and"
+    (:symbol "eclector.parse-result:**reference**") "and" "receiving" "the"
+    "labeled" "object" "in" "the" (:tt "children") "parameters" ","
+    "the" (:tt "result") "parameters" "now" "have" "to" "be" "specialized"
+    "to" "the" "classes" (:symbol "eclector.parse-result:definition") "and"
+    (:symbol "eclector.parse-result:reference") "respectively" "." "The"
+    "object" "passed" "as" "the" (:tt "result") "argument" "now" "contains"
+    "the" "labeled" "object" "so" "that" "the" (:tt "children") "parameter"
+    "can" "receive" "child" "parse" "results" ".")
+   (:paragraph
+    "This" "change" "is" "considered" "minor" "since" "the" "old" "mechanism"
+    "described" "above" "was" "not" "documented" "." "For" "now" "," "the"
+    "new" "mechanism" "also" "remains" "undocumented" "so" "that" "the"
+    "design" "can" "be" "validated" "through" "experimentation" "before" "it"
+    "is" "finalized" ".")))
 
  (:release "0.9" "2023-03-19"
   (:item

@@ -27,11 +27,11 @@
                        ;; CURRENT-RAW-VALUE is a finalized labeled
                        ;; object from which the (circular) final raw
                        ;; value and parse result can be obtained.
-                       (setf ,place (eclector.parse-result:make-expression-result
-                                     client
-                                     eclector.parse-result:**reference**
-                                     current-raw-value
-                                     source))))))))
+                       (let ((reference (eclector.parse-result:make-reference
+                                         current-raw-value)))
+                         (declare (dynamic-extent reference))
+                         (setf ,place (eclector.parse-result:make-expression-result
+                                       client reference '() source)))))))))
     (fixup-place (slot-value object 'cst::%first))
     (fixup-place (slot-value object 'cst::%rest))))
 
@@ -63,28 +63,27 @@
                                   seen-objects)
   (declare (ignore seen-objects))) ; nothing to do
 
-(macrolet ((labeled-object-result (client labeled-object source class)
-             `(multiple-value-bind (state object parse-result)
-                  (eclector.reader:labeled-object-state ,client ,labeled-object)
-                (declare (ignore state))
-                (make-instance ',class :source ,source
-                                       :raw object
-                                       :target parse-result))))
+(macrolet ((labeled-object-result (client result source class)
+             `(let ((labeled-object (eclector.parse-result:labeled-object ,result)))
+                (multiple-value-bind (state object parse-result)
+                    (eclector.reader:labeled-object-state ,client labeled-object)
+                  (declare (ignore state))
+                  (make-instance ',class :source ,source
+                                         :raw object
+                                         :target parse-result)))))
 
   (defmethod eclector.parse-result:make-expression-result
       ((client definition-csts-mixin)
-       (result (eql eclector.parse-result:**definition**))
+       (result eclector.parse-result:definition)
        children
        source)
-    ;; Due to a slight abuse of the protocol, CHILDREN is the labeled
-    ;; object being defined.
-    (labeled-object-result client children source definition-cst))
+    (declare (ignore children))
+    (labeled-object-result client result source definition-cst))
 
   (defmethod eclector.parse-result:make-expression-result
       ((client reference-csts-mixin)
-       (result (eql eclector.parse-result:**reference**))
+       (result eclector.parse-result:reference)
        children
        source)
-    ;; Due to a slight abuse of the protocol, CHILDREN is the labeled
-    ;; object being referenced.
-    (labeled-object-result client children source reference-cst)))
+    (declare (ignore children))
+    (labeled-object-result client result source reference-cst)))

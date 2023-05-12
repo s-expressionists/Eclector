@@ -69,12 +69,10 @@
                     (()
                      (eclector.reader:fixup client current-value seen))
                     (()
-                     (let ((source (source current-value)))
+                     (let ((reference (eclector.parse-result:make-reference current-raw-value))
+                           (source (source current-value)))
                        (setf ,place (eclector.parse-result:make-expression-result
-                                     client
-                                     eclector.parse-result:**reference**
-                                     current-raw-value
-                                     source))))))))
+                                     client reference '() source))))))))
     (fixup-place (slot-value object '%first-child))
     (fixup-place (slot-value object '%rest-child))))
 
@@ -403,6 +401,17 @@
       result
       (cons result children)))
 
+(defmethod eclector.parse-result:make-expression-result
+    ((client   skipped-input-recording-client)
+     (result   eclector.parse-result:definition)
+     (children t)
+     (source   t))
+  (let* ((labeled-object (eclector.parse-result:labeled-object result))
+         (target-parse-result
+           (nth-value 2 (eclector.reader:labeled-object-state
+                         client labeled-object))))
+    (list :definition target-parse-result children source)))
+
 (defmethod eclector.parse-result:make-skipped-input-result
     ((client skipped-input-recording-client) (stream t) (reason t) (source t))
   (list reason source))
@@ -446,6 +455,7 @@
                                       1)))
       ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) (2 . 11))
                                       1)))
+      ("#1=#|foo|#2"      nil (:definition #1=2 ((:block-comment (3 . 10)) #1#) (0 . 11)))
       ;; Non-toplevel reader conditionals
       ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 9)) 2)))
       ;; Order of skipped inputs

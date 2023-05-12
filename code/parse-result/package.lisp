@@ -15,11 +15,15 @@
 
   ;; Parse result protocol
   (:export
-   #:**definition**
-   #:**reference**
-
    #:make-expression-result
-   #:make-skipped-input-result)
+   #:make-skipped-input-result
+
+   #:labeled-object  ; reader for DEFINITION and REFERENCE instances
+   #:definition      ; class
+   #:make-definition ; constructor
+   #:reference       ; class
+   #:make-reference  ; constructor
+   )
 
   ;; Read protocol
   (:export

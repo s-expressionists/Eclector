@@ -5,6 +5,26 @@ Release 0.10 (not yet released)
   conditions related to syntax errors) to determine the length of the
   sub-sequence of the input to which the condition in question pertains.
 
+* Minor incompatible change
+
+  The part of the labeled objects protocol that allows clients to construct
+  parse results which represent labeled objects has been changed in an
+  incompatible way. The change allows parse results which represent labeled
+  objects to have child parse results but requires that clients construct parse
+  results which represent labeled objects differently: instead of
+  eql-specializing the result parameters of methods on
+  ECLECTOR.PARSE-RESULT:MAKE-EXPRESSION-RESULT to
+  ECLECTOR.PARSE-RESULT:**DEFINITION** and ECLECTOR.PARSE-RESULT:**REFERENCE**
+  and receiving the labeled object in the children parameters, the result
+  parameters now have to be specialized to the classes
+  ECLECTOR.PARSE-RESULT:DEFINITION and ECLECTOR.PARSE-RESULT:REFERENCE
+  respectively. The object passed as the result argument now contains the
+  labeled object so that the children parameter can receive child parse results.
+
+  This change is considered minor since the old mechanism described above was
+  not documented. For now, the new mechanism also remains undocumented so that
+  the design can be validated through experimentation before it is finalized.
+
 Release 0.9 (2023-03-19)
 
 * The deprecated function ECLECTOR.CONCRETE-SYNTAX-TREE:CST-READ has been

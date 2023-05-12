@@ -70,7 +70,19 @@
 ;;; affects only definitions of labeled objects since references
 ;;; cannot syntactically contain skipped material.
 
+(defclass definition-with-children (eclector.concrete-syntax-tree:definition-cst)
+  ((%children :initarg :children
+              :reader  children)))
+
 (defclass skipped-input+wrapper-cst-client (wrapper-cst-client) ())
+
+(defmethod eclector.parse-result:make-expression-result
+    ((child    skipped-input+wrapper-cst-client)
+     (result   eclector.parse-result:definition)
+     (children t)
+     (source   t))
+  (let ((result (call-next-method)))
+    (change-class result 'definition-with-children :children children)))
 
 (defmethod eclector.parse-result:make-skipped-input-result
     ((client skipped-input+wrapper-cst-client)
@@ -90,4 +102,5 @@ labeled object definition wrapper CSTs."
                     "#1=#|foo|#2")))
          (target (eclector.concrete-syntax-tree:target result)))
     (is (cst:atom target))
-    (is (eql 2 (cst:raw target)))))
+    (is (eql 2 (cst:raw target)))
+    (is (equal (list '(:block-comment t) target) (children result)))))

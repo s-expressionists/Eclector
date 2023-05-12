@@ -76,7 +76,7 @@
 
 (defmethod make-expression-result :around ((client parse-result-client)
                                            result
-                                           (children list)
+                                           children
                                            source)
   (declare (ignore result))
   ;; This is the complicated one.  In case MAKE-LABELED-OBJECT or
@@ -92,24 +92,31 @@
           (cond ((not (find state '(:final :final/circular))) ; inner not finalized
                  (call-next-method))
                 ((not (null (%wrapper-parse-result wrapper))) ; parse result in labeled object
-                 (make-expression-result client **reference** wrapper source))
+                 (let ((reference (make-reference wrapper))
+                       (*wrapper* nil)) ; avoid re-entry
+                   (declare (dynamic-extent reference))
+                   (make-expression-result client reference children source)))
                 ((not (null children)) ; inner finalized, no parse result, child
                  ;; CHILDREN can have multiple elements if we skipped
                  ;; over some material before reading an object.  The
                  ;; object will be the final child.
                  (setf (%wrapper-parse-result wrapper)
                        (alexandria:lastcar children))
-                 ;; The outermost wrapping labeled object may have
-                 ;; more information regarding when to fix things up.
-                 (let ((outer (%wrapper-outer wrapper)))
-                   (when (eclector.reader:fixup-graph-p client outer)
-                     ;; Fix up the graph of parse results.
-                     (eclector.reader:fixup-graph
-                      client outer
-                      :object-key (lambda (client labeled-object)
-                                    (declare (ignore client))
-                                    (%wrapper-parse-result labeled-object)))))
-                 (make-expression-result client **definition** wrapper source))
+                 (let ((*wrapper* nil)) ; avoid re-entry
+                   ;; The outermost wrapping labeled object may have
+                   ;; more information regarding when to fix things
+                   ;; up.
+                   (let ((outer (%wrapper-outer wrapper)))
+                     (when (eclector.reader:fixup-graph-p client outer)
+                       ;; Fix up the graph of parse results.
+                       (eclector.reader:fixup-graph
+                        client outer
+                        :object-key (lambda (client labeled-object)
+                                      (declare (ignore client))
+                                      (%wrapper-parse-result labeled-object)))))
+                   (let ((definition (make-definition wrapper)))
+                     (declare (dynamic-extent definition))
+                     (make-expression-result client definition children source))))
                 (t ; inner finalized, no parse result, but also no child
                  ;; This can happen when the clients chooses to
                  ;; recover for input like #1=.  In that case, no
@@ -120,26 +127,31 @@
                  (call-next-method)))))))
 
 (defmethod make-expression-result ((client parse-result-client)
-                                   (result (eql **definition**))
+                                   (result definition)
                                    children
                                    source)
-  (declare (ignore source))
-  ;; In a slight abuse of the protocol, CHILDREN is the labeled object
-  ;; being defined and the third return value of the
-  ;; LABELED-OBJECT-STATE call is the parse result of the labeled
-  ;; object.
-  (nth-value 2 (eclector.reader:labeled-object-state client children)))
+  (declare (ignore children source))
+  ;; This method implements the default behavior of simply extracting
+  ;; and returning the parse result which represents the object that
+  ;; is defined by the labeled object definition (and therefore not
+  ;; represent the labeled object definition itself as a parse
+  ;; result).
+  (let ((labeled-object (labeled-object result)))
+    (nth-value
+     2 (eclector.reader:labeled-object-state client labeled-object))))
 
 (defmethod make-expression-result ((client parse-result-client)
-                                   (result (eql **reference**))
+                                   (result reference)
                                    children
                                    source)
-  (declare (ignore source))
-  ;; In a slight abuse of the protocol, CHILDREN is the labeled object
-  ;; being defined and the third return value of the
-  ;; LABELED-OBJECT-STATE call is the parse result of the labeled
-  ;; object.
-  (nth-value 2 (eclector.reader:labeled-object-state client children)))
+  (declare (ignore children source))
+  ;; This method implements the default behavior of simply extracting
+  ;; and returning the parse result which represents the object that
+  ;; is referenced by the labeled object reference (and therefore not
+  ;; represent the labeled object reference itself as a parse result).
+  (let ((labeled-object (labeled-object result)))
+    (nth-value
+     2 (eclector.reader:labeled-object-state client labeled-object))))
 
 (defmethod eclector.reader:fixup-graph-p ((client parse-result-client)
                                           (root-labeled-object %wrapper))

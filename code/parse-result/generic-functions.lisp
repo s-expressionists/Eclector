@@ -18,23 +18,6 @@
 
 ;;; Parse result protocol
 
-;;; The following two global variables are bound to marker objects
-;;; that should be treated as opaque.  MAKE-EXPRESSION-RESULT is
-;;; called with the value of **DEFINITION** as the second argument
-;;; when the parse result being constructed corresponds to the
-;;; definition of a labeled object.  Similarly, MAKE-EXPRESSION-RESULT
-;;; is called with the value of **REFERENCE** as the second argument
-;;; when the parse result being constructed corresponds to a reference
-;;; to a labeled object.  For these calls, in slight abuse of the
-;;; protocol, the third argument is the labeled object in question
-;;; instead of a list of child parse results.  This convention allows
-;;; clients to either construct a dedicated parse result that
-;;; represents the definition/reference or return the parse result
-;;; associated with the labeled object (that parse result corresponds
-;;; to the object of the labeled object).
-(#+sbcl sb-ext:defglobal #-sbcl defvar **definition** '#:%definition)
-(#+sbcl sb-ext:defglobal #-sbcl defvar **reference** '#:%reference)
-
 (defgeneric make-expression-result (client result children source)
   (:argument-precedence-order result client children source))
 
@@ -42,3 +25,30 @@
   (:method (client stream reason source)
     (declare (ignore client stream reason source))
     nil))
+
+;;; The purpose of the following structure classes is to
+;;; 1) indicate to the client that a parse result represents a labeled
+;;;    object definition or labeled object reference
+;;; 2) pass the labeled object to the client
+;;; To this end, Eclector calls the MAKE-EXPRESSION-RESULT generic
+;;; function with instances of the DEFINITION and REFERENCE classes as
+;;; the RESULT argument.  Clients can specialize the RESULT parameter
+;;; of methods on MAKE-EXPRESSION-RESULT to DEFINITION and REFERENCE
+;;; and use the LABELED-OBJECT reader to obtain the labeled object
+;;; from the RESULT argument.
+(defstruct (labeled-object-result (:conc-name nil)
+                                  (:constructor nil)
+                                  (:predicate nil)
+                                  (:copier nil))
+  (labeled-object nil :read-only t))
+
+(declaim (inline make-definition make-reference))
+(defstruct (definition (:include labeled-object-result)
+                       (:constructor make-definition (labeled-object))
+                       (:predicate nil)
+                       (:copier nil)))
+
+(defstruct (reference (:include labeled-object-result)
+                      (:constructor make-reference (labeled-object))
+                      (:predicate nil)
+                      (:copier nil)))
