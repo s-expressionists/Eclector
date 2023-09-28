@@ -133,6 +133,7 @@
    #:wrap-in-quasiquote
    #:wrap-in-unquote
    #:wrap-in-unquote-splicing
+   #:wrap-in-unquote-nsplicing
 
    #:wrap-in-function)
 
