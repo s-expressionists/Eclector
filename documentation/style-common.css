@@ -157,12 +157,7 @@ table {
     margin: 40px 0px;
 }
 
-table.index-cp *,
-table.index-fn *,
-table.index-ky *,
-table.index-pg *,
-table.index-tp *,
-table.index-vr * {
+.printindex table * {
     background-color: inherit;
     border-style: none;
 }
@@ -187,6 +182,10 @@ th {
     margin-bottom: 4em;
 }
 
+strong.def-name {
+    font-size: initial;
+}
+
 /* Restrict TOC to depth 3 */
 .contents > ul ul ul ul {
     display: none;
@@ -196,7 +195,7 @@ th {
     margin: 3em 0em;
 }
 
-.float-caption {
+.float .caption {
     font-size: smaller;
     text-align: center;
 }
@@ -206,12 +205,12 @@ th {
     margin: auto;
 }
 
-.footnote {
+.footnotes-segment {
     font-size: smaller;
     margin: 5em 0em;
 }
 
-.footnote h3 {
+.footnote-body-heading {
     display: inline;
     font-size: small;
 }

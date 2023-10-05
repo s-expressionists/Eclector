@@ -30,7 +30,7 @@ $(NAME).pdf: $(SOURCES) $(GENERATED) $(FIGURES)
 	texi2pdf $(NAME).texi
 
 $(NAME).html: $(SOURCES) $(GENERATED) $(FIGURES) $(wildcard *.css)
-	makeinfo --html --no-split \
+	makeinfo --html --no-split --no-headers \
 	         --css-include=style-common.css --css-include=style-single.css \
 	         $(NAME).texi
 
