@@ -117,6 +117,82 @@
 (defgeneric interpret-symbol (client input-stream
                               package-indicator symbol-name internp))
 
+;;; Kinds
+;;;
+;;; Used in the literal creation protocol and the expression creation
+;;; protocol.
+
+(defclass kind () ()) ; abstract
+(defmethod print-object ((object kind) stream)
+  (let ((name (class-name (class-of object))))
+    (multiple-value-bind (variable-name defined?) (macroexpand name)
+      (cond ((and defined? (boundp variable-name))
+             (write name :stream stream))
+            ((not *print-readably*)
+             (print-unreadable-object (object stream :type t :identity t)))
+            (t
+             (error 'print-not-readable :object object))))))
+
+(defmacro define-kind (name (&rest super-kind-names) (&rest slot-specifiers))
+  (let* ((super-kinds   (or super-kind-names '(kind)))
+         (variable-name (alexandria:symbolicate '#:* name '#:*)))
+    `(progn
+       (defclass ,name ,super-kinds ,slot-specifiers)
+       (#-sbcl defvar #+sbcl sb-ext:defglobal ,variable-name nil)
+       (when (null ,variable-name)
+         (setf ,variable-name (make-instance ',name)))
+       (define-symbol-macro ,name ,variable-name))))
+
+;;; Literal creation protocol
+
+(defclass literal-kind (kind) ()) ; abstract
+
+(defgeneric make-literal (client class &key &allow-other-keys))
+
+(define-kind character-kind (literal-kind) ())
+
+(define-kind string-kind (literal-kind) ())
+(defmethod make-literal ((client t) (kind string-kind) &key characters)
+  ;; CHARACTERS is an adjustable array with a fill pointer. Make a
+  ;; simple array.
+  (copy-seq characters))
+
+(define-kind number-kind (literal-kind) ())
+
+(define-kind float-kind (number-kind) ())
+(defmethod make-literal ((client t) (kind float-kind)
+                         &key type sign decimal-mantissa
+                              exponent-sign (exponent nil exponentp)
+                              decimal-exponent)
+  (let ((magnitude (* decimal-mantissa
+                      (expt 10 (- (if exponentp
+                                      (* exponent-sign exponent)
+                                      0)
+                                  decimal-exponent)))))
+    (* sign (coerce magnitude type))))
+
+;;; TODO separate file?
+(define-kind rational-kind (number-kind) ())
+(defmethod make-literal ((client t) (kind rational-kind)
+                         &key sign numerator denominator)
+  (* sign (if denominator
+              (/ numerator denominator)
+              numerator)))
+
+(define-kind complex-kind (number-kind) ())
+(defmethod make-literal ((client t) (kind complex-kind)
+                         &key real-part imaginary-part)
+  (complex real-part imaginary-part))
+
+(define-kind structure-instance-kind (literal-kind) ())
+(defmethod make-literal ((client t) (kind structure-instance-kind)
+                         &key type initargs)
+  (make-structure-instance client type initargs))
+
+(define-kind pathname-kind (literal-kind) ())
+(defmethod make-literal ((client t) (kind pathname-kind) &key namestring)
+  (values (parse-namestring namestring)))
+
 ;;; Calling reader macros and behavior of standard reader macros
 
 (defgeneric call-reader-macro (client input-stream char readtable)

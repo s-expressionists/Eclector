@@ -237,6 +237,7 @@ when the functions @funref{read,@readerpackage{}},
 * Reader behavior protocol::
 * Reader state protocol::
 * Labeled objects and references::
+* Literal creation::
 * S-expression creation::
 * Readtable initialization::
 @end menu
@@ -1436,6 +1437,71 @@ the client, the returned CST is either another occurrence of the CST
 that represents the definition of @var{final-value} or a new CST that
 explicitly represents the labeled object reference.
 @end deffn
+
+@node Literal creation
+@subsection Literal creation
+
+@cindex literal
+@sysname{} uses this protocol for turning textual representations of
+object such floating point numbers, pathname literals and structure
+literals into the designated object in a client-specific way.
+
+@defgena {make-literal,@readerpackage{}} client kind &key initargs
+
+This generic function is called by the reader function to construct
+literal objects such as floating point numbers, characters or
+structure instances.
+
+@var{kind} indicates what kind of literal should be constructed.
+Clients can defined methods that are specialized to a specific kind such
+as @t{float-kind} or a more general kind such as @t{number-kind}.  In
+the latter case, the method must be prepared to create different
+literals depending on the actual arguments.  @sysname{} defines the
+builtin kinds listed in table @ref{table:builtin-kinds} and relies on
+appropriate methods on this generic function.  @var{initargs} is a list
+initargs which depends on @var{kind} as shown in table
+@ref{table:kind-initargs}.
+
+The function returns the created literal object.
+@end deffn
+
+The following hierarchy of kinds is built into @sysname{}.
+
+@anchor{table:builtin-kinds}
+@example
+literal-kind
++-character-kind
++-string-kind
++-number-kind
+| +-float-kind
+| +-rational-kind
+| `-complex-kind
++-structure-instance-kind
+`-pathname-kind
+@end example
+
+The following table lists the initargs that @sysname{} supplies for the
+builtin kinds:
+
+@anchor{table:kind-initargs}
+@multitable @columnfractions .3 .3 .4
+@headitem Kind                        @tab Initargs @tab
+@item     @t{character-kind}          @tab @t{:name} @tab @var{CHARACTER-NAME}
+@item     @t{string-kind}             @tab @t{:characters} @tab @var{CHARACTERS}
+@item     @t{float-kind}              @tab @t{:type} @tab @var{TYPE}
+@item                                 @tab @t{:sign} @tab @var{SIGN}
+@item                                 @tab @t{:decimal-mantissa} @tab @var{DECIMAL-MANTISSA}
+@item                                 @tab @t{:exponent-sign} @tab @var{EXPONENT-SIGN}
+@item                                 @tab @t{:exponent} @tab @var{EXPONENT}
+@item                                 @tab @t{:decimal-exponent} @tab @var{DECIMAL-EXPONENT}
+@item     @t{rational-kind}           @tab @t{:sign} @tab @var{SIGN}
+@item                                 @tab @t{:numerator} @tab @var{NUMERATOR}
+@item                                 @tab @t{:denominator} @tab @var{DENOMINATOR}
+@item     @t{complex-kind}            @tab @t{:real-part} @tab @var{REAL-PART}
+@item                                 @tab @t{:imaginary-part} @tab @var{IMAGINARY-PART}
+@item     @t{structure-instance-kind} @tab @t{:type} @tab @var{TYPE}
+@item                                 @tab @t{:initargs} @tab @var{INITARG-LIST}
+@end multitable
 
 @node S-expression creation
 @subsection S-expression creation

@@ -120,10 +120,11 @@
 ;;; return a simple vector.
 
 (defun double-quote (stream char)
-  (let ((result (make-array 100 :element-type 'character
-                                :adjustable t
-                                :fill-pointer 0)))
-    (loop with readtable = (state-value *client* 'cl:*readtable*)
+  (let ((client *client*)
+        (characters (make-array 100 :element-type 'character
+                                    :adjustable t
+                                    :fill-pointer 0)))
+    (loop with readtable = (state-value client 'cl:*readtable*)
           for char2 = (read-char-or-recoverable-error
                        stream char 'unterminated-string
                        :delimiter char :report 'use-partial-string)
@@ -134,8 +135,8 @@
                             :position-offset -1
                             :escape-char char2 :report 'use-partial-string))
           when char2
-            do (vector-push-extend char2 result)
-          finally (return (copy-seq result)))))
+            do (vector-push-extend char2 characters)
+          finally (return (make-literal client *string-kind* :characters characters)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -456,6 +457,7 @@
                                    :found-count     index
                                    :report          'ignore-excess-elements)))
                            (return
+                             ;; TODO (make-literal client *vector-kind* elements)
                              (if (< index parameter)
                                  (fill result (aref result (1- index))
                                        :start index)
@@ -550,6 +552,7 @@
                     stream 'unterminated-multiple-escape-in-character-name
                     :delimiter delimiter :report 'use-partial-character-name))
                  (lookup (name)
+                   ;; TODO (make-literal client *character-kind* :name name)
                    (let ((character (find-character client name)))
                      (cond ((null character)
                             (%recoverable-reader-error
@@ -672,9 +675,9 @@
               (integer (= sign 1) t numerator)
             (unless suppress ; When READ-SUPPRESS, / has been consumed
               (let ((denominator (when slashp (read-denominator))))
-                (* sign (if denominator
-                            (/ numerator denominator)
-                            numerator)))))))))
+                (make-literal *client* *rational-kind* :sign sign
+                                                       :numerator numerator
+                                                       :denominator denominator))))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
@@ -778,6 +781,7 @@
                                      :found-count     index
                                      :report          'ignore-excess-elements))))
                            (return
+                             ;; TODO make-literal
                              (if (< index parameter)
                                  (fill result (sbit result (1- index))
                                        :start index)
@@ -894,6 +898,7 @@
                   (values dimensions init))
               (%make-empty ()
                 (values (make-empty-dimensions rank) '())))
+          ;; TODO: (make-literal client *array-kind* :dimensions dimensions :initial-contents init)
           (make-array dimensions :initial-contents init))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1072,7 +1077,8 @@
                     :position-offset -1 ; inaccurate
                     :datum object :expected-type #3#
                     :report 'use-replacement-part)))))
-        (complex real imaginary)))))
+        (make-literal *client* *complex-kind*
+                      :real-part real :imaginary-part imaginary)))))
 
 (defun sharpsign-c (stream char parameter)
   (%sharpsign-c stream char parameter t))
@@ -1228,7 +1234,8 @@
                            do (collect-name name)
                               (collect-value value)))))))
         (if (not (null type))
-            (make-structure-instance client type (nreverse initargs))
+            (make-literal client *structure-instance-kind*
+                          :type type :initargs (nreverse initargs))
             nil)))))
 
 (defun sharpsign-s (stream char parameter)
@@ -1266,7 +1273,7 @@
                   (unread-char (%character condition) stream)
                   ".")))))
       (cond ((stringp expression)
-             (values (parse-namestring expression)))
+             (make-literal *client* *pathname-kind* :namestring expression))
             (t
              (%recoverable-reader-error
               stream 'non-string-following-sharpsign-p
