@@ -1,4 +1,4 @@
-This is eclector.info, produced by makeinfo version 6.8 from
+This is eclector.info, produced by makeinfo version 7.0.3 from
 eclector.texi.
 
 Copyright © 2010 - 2018 Robert Strandh Copyright © 2018 - 2023 Jan
@@ -941,8 +941,8 @@ sub-graph of the whole object graph may be circular in which case most
 of the work for traversing the whole graph would be wasted.  To address
 both problems, Eclector allows clients to track the nesting of labeled
 objects and fix up sub-graphs which contain multiple nested objects in
-one go (*note fixup-graph-p: Generic-Function
-eclector.reader|fixup-graph-p.).
+one go (*note fixup-graph-p: Generic-Function
+eclector.reader|fixup-graph-p.).
 
  -- Generic Function: call-with-label-tracking [eclector.reader] client
           thunk
@@ -2191,6 +2191,31 @@ Release 0.10 (not yet released)
           errors) to determine the length of the sub-sequence of the
           input to which the condition in question pertains.
 
+        • Minor incompatible change
+
+          The part of the labeled objects protocol that allows clients
+          to construct parse results which represent labeled objects has
+          been changed in an incompatible way.  The change allows parse
+          results which represent labeled objects to have child parse
+          results but requires that clients construct parse results
+          which represent labeled objects differently: instead of
+          eql-specializing the result parameters of methods on
+          eclector.parse-result:make-expression-result to
+          eclector.parse-result:**definition** and
+          eclector.parse-result:**reference** and receiving the labeled
+          object in the children parameters, the result parameters now
+          have to be specialized to the classes
+          eclector.parse-result:definition and
+          eclector.parse-result:reference respectively.  The object
+          passed as the result argument now contains the labeled object
+          so that the children parameter can receive child parse
+          results.
+
+          This change is considered minor since the old mechanism
+          described above was not documented.  For now, the new
+          mechanism also remains undocumented so that the design can be
+          validated through experimentation before it is finalized.
+
 Release 0.9 (2023-03-19)
 
         • The deprecated function eclector.concrete-syntax-tree:cst-read
@@ -2593,121 +2618,121 @@ Release 0.1 (2018-08-10)
 
 
 Tag Table:
-Node: Top296
-Node: Introduction692
-Ref: Introduction-Footnote-11802
-Node: External protocols1874
-Node: Packages2186
-Node: Package for basic features2498
-Node: Package for ordinary reader features2960
-Node: Package for readtable features3556
-Node: Package for parse result construction features4164
-Node: Package for CST features4834
-Node: Basic features5422
-Ref: Class eclector.base|stream-position-condition6111
-Ref: Generic-Function eclector.base|stream-position6787
-Ref: Generic-Function eclector.base|position-offset7462
-Ref: Generic-Function eclector.base|range-length8358
-Ref: Variable eclector.base|*client*8988
-Ref: Generic-Function eclector.base|source-position9440
-Ref: Generic-Function eclector.base|make-source-range10010
-Node: Ordinary reader features10473
-Ref: fig:read-call-sequence-ordinary11591
-Node: Common Lisp reader compatible interface12397
-Ref: Function eclector.reader|read12917
-Ref: Function eclector.reader|read-preserving-whitespace13232
-Ref: Function eclector.reader|read-from-string13511
-Ref: Function eclector.reader|read-delimited-list13788
-Node: Reader behavior protocol14023
-Ref: fig:read-call-sequence-customization14376
-Ref: Generic-Function eclector.reader|call-as-top-level-read15031
-Ref: Generic-Function eclector.reader|read-common16398
-Ref: Generic-Function eclector.reader|read-maybe-nothing17477
-Ref: Generic-Function eclector.reader|note-skipped-input19031
-Ref: Variable eclector.reader|*skip-reason*19986
-Ref: Generic-Function eclector.reader|read-token20770
-Ref: Generic-Function eclector.reader|interpret-token21156
-Ref: Generic-Function eclector.reader|check-symbol-token22213
-Ref: Generic-Function eclector.reader|interpret-symbol-token24086
-Ref: Generic-Function eclector.reader|interpret-symbol25077
-Ref: Generic-Function eclector.reader|call-reader-macro26293
-Ref: Generic-Function eclector.reader|find-character27121
-Ref: Generic-Function eclector.reader|make-structure-instance28363
-Ref: Generic-Function eclector.reader|call-with-current-package29201
-Ref: Generic-Function eclector.reader|evaluate-expression30284
-Ref: Generic-Function eclector.reader|check-feature-expression30849
-Ref: Generic-Function eclector.reader|evaluate-feature-expression31675
-Node: Reader state protocol32758
-Ref: table:minimal-reader-state-aspects33386
-Ref: Generic-Function eclector.reader|valid-state-value-p34853
-Ref: Generic-Function eclector.reader|state-value36339
-Ref: Generic-Function eclector.reader|call-with-state-value37135
-Node: Labeled objects and references38387
-Ref: fig:labeled-object-states40288
-Ref: fig:labeled-object-api-states41494
-Ref: Generic-Function eclector.reader|call-with-label-tracking44093
-Ref: Generic-Function eclector.reader|note-labeled-object44637
-Ref: Generic-Function eclector.reader|forget-labeled-object46502
-Ref: Generic-Function eclector.reader|find-labeled-object47234
-Ref: Generic-Function eclector.reader|make-labeled-object47739
-Ref: Generic-Function eclector.reader|labeled-object-state48707
-Ref: Generic-Function eclector.reader|finalize-labeled-object49920
-Ref: Generic-Function eclector.reader|reference-labeled-object50569
-Ref: Generic-Function eclector.reader|fixup-graph-p52111
-Ref: Generic-Function eclector.reader|fixup-graph53190
-Ref: Generic-Function eclector.reader|fixup54091
-Ref: Labeled objects and references-Footnote-155620
-Ref: Labeled objects and references-Footnote-255792
-Node: S-expression creation and quasiquotation55921
-Ref: Generic-Function eclector.reader|wrap-in-quote56300
-Ref: Generic-Function eclector.reader|wrap-in-quasiquote56658
-Ref: Generic-Function eclector.reader|wrap-in-unquote57028
-Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing57383
-Ref: Macro eclector.reader|with-forbidden-quasiquotation58137
-Ref: Generic-Function eclector.reader|wrap-in-function58889
-Node: Readtable initialization59261
-Ref: Function eclector.reader|set-standard-syntax-types59709
-Ref: Function eclector.reader|set-standard-macro-characters59878
-Ref: Function eclector.reader|set-standard-dispatch-macro-characters60053
-Ref: Function eclector.reader|set-standard-syntax-and-macros60306
-Node: Readtable features60508
-Ref: Generic-Function eclector.readtable|readtablep61269
-Node: Parse result construction features61621
-Ref: fig:read-call-sequence-parse-result64621
-Ref: Function eclector.parse-result|read65248
-Ref: Function eclector.parse-result|read-preserving-whitespace66343
-Ref: Function eclector.parse-result|read-from-string66698
-Ref: Class eclector.parse-result|parse-result-client67377
-Ref: Generic-Function eclector.parse-result|make-expression-result67535
-Ref: Generic-Function eclector.parse-result|make-skipped-input-result68384
-Node: CST reader features69965
-Ref: Function eclector.concrete-syntax-tree|read70275
-Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace70897
-Ref: Function eclector.concrete-syntax-tree|read-from-string71253
-Node: Recovering from errors71615
-Node: Error recovery features71862
-Ref: Function eclector.reader|recover72474
-Node: Recoverable errors73291
-Node: Potential problems74783
-Node: Side effects75414
-Node: Potential side effects for the default client75893
-Node: Symbols and packages (default client)77586
-Node: Read-time evaluation (default client)77988
-Node: Standard reader macros (default client)78565
-Node: Potential side effects for non-default clients79124
-Node: Symbols and packages79520
-Node: Read-time evaluation79972
-Node: Structure instance creation80281
-Node: Circular structure80963
-Node: Standard reader macros81522
-Node: Interpretation of unclear parts of the specification82356
-Node: Interpretation of Sharpsign C and Sharpsign S82949
-Node: Interpretation of Backquote and Sharpsign Single Quote86160
-Node: Circular objects and custom reader macros87305
-Ref: Circular objects and custom reader macros-Footnote-190447
-Node: Concept index90603
-Node: Function and macro and variable and type index95115
-Node: Changelog104030
+Node: Top298
+Node: Introduction694
+Ref: Introduction-Footnote-11804
+Node: External protocols1876
+Node: Packages2188
+Node: Package for basic features2500
+Node: Package for ordinary reader features2962
+Node: Package for readtable features3558
+Node: Package for parse result construction features4166
+Node: Package for CST features4836
+Node: Basic features5424
+Ref: Class eclector.base|stream-position-condition6113
+Ref: Generic-Function eclector.base|stream-position6789
+Ref: Generic-Function eclector.base|position-offset7464
+Ref: Generic-Function eclector.base|range-length8360
+Ref: Variable eclector.base|*client*8990
+Ref: Generic-Function eclector.base|source-position9442
+Ref: Generic-Function eclector.base|make-source-range10012
+Node: Ordinary reader features10475
+Ref: fig:read-call-sequence-ordinary11593
+Node: Common Lisp reader compatible interface12399
+Ref: Function eclector.reader|read12919
+Ref: Function eclector.reader|read-preserving-whitespace13234
+Ref: Function eclector.reader|read-from-string13513
+Ref: Function eclector.reader|read-delimited-list13790
+Node: Reader behavior protocol14025
+Ref: fig:read-call-sequence-customization14378
+Ref: Generic-Function eclector.reader|call-as-top-level-read15033
+Ref: Generic-Function eclector.reader|read-common16400
+Ref: Generic-Function eclector.reader|read-maybe-nothing17479
+Ref: Generic-Function eclector.reader|note-skipped-input19033
+Ref: Variable eclector.reader|*skip-reason*19988
+Ref: Generic-Function eclector.reader|read-token20772
+Ref: Generic-Function eclector.reader|interpret-token21158
+Ref: Generic-Function eclector.reader|check-symbol-token22215
+Ref: Generic-Function eclector.reader|interpret-symbol-token24088
+Ref: Generic-Function eclector.reader|interpret-symbol25079
+Ref: Generic-Function eclector.reader|call-reader-macro26295
+Ref: Generic-Function eclector.reader|find-character27123
+Ref: Generic-Function eclector.reader|make-structure-instance28365
+Ref: Generic-Function eclector.reader|call-with-current-package29203
+Ref: Generic-Function eclector.reader|evaluate-expression30286
+Ref: Generic-Function eclector.reader|check-feature-expression30851
+Ref: Generic-Function eclector.reader|evaluate-feature-expression31677
+Node: Reader state protocol32760
+Ref: table:minimal-reader-state-aspects33388
+Ref: Generic-Function eclector.reader|valid-state-value-p34855
+Ref: Generic-Function eclector.reader|state-value36341
+Ref: Generic-Function eclector.reader|call-with-state-value37137
+Node: Labeled objects and references38389
+Ref: fig:labeled-object-states40290
+Ref: fig:labeled-object-api-states41496
+Ref: Generic-Function eclector.reader|call-with-label-tracking44097
+Ref: Generic-Function eclector.reader|note-labeled-object44641
+Ref: Generic-Function eclector.reader|forget-labeled-object46506
+Ref: Generic-Function eclector.reader|find-labeled-object47238
+Ref: Generic-Function eclector.reader|make-labeled-object47743
+Ref: Generic-Function eclector.reader|labeled-object-state48711
+Ref: Generic-Function eclector.reader|finalize-labeled-object49924
+Ref: Generic-Function eclector.reader|reference-labeled-object50573
+Ref: Generic-Function eclector.reader|fixup-graph-p52115
+Ref: Generic-Function eclector.reader|fixup-graph53194
+Ref: Generic-Function eclector.reader|fixup54095
+Ref: Labeled objects and references-Footnote-155624
+Ref: Labeled objects and references-Footnote-255796
+Node: S-expression creation and quasiquotation55925
+Ref: Generic-Function eclector.reader|wrap-in-quote56304
+Ref: Generic-Function eclector.reader|wrap-in-quasiquote56662
+Ref: Generic-Function eclector.reader|wrap-in-unquote57032
+Ref: Generic-Function eclector.reader|wrap-in-unquote-splicing57387
+Ref: Macro eclector.reader|with-forbidden-quasiquotation58141
+Ref: Generic-Function eclector.reader|wrap-in-function58893
+Node: Readtable initialization59265
+Ref: Function eclector.reader|set-standard-syntax-types59713
+Ref: Function eclector.reader|set-standard-macro-characters59882
+Ref: Function eclector.reader|set-standard-dispatch-macro-characters60057
+Ref: Function eclector.reader|set-standard-syntax-and-macros60310
+Node: Readtable features60512
+Ref: Generic-Function eclector.readtable|readtablep61273
+Node: Parse result construction features61625
+Ref: fig:read-call-sequence-parse-result64625
+Ref: Function eclector.parse-result|read65252
+Ref: Function eclector.parse-result|read-preserving-whitespace66347
+Ref: Function eclector.parse-result|read-from-string66702
+Ref: Class eclector.parse-result|parse-result-client67381
+Ref: Generic-Function eclector.parse-result|make-expression-result67539
+Ref: Generic-Function eclector.parse-result|make-skipped-input-result68388
+Node: CST reader features69969
+Ref: Function eclector.concrete-syntax-tree|read70279
+Ref: Function eclector.concrete-syntax-tree|read-preserving-whitespace70901
+Ref: Function eclector.concrete-syntax-tree|read-from-string71257
+Node: Recovering from errors71619
+Node: Error recovery features71866
+Ref: Function eclector.reader|recover72478
+Node: Recoverable errors73295
+Node: Potential problems74787
+Node: Side effects75418
+Node: Potential side effects for the default client75897
+Node: Symbols and packages (default client)77590
+Node: Read-time evaluation (default client)77992
+Node: Standard reader macros (default client)78569
+Node: Potential side effects for non-default clients79128
+Node: Symbols and packages79524
+Node: Read-time evaluation79976
+Node: Structure instance creation80285
+Node: Circular structure80967
+Node: Standard reader macros81526
+Node: Interpretation of unclear parts of the specification82360
+Node: Interpretation of Sharpsign C and Sharpsign S82953
+Node: Interpretation of Backquote and Sharpsign Single Quote86164
+Node: Circular objects and custom reader macros87309
+Ref: Circular objects and custom reader macros-Footnote-190451
+Node: Concept index90607
+Node: Function and macro and variable and type index95119
+Node: Changelog104034
 
 End Tag Table
 
