@@ -96,9 +96,11 @@
    #:interpret-symbol-token
    #:interpret-symbol
 
+   #:make-literal
+
    #:call-reader-macro
    #:find-character
-   #:make-structure-instance
+   #:make-structure-instance ; TODO deprecate
 
    #:call-with-current-package
 

@@ -99,6 +99,63 @@
 (defgeneric interpret-symbol (client input-stream
                               package-indicator symbol-name internp))
 
+;;; Literals
+
+(defclass literal-kind () ())
+
+(defgeneric make-literal (client class &key &allow-other-keys))
+
+(defmacro define-kind (name (&rest super-kind-names) (&rest slot-specifiers))
+  (let ((variable-name (alexandria:symbolicate '#:* name '#:*)))
+    `(progn
+       (defclass ,name ,super-kind-names
+         ,slot-specifiers)
+       (defvar ,variable-name (make-instance ',name)))))
+
+(define-kind character-kind (literal-kind) ())
+
+(define-kind string-kind (literal-kind) ())
+(defmethod make-literal ((client t) (kind string-kind) &key characters)
+  ;; CHARACTERS is an adjustable array with a fill pointer. Make a
+  ;; simple array.
+  (copy-seq characters))
+
+(define-kind number-kind (literal-kind) ())
+
+(define-kind float-kind (number-kind) ())
+(defmethod make-literal ((client t) (kind float-kind)
+                         &key type sign decimal-mantissa
+                              exponent-sign (exponent nil exponentp)
+                              decimal-exponent)
+  (let ((magnitude (* decimal-mantissa
+                      (expt 10 (- (if exponentp
+                                      (* exponent-sign exponent)
+                                      0)
+                                  decimal-exponent)))))
+    (* sign (coerce magnitude type))))
+
+;;; TODO separate file?
+(define-kind rational-kind (number-kind) ())
+(defmethod make-literal ((client t) (kind rational-kind)
+                         &key sign numerator denominator)
+  (* sign (if denominator
+              (/ numerator denominator)
+              numerator)))
+
+(define-kind complex-kind (number-kind) ())
+(defmethod make-literal ((client t) (kind complex-kind)
+                         &key real-part imaginary-part)
+  (complex real-part imaginary-part))
+
+(define-kind structure-instance-kind (literal-kind) ())
+(defmethod make-literal ((client t) (kind structure-instance-kind)
+                         &key type initargs)
+  (make-structure-instance client type initargs))
+
+(define-kind pathname-kind (literal-kind) ())
+(defmethod make-literal ((client t) (kind pathname-kind) &key namestring)
+  (values (parse-namestring namestring)))
+
 ;;; Calling reader macros and behavior of standard reader macros
 
 (defgeneric call-reader-macro (client input-stream char readtable)
@@ -163,25 +220,51 @@
 
 ;;; Creating s-expressions
 
+(defclass expression-kind () ()) ; abstract
+
+(defgeneric wrap-in (client kind expression))
+
+(define-kind function-kind (expression-kind) ())
+(defmethod wrap-in ((client t) (kind function-kind) (expression t))
+  (wrap-in-function client expression))
+
 (defgeneric wrap-in-function (client name)
   (:method (client name)
     (declare (ignore client))
     (list 'function name)))
+
+(define-kind quote-kind (expression-kind) ())
+(defmethod wrap-in ((client t) (kind quote-kind) (expression t))
+  (wrap-in-quote client expression))
 
 (defgeneric wrap-in-quote (client material)
   (:method (client material)
     (declare (ignore client))
     (list 'quote material)))
 
+(define-kind quasiquote-kind (expression-kind) ())
+(defmethod wrap-in ((client t) (kind quasiquote-kind) (expression t))
+  (wrap-in-quasiquote client expression))
+
 (defgeneric wrap-in-quasiquote (client form)
   (:method (client form)
     (declare (ignore client))
     (list 'quasiquote form)))
 
+(defclass any-unquote-kind (expression-kind) ()) ; abstract
+
+(define-kind unquote-kind (any-unquote-kind) ())
+(defmethod wrap-in ((client t) (kind unquote-kind) (expression t))
+  (wrap-in-unquote client expression))
+
 (defgeneric wrap-in-unquote (client form)
   (:method (client form)
     (declare (ignore client))
     (list 'unquote form)))
+
+(define-kind unquote-splicing-kind (any-unquote-kind) ())
+(defmethod wrap-in ((client t) (kind unquote-splicing-kind) (expression t))
+  (wrap-in-unquote-splicing client expression))
 
 (defgeneric wrap-in-unquote-splicing (client form)
   (:method (client form)

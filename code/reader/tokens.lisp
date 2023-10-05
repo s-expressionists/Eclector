@@ -216,12 +216,19 @@
                         :float-format default-format
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
-                   (let ((magnitude (* (decimal-mantissa)
-                                       (expt 10 (- (if exponentp
-                                                       (* exponent-sign (exponent))
-                                                       0)
-                                                   decimal-exponent)))))
-                     (* sign (coerce magnitude type))))))
+                   (if exponentp
+                       (make-literal client *float-kind*
+                                     :type type
+                                     :sign sign
+                                     :decimal-mantissa (decimal-mantissa)
+                                     :exponent-sign exponent-sign
+                                     :exponent (exponent)
+                                     :decimal-exponent decimal-exponent)
+                       (make-literal client *float-kind*
+                                     :type type
+                                     :sign sign
+                                     :decimal-mantissa (decimal-mantissa)
+                                     :decimal-exponent decimal-exponent)))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
