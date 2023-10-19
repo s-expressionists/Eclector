@@ -222,36 +222,36 @@
 
 (defclass expression-kind () ()) ; abstract
 
-(defgeneric make-expression (client kind expression))
-
-(defclass function-kind (expression-kind) ())
-(defvar *function-kind* (make-instance 'function-kind))
-(defmethod wrap-in ((client t) (kind function-kind) (expression t))
-  (wrap-in-function client expression))
+(defgeneric make-expression (client kind sub-expression))
 
 (define-kind function-kind (expression-kind) ())
-(defmethod wrap-in ((client t) (kind function-kind) (expression t))
-  (wrap-in-function client expression))
+(defmethod make-expression ((client t) (kind function-kind) (sub-expression t))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (wrap-in-function client sub-expression)))
 
-(defgeneric wrap-in-function (client name)
-  (:method (client name)
-    (declare (ignore client))
-    (list 'function name)))
+(define-kind function-kind (expression-kind) ())
+(defmethod make-expression ((client t) (kind function-kind) (sub-expression t))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (wrap-in-function client sub-expression)))
 
 (define-kind quote-kind (expression-kind) ())
-(defmethod wrap-in ((client t) (kind quote-kind) (expression t))
-  (wrap-in-quote client expression))
+(defmethod make-expression ((client t) (kind quote-kind) (sub-expression t))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (wrap-in-quote client sub-expression)))
 
 (define-kind quasiquote-kind (expression-kind) ())
-(defmethod wrap-in ((client t) (kind quasiquote-kind) (expression t))
-  (wrap-in-quasiquote client expression))
+(defmethod make-expression ((client t) (kind quasiquote-kind) (sub-expression t))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (wrap-in-quasiquote client sub-expression)))
 
 (defclass any-unquote-kind (expression-kind) ()) ; abstract
 
 (define-kind unquote-kind (any-unquote-kind) ())
-(defmethod wrap-in ((client t) (kind unquote-kind) (expression t))
-  (wrap-in-unquote client expression))
+(defmethod make-expression ((client t) (kind unquote-kind) (sub-expression t))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (wrap-in-unquote client sub-expression)))
 
 (define-kind unquote-splicing-kind (any-unquote-kind) ())
-(defmethod wrap-in ((client t) (kind unquote-splicing-kind) (expression t))
-  (wrap-in-unquote-splicing client expression))
+(defmethod make-expression ((client t) (kind unquote-splicing-kind) (sub-expression t))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (wrap-in-unquote-splicing client sub-expression)))

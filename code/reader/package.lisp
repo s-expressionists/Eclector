@@ -130,6 +130,8 @@
 
   ;; S-expression creation protocol
   (:export
+   #:make-expression
+   ;; Deprecated
    #:wrap-in-function
 
    #:wrap-in-quote

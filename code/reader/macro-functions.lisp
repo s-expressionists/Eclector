@@ -83,7 +83,7 @@
                        :position-offset -1 :report 'inject-nil)
                       (unread-char (%character condition) stream)
                       nil))))
-    (wrap-in *client* *quote-kind* material)))
+    (make-expression *client* *quote-kind* material)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -192,7 +192,7 @@
                            :position-offset -1 :report 'inject-nil)
                           (unread-char (%character condition) stream)
                           nil)))))
-      (wrap-in client *quasiquote-kind* material))))
+      (make-expression client *quasiquote-kind* material))))
 
 (defun comma (stream char)
   (declare (ignore char))
@@ -235,8 +235,8 @@
       (let* ((*backquote-depth* (1- depth))
              (form (read-material)))
         (if splicing-p
-            (wrap-in client *unquote-splicing-kind* form)
-            (wrap-in client *unquote-kind* form))))))
+            (make-expression client *unquote-splicing-kind* form)
+            (make-expression client *unquote-kind* form))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -344,7 +344,7 @@
                       nil)))))
       (cond (suppress nil)
             ((null name) nil)
-            (t (wrap-in client *function-kind* name))))))
+            (t (make-expression client *function-kind* name))))))
 
 ;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
 ;;; that is `#',(foo) is read as
