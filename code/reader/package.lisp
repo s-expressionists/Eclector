@@ -133,13 +133,13 @@
 
   ;; S-expression creation protocol
   (:export
+   #:wrap-in-function
+
    #:wrap-in-quote
 
    #:wrap-in-quasiquote
    #:wrap-in-unquote
-   #:wrap-in-unquote-splicing
-
-   #:wrap-in-function)
+   #:wrap-in-unquote-splicing)
 
   ;; Conditions related to symbol and end-of-input.
   (:export
