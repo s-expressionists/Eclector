@@ -1216,6 +1216,18 @@ An unspecialized @t{:around} method queries and updates
 @node S-expression creation and quasiquotation
 @subsection S-expression creation and quasiquotation
 
+@cindex function
+
+@defgena {wrap-in-function,eclector.reader} client name
+
+This generic function is called by the default @t{#'}-reader macro
+function to construct a form that applies the @t{function} special
+operator to the @var{name} expression.
+
+The default method on this generic function returns a result equivalent
+to @code{(list 'common-lisp:function @var{form})}.
+@end deffn
+
 @cindex quotation
 
 The following generic functions allow clients to construct
@@ -1287,18 +1299,6 @@ should be forbidden.  The value @t{:keep} causes the binding to
 remain unchanged.  @var{unquote-forbidden-p} controls whether
 unquote syntax should be forbidden.  The value @t{:keep} causes
 the binding to remain unchanged.
-@end deffn
-
-@cindex function
-
-@defgena {wrap-in-function,eclector.reader} client name
-
-This generic function is called by the default @t{#'}-reader macro
-function to construct a form that applies the @t{function} special
-operator to the @var{name} expression.
-
-The default method on this generic function returns a result equivalent
-to @code{(list 'common-lisp:function @var{form})}.
 @end deffn
 
 @node Readtable initialization

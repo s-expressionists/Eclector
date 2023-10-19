@@ -163,6 +163,11 @@
 
 ;;; Creating s-expressions
 
+(defgeneric wrap-in-function (client name)
+  (:method (client name)
+    (declare (ignore client))
+    (list 'function name)))
+
 (defgeneric wrap-in-quote (client material)
   (:method (client material)
     (declare (ignore client))
@@ -182,8 +187,3 @@
   (:method (client form)
     (declare (ignore client))
     (list 'unquote-splicing form)))
-
-(defgeneric wrap-in-function (client name)
-  (:method (client name)
-    (declare (ignore client))
-    (list 'function name)))
