@@ -222,7 +222,12 @@
 
 (defclass expression-kind () ()) ; abstract
 
-(defgeneric wrap-in (client kind expression))
+(defgeneric make-expression (client kind expression))
+
+(defclass function-kind (expression-kind) ())
+(defvar *function-kind* (make-instance 'function-kind))
+(defmethod wrap-in ((client t) (kind function-kind) (expression t))
+  (wrap-in-function client expression))
 
 (define-kind function-kind (expression-kind) ())
 (defmethod wrap-in ((client t) (kind function-kind) (expression t))
@@ -237,19 +242,9 @@
 (defmethod wrap-in ((client t) (kind quote-kind) (expression t))
   (wrap-in-quote client expression))
 
-(defgeneric wrap-in-quote (client material)
-  (:method (client material)
-    (declare (ignore client))
-    (list 'quote material)))
-
 (define-kind quasiquote-kind (expression-kind) ())
 (defmethod wrap-in ((client t) (kind quasiquote-kind) (expression t))
   (wrap-in-quasiquote client expression))
-
-(defgeneric wrap-in-quasiquote (client form)
-  (:method (client form)
-    (declare (ignore client))
-    (list 'quasiquote form)))
 
 (defclass any-unquote-kind (expression-kind) ()) ; abstract
 
@@ -257,16 +252,6 @@
 (defmethod wrap-in ((client t) (kind unquote-kind) (expression t))
   (wrap-in-unquote client expression))
 
-(defgeneric wrap-in-unquote (client form)
-  (:method (client form)
-    (declare (ignore client))
-    (list 'unquote form)))
-
 (define-kind unquote-splicing-kind (any-unquote-kind) ())
 (defmethod wrap-in ((client t) (kind unquote-splicing-kind) (expression t))
   (wrap-in-unquote-splicing client expression))
-
-(defgeneric wrap-in-unquote-splicing (client form)
-  (:method (client form)
-    (declare (ignore client))
-    (list 'unquote-splicing form)))
