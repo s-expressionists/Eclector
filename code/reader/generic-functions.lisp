@@ -99,18 +99,37 @@
 (defgeneric interpret-symbol (client input-stream
                               package-indicator symbol-name internp))
 
-;;; Literals
+;;; Kinds
+;;;
+;;; Used in the literal creation protocol and the expression creation
+;;; protocol.
 
-(defclass literal-kind () ())
-
-(defgeneric make-literal (client class &key &allow-other-keys))
+(defclass kind () ()) ; abstract
+(defmethod print-object ((object kind) stream)
+  (let ((name (class-name (class-of object))))
+    (multiple-value-bind (variable-name defined?) (macroexpand name)
+      (cond ((and defined? (boundp variable-name))
+             (format stream "~S" name))
+            ((not *print-readably*)
+             (print-unreadable-object (object stream :type t :identity t)))
+            (t
+             (error 'print-not-readable :object object))))))
 
 (defmacro define-kind (name (&rest super-kind-names) (&rest slot-specifiers))
-  (let ((variable-name (alexandria:symbolicate '#:* name '#:*)))
+  (let* ((super-kinds   (or super-kind-names '(kind)))
+         (variable-name (alexandria:symbolicate '#:* name '#:*)))
     `(progn
-       (defclass ,name ,super-kind-names
+       (defclass ,name ,super-kinds
          ,slot-specifiers)
-       (defvar ,variable-name (make-instance ',name)))))
+       (#-sbcl defvar #+sbcl sb-ext:defglobal ,variable-name
+               (make-instance ',name))
+       (define-symbol-macro ,name ,variable-name))))
+
+;;; Literal creation protocol
+
+(defclass literal-kind (kind) ()) ; abstract
+
+(defgeneric make-literal (client class &key &allow-other-keys))
 
 (define-kind character-kind (literal-kind) ())
 
@@ -218,9 +237,9 @@
 
 (defgeneric fixup (client object seen-objects))
 
-;;; Creating s-expressions
+;;; Expression creation protocol
 
-(defclass expression-kind () ()) ; abstract
+(defclass expression-kind (kind) ()) ; abstract
 
 (defgeneric make-expression (client kind sub-expression))
 
@@ -234,17 +253,21 @@
   (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
     (wrap-in-function client sub-expression)))
 
-(define-kind quote-kind (expression-kind) ())
+(defclass any-quote-kind (expression-kind) ()) ; abstract
+
+(define-kind quote-kind (any-quote-kind) ())
 (defmethod make-expression ((client t) (kind quote-kind) (sub-expression t))
   (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
     (wrap-in-quote client sub-expression)))
 
-(define-kind quasiquote-kind (expression-kind) ())
+(defclass any-quasiquote-kind (expression-kind) ()) ; abstract
+
+(define-kind quasiquote-kind (any-quasiquote-kind any-quote-kind) ())
 (defmethod make-expression ((client t) (kind quasiquote-kind) (sub-expression t))
   (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
     (wrap-in-quasiquote client sub-expression)))
 
-(defclass any-unquote-kind (expression-kind) ()) ; abstract
+(defclass any-unquote-kind (any-quasiquote-kind) ()) ; abstract
 
 (define-kind unquote-kind (any-unquote-kind) ())
 (defmethod make-expression ((client t) (kind unquote-kind) (sub-expression t))
