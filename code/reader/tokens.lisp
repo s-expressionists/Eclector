@@ -47,7 +47,7 @@
       (:ratio-marker            #b01000000)
       ((:short-float-exponent-marker :single-float-exponent-marker
         :double-float-exponent-marker :long-float-exponent-marker
-        :float-exponent-marker)
+        :float-exponent-marker :custom-float-exponent-marker)
        #b10000000)))
 
   (declaim (type (simple-array (unsigned-byte 8) 1) +constituent-traits+))
@@ -77,7 +77,7 @@
                   (#\>         . :alphabetic) ("Oo"         . :alphadigit)
                   (#\?         . :alphabetic) ("Pp"         . :alphadigit)
                   (#\@         . :alphabetic) ("Qq"         . :alphadigit)
-                  (#\[         . :alphabetic) ("Rr"         . :alphadigit)
+                  (#\[         . :alphabetic) ("Rr"         . (:alphadigit :custom-float-exponent-marker))
                   (#\\         . :alphabetic) ("Ss"         . (:alphadigit :short-float-exponent-marker))
                   (#\]         . :alphabetic) ("Tt"         . :alphadigit)
                   (#\^         . :alphabetic) ("Uu"         . :alphadigit)
@@ -128,13 +128,14 @@
          ;; *READ-DEFAULT-FLOAT-FORMAT* may be some other type
          ;; specifier which the implementation chooses to allow.
          (t
-          (if (subtypep default-format 'float)
+          (if (subtypep default-format 'float) ; TODO maybe use (valid-state-value-p client '*read-default-float-format* default-format)? or is the protocol specified such that values returned by (state-value client '*read-default-float-format*) are by definition valid?
               default-format
               (values nil default-format))))))
     ((#\f #\F) 'single-float)
     ((#\s #\S) 'short-float)
     ((#\d #\D) 'double-float)
-    ((#\l #\L) 'long-float)))
+    ((#\l #\L) 'long-float)
+    ((#\r #\R) :custom)))
 
 (defmacro with-accumulators ((&rest specs) &body body)
   (loop for (name base) in specs
@@ -217,14 +218,14 @@
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
                    (if exponentp
-                       (make-literal client *float-kind*
+                       (make-literal client float-kind
                                      :type type
                                      :sign sign
                                      :decimal-mantissa (decimal-mantissa)
                                      :exponent-sign exponent-sign
                                      :exponent (exponent)
                                      :decimal-exponent decimal-exponent)
-                       (make-literal client *float-kind*
+                       (make-literal client float-kind
                                      :type type
                                      :sign sign
                                      :decimal-mantissa (decimal-mantissa)

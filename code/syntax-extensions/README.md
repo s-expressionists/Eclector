@@ -3,7 +3,7 @@
 This directory contains source files each of which implements a syntax
 extension.
 
-## Extended package prefix
+## Extended Package Prefix Syntax
 
 Based on an
 [SBCL extension](https://sbcl.org/manual/index.html#Extended-Package-Prefix-Syntax),
@@ -31,7 +31,7 @@ bar"))
 ; => cl-user::bar
 ```
 
-## S-expression comments
+## S-expression Comments
 
 A reader macro, `s-expression-comment`, that is loosely based on
 [SRFI 62: S-expression comments](https://srfi.schemers.org/srfi-62/srfi-62.html).
@@ -47,3 +47,10 @@ for commenting out multiple arguments or keyword arguments:
 While this syntax extension could be implemented as a portable
 library, this particular implementation uses Eclector protocols in
 order to produce better error messages and parse results.
+
+## Decimal Syntax for Rationals
+
+Based on an
+[SBCL extension](https://sbcl.org/manual/index.html#Decimal-Syntax-for-Rationals),
+the syntax `12.34R56` can be used to denote a rational number.
+TODO what about `*read-default-float-format*`?
