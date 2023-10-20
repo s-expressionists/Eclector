@@ -1,3 +1,12 @@
+(defclass source-file-without-load-time-deprecation-warnings (cl-source-file)
+  ())
+
+(defmethod perform ((operation load-op) (component source-file-without-load-time-deprecation-warnings))
+  #-sbcl (funcall compile-it)
+  #+sbcl (handler-bind ((sb-ext:deprecation-condition
+                          #'muffle-warning))
+           (call-next-method)) )
+
 (defsystem "eclector"
   :description "A portable, extensible Common Lisp reader."
   :license     "BSD"
