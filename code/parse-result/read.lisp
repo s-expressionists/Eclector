@@ -23,7 +23,8 @@
 (defmethod eclector.reader:call-as-top-level-read :around
     ((client parse-result-client) thunk input-stream
      eof-error-p eof-value preserve-whitespace-p)
-  (declare (ignore thunk input-stream preserve-whitespace-p))
+  (declare (ignore thunk input-stream preserve-whitespace-p
+                   eof-error-p eof-value))
   ;; We bind *CLIENT* here (instead of in, say, READ-AUX) to allow
   ;; (call-as-top-level-read
   ;;  client (lambda () ... (read-maybe-nothing client ...) ...) ...)
