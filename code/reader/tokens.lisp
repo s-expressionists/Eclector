@@ -199,7 +199,7 @@
                    (values (interpret-symbol-token client input-stream token
                                                    position-package-marker-1
                                                    position-package-marker-2))))
-               (return-float (&optional exponentp)
+               (make-float (exponentp)
                  (multiple-value-bind (type default-format)
                      (reader-float-format client exponent-marker)
                    (when (null type)
@@ -221,8 +221,7 @@
                                                        (* exponent-sign (exponent))
                                                        0)
                                                    decimal-exponent)))))
-                     (return-from interpret-token
-                       (* sign (coerce magnitude type)))))))
+                     (* sign (coerce magnitude type))))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
@@ -377,7 +376,7 @@
                ;; [sign] decimal-digit* decimal-point decimal-digit+
                (next-cond (char)
                  ((not char)
-                  (return-float))
+                  (return-from interpret-token (make-float nil)))
                  ((decimal-mantissa char)
                   (incf decimal-exponent)
                   (go float-no-exponent))
@@ -410,7 +409,7 @@
                ;; exponent-marker [sign] digit+
                (next-cond (char)
                  ((not char)
-                  (return-float t))
+                  (return-from interpret-token (make-float t)))
                  ((exponent char)
                   (go float-exponent)))
              symbol
