@@ -33,7 +33,9 @@
                                   (thunk t)
                                   (aspect (eql '*package*))
                                   (value t))
-  (call-with-current-package client thunk value))
+  (locally
+      #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (call-with-current-package client thunk value)))
 
 (macrolet ((define (aspect &key (variable aspect) predicate)
              `(progn
