@@ -109,7 +109,7 @@
   (let ((name (class-name (class-of object))))
     (multiple-value-bind (variable-name defined?) (macroexpand name)
       (cond ((and defined? (boundp variable-name))
-             (format stream "~S" name))
+             (write name :stream stream))
             ((not *print-readably*)
              (print-unreadable-object (object stream :type t :identity t)))
             (t
@@ -119,10 +119,10 @@
   (let* ((super-kinds   (or super-kind-names '(kind)))
          (variable-name (alexandria:symbolicate '#:* name '#:*)))
     `(progn
-       (defclass ,name ,super-kinds
-         ,slot-specifiers)
-       (#-sbcl defvar #+sbcl sb-ext:defglobal ,variable-name
-               (make-instance ',name))
+       (defclass ,name ,super-kinds ,slot-specifiers)
+       (#-sbcl defvar #+sbcl sb-ext:defglobal ,variable-name nil)
+       (when (null ,variable-name)
+         (setf ,variable-name (make-instance ',name)))
        (define-symbol-macro ,name ,variable-name))))
 
 ;;; Literal creation protocol
