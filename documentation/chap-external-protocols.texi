@@ -304,8 +304,8 @@ customizable generic functions described in this section are called
 through the client interface and the implementation of the reader
 algorithm.
 
-@defgena {call-as-top-level-read,eclector.reader} {client thunk input-stream@
-  eof-error-p eof-value preserve-whitespace-p}
+@defgena {call-as-top-level-read,eclector.reader} client thunk input-stream@
+  eof-error-p eof-value preserve-whitespace-p
 
 This generic function is called by @t{read} if @t{read} is called with a
 false value for the @var{recursive-p} parameter.  It calls @var{thunk}
