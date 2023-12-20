@@ -10,11 +10,11 @@
 
 (defgeneric source-position (client stream)
   (:method (client stream)
-    (eclector.base:source-position nil stream)))
+    (eclector.base:source-position client stream)))
 
 (defgeneric make-source-range (client start end)
   (:method (client start end)
-    (eclector.base:make-source-range nil start end)))
+    (eclector.base:make-source-range client start end)))
 
 ;;; Parse result protocol
 
