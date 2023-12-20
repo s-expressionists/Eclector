@@ -8,11 +8,6 @@
    #:read-preserving-whitespace
    #:read-from-string)
 
-  ;; Source location protocol (deprecated, moved to base module)
-  (:export
-   #:source-position
-   #:make-source-range)
-
   ;; Parse result protocol
   (:export
    #:make-expression-result

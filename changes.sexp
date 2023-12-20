@@ -2,6 +2,13 @@
  (:release "0.10" nil
   (:item
    (:paragraph
+    "The" "deprecated" "generic" "functions"
+    (:symbol "eclector.parse-result:source-position")
+    "and" (:symbol "eclector.parse-result:make-source-range") "have" "been"
+    "removed" "."))
+
+  (:item
+   (:paragraph
     "The" "new" "reader" (:symbol "eclector.base:range-length") "can" "be"
     "applied" "to" "conditions" "of" "type"
     (:symbol "eclector.base:stream-position-condition") "(" "which"

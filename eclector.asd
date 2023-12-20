@@ -82,8 +82,7 @@
                               (:file "client")
                               (:file "generic-functions")
                               (:file "labeled-objects")
-                              (:file "read")
-                              (:file "deprecation" :if-feature :sbcl)))
+                              (:file "read")))
 
                 (:static-file "README.md")
                 (:static-file "LICENSE"))

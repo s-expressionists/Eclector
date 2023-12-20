@@ -1,5 +1,8 @@
 Release 0.10 (not yet released)
 
+* The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and
+  ECLECTOR.PARSE-RESULT:MAKE-SOURCE-RANGE have been removed.
+
 * The new reader ECLECTOR.BASE:RANGE-LENGTH can be applied to conditions of
   type ECLECTOR.BASE:STREAM-POSITION-CONDITION (which includes almost all
   conditions related to syntax errors) to determine the length of the
