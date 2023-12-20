@@ -10,11 +10,11 @@
                             recursive-p)
   (flet ((done (value)
            (cond ((not (eq value input-stream))
-                  (return-from peek-char value))
+                  value)
                  (eof-error-p
                   (%reader-error input-stream 'end-of-file))
                  (t
-                  (return-from peek-char eof-value)))))
+                  eof-value))))
     (if (not (eq peek-type t))
         (done (cl:peek-char peek-type input-stream nil input-stream recursive-p))
         (loop with readtable = (state-value *client* 'cl:*readtable*)
@@ -23,7 +23,7 @@
                          (eq (eclector.readtable:syntax-type readtable char)
                              :whitespace))
               do (read-char input-stream) ; consume whitespace char
-              finally (done char)))))
+              finally (return (done char))))))
 
 ;;; Establishing context
 
