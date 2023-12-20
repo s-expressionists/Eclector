@@ -3,22 +3,31 @@
 (defun numeric-token-length (token)
   (with-standard-io-syntax (length (prin1-to-string token))))
 
+;;; The purpose of this function is to avoid dead code elimination and
+;;; the associated compiler notes.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (declaim (notinline opaque-identity))
+  (defun opaque-identity (value) value))
+
 ;;; Token utilities
 
 (deftype token-string ()
-  `(and (not (vector nil))
-        ;; Try to figure out whether BASE-STRING is the same as
-        ;; STRING.
-        ,@(multiple-value-bind (result certainp)
-              (subtypep 'character 'base-char)
-            (when (and (not result) certainp)
-              '((not base-string))))
-        ;; Try to figure out whether adjusting a simple array makes it
-        ;; non-simple.
-        ,(if (adjustable-array-p
-              (adjust-array (make-array 1 :element-type 'character) 2))
-             '(array character 1)
-             '(simple-array character 1))))
+  (load-time-value ; compute the expansion only once
+   `(and (not (vector nil))
+         ;; Try to figure out whether BASE-STRING is the same as
+         ;; STRING.
+         ,@(multiple-value-bind (result certainp)
+               (subtypep 'character 'base-char)
+             (when (and (not result) certainp)
+               '((not base-string))))
+         ;; Try to figure out whether adjusting a simple array makes it
+         ;; non-simple.
+         ,(if (opaque-identity ; avoid code deletion note
+               (adjustable-array-p
+                (adjust-array (make-array 1 :element-type 'character) 2)))
+              '(array character 1)
+              '(simple-array character 1)))
+   t))
 
 ;;; This macro binds the names PUSH-CHAR, {START,END}-ESCAPE and
 ;;; FINALIZE to local functions that perform the accumulation of token
