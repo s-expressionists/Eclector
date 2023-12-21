@@ -107,6 +107,6 @@ jobs:
         if: matrix.implementation == 'sbcl'
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install texinfo texlive
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install texinfo texlive-plain-generic
           cd documentation
           SBCL=/tmp/sbcl/bin/sbcl make all
