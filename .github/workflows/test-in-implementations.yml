@@ -7,7 +7,8 @@ env:
   ECL_DOWNLOAD_URL:
   CCL_DOWNLOAD_URL: https://github.com/Clozure/ccl/releases/download/v1.12/ccl-1.12-linuxx86.tar.gz
 
-  CL_LAUNCH_DOWNLOAD_URL: https://xcvb.common-lisp.dev/cl-launch/cl-launch.sh
+  CL_LAUNCH_DOWNLOAD_URL: https://github.com/fare/cl-launch/raw/master/cl-launch.sh
+  # https://xcvb.common-lisp.dev/cl-launch/cl-launch.sh
   QUICKLISP_DOWNLOAD_URL: https://beta.quicklisp.org/quicklisp.lisp
 
 jobs:
