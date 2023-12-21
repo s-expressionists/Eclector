@@ -109,4 +109,4 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y update
           sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -y install texinfo
           cd documentation
-          make all
+          SBCL=/tmp/sbcl/bin/sbcl make all

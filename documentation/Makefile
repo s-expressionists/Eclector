@@ -1,10 +1,12 @@
-NAME=eclector
+SBCL ?= sbcl
 
-SOURCES=$(NAME).texi $(wildcard chap-*.texi)
+NAME = eclector
 
-GENERATED=version.texi chap-changelog.texi
+SOURCES = $(NAME).texi $(wildcard chap-*.texi)
 
-FIGURES=$(wildcard *.png)
+GENERATED = version.texi chap-changelog.texi
+
+FIGURES = $(wildcard *.png)
 
 .PHONY: all clean
 
@@ -14,7 +16,7 @@ all : $(NAME).info $(NAME).pdf $(NAME).html
 #	java -jar .../plantuml.jar -tpng $<
 
 version.texi: ../version.sexp
-	sbcl --noinform --disable-debugger --no-sysinit --no-userinit                           \
+	$(SBCL) --noinform --disable-debugger --no-sysinit --no-userinit                        \
 	     --eval '(require :asdf)'                                                           \
 	     --eval '(format t "@macro sysversion~%~A~%@end macro" (uiop:read-file-form "$<"))' \
 	     --quit                                                                             \
