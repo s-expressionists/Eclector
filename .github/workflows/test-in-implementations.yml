@@ -29,7 +29,7 @@ jobs:
         if: matrix.implementation == 'sbcl'
         with:
           path: /tmp/sbcl
-          key: sbcl-cache-${{ SBCL_VERSION }}
+          key: sbcl-cache-${{ env.SBCL_VERSION }}
 
       - name: install implementation SBCL ${SBCL_VERSION}
         if: (matrix.implementation == 'sbcl')
