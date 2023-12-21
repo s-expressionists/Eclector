@@ -4,7 +4,7 @@ on: [push]
 
 env:
   SBCL_VERSION: 2.3.11
-  SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-${SBCL_VERSION}-x86-64-linux-binary.tar.bz2
+  SBCL_DOWNLOAD_URL: https://prdownloads.sourceforge.net/sbcl/sbcl-2.3.11-x86-64-linux-binary.tar.bz2
   ECL_DOWNLOAD_URL: https://github.com/ecl/ecl/releases/download/ecl-1.4.14/ecl.tgz
   CCL_DOWNLOAD_URL: https://github.com/Clozure/ccl/releases/download/v1.12/ccl-1.12-linuxx86.tar.gz
 
