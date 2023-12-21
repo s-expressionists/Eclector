@@ -23,7 +23,7 @@ version.texi: ../version.sexp
 	  > $@
 
 chap-changelog.texi: ../changes.sexp write-changelog.lisp
-	sbcl --script write-changelog.lisp > $@
+	$(SBCL) --script write-changelog.lisp > $@
 
 $(NAME).info: $(SOURCES) $(GENERATED) $(FIGURES)
 	makeinfo --output $@ $(NAME).texi
