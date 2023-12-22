@@ -2675,7 +2675,9 @@ object or using the object as a part of a compound object.
 <dd>
 <ul class="itemize mark-bullet">
 <li>The deprecated generic functions <code class="t">eclector.parse-result:source-position</code> and
-<code class="t">eclector.parse-result:make-source-range</code> have been removed.
+<code class="t">eclector.parse-result:make-source-range</code> have been removed. Clients should
+use <code class="t">eclector.base:source-position</code> and <code class="t">eclector.base:make-source-range</code>
+respectively instead.
 
 </li><li>The new reader <code class="t">eclector.base:range-length</code> can be applied to conditions of
 type <code class="t">eclector.base:stream-position-condition</code> (which includes almost all
@@ -2709,7 +2711,7 @@ design can be validated through experimentation before it is finalized.
 <dd>
 <ul class="itemize mark-bullet">
 <li>The deprecated function <code class="t">eclector.concrete-syntax-tree:cst-read</code> has been
-removed.
+removed. Clients should use <code class="t">eclector.concrete-syntax-tree:read</code> instead.
 
 </li><li><code class="t">eclector.reader:find-character</code> receives characters names with unmodified
 case and is also called in the <code class="t">#\&lt;single character&gt;</code> case so that clients
@@ -2854,10 +2856,12 @@ uninterned symbol of the given name instead of using <code class="t">nil</code>.
 </li><li>The default <code class="t">eclector.reader:interpret-token</code> method has been optimized
 substantially.
 
-</li><li>The <code class="t">eclector.reader:*client*</code> variable and the source location protocol have
-been moved to a new <code class="t">base</code> module and package <code class="t">eclector.base</code> which the
-<code class="t">reader</code> module and the <code class="t">eclector.reader</code> package can use. This structure
-allows code in the <code class="t">reader</code> module to work with source locations.
+</li><li>The <code class="t">eclector.reader:*client*</code> variable and the source location protocol
+(that is the generic functions <code class="t">eclector.parse-result:source-position</code> and
+<code class="t">eclector.parse-result:make-source-range</code>) have been moved to a new <code class="t">base</code>
+module and package <code class="t">eclector.base</code> which the <code class="t">reader</code> module and the
+<code class="t">eclector.reader</code> package can use. This structure allows code in the
+<code class="t">reader</code> module to work with source locations.
 
 <p>The name <code class="t">eclector.base:*client*</code> remains exported as
 <code class="t">eclector.reader:*client*</code>.

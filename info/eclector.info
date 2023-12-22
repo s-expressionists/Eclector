@@ -2183,6 +2183,8 @@ Release 0.10 (not yet released)
         • The deprecated generic functions
           eclector.parse-result:source-position and
           eclector.parse-result:make-source-range have been removed.
+          Clients should use eclector.base:source-position and
+          eclector.base:make-source-range respectively instead.
 
         • The new reader eclector.base:range-length can be applied to
           conditions of type eclector.base:stream-position-condition
@@ -2218,7 +2220,8 @@ Release 0.10 (not yet released)
 Release 0.9 (2023-03-19)
 
         • The deprecated function eclector.concrete-syntax-tree:cst-read
-          has been removed.
+          has been removed.  Clients should use
+          eclector.concrete-syntax-tree:read instead.
 
         • eclector.reader:find-character receives characters names with
           unmodified case and is also called in the #\<single character>
@@ -2360,10 +2363,13 @@ Release 0.7 (2021-05-16)
           optimized substantially.
 
         • The eclector.reader:*client* variable and the source location
-          protocol have been moved to a new base module and package
-          eclector.base which the reader module and the eclector.reader
-          package can use.  This structure allows code in the reader
-          module to work with source locations.
+          protocol (that is the generic functions
+          eclector.parse-result:source-position and
+          eclector.parse-result:make-source-range) have been moved to a
+          new base module and package eclector.base which the reader
+          module and the eclector.reader package can use.  This
+          structure allows code in the reader module to work with source
+          locations.
 
           The name eclector.base:*client* remains exported as
           eclector.reader:*client*.
