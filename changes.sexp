@@ -5,7 +5,10 @@
     "The" "deprecated" "generic" "functions"
     (:symbol "eclector.parse-result:source-position")
     "and" (:symbol "eclector.parse-result:make-source-range") "have" "been"
-    "removed" "."))
+    "removed" "." "Clients" "should" "use"
+    (:symbol "eclector.base:source-position") "and"
+    (:symbol "eclector.base:make-source-range") "respectively" "instead"
+    "."))
 
   (:item
    (:paragraph
@@ -50,7 +53,8 @@
    (:paragraph
     "The" "deprecated" "function"
     (:symbol "eclector.concrete-syntax-tree:cst-read") "has" "been" "removed"
-    "."))
+    "." "Clients" "should" "use" (:symbol "eclector.concrete-syntax-tree:read")
+    "instead" "."))
   (:item
    (:paragraph
     (:symbol "eclector.reader:find-character") "receives" "characters"
@@ -242,11 +246,14 @@
   (:item
    (:paragraph
     "The" (:symbol "eclector.reader:*client*") "variable" "and" "the"
-    "source" "location" "protocol" "have" "been" "moved" "to" "a" "new"
-    (:tt "base") "module" "and" "package" (:tt "eclector.base") "which"
-    "the" (:tt "reader") "module" "and" "the" (:tt "eclector.reader")
-    "package" "can" "use" "." "This" "structure" "allows" "code" "in" "the"
-    (:tt "reader") "module" "to" "work" "with" "source" "locations" ".")
+    "source" "location" "protocol" "(" "that" "is" "the" "generic" "functions"
+    (:symbol "eclector.parse-result:source-position") "and"
+    (:symbol "eclector.parse-result:make-source-range") ")" "have" "been"
+    "moved" "to" "a" "new" (:tt "base") "module" "and" "package"
+    (:tt "eclector.base") "which" "the" (:tt "reader") "module" "and" "the"
+    (:tt "eclector.reader") "package" "can" "use" "." "This" "structure"
+    "allows" "code" "in" "the" (:tt "reader") "module" "to" "work" "with"
+    "source" "locations" ".")
    (:paragraph
     "The" "name" (:symbol "eclector.base:*client*") "remains" "exported" "as"
     (:symbol "eclector.reader:*client*") ".")

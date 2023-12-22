@@ -1,7 +1,9 @@
 Release 0.10 (not yet released)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and
-  ECLECTOR.PARSE-RESULT:MAKE-SOURCE-RANGE have been removed.
+  ECLECTOR.PARSE-RESULT:MAKE-SOURCE-RANGE have been removed. Clients should use
+  ECLECTOR.BASE:SOURCE-POSITION and ECLECTOR.BASE:MAKE-SOURCE-RANGE
+  respectively instead.
 
 * The new reader ECLECTOR.BASE:RANGE-LENGTH can be applied to conditions of
   type ECLECTOR.BASE:STREAM-POSITION-CONDITION (which includes almost all
@@ -31,7 +33,7 @@ Release 0.10 (not yet released)
 Release 0.9 (2023-03-19)
 
 * The deprecated function ECLECTOR.CONCRETE-SYNTAX-TREE:CST-READ has been
-  removed.
+  removed. Clients should use ECLECTOR.CONCRETE-SYNTAX-TREE:READ instead.
 
 * ECLECTOR.READER:FIND-CHARACTER receives characters names with unmodified case
   and is also called in the #\<single character> case so that clients have more
@@ -156,10 +158,12 @@ Release 0.7 (2021-05-16)
 * The default ECLECTOR.READER:INTERPRET-TOKEN method has been optimized
   substantially.
 
-* The ECLECTOR.READER:*CLIENT* variable and the source location protocol have
-  been moved to a new base module and package eclector.base which the reader
-  module and the eclector.reader package can use. This structure allows code in
-  the reader module to work with source locations.
+* The ECLECTOR.READER:*CLIENT* variable and the source location protocol (that
+  is the generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and
+  ECLECTOR.PARSE-RESULT:MAKE-SOURCE-RANGE) have been moved to a new base module
+  and package eclector.base which the reader module and the eclector.reader
+  package can use. This structure allows code in the reader module to work with
+  source locations.
 
   The name ECLECTOR.BASE:*CLIENT* remains exported as ECLECTOR.READER:*CLIENT*.
 
