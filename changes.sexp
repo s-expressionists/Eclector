@@ -9,7 +9,6 @@
     (:symbol "eclector.base:source-position") "and"
     (:symbol "eclector.base:make-source-range") "respectively" "instead"
     "."))
-
   (:item
    (:paragraph
     "The" "new" "reader" (:symbol "eclector.base:range-length") "can" "be"
@@ -18,7 +17,6 @@
     "includes" "almost" "all" "conditions" "related" "to" "syntax" "errors"
     ")" "to" "determine" "the" "length" "of" "the" "sub-sequence" "of" "the"
     "input" "to" "which" "the" "condition" "in" "question" "pertains" "."))
-
   (:item
    (:paragraph
     "Minor" "incompatible" "change")
@@ -46,7 +44,13 @@
     "described" "above" "was" "not" "documented" "." "For" "now" "," "the"
     "new" "mechanism" "also" "remains" "undocumented" "so" "that" "the"
     "design" "can" "be" "validated" "through" "experimentation" "before" "it"
-    "is" "finalized" ".")))
+    "is" "finalized" "."))
+  (:item
+   (:paragraph
+    "The" "new" (:tt "syntax-extensions") "module" "contains" "a"
+    "collection" "of" "syntax" "extensions" "which" "are" "implemented" "as"
+    "either" "mixin" "classes" "for" "clients" "or" "reader" "macro"
+    "functions" ".")))
 
  (:release "0.9" "2023-03-19"
   (:item
