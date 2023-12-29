@@ -50,7 +50,19 @@
     "The" "new" (:tt "syntax-extensions") "module" "contains" "a"
     "collection" "of" "syntax" "extensions" "which" "are" "implemented" "as"
     "either" "mixin" "classes" "for" "clients" "or" "reader" "macro"
-    "functions" ".")))
+    "functions" "."))
+  (:item
+   (:paragraph
+    "The" "extended" "package" "prefix" "extension" "allows" "prefixing" "an"
+    "expression" "with" "a" "package" "designator" "in" "order" "to"
+    "read" "the" "expression" "with" "the" "designated" "package" "as" "the"
+    "current" "package" "." "For" "example")
+   (:code :common-lisp "my-package::(a b)")
+   (:paragraph
+    "is" "read" "as")
+   (:code :common-lisp "(my-package::a my-package::b)")
+   (:paragraph
+    "with" "this" "extension" ".")))
 
  (:release "0.9" "2023-03-19"
   (:item

@@ -34,6 +34,18 @@ Release 0.10 (not yet released)
   which are implemented as either mixin classes for clients or reader macro
   functions.
 
+* The extended package prefix extension allows prefixing an expression with a
+  package designator in order to read the expression with the designated
+  package as the current package. For example
+
+    my-package::(a b)
+
+  is read as
+
+    (my-package::a my-package::b)
+
+  with this extension.
+
 Release 0.9 (2023-03-19)
 
 * The deprecated function ECLECTOR.CONCRETE-SYNTAX-TREE:CST-READ has been

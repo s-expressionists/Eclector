@@ -7,7 +7,8 @@
   :depends-on  ("eclector")
 
   :components  ((:module "syntax-extensions"
-                 :pathname "code/syntax-extensions"))
+                 :pathname "code/syntax-extensions"
+                 :components ((:file "extended-package-prefix"))))
 
   :in-order-to ((test-op (test-op "eclector.syntax-extensions/test"))))
 
@@ -18,7 +19,8 @@
   :components  ((:module "syntax-extensions"
                  :pathname "test/syntax-extensions"
                  :serial t
-                 :components ((:file "package"))))
+                 :components ((:file "package")
+                              (:file "extended-package-prefix"))))
 
   :perform     (test-op (operation component)
                  (uiop:symbol-call '#:eclector.syntax-extensions.test '#:run-tests)))
