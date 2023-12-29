@@ -1163,7 +1163,7 @@ up immediately.
 @end deffn
 
 @defgena {fixup-graph,eclector.reader} client root-labeled-object@
- @pkey@ object-key
+ @pkey object-key
 
 This generic function is potentially called after the reader has
 constructed an object graph which is reachable from the object of
