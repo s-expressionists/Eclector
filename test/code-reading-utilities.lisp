@@ -9,10 +9,7 @@
   (labels ((map-component-files (component)
              (typecase component
                (asdf:source-file
-                (when (and (equal (asdf:file-type component) "lisp")
-                           #-sbcl (not (eq (asdf/component:component-if-feature
-                                            component)
-                                           :sbcl)))
+                (when (equal (asdf:file-type component) "lisp")
                   (list (funcall function component))))
                (asdf:module
                 (let ((children (asdf:component-children component)))
