@@ -62,7 +62,17 @@
     "is" "read" "as")
    (:code :common-lisp "(my-package::a my-package::b)")
    (:paragraph
-    "with" "this" "extension" ".")))
+    "with" "this" "extension" "."))
+  (:item
+   (:paragraph
+    "A" "new" "syntax" "extension" "which" "is" "implemented" "by" "the"
+    "reader" "macro"
+    (:symbol "eclector.syntax-extensions.s-expression-comment:s-expression-comment")
+    "allows" "commenting" "out" "s-expressions" "in" "a" "fashion" "similar"
+    "to" "SRFI 62" "for" "scheme" "." "One" "difference" "is" "that" "a"
+    "numeric" "infix" "argument" "can" "be" "used" "to" "comment" "out" "a"
+    "number" "of" "s-expressions" "different" "from" "1" ":")
+   (:code :common-lisp "(frob r1 r2 :k3 4 #4; :k5 6 :k6 7)")))
 
  (:release "0.9" "2023-03-19"
   (:item

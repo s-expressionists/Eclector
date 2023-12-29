@@ -30,3 +30,20 @@ Examples:
 bar"))
 ; => cl-user::bar
 ```
+
+## S-expression comments
+
+A reader macro, `s-expression-comment`, that is loosely based on
+[SRFI 62: S-expression comments](https://srfi.schemers.org/srfi-62/srfi-62.html).
+One difference is that a numeric infix argument can be used to comment
+out a number of s-expressions that is different from 1. For example,
+`"(1 #2; 2 3 4)"` is `read` as `(1 4)`. This extension might be useful
+for commenting out multiple arguments or keyword arguments:
+
+```lisp
+(frob r1 r2 :k3 4 #4; :k5 6 :k6 7)
+```
+
+While this syntax extension could be implemented as a portable
+library, this particular implementation uses Eclector protocols in
+order to produce better error messages and parse results.
