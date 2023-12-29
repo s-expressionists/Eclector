@@ -51,9 +51,9 @@
         for char = (read-char stream nil nil t)
         until (or (null char) (eql char #\Newline))
         if (and (eq state :semicolon) (char= char #\;))
-        count 1 into semicolons
+          count 1 into semicolons
         else
-        do (setf state nil)
+          do (setf state nil)
         finally (setf *skip-reason* (cons :line-comment (1+ semicolons))))
   (values))
 
@@ -90,7 +90,7 @@
 ;;; Reader macro for double quote.
 ;;;
 ;;; We identify a single escape character by its syntax type, so that
-;;; if a user wants a different escape chacacter, we can handle that.
+;;; if a user wants a different escape character, we can handle that.
 ;;;
 ;;; Furthermore, They HyperSpec says that the reader signals an error
 ;;; if end-of-file is encountered before an object has been entirely
