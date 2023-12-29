@@ -230,6 +230,7 @@ code.
 @menu
 * @commonlisp{} reader compatible interface::
 * Reader behavior protocol::
+* Reader state protocol::
 * Labeled objects and references::
 * S-expression creation and quasiquotation::
 * Readtable initialization::
