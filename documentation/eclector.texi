@@ -1,7 +1,7 @@
 \input texinfo
 
 @include macros.texi
-@include version.texi
+@include generated-version.texi
 
 @documentencoding UTF-8
 @documentlanguage en
@@ -16,7 +16,7 @@
 
 @copying
 Copyright @copyright{} 2010 - 2018 Robert Strandh
-Copyright @copyright{} 2018 - 2023 Jan Moringen
+Copyright @copyright{} 2018 - 2024 Jan Moringen
 @end copying
 
 @dircategory Common Lisp
@@ -66,6 +66,6 @@ This manual is for @sysname{} version @sysversion{}.
 
 @printindex fn
 
-@include chap-changelog.texi
+@include generated-chapter-changelog.texi
 
 @bye

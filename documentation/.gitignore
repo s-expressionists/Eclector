@@ -13,4 +13,4 @@
 
 *.html
 
-version.texi
+generated-*.*
