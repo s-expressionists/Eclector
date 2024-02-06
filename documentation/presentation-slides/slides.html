@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Eclector</title>
+<meta name="author" content="Jan Moringen (scymtym on IRC)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="./reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="./reveal.js/css/theme/white.css" id="theme"/>
+
+<link rel="stylesheet" href="style.css"/>
+
+<link rel="stylesheet" href="lisp-syntax.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = './reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1 class="title">Eclector</h1><h2 class="author">Jan Moringen (scymtym on IRC)</h2>
+</section>
+
+<section>
+<section id="slide-slide:agenda">
+<h2 id="slide:agenda"><a id="org8fddf56"></a>Agenda</h2>
+<p>
+Goal: Introduce and demonstrate Eclector, mainly from a user's
+perspective.
+</p>
+
+<ol>
+<li>Introduction and project history</li>
+<li>Features (roughly based on structure of documentation)
+<ul>
+<li>Errors and error recovery (with demo)</li>
+<li>Customizing ordinary reader features  (with demo)</li>
+<li>Skipped inputs and lower-level entry-points (with demo)</li>
+<li>Parse results (with demo)</li>
+
+</ul></li>
+<li>Performance</li>
+<li>Problems and future work</li>
+
+</ol>
+
+</section>
+</section>
+<section>
+<section id="slide-org9c4b86e">
+<h2 id="org9c4b86e">Introduction</h2>
+<div class="outline-text-2" id="text-org9c4b86e">
+</div>
+</section>
+<section id="slide-slide:introduction:the-reader">
+<h3 id="slide:introduction:the-reader"><a id="orgdc09f96"></a>Introduction: What is the Common Lisp Reader?</h3>
+<p>
+The Common Lisp reader is not single object or concept but a rather
+lose <span style="color: #1b91ff; font-weight: bold">collection of things</span> described in <a href="http://www.lispworks.com/documentation/HyperSpec/Body/02_.htm">chapter 2</a> of the
+specification.
+</p>
+
+<table class="fragment appear">
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Conceptually</th>
+<th scope="col" class="org-left">Technically</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Characters, syntax types</td>
+<td class="org-left"><code class="src src-lisp"><a href="http://l1sp.org/cl/set-syntax-from-char" class="syntax-interned-symbol">set-syntax-from-char</a></code></td>
+</tr>
+
+<tr>
+<td class="org-left">Readtable, variables</td>
+<td class="org-left"><code class="src src-lisp"><a href="http://l1sp.org/cl/*readtable*" class="syntax-interned-symbol">*readtable*</a></code>, <code class="src src-lisp"><a href="http://l1sp.org/cl/*read-eval*" class="syntax-interned-symbol">*read-eval*</a></code>, <code class="src src-lisp"><a href="http://l1sp.org/cl/*read-base*" class="syntax-interned-symbol">*read-base*</a></code>, …</td>
+</tr>
+
+<tr>
+<td class="org-left"><a href="http://www.lispworks.com/documentation/HyperSpec/Body/02_b.htm">Reader algorithm</a></td>
+<td class="org-left"><code class="src src-lisp"><a href="http://l1sp.org/cl/read" class="syntax-interned-symbol">read</a></code>, <code class="src src-lisp"><a href="http://l1sp.org/cl/read-preserving-whitespace" class="syntax-interned-symbol">read-preserving-whitespace</a></code>, <code class="src src-lisp"><a href="http://l1sp.org/cl/read-from-string" class="syntax-interned-symbol">read-from-string</a></code></td>
+</tr>
+
+<tr>
+<td class="org-left">Token interpretation</td>
+<td class="org-left">? (<code class="src src-lisp"><a href="http://l1sp.org/cl/parse-integer" class="syntax-interned-symbol">parse-integer</a></code> belongs to numbers)</td>
+</tr>
+
+<tr>
+<td class="org-left">Standard macros</td>
+<td class="org-left"><code class="src src-lisp"><a href="http://l1sp.org/cl/get-macro-character" class="syntax-interned-symbol">get-macro-character</a></code>, <code class="src src-lisp"><a href="http://l1sp.org/cl/get-dispatch-macro-character" class="syntax-interned-symbol">get-dispatch-macro-character</a></code>, …</td>
+</tr>
+</tbody>
+</table>
+
+<p class="fragment appear">
+Control and customization <span style="color: #1b91ff; font-weight: bold">of some aspects</span> through readtables and variables.
+</p>
+
+</section>
+<section id="slide-slide:introduction:history">
+<h3 id="slide:introduction:history"><a id="org0b4dc3f"></a>Project History</h3>
+<ul>
+<li>Started by Robert Strandh as the reader for <a href="https://github.com/robert-strandh/SICL/">SICL</a> (old goal:
+conforming reader implementation).</li>
+
+<li>Extracted from SICL (and named) by Robert Strandh (new goal:
+portable and extensible reader implementation)</li>
+
+<li>Completed, made extensible and now maintained by Jan Moringen</li>
+
+</ul>
+
+<p class="fragment appear">
+So, the name …
+</p>
+
+<blockquote class="fragment appear">
+<p>
+The Eclector was the main ship used by Yondu's clan of Ravagers
+serving as a port to the M-ships.
+<span style="font-size: medium"><a href="https://marvelcinematicuniverse.fandom.com/wiki/Eclector">https://marvelcinematicuniverse.fandom.com/wiki/Eclector</a> </span>
+</p>
+</blockquote>
+
+<p class="fragment appear">
+I don't know how people could miss such an obvious reference. I
+mean, with beach talking about comics all the time and everything.
+</p>
+
+<p class="fragment appear">
+But seriously: E<span style="color: #f44">cl</span>ector, Ec<span style="color: #44f">lector</span>.
+</p>
+
+</section>
+<section id="slide-slide:introduction:goals">
+<h3 id="slide:introduction:goals"><a id="org02cfab5"></a>Project Goals</h3>
+<p>
+Create an implementation of the Common Lisp reader algorithm and
+surrounding machinery that
+</p>
+
+<ol>
+<li><span style="color: #1b91ff; font-weight: bold">conforms</span> to the specification</li>
+
+<li>provides excellent, translatable, <span style="color: #1b91ff; font-weight: bold">error messages</span> for
+all possible syntax errors <span style="color: #a0a0a0; font-weight: bold">(and allows user-defined
+macros to do the same)</span></li>
+
+<li>can <span style="color: #1b91ff; font-weight: bold">recover</span> from all possible syntax errors
+<span style="color: #a0a0a0; font-weight: bold">(which does not mean it can magically fix invalid
+code)</span></li>
+
+<li>is highly <span style="color: #1b91ff; font-weight: bold">extensible and customizable</span>
+<span style="color: #a0a0a0; font-weight: bold">(beyond the standard mechanisms such as reader macros
+and syntax types)</span></li>
+
+<li>supports <span style="color: #1b91ff; font-weight: bold">source location tracking</span> and <span style="color: #1b91ff; font-weight: bold">parse
+result</span> construction</li>
+
+<li>achieves <span style="color: #1b91ff; font-weight: bold">acceptable performance</span> for most clients and
+use-cases <span style="color: #a0a0a0; font-weight: bold">(possible exceptions: reading huge amounts
+of numeric data)</span></li>
+
+</ol>
+
+<p>
+Non-goal: support for <code class="src src-lisp"><a href="http://l1sp.org/cl/load" class="syntax-interned-symbol">load</a></code>ing an entire
+file (more on that later)
+</p>
+
+</section>
+<section id="slide-slide:introduction:anatomy">
+<h3 id="slide:introduction:anatomy"><a id="org3622f62"></a>Project Anatomy</h3>
+<dl>
+<dt class="fragment appear">Implementing a specification</dt><dd class="fragment appear"><p>
+        Implementing a specification is great! … but our favorite one
+doesn't cover everything. For example, which of the following
+are valid?
+</p>
+
+<p>
+<code class="src src-lisp"><span class="syntax-symbol">#S<span class="error"> <span class="message">A proper list of a structure type name and initargs must follow #S.</span></span></span><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">foo</span><span class="syntax-close">)</span></span></span></code>
+<code class="src src-lisp"><span class="syntax-number">#C <span class="syntax-symbol">(<span class="syntax-number">1</span> <span class="syntax-number">2</span>)</span></span></code>
+<code class="src src-lisp"><span class="syntax-number">#C<span class="syntax-comment">#|foo|#</span><span class="syntax-symbol">(<span class="syntax-number">1</span> <span class="syntax-number">2</span>)</span></span></code>
+<code class="src src-lisp"><span class="syntax-number">#C<span class="syntax-feature-expression">#+<span class="syntax-keyword-symbol">true</span><span class="syntax-symbol">(<span class="syntax-number">1</span> <span class="syntax-number">2</span>)</span></span></span></code>
+<code class="src src-lisp"><span class="syntax-number">#C<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">#.</span><span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/list" class="syntax-interned-symbol">list</a> <span class="syntax-number">1</span> <span class="syntax-number">2</span><span class="syntax-close">)</span></span></span></span></span></span></code>
+<code class="src src-lisp"><span class="syntax-quasiquote1"><span class="syntax-quasiquote">`<span class="syntax-function">#'<span class="syntax-interned-symbol"><span class="error">,<span class="message">Unquote is illegal in the function reader macro.</span></span>foo</span></span></span></span></code>
+</p></dd>
+
+<dt class="fragment appear">Size (generated using David A. Wheeler's 'SLOCCount'.)</dt><dd class="fragment appear"><table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><code>code</code> directory</td>
+<td class="org-left">4,124 lines</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>test</code> directory</td>
+<td class="org-left">2,930 lines</td>
+</tr>
+
+<tr>
+<td class="org-left">cost to make</td>
+<td class="org-left">$ 433,634</td>
+</tr>
+</tbody>
+</table></dd>
+
+<dt class="fragment appear">Tests</dt><dd class="fragment appear">Very close to 100 % <span style="color: #1b91ff; font-weight: bold">branch coverage</span> (there are
+still bugs, but regressions are extremely unlikely).</dd>
+
+<dt class="fragment appear"><a href="https://s-expressionists.github.io/Eclector/" class="fragment appear">Documentation</a></dt><dd class="fragment appear"><code>texinfo</code>-based with homegrown syntax highlighting.</dd>
+
+</dl>
+
+</section>
+<section id="slide-slide:introduction:clients">
+<h3 id="slide:introduction:clients"><a id="org1ffad71"></a>Clients</h3>
+<dl>
+<dt><a href="https://github.com/RoberStrandh/SICL">SICL</a></dt><dd>Uses Eclector as the Common Lisp reader</dd>
+
+<dt><a href="https://github.com/clasp-developers/clasp">Clasp</a></dt><dd>Uses Eclector as the Common Lisp reader</dd>
+
+<dt>yitzi et al's <a href="https://github.com/yitzchak/common-lisp-jupyter">common-lisp-jupyter</a></dt><dd>Completion</dd>
+
+<dt>GrammaTech's <a href="https://github.com/GrammaTech/sel">software evolution library</a> and s-expression diff</dt><dd>Uses
+Eclector to construct syntax trees</dd>
+
+<dt><a href="https://github.com/shirakumo/staple">Shinmera's staple documentation system</a></dt><dd>Example source
+highlighting and cross-referencing</dd>
+
+</dl>
+
+<dl>
+<dt>Second Climacs (future)</dt><dd>Highlighting, syntax checking, basis
+for static analysis etc.</dd>
+
+</dl>
+
+<p class="fragment appear">
+Side node: There is clear demand for "Eclector but at the
+s-expression syntax level".
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org9355b6d">
+<h2 id="org9355b6d">Errors and Error Recovery</h2>
+<div class="outline-text-2" id="text-org9355b6d">
+</div>
+</section>
+<section id="slide-slide:errors:conditions">
+<h3 id="slide:errors:conditions"><a id="org7daad68"></a>Errors: Conditions</h3>
+<p>
+At the character level, there are many possible ways of violating
+the specified Common Lisp syntax:
+</p>
+
+<ul>
+<li class="fragment appear"><code class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-number">1</span> <span class="syntax-number">2</span> <span class="syntax-number"><span class="error">3<span class="message">While reading list, expected the character ) when input ended.</span></span></span></span></span></code></li>
+
+<li class="fragment appear"><code class="src src-lisp"><span class="syntax-keyword-symbol">::fo<span class="error">o<span class="message">A symbol token must not start with two package markers as in ::name.</span></span></span></code></li>
+
+<li class="fragment appear"><code class="src src-lisp"><span class="syntax-character">#\Hype<span class="error">r<span class="message">Unrecognized character name: &quot;Hyper&quot;</span></span></span></code></li>
+
+<li class="fragment appear"><code class="src src-lisp"><span class="syntax-number">#10R89<span class="error">b<span class="message">The character b is not a digit in base 10.</span></span>76</span></code></li>
+
+<li class="fragment appear"><code class="src src-lisp"><span class="syntax-quasiquote1"><span class="syntax-quasiquote">`<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-keyword-symbol">:foo</span> <span class="syntax-quasiquote0"><span class="syntax-unquote">,</span></span><span class="error"><span class="syntax-close">)</span><span class="message">An object must follow a unquote.</span></span></span></span></span></span></code></li>
+
+</ul>
+
+<p class="fragment appear">
+To produce good error messages for as many of those as possible,
+Eclector can specifically detect around
+<code>99</code>
+kinds of syntax errors for which it has corresponding
+condition types. Such as:
+</p>
+
+<ul>
+<li class="fragment appear"><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-uninterned_002dsymbol_002dmust_002dnot_002dcontain_002dpackage_002dmarker-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:uninterned-symbol-must-not-contain-package-marker</a></code></li>
+
+<li class="fragment appear"><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-numeric_002dparameter_002dnot_002dsupplied_002dbut_002drequired-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:numeric-parameter-not-supplied-but-required</a></code></li>
+
+</ul>
+
+</section>
+<section id="slide-slide:errors:recovery">
+<h3 id="slide:errors:recovery"><a id="orgaabe848"></a>Errors: Recovery</h3>
+<p>
+For applications such
+</p>
+
+<ul>
+<li>editors</li>
+
+<li>IDEs</li>
+
+<li>syntax checkers</li>
+
+<li>static analyzers</li>
+
+</ul>
+
+<p>
+it is important to continue processing source code after
+encountering errors.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defun" class="syntax-interned-symbol">defun</a> <span class="syntax-interned-symbol">foo</span> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">x</span> <span class="syntax-interned-symbol">y</span><span class="syntax-close">)</span></span></span>
+  <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/+" class="syntax-interned-symbol">+</a> <span class="syntax-interned-symbol">x</span> <span class="syntax-number">#b00<span class="error">2<span class="message">The character 2 is not a digit in base 2.</span></span>0101</span> <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/code-char" class="syntax-interned-symbol">code-char</a> <span class="syntax-character">#\Retr<span class="error">n<span class="message">Unrecognized character name: &quot;Retrn&quot;</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-quote">'<span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-feature-expression"><span class="error">,<span class="message">Unquote not inside backquote.</span></span><span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-two-package-markers syntax-interned-symbol">frob::bar<span class="message">Do not use unexported symbols.</span></span> <span class="syntax-interned-symbol">y</span><span class="syntax-close">)</span></span></span></span><span class="syntax-close">)</span></span></span></span> <span class="syntax-symbol">#1<span class="error">#<span class="message">Reference to undefined label #1#.</span></span></span><span class="syntax-close">)</span></span></span><span class="error"><span class="syntax-close">
+</span>¶<span class="message">While reading list, expected the character ) when input ended.</span></span></span></span></pre>
+</div>
+
+<p class="fragment appear">
+The <code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a></code> restart (and convenience
+function of the same name) can be used to recover and continue
+reading after most syntax errors.
+</p>
+
+</section>
+<section id="slide-slide:errors:recovery-example-1">
+<h3 id="slide:errors:recovery-example-1"><a id="orge290bd1"></a>Errors: Recovery Example (1)</h3>
+<p>
+The simplest way or making a recovering reader is via the
+<code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a></code> convenience function:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/handler-bind" class="syntax-interned-symbol">handler-bind</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/error" class="syntax-interned-symbol">error</a> <span class="syntax-function">#'<a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+  <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/print" class="syntax-interned-symbol">print</a> <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-read_002dfrom_002dstring-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:read-from-string</a> <span class="syntax-nesting3"><span class="syntax-string"><span class="syntax-open">&quot;</span>`(::foo ,<span class="syntax-close">&quot;</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+<pre class="example">
+
+(ECLECTOR.READER:QUASIQUOTE (:FOO (ECLECTOR.READER:UNQUOTE NIL)))
+
+</pre>
+
+</section>
+<section id="slide-slide:errors:recovery-example-2">
+<h3 id="slide:errors:recovery-example-2"><a id="orga13c72c"></a>Errors: Recovery Example (2)</h3>
+<p>
+For each error, this prints the error message, prints the restart
+description and invokes <code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a></code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/handler-bind" class="syntax-interned-symbol">handler-bind</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/error" class="syntax-interned-symbol">error</a> <span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/lambda" class="syntax-interned-symbol">lambda</a> <span class="syntax-nesting4"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/condition" class="syntax-interned-symbol">condition</a><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-nesting4"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/let" class="syntax-interned-symbol">let</a> <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting6"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/restart" class="syntax-interned-symbol">restart</a> <span class="syntax-nesting7"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/find-restart" class="syntax-interned-symbol">find-restart</a> <span class="syntax-quote">'<a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>  <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/format" class="syntax-interned-symbol">format</a> <a href="http://l1sp.org/cl/t" class="syntax-interned-symbol">t</a> <span class="syntax-nesting6"><span class="syntax-string"><span class="syntax-open">&quot;</span>Recovering from error:~%~2@T~A~%using~%~2@T~A~2%<span class="syntax-close">&quot;</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>  <a href="http://l1sp.org/cl/condition" class="syntax-interned-symbol">condition</a> <a href="http://l1sp.org/cl/restart" class="syntax-interned-symbol">restart</a><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-nesting4"><span class="syntax-cons"><span class="syntax-open">(</span><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+  <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/print" class="syntax-interned-symbol">print</a> <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-read_002dfrom_002dstring-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:read-from-string</a> <span class="syntax-nesting3"><span class="syntax-string"><span class="syntax-open">&quot;</span>`(::foo ,<span class="syntax-close">&quot;</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+<pre class="example">
+Recovering from error:
+  A symbol token must not start with two package markers as in ::name.
+using
+  Treat the character as if it had been escaped.
+
+Recovering from error:
+  While reading unquote, expected an object when input ended.
+using
+  Use NIL in place of the missing object.
+
+Recovering from error:
+  While reading list, expected the character ) when input ended.
+using
+  Return a list of the already read elements.
+
+
+(ECLECTOR.READER:QUASIQUOTE (:FOO (ECLECTOR.READER:UNQUOTE NIL)))
+</pre>
+
+</section>
+<section id="slide-slide:errors:acclimation" data-background="images/german-flag.png">
+<h3 id="slide:errors:acclimation"><a id="orgacbfa96"></a>Errors: Acclimation Example</h3>
+<p>
+Condition and restart reports use the <a href="https://github.com/robert-strandh/Acclimation">Acclimation</a> library:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/let*" class="syntax-interned-symbol">let*</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">language</span> <span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/make-instance" class="syntax-interned-symbol">make-instance</a> <span class="syntax-quote">'<span class="syntax-interned-symbol">acclimation:german</span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+       <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">acclimation:*locale*</span> <span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/make-instance" class="syntax-interned-symbol">make-instance</a> <span class="syntax-quote">'<span class="syntax-interned-symbol">acclimation:locale</span></span> <span class="syntax-keyword-symbol">:language</span> <span class="syntax-interned-symbol">language</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+  <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/handler-bind" class="syntax-interned-symbol">handler-bind</a> <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/error" class="syntax-interned-symbol">error</a> <span class="syntax-nesting4"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/lambda" class="syntax-interned-symbol">lambda</a> <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/condition" class="syntax-interned-symbol">condition</a><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>  <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/let" class="syntax-interned-symbol">let</a> <span class="syntax-nesting6"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting7"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/restart" class="syntax-interned-symbol">restart</a> <span class="syntax-nesting8"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/find-restart" class="syntax-interned-symbol">find-restart</a> <span class="syntax-quote">'<a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <span class="syntax-nesting6"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/format" class="syntax-interned-symbol">format</a> <a href="http://l1sp.org/cl/t" class="syntax-interned-symbol">t</a> <span class="syntax-nesting7"><span class="syntax-string"><span class="syntax-open">&quot;</span>Behandle Fehler~%~2@T~A~%durch~%~2@T~A~2%<span class="syntax-close">&quot;</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <a href="http://l1sp.org/cl/condition" class="syntax-interned-symbol">condition</a> <a href="http://l1sp.org/cl/restart" class="syntax-interned-symbol">restart</a><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>  <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-recover-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:recover</a><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+    <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-read_002dfrom_002dstring-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:read-from-string</a> <span class="syntax-nesting3"><span class="syntax-string"><span class="syntax-open">&quot;</span>`(::foo ,<span class="syntax-close">&quot;</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+<pre class="example">
+Behandle Fehler
+  Ein Symbol darf nicht mit zwei Paketmarkierungen beginnen wie bei ::name.
+durch
+  Behandle die Zeichen als maskiert.
+
+Behandle Fehler
+  Beim Lesen eines Antizitats wurde ein Objekt erwartet als die Eingabe endete.
+durch
+  Verwende NIL anstelle des fehlenden Objekts.
+
+Behandle Fehler
+  Beim Lesen einer Liste wurde das Zeichen ) erwartet als die Eingabe endete.
+durch
+  Erstelle eine Liste bestehend aus den bereits gelesenen Elementen.
+
+</pre>
+
+<p>
+<span style="font-size: medium">Background image: Public Domain, <a href="https://en.wikipedia.org/w/index.php?curid=33285421">https://en.wikipedia.org/w/index.php?curid=33285421</a> </span>
+</p>
+
+</section>
+<section id="slide-slide:demos:lisp.style" data-background="#d0d0f0">
+<h3 id="slide:demos:lisp.style"><a id="orgd43f86d"></a>Demo: Linting and Checking</h3>
+<ul>
+<li>Console linter</li>
+
+<li><a href="https://common-lisp.net/project/mcclim/">McCLIM</a>-based graphical linter</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgb65dedd">
+<h2 id="orgb65dedd">Customizing Ordinary Reader Features</h2>
+<div class="outline-text-2" id="text-orgb65dedd">
+</div>
+</section>
+<section id="slide-slide:customization:architecture-1">
+<h3 id="slide:customization:architecture-1"><a id="orgaed148d"></a>Customization: Architecture</h3>
+<p>
+<span style="color: #1b91ff; font-weight: bold">Architecture Idea 1</span>
+</p>
+
+<blockquote>
+<p>
+Express all operations performed by the reader as a set of
+<span style="color: #1b91ff; font-weight: bold">protocols</span> in which each generic function accepts a
+<span style="color: #1b91ff; font-weight: bold">client parameter</span>.
+</p>
+</blockquote>
+
+<p>
+Examples
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-interpret_002dsymbol_002dtoken-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:interpret-symbol-token</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <span class="syntax-interned-symbol">input-stream</span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <span class="syntax-interned-symbol">token</span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <span class="syntax-interned-symbol">position-package-marker-1</span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <span class="syntax-interned-symbol">position-package-marker-2</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+
+<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-evaluate_002dfeature_002dexpression-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:evaluate-feature-expression</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <span class="syntax-interned-symbol">feature-expression</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+</section>
+<section id="slide-slide:customization:architecture-2">
+<h3 id="slide:customization:architecture-2"><a id="orgfab33a3"></a>Customization: Architecture</h3>
+
+<figure>
+<img src="images/read-call-sequence-ordinary-customization.png" alt="read-call-sequence-ordinary-customization.png">
+
+</figure>
+
+</section>
+<section id="slide-slide:extensibility:sandboxing">
+<h3 id="slide:extensibility:sandboxing"><a id="org712ef3c"></a>Customization: Sandboxing</h3>
+<p>
+Threats and extension points for corresponding mitigation:
+</p>
+
+<dl>
+<dt class="fragment appear">Read-time evaluation</dt><dd class="fragment appear"><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-evaluate_002dexpression-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:evaluate-expression</a></code></dd>
+
+<dt class="fragment appear">Structure constructors</dt><dd class="fragment appear"><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-make_002dstructure_002dinstance-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:make-structure-instance</a></code></dd>
+
+<dt class="fragment appear">Uncontrolled interning</dt><dd class="fragment appear"><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-interpret_002dsymbol-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:interpret-symbol</a></code></dd>
+
+</dl>
+
+</section>
+<section id="slide-slide:demo:sandbox" data-background="#d0d0f0">
+<h3 id="slide:demo:sandbox"><a id="orgaa2c7eb"></a>Demo: Simple Sandboxed Reader</h3>
+<p>
+Writing a simple sandboxed reader using the mentioned methods:
+</p>
+
+<dl>
+<dt>Read-time evaluation</dt><dd><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-evaluate_002dexpression-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:evaluate-expression</a></code></dd>
+
+<dt>Structure constructors</dt><dd><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-make_002dstructure_002dinstance-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:make-structure-instance</a></code></dd>
+
+<dt>Uncontrolled interning</dt><dd><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-interpret_002dsymbol-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:interpret-symbol</a></code></dd>
+
+</dl>
+
+</section>
+</section>
+<section>
+<section id="slide-orge7f733e">
+<h2 id="orge7f733e">Skipped Input and Lower-lever Entry Points</h2>
+<div class="outline-text-2" id="text-orge7f733e">
+</div>
+</section>
+<section id="slide-slide:skipped-input:architecture-1">
+<h3 id="slide:skipped-input:architecture-1"><a id="org3eec8a6"></a>Skipped Input: Architecture</h3>
+<p>
+<span style="color: #1b91ff; font-weight: bold">Architecture Idea 2</span>
+</p>
+
+<blockquote>
+<p>
+Notify the client when <span style="color: #1b91ff; font-weight: bold">non-objects</span> are encountered in
+the input and provide a <code class="src src-lisp"><a href="http://l1sp.org/cl/read" class="syntax-interned-symbol">read</a></code>-style function that does
+not skip over them.
+</p>
+</blockquote>
+
+<p>
+Examples
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-note_002dskipped_002dinput-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:note-skipped-input</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <span class="syntax-interned-symbol">input-stream</span> <span class="syntax-interned-symbol">reason</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+
+<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-call_002das_002dtop_002dlevel_002dread-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:call-as-top-level-read</a>
+    <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <span class="syntax-interned-symbol">thunk</span> <span class="syntax-interned-symbol">input-stream</span> <span class="syntax-interned-symbol">eof-error-p</span> <span class="syntax-interned-symbol">eof-value</span> <span class="syntax-interned-symbol">preserve-whitespace-p</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+
+<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-read_002dmaybe_002dnothing-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:read-maybe-nothing</a>
+    <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <span class="syntax-interned-symbol">input-stream</span> <span class="syntax-interned-symbol">eof-error-p</span> <span class="syntax-interned-symbol">eof-value</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+</section>
+<section id="slide-slide:skipped-input:architecture-2">
+<h3 id="slide:skipped-input:architecture-2"><a id="org3c2fcfa"></a>Skipped Input: Architecture</h3>
+
+<figure>
+<img src="images/read-call-sequence-ordinary-skipped-input.png" alt="read-call-sequence-ordinary-skipped-input.png">
+
+</figure>
+
+</section>
+<section id="slide-slide:demos:highlighting-1" data-background="#d0d0f0">
+<h3 id="slide:demos:highlighting-1"><a id="orgbae325d"></a>Demo: Syntax Highlighting</h3>
+<p>
+<b>Before</b>
+</p>
+
+<pre class="example">
+(list 1 #|foo|# "bar"
+</pre>
+
+<p>
+<b>Call</b>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">highlight-code</span> <span class="syntax-nesting1"><span class="syntax-string"><span class="syntax-open">&quot;</span>&lt;code class=\&quot;src src-lisp\&quot;&gt;(list 1 #|foo|# \&quot;bar\&quot;&lt;/code&gt;<span class="syntax-close">&quot;</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+<p>
+<b>After</b>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/list" class="syntax-interned-symbol">list</a> <span class="syntax-number">1</span> <span class="syntax-comment">#|foo|#</span> <span class="syntax-nesting1"><span class="syntax-string"><span class="syntax-open">&quot;</span>bar<span class="syntax-close">&quot;</span></span></span><span class="error"><span class="syntax-close">
+</span>¶<span class="message">While reading list, expected the character ) when input ended.</span></span></span></span></pre>
+</div>
+
+<p>
+Used in this presentation and will be used in the Eclector <a href="file:///home/jmoringe/code/cl/eclector/documentation/eclector.html">manual</a>.
+</p>
+
+</section>
+<section id="slide-slide:demos:read-time-conditionals" data-background="#d0d0f0">
+<h3 id="slide:demos:read-time-conditionals"><a id="org0be07e6"></a>Demo: Read-time Conditionals</h3>
+<ul>
+<li>Read-time conditional checker</li>
+
+<li>Read-time conditional visualizer</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org7e1b7c7">
+<h2 id="org7e1b7c7">Parse Results</h2>
+<div class="outline-text-2" id="text-org7e1b7c7">
+</div>
+</section>
+<section id="slide-slide:parse-results:syntax-trees">
+<h3 id="slide:parse-results:syntax-trees"><a id="org02c49bb"></a>Parse Results: Concrete and Abstract Syntax Trees</h3>
+<dl>
+<dt>Concrete Syntax Tree</dt><dd><img src="images/cst.png" alt="cst.png" width="55%"></dd>
+
+<dt>Abstract Syntax Tree</dt><dd><img src="images/ast.png" alt="ast.png" width="55%"></dd>
+
+</dl>
+
+</section>
+<section id="slide-slide:parse-results:architecture-1">
+<h3 id="slide:parse-results:architecture-1"><a id="orgd4a6c3c"></a>Parse Results: Architecture</h3>
+<p>
+<span style="color: #1b91ff; font-weight: bold">Architecture Idea 3</span>
+</p>
+
+<blockquote>
+<p>
+As a second way of using Eclector, weave the construction of
+<span style="color: #1b91ff; font-weight: bold">source locations</span> and <span style="color: #1b91ff; font-weight: bold">parse results</span> (for
+objects and skipped input) into the normal reader execution.
+</p>
+</blockquote>
+
+<p>
+Examples
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-source_002dposition-_005beclector_002eparse_002dresult_005d" class="syntax-interned-symbol">eclector.parse-result:source-position</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <a href="http://l1sp.org/cl/stream" class="syntax-interned-symbol">stream</a><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+
+<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-make_002dexpression_002dresult-_005beclector_002eparse_002dresult_005d" class="syntax-interned-symbol">eclector.parse-result:make-expression-result</a>
+    <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <span class="syntax-interned-symbol">result</span> <span class="syntax-interned-symbol">children</span> <span class="syntax-interned-symbol">source</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+
+<span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <a href="https://s-expressionists.github.io/Eclector/eclector.html#index-make_002dskipped_002dinput_002dresult-_005beclector_002eparse_002dresult_005d" class="syntax-interned-symbol">eclector.parse-result:make-skipped-input-result</a>
+    <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <a href="http://l1sp.org/cl/stream" class="syntax-interned-symbol">stream</a> <span class="syntax-interned-symbol">reason</span> <span class="syntax-interned-symbol">source</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+</section>
+<section id="slide-slide:parse-results:architecture-2">
+<h3 id="slide:parse-results:architecture-2"><a id="org4fd56c9"></a>Parse Results: Architecture</h3>
+
+<figure>
+<img src="images/read-call-sequence-parse-result.png" alt="read-call-sequence-parse-result.png">
+
+</figure>
+
+</section>
+<section id="slide-slide:demo:parser-thingy" data-background="#d0d0f0">
+<h3 id="slide:demo:parser-thingy"><a id="org85f7fc6"></a>Demos: Applications of Parse Result</h3>
+<ul>
+<li>Symbol spelling linter</li>
+
+<li>Parser thingy</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgad1ac28">
+<h2 id="orgad1ac28">Performance</h2>
+<div class="outline-text-2" id="text-orgad1ac28">
+</div>
+</section>
+<section id="slide-slide:performance:experiment">
+<h3 id="slide:performance:experiment"><a id="org7f96d46"></a>Performance: Experiment</h3>
+<p>
+Test
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/time" class="syntax-interned-symbol">time</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/loop" class="syntax-interned-symbol">loop</a> <span class="syntax-keyword-symbol">:repeat</span> <span class="syntax-number">10000</span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <span class="syntax-keyword-symbol">:do</span> <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/read-from-string" class="syntax-interned-symbol">read-from-string</a> <span class="syntax-nesting3"><span class="syntax-string"><span class="syntax-open">&quot;</span>(1 (2 3) #+sbcl #1=\&quot;foo\&quot; `(,#1#))<span class="syntax-close">&quot;</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+<p class="fragment appear">
+SBCL <code>2.0.6.debian</code>:
+</p>
+
+<pre class="example">
+Evaluation took:
+  0.020 seconds of real time
+  0.020502 seconds of total run time (0.020502 user, 0.000000 system)
+  105.00% CPU
+  62,665,929 processor cycles
+  3,995,504 bytes consed
+
+
+</pre>
+
+<p class="fragment appear">
+Eclector master:
+</p>
+
+<pre class="example">
+Evaluation took:
+  0.150 seconds of real time
+  0.149348 seconds of total run time (0.149348 user, 0.000000 system)
+  [ Run times consist of 0.011 seconds GC time, and 0.139 seconds non-GC time. ]
+  99.33% CPU
+  52 lambdas converted
+  449,065,278 processor cycles
+  86,892,784 bytes consed
+
+
+</pre>
+
+</section>
+<section id="slide-slide:performance:analysis-1">
+<h3 id="slide:performance:analysis-1"><a id="orgcbf4f1d"></a>Performance: Analysis</h3>
+
+<figure>
+<img src="images/eclector-read-from-string-flamegraph.png" alt="eclector-read-from-string-flamegraph.png">
+
+</figure>
+
+<ul>
+<li><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-fixup-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:fixup</a></code> and friends is a big chunk
+(probably of the consing as well because of hash-table
+shenanigans)</li>
+
+<li>The rest of the profile is relatively flat, but that little green
+thing is basically everywhere …</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgc2f3093">
+<h2 id="orgc2f3093">Future Work</h2>
+<div class="outline-text-2" id="text-orgc2f3093">
+</div>
+</section>
+<section id="slide-slide:future-work:float-construction">
+<h3 id="slide:future-work:float-construction"><a id="org54d3b16"></a>Future Work: Float Construction</h3>
+<p>
+Current float construction is naive:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/let" class="syntax-interned-symbol">let</a> <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">magnitude</span> <span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/*" class="syntax-interned-symbol">*</a> <span class="syntax-nesting4"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/+" class="syntax-interned-symbol">+</a> <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/funcall" class="syntax-interned-symbol">funcall</a> <span class="syntax-interned-symbol">decimal-mantissa</span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>       <span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl//" class="syntax-interned-symbol">/</a> <span class="syntax-nesting6"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/funcall" class="syntax-interned-symbol">funcall</a> <span class="syntax-interned-symbol">fraction-numerator</span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>  <span class="syntax-interned-symbol">fraction-denominator</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span>    <span class="syntax-nesting4"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/if" class="syntax-interned-symbol">if</a> <span class="syntax-interned-symbol">exponentp</span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-nesting5"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/expt" class="syntax-interned-symbol">expt</a> <span class="syntax-number">10</span> <span class="syntax-nesting6"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/*" class="syntax-interned-symbol">*</a> <span class="syntax-interned-symbol">exponent-sign</span> <span class="syntax-nesting7"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/funcall" class="syntax-interned-symbol">funcall</a> <span class="syntax-interned-symbol">exponent</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+<span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-bad-whitespace">	<span class="message">Avoid tab.</span></span><span class="syntax-number">1</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+  <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/return-from" class="syntax-interned-symbol">return-from</a> <span class="syntax-interned-symbol">interpret-token</span>
+    <span class="syntax-nesting2"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/*" class="syntax-interned-symbol">*</a> <span class="syntax-interned-symbol">sign</span> <span class="syntax-nesting3"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/coerce" class="syntax-interned-symbol">coerce</a> <span class="syntax-interned-symbol">magnitude</span> <a href="http://l1sp.org/cl/type" class="syntax-interned-symbol">type</a><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div>
+
+<ul>
+<li class="fragment appear">Could use a proper algorithm.</li>
+
+<li class="fragment appear"><p>
+But better let client decide:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="syntax-nesting0"><span class="syntax-cons"><span class="syntax-open">(</span><a href="http://l1sp.org/cl/defgeneric" class="syntax-interned-symbol">defgeneric</a> <span class="syntax-interned-symbol">make-float</span>
+    <span class="syntax-nesting1"><span class="syntax-cons"><span class="syntax-open">(</span><span class="syntax-interned-symbol">client</span> <a href="http://l1sp.org/cl/type" class="syntax-interned-symbol">type</a>
+     <span class="syntax-interned-symbol">sign</span> <span class="syntax-interned-symbol">decimal-mantissa</span> <span class="syntax-interned-symbol">fraction-numerator</span> <span class="syntax-interned-symbol">fraction-denominator</span>
+     <span class="syntax-interned-symbol">exponent-sign</span> <span class="syntax-interned-symbol">exponent</span><span class="syntax-close">)</span></span></span><span class="syntax-close">)</span></span></span>
+</pre>
+</div></li>
+
+<li class="fragment appear">Or both.</li>
+
+</ul>
+
+</section>
+<section id="slide-slide:future-work:symbol-protocol">
+<h3 id="slide:future-work:symbol-protocol"><a id="org233b15b"></a>Future Work: Symbol and Package Protocol</h3>
+<dl>
+<dt>Problem</dt><dd>Custom symbol and package representations do not work
+with some of the builtin behavior:
+
+<ul>
+<li>Checking basic syntax of feature expression tests</li>
+
+<li>Checking basic syntax of structure literals</li>
+
+<li>…</li>
+
+</ul></dd>
+
+<dt>Solution(?)</dt><dd>A protocol through which Eclector can handle
+user-defined symbol and package
+representations:<br/>
+
+<ul>
+<li><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-symbolp-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:symbolp</a></code></li>
+
+<li><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-packagep-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:packagep</a></code></li>
+
+<li><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-find_002dsymbol-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:find-symbol</a></code></li>
+
+<li><code class="src src-lisp"><a href="https://s-expressionists.github.io/Eclector/eclector.html#index-intern-_005beclector_002ereader_005d" class="syntax-interned-symbol">eclector.reader:intern</a></code></li>
+
+</ul></dd>
+
+</dl>
+
+</section>
+<section id="slide-org56bc44f">
+<h3 id="org56bc44f">Future Work: Extensions</h3>
+<p>
+Existing and novels extensions:
+</p>
+
+<ul>
+<li><code>::()</code></li>
+
+<li>Rational float syntax</li>
+
+<li>Thousand separator</li>
+
+<li>hash-table literals</li>
+
+<li>Unicode character names</li>
+
+</ul>
+
+</section>
+<section id="slide-org6f432a5">
+<h3 id="org6f432a5">Future Work: Multi-column Error Locations</h3>
+
+</section>
+<section id="slide-org551971b">
+<h3 id="org551971b">Future Work: Extensible Quasiquotation</h3>
+
+</section>
+<section id="slide-org6e2fc94">
+<h3 id="org6e2fc94">Future Work: Performance</h3>
+
+</section>
+<section id="slide-org87ae06e">
+<h3 id="org87ae06e">Future Work: org-export?</h3>
+
+</section>
+</section>
+<section>
+<section id="slide-slide:thank-you">
+<h2 id="slide:thank-you"><a id="org5e38db1"></a>Thank You for Your Attention!</h2>
+<p>
+Eclector Resources:
+</p>
+
+<dl>
+<dt>This presentation</dt><dd><a href="https://techfak.de/~jmoringe/presentation-eclector/slides.html">https://techfak.de/~jmoringe/presentation-eclector/slides.html</a></dd>
+
+<dt>IRC Channel</dt><dd><code>#sicl</code> on freenode</dd>
+
+<dt>Code</dt><dd><a href="https://github.com/s-exressionists/eclector">https://github.com/s-exressionists/eclector</a></dd>
+
+<dt>Documentation</dt><dd><a href="https://s-expressionists.github.io/Eclector/">https://s-expressionists.github.io/Eclector/</a></dd>
+
+</dl>
+</section>
+</section>
+</div>
+</div>
+<script src="./reveal.js/lib/js/head.min.js"></script>
+<script src="./reveal.js/js/reveal.js"></script>
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: true,
+center: false,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+mouseWheel: false,
+fragmentInURL: false,
+hashOneBasedIndex: false,
+pdfSeparateFragments: true,
+
+overview: true,
+margin: 0.00,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'slide', // see README of reveal.js for options
+transitionSpeed: 'default',
+
+// Optional libraries used to extend reveal.js
+dependencies: [
+ { src: './reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+
+});
+</script>
+</body>
+</html>
