@@ -1,1 +1,16 @@
+*.cp
+*.cps
+*.fn
+*.fns
+
+*.aux
+*.log
+*.toc
+
+*.info
+
+*.pdf
+
+*.html
+
 version.texi
