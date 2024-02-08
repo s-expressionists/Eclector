@@ -108,7 +108,7 @@
 ;;;
 
 (defun find-package-annotation (string start)
-  (let* ((start-string "are in the <tt>")
+  (let* ((start-string "are in the <tt>") ; TODO no longer works; texinfo now generates <code class="t">...
          (start-index  (search start-string string :start2 start))
          (end-index    (when start-index
                          (search "</tt> package" string :start2 start-index))))
@@ -118,7 +118,7 @@
       (values start-index end-index t))))
 
 (defun find-inline-tt (string start)
-  (let* ((start-string "<tt>")
+  (let* ((start-string "<tt>") ; TODO no longer works; texinfo now generates <code class="t">...
          (start-index  (search start-string string :start2 start))
          (end-index    (when start-index
                          (search "</tt>" string :start2 start-index)))
@@ -131,12 +131,14 @@
                                               (not (alphanumericp (aref string start-index)))))))))
 
 (defun find-inline-code (string start)
-  (let* ((start-string "<code>")
-         (start-index  (search start-string string :start2 start))
+  (let* ((start-string "<code")
+         (start-index* (search start-string string :start2 start))
+         (start-index  (when start-index*
+                         (position #\> string :start start-index*)))
          (end-index    (when start-index
                          (search "</code>" string :start2 start-index)))
          (start-index  (when end-index
-                         (+ start-index (length start-string)))))
+                         start-index)))
     #+no (when start-index
       (format t "~D:~D ~A ~A~%" start-index end-index (subseq string start-index end-index) (> (- end-index start-index) 2)))
     (when (and start-index)
@@ -146,7 +148,7 @@
                                              (char= #\: (aref string (1- end-index)))))))))
 
 (defun find-listing (string start)
-  (let* ((start-string "<pre class=\"lisp\">")
+  (let* ((start-string "<pre class=\"lisp-preformatted\">")
          (start-index  (search start-string string :start2 start))
          (end-index    (when start-index
                          (search "</pre>" string :start2 start-index))))
