@@ -211,20 +211,20 @@
 
 (defmethod eclector.parse-result:make-expression-result
     ((client   highlight-client)
-     (result   (eql eclector.parse-result::**definition**))
+     (result   eclector.parse-result:definition)
      (children t)
      (source   t))
   (let ((target (nth-value 2 (eclector.reader:labeled-object-state
-                              client children))))
+                              client (eclector.parse-result:labeled-object result)))))
     (make-instance 'cst::definition-node :label    1
                                          :children (list target)
                                          :source   source)))
 
 (defmethod eclector.parse-result:make-expression-result
-    ((client highlight-client)
-     (result (eql eclector.parse-result::**reference**))
+    ((client   highlight-client)
+     (result   eclector.parse-result:reference)
      (children t)
-     (source t))
+     (source   t))
   (make-instance 'cst::reference-node :label  1
                                       :source source))
 
@@ -238,7 +238,7 @@
                  (()
                    (let ((reference (eclector.parse-result:make-expression-result
                                      client
-                                     eclector.parse-result:**reference**
+                                     (eclector.parse-result::make-reference current-object)
                                      current-object
                                      (cst:source child)))) ; let ((parse-result (nth-value 2 (eclector.reader:labeled-object-state client object))))
                      (setf (cst::%parent reference) object)
