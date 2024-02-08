@@ -28,6 +28,8 @@ jobs:
           cp eclector.pdf           build/pdf/
           cp eclector.info          build/info/
           cp -r presentation-slides build/
+          ( cd build/presentation-slides && tar -xzf reveal.js.tar.gz )
+          rm build/presentation-slides/reveal.js.tar.gz
 
       - name: Create artifact
         uses: actions/upload-pages-artifact@v3
