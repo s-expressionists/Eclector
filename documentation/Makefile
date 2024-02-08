@@ -18,14 +18,14 @@ all : $(NAME).info $(NAME).pdf $(NAME).html
 #%.png: %.plantuml
 #	java -jar .../plantuml.jar -tpng $<
 
-generated-version.texi: ../version.sexp
+generated-version.texi: ../data/version-string.sexp
 	$(SBCL) --noinform --disable-debugger --no-sysinit --no-userinit                           \
 	        --eval '(require :asdf)'                                                           \
 	        --eval '(format t "@macro sysversion~%~A~%@end macro" (uiop:read-file-form "$<"))' \
 	        --quit                                                                             \
 	  > $@
 
-generated-chapter-changelog.texi: ../changes.sexp write-changelog.lisp
+generated-chapter-changelog.texi: ../data/changes.sexp write-changelog.lisp
 	$(SBCL) --script write-changelog.lisp > $@
 
 $(NAME).info: $(INPUTS) $(FIGURES)

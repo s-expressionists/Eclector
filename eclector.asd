@@ -5,7 +5,7 @@
                 "Jan Moringen")
   :maintainer  "Jan Moringen"
 
-  :version     (:read-file-form "version.sexp")
+  :version     (:read-file-form "data/version-string.sexp")
   :depends-on  ("alexandria"
                 "closer-mop"
                 "acclimation")

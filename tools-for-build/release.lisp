@@ -13,6 +13,14 @@
 
 (cl:in-package #:eclector.tools-for-build.release)
 
+;;; Data
+
+(defparameter *changes-file*
+  "data/changes.sexp")
+
+(defparameter *version-file*
+  "data/version-string.sexp")
+
 ;;; Utilities
 
 (defvar *level* 0)
@@ -37,18 +45,18 @@
 ;;;
 
 (defun read-version ()
-  (let* ((current/string (uiop:read-file-form "version.sexp"))
+  (let* ((current/string (uiop:read-file-form *version-file*))
          (current/list   (mapcar #'parse-integer
                                  (split-sequence #\. current/string))))
     (assert (= 3 (length current/list)))
     (values current/list current/string)))
 
 (defun bump-version (new-version)
-  (with-output-to-file (stream "version.sexp" :if-exists :supersede)
+  (with-output-to-file (stream *version-file* :if-exists :supersede)
     (format stream "\"~{~A~^.~}\"~%" new-version)))
 
 (defun add-release-date ()
-  (let* ((file    "changes.sexp")
+  (let* ((file    *changes-file*)
          (content (read-file-into-string file))
          (cst     (with-input-from-string (stream content)
                     (eclector.concrete-syntax-tree:read stream)))
@@ -75,7 +83,7 @@
         (write-string-into-file content file :if-exists :supersede)))))
 
 (defun add-release (version)
-  (let* ((file    "changes.sexp")
+  (let* ((file    *changes-file*)
          (content (read-file-into-string file))
          (cst     (with-input-from-string (stream content)
                     (eclector.concrete-syntax-tree:read stream)))
@@ -92,7 +100,8 @@
     (write-string-into-file content file :if-exists :supersede)))
 
 (defun release ()
-  (let* ((this-version/list   (read-version))
+  (let* ((changes-file        *changes-file*)
+         (this-version/list   (read-version))
          (next-version/list   (destructuring-bind (major minor commit)
                                   this-version/list
                                 (list major (1+ minor) commit)))
@@ -101,7 +110,7 @@
          (next-release/string (format nil "~{~D~^.~}"
                                       (subseq next-version/list 0 2))))
     (flet ((write-release-notes (release-notes-file &rest args)
-             (let ((changes (changes:read-changes "changes.sexp")))
+             (let ((changes (changes:read-changes changes-file)))
                (message "Writing release notes ~A" release-notes-file)
                (apply #'news:write-news changes release-notes-file args))))
       ;; Add release date to current section in changes.sexp and write
@@ -112,8 +121,8 @@
         (add-release-date)
         (write-release-notes "NEWS" :plaintext)
         (write-release-notes "NEWS.md" :markdown :count 1)
-        (commit (format nil "Add date to ~A release in changes.sexp~%"
-                        this-release/string))
+        (commit (format nil "Add date to ~A release in ~A~%"
+                        this-release/string changes-file))
         ;; Create release tag.
         (let ((tag-name (format nil "~A.0" this-release/string)))
           (tag tag-name)))

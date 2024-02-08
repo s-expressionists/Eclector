@@ -3,7 +3,7 @@
   :license     "BSD"
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
-  :version     (:read-file-form "version.sexp")
+  :version     (:read-file-form "data/version-string.sexp")
   :depends-on  ("eclector")
 
   :components  ((:module "syntax-extensions"

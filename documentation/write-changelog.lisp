@@ -86,5 +86,5 @@
 
 ;;; Entry point
 
-(let ((changes (read-changes "../changes.sexp")))
+(let ((changes (read-changes "../data/changes.sexp")))
   (write-changelog changes *standard-output*))
