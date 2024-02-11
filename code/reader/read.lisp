@@ -90,20 +90,20 @@
         (loop with *consing-dot-allowed-p* = consing-dot-allowed-p
               for object = (let ((*consing-dot-allowed-p* nil))
                              (%read-list-element client stream close-char))
-              then (%read-list-element client stream close-char)
+                then (%read-list-element client stream close-char)
               if (eq object *consing-dot*)
-              do (setf *consing-dot-allowed-p* nil
-                       state :tail)
-                 (funcall function :tail (read stream t nil t))
-                 (setf state :end)
-                 ;; This call to read must not return (it has to signal
-                 ;; END-OF-LIST).
-                 (read stream t nil t)
-                 (%recoverable-reader-error
-                  stream 'multiple-objects-following-consing-dot
-                  :position-offset -1 :report 'ignore-object) ; not accurate
+                do (setf *consing-dot-allowed-p* nil
+                         state :tail)
+                   (funcall function state (read stream t nil t))
+                   (setf state :end)
+                   ;; This call to read must not return (it has to signal
+                   ;; END-OF-LIST).
+                   (read stream t nil t)
+                   (%recoverable-reader-error
+                    stream 'multiple-objects-following-consing-dot
+                    :position-offset -1 :report 'ignore-object) ; not accurate
               else
-              do (funcall function state object))
+                do (funcall function state object))
       (end-of-list (condition)
         (let ((char (%character condition)))
           (unless (char= char close-char)
@@ -136,7 +136,7 @@
   (alexandria:when-let ((list-reader *list-reader*))
     (return-from %read-delimited-list
       (funcall list-reader stream close-char)))
-
+  ;; Continue with default list reader.
   (let ((reversed-result '())
         (tail nil))
     (flet ((element (state value)

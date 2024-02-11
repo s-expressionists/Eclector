@@ -15,9 +15,10 @@
               :filter (lambda (system-name)
                         (not (search "concrete-syntax-tree" system-name))))
              (nreverse result))))
-    (loop for (filename1 form-number1  expression1) in (collect-expressions
-                                                        'eclector.reader:read)
-          for (nil       nil           expression2) in (collect-expressions 'read)
+    (loop for (filename1 form-number1 expression1) in (collect-expressions
+                                                       'eclector.reader:read)
+          for (nil       nil          expression2) in (collect-expressions
+                                                       'read)
           ;; Do not use (is (code-equal ...)) so the number of checks
           ;; does not vary with source code changes.
           do (unless (code-equal expression2 expression1)
