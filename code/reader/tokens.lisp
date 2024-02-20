@@ -218,14 +218,14 @@
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
                    (if exponentp
-                       (make-literal client float-kind
+                       (make-literal client float-kind :stream input-stream ; HACK pass stream as required argument?
                                      :type type
                                      :sign sign
                                      :decimal-mantissa (decimal-mantissa)
                                      :exponent-sign exponent-sign
                                      :exponent (exponent)
                                      :decimal-exponent decimal-exponent)
-                       (make-literal client float-kind
+                       (make-literal client float-kind :stream input-stream
                                      :type type
                                      :sign sign
                                      :decimal-mantissa (decimal-mantissa)

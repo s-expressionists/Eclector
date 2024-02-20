@@ -141,17 +141,52 @@
 
 (define-kind number-kind (literal-kind) ())
 
+;;; Taken from SBCL code
+;;; Truncate EXPONENT if it's too large for a float.
+(defun truncate-exponent (exponent mantissa)
+  ;; Work with base-2 logarithms to avoid conversions to floats, and
+  ;; convert to base-10 conservatively at the end.  Use the least
+  ;; positive float, because denormalized exponent can be larger than
+  ;; normalized.
+  (let* ((max-exponent-bits (+ sb-vm:double-float-digits
+                               sb-vm:double-float-bias))
+         (mantissa-bits     (integer-length mantissa)))
+    (if (minusp exponent)
+        (max exponent (ceiling (- (+ max-exponent-bits mantissa-bits))
+                               #.(cl:floor (cl:log 10 2))))
+        (min exponent (floor (- max-exponent-bits mantissa-bits)
+                             #.(cl:floor (cl:log 10 2)))))))
+
 (define-kind float-kind (number-kind) ())
 (defmethod make-literal ((client t) (kind float-kind)
-                         &key type sign decimal-mantissa
+                         &key stream ; TODO pass stream as required parameter for source information and error reporting?
+                              type sign decimal-mantissa
                               exponent-sign (exponent nil exponentp)
                               decimal-exponent)
-  (let ((magnitude (* decimal-mantissa
-                      (expt 10 (- (if exponentp
-                                      (* exponent-sign exponent)
-                                      0)
-                                  decimal-exponent)))))
-    (* sign (coerce magnitude type))))
+  (let* ((exponent*  (-  (if exponentp
+                            (* exponent-sign exponent)
+                            0)
+                        decimal-exponent))
+         (exponent** (truncate-exponent exponent* decimal-mantissa))
+         (magnitude (* decimal-mantissa (expt 10 exponent**))))
+    (handler-case
+        (* sign (coerce magnitude type))
+      (floating-point-overflow ()
+        (let ((length (+ (length (format nil "~D~@[E~D~]"
+                                         decimal-mantissa exponent))
+                         (if (zerop decimal-exponent) 0 1) ; TODO not accurate
+                         )))
+          (%recoverable-reader-error
+           stream 'overflow-in-float
+           :position-offset (- length)
+           :operation 'coerce           ; arithmetic-error
+           :operands (list magnitude type)
+           :sign sign                   ; overflow-in-float
+           :mantissa decimal-mantissa
+           :exponent exponent
+           :float-format type           ; float-format-condition
+           :report 'use-replacement-float-format ; TODO report
+           ))))))
 
 ;;; TODO separate file?
 (define-kind rational-kind (number-kind) ())
