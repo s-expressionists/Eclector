@@ -192,7 +192,7 @@
    (%found-character :initarg :found-character
                      :reader found-character)))
 
-;;; Conditions related to SHARPSIGN-DOT
+;;; Conditions related to function literals
 
 (define-condition end-of-input-after-sharpsign-single-quote (end-of-file
                                                              incomplete-construct)
@@ -254,9 +254,19 @@
 (define-condition invalid-radix (stream-position-reader-error)
   ((%radix :initarg :radix :reader radix)))
 
-(define-condition invalid-default-float-format (stream-position-reader-error)
-  ((%exponent-marker :initarg :exponent-marker :reader exponent-marker)
-   (%float-format :initarg :float-format :reader float-format)))
+(define-condition float-format-condition (condition)
+  ((%float-format :initarg :float-format :reader float-format)))
+
+(define-condition invalid-default-float-format (stream-position-reader-error
+                                                float-format-condition)
+  ((%exponent-marker :initarg :exponent-marker :reader exponent-marker)))
+
+(define-condition overflow-in-float (stream-position-reader-error
+                                     floating-point-overflow
+                                     float-format-condition)
+  ((%sign :initarg :sign :reader sign)
+   (%mantissa :initarg :mantissa :reader mantissa)
+   (%exponent :initarg :exponent :reader exponent)))
 
 ;;; Conditions related to block comments
 

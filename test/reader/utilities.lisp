@@ -5,7 +5,6 @@
 
 (test convert-according-to-readtable-case/smoke
   "Smoke test for the CONVERT-ACCORDING-TO-READTABLE-CASE function."
-
   (mapc (lambda (foo)
           (destructuring-bind (token escape-ranges case expected) foo
             (let ((token (copy-seq token))

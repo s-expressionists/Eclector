@@ -220,6 +220,7 @@
    #:zero-denominator
    #:invalid-radix
    #:invalid-default-float-format
+   #:overflow-in-float
 
    #:unterminated-block-comment
 

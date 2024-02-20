@@ -168,14 +168,15 @@
     (let* ((length (length token))
            (remaining-escape-ranges escape-ranges)
            (escape-range (first remaining-escape-ranges))
-           (sign 1)
+           (sign nil)
            (decimal-exponent 0)
-           (exponent-sign 1)
+           (exponent-sign nil)
            (exponent-marker nil)
            (position-package-marker-1 nil)
            (position-package-marker-2 nil)
            (index -1))
-      (declare (type (or (eql -1) array-index) index))
+      (declare (type (member nil -1 1) sign exponent-sign)
+               (type (or (eql -1) array-index) index))
       (with-accumulators ((decimal-mantissa 10)
                           (numerator* read-base) (denominator* read-base)
                           (exponent 10))
@@ -216,12 +217,19 @@
                         :float-format default-format
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
-                   (let ((magnitude (* (decimal-mantissa)
-                                       (expt 10 (- (if exponentp
-                                                       (* exponent-sign (exponent))
-                                                       0)
-                                                   decimal-exponent)))))
-                     (* sign (coerce magnitude type))))))
+                   (if exponentp
+                       (make-float-literal input-stream
+                                           :type type
+                                           :sign sign
+                                           :decimal-mantissa (decimal-mantissa)
+                                           :exponent-sign exponent-sign
+                                           :exponent (exponent)
+                                           :decimal-exponent decimal-exponent)
+                       (make-float-literal input-stream
+                                           :type type
+                                           :sign sign
+                                           :decimal-mantissa (decimal-mantissa)
+                                           :decimal-exponent decimal-exponent)))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
@@ -260,6 +268,7 @@
                   ;; Numbers).
                   (go symbol))
                  ((eql char #\+)
+                  (setf sign 1)
                   (go sign))
                  ((eql char #\-)
                   (setf sign -1)
@@ -321,7 +330,10 @@
                  ((not char)
                   (return-from interpret-token
                     (alexandria:if-let ((value (numerator*)))
-                      (* sign value)
+                      (* (case sign
+                           ((nil) 1)
+                           (t sign))
+                         value)
                       (symbol))))
                  ((eql char #\.)
                   (go decimal-integer-final))
@@ -338,7 +350,7 @@
              decimal-integer-final ; [sign] decimal-digit+ decimal-point
                (next-cond (char)
                  ((not char)
-                  (return-from interpret-token (* sign (decimal-mantissa))))
+                  (return-from interpret-token (* (or sign 1) (decimal-mantissa))))
                  ((decimal-mantissa char)
                   (incf decimal-exponent)
                   (go float-no-exponent))
@@ -389,6 +401,7 @@
                ;; [sign] decimal-digit* decimal-point decimal-digit+ exponent-marker
                (next-cond (char t)
                  ((eq char #\+)
+                  (setf exponent-sign 1)
                   (go float-exponent-sign))
                  ((eq char #\-)
                   (setf exponent-sign -1)
