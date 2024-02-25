@@ -19,6 +19,7 @@
                     (equal expected value))
                    ((mappablep expected)
                     (and (eq (class-of expected) (class-of value))
+                         (mappablep value)
                          (= (length expected) (length value))
                          (every #'rec expected value)))
                    ((not (symbolp expected))

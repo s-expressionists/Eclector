@@ -107,9 +107,9 @@
           ("(1 2"      (eclector.reader:unterminated-list)                      (1 2))
           ("(1 ."      (eclector.reader:end-of-input-after-consing-dot
                         eclector.reader:unterminated-list)
-                                                                                (1))
+                                                                                (1 . 1))
           ("(.)"       (eclector.reader:invalid-context-for-consing-dot)        ())
-          ("(1 .)"     (eclector.reader:object-must-follow-consing-dot)         (1))
+          ("(1 .)"     (eclector.reader:object-must-follow-consing-dot)         (1 . 1))
           ("(1 . 2 3)" (eclector.reader:multiple-objects-following-consing-dot) (1 . 2))
           (")(1)"      (eclector.reader:invalid-context-for-right-parenthesis)  (1))
 

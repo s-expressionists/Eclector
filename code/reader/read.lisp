@@ -117,7 +117,10 @@
               ((eq state :tail)
                (%recoverable-reader-error
                 stream 'object-must-follow-consing-dot
-                :position-offset -1 :report 'inject-nil))))
+                :position-offset -1 :report '(use-replacement-object #1=1))
+               ;; Recover by supplying a non-NIL object so that the
+               ;; dotted nature of the list is preserved.
+               (funcall function state #1#))))
       ((and end-of-file (not incomplete-construct)) (condition)
         (cond ((and (not (null eof-value))
                     (funcall function state eof-value)))
@@ -126,7 +129,10 @@
                  (%recoverable-reader-error
                   stream 'end-of-input-after-consing-dot
                   :stream-position (stream-position condition)
-                  :report 'inject-nil))
+                  :report '(use-replacement-object #2=1))
+                 ;; Recover by supplying a non-NIL object so that the
+                 ;; dotted nature of the list is preserved.
+                 (funcall function state #2#))
                (%recoverable-reader-error
                 stream 'unterminated-list
                 :stream-position (stream-position condition)

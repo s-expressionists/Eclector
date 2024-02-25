@@ -40,6 +40,9 @@
   (define-description ignore-missing-delimiter     "Ignore the missing delimiter.")
   (define-description use-partial-string           "Return a string of the already read characters.")
   (define-description inject-nil                   "Use NIL in place of the missing object.")
+  (define-description use-replacement-object       (lambda (stream replacement-object)
+                                                     (format stream "Use the object ~S in place of the missing object."
+                                                             replacement-object)))
   (define-description ignore-object                "Ignore the object.")
   (define-description use-partial-list             "Return a list of the already read elements.")
   (define-description ignore-trailing-right-paren  "Ignore the trailing right parenthesis.")
