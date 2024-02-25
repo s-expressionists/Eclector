@@ -1,0 +1,33 @@
+name: test
+
+on: [push]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare runner
+        run: |
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -qq update \
+            && DEBIAN_FRONTEND=noninteractive sudo apt-get -qq --assume-yes install \
+                 sbcl
+
+      - uses: actions/checkout@v1
+
+      - name: Install quicklisp
+        run: |
+          wget https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --noinform --disable-debugger        \
+            --load quicklisp.lisp                   \
+            --eval '(quicklisp-quickstart:install)' \
+            --quit
+
+      - name: Run tests
+        run: |
+          sbcl --noinform --disable-debugger                                                                                                \
+            --load "${HOME}/quicklisp/setup.lisp"                                                                                           \
+            --eval '(asdf:initialize-source-registry (quote (:source-registry (:directory "'"$(pwd)"'") :ignore-inherited-configuration)))' \
+            --eval '(ql:quickload (list "eclector/test" "eclector-concrete-syntax-tree/test" "eclector.syntax-extensions/test"))'           \
+            --eval '(mapc (function asdf:test-system) (list "eclector" "eclector-concrete-syntax-tree" "eclector.syntax-extensions"))'
