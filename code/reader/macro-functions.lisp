@@ -233,9 +233,12 @@
           (return-from comma (read-material))))
       (let* ((*backquote-depth* (1- depth))
              (form (read-material)))
-        (if splicing-p
-            (wrap-in-unquote-splicing client form)
-            (wrap-in-unquote client form))))))
+        (cond ((not splicing-p)
+               (wrap-in-unquote client form))
+              ((eql char2 #\.)
+               (wrap-in-unquote-nsplicing client form))
+              (t
+               (wrap-in-unquote-splicing client form)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
