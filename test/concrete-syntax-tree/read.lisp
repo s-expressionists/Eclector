@@ -191,6 +191,44 @@
                                               (scons ())) ; nil
                                        (scons ())))))))) ; nil
 
+;;; Identity
+
+(test read/identity
+  "Test node identity properties in constructed CSTs."
+  ;; Test special case for proper list.
+  (let* ((result (eclector.concrete-syntax-tree:read-from-string "(2 2 2)"))
+         (first  (cst:first result))
+         (second (cst:first (cst:rest result)))
+         (third  (cst:first (cst:rest (cst:rest result)))))
+    (is (eql 2 (cst:raw first)))
+    (is (eql 2 (cst:raw second)))
+    (is (eql 2 (cst:raw third)))
+    (is (notany #'eq (list first second third) (list second third first))))
+  (let* ((result (eclector.concrete-syntax-tree:read-from-string
+                  "(#1=2 2 #1#)"))
+         (first  (cst:first result))
+         (second (cst:first (cst:rest result)))
+         (third  (cst:first (cst:rest (cst:rest result)))))
+    (is (eql 2 (cst:raw first)))
+    (is (eql 2 (cst:raw second)))
+    (is (eql 2 (cst:raw third)))
+    (is (not (eq first second)))
+    (is (eq first third)))
+  ;; Test special case for dotted list.
+  (let* ((result (eclector.concrete-syntax-tree:read-from-string "(2 . 2)"))
+         (car    (cst:first result))
+         (cdr    (cst:rest result)))
+    (is (eql 2 (cst:raw car)))
+    (is (eql 2 (cst:raw cdr)))
+    (is (not (eq car cdr))))
+  (let* ((result (eclector.concrete-syntax-tree:read-from-string
+                  "(#1=2 . #1#)"))
+         (car    (cst:first result))
+         (cdr    (cst:rest result)))
+    (is (eql 2 (cst:raw car)))
+    (is (eql 2 (cst:raw cdr)))
+    (is (eq car cdr))))
+
 ;;; Custom client
 
 (defclass custom-client (eclector.concrete-syntax-tree:cst-client)

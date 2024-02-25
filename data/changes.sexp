@@ -72,7 +72,28 @@
     "to" "SRFI 62" "for" "scheme" "." "One" "difference" "is" "that" "a"
     "numeric" "infix" "argument" "can" "be" "used" "to" "comment" "out" "a"
     "number" "of" "s-expressions" "different" "from" "1" ":")
-   (:code :common-lisp "(frob r1 r2 :k3 4 #4; :k5 6 :k6 7)")))
+   (:code :common-lisp "(frob r1 r2 :k3 4 #4; :k5 6 :k6 7)"))
+  (:item
+   (:paragraph
+    "The" (:tt "concrete-syntax-tree") "module" "now" "produces" "a"
+    "better" "tree" "structure" "for" "certain" "inputs" "like"
+    (:tt "(0 . 0)") "." "Before" "this" "change" "the" "produced" "CST"
+    "had" "the" "same" (:symbol "concrete-syntax-tree:atom-cst") "object"
+    "as" "the" (:symbol "concrete-syntax-tree:first") "and"
+    (:symbol "concrete-syntax-tree:rest") "of" "the" "outer"
+    (:symbol "concrete-syntax-tree:cons-cst") "node" "." "After" "this"
+    "change" "the" (:symbol "concrete-syntax-tree:first") "child" "is" "the"
+    (:symbol "concrete-syntax-tree:atom-cst") "which" "corresponds" "to" "the"
+    "first" (:tt "0") "in" "the" "input" "and" "the"
+    (:symbol "concrete-syntax-tree:rest") "child" "is" "the"
+    (:symbol "concrete-syntax-tree:atom-cst") "which" "corresponds" "to" "the"
+    "second" (:tt "0") "in" "the" "input" "." "In" "contrast" "to" "the"
+    "previous" "example" "," "an" "input" "like" (:tt "(#1=0 . #1#)")
+    "continues" "to" "result" "in" "a" "single"
+    (:symbol "concrete-syntax-tree:atom-cst") "in" "both" "the"
+    (:symbol "concrete-syntax-tree:first") "and"
+    (:symbol "concrete-syntax-tree:rest") "slots" "of" "the" "outer"
+    (:symbol "concrete-syntax-tree:cons-cst") "object" ".")))
 
  (:release "0.9" "2023-03-19"
   (:item
