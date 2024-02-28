@@ -1,4 +1,4 @@
-Release 0.10 (not yet released)
+Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and
   ECLECTOR.PARSE-RESULT:MAKE-SOURCE-RANGE have been removed. Clients should use
