@@ -1,4 +1,6 @@
 (:changes
+ (:release "0.11" nil)
+
  (:release "0.10" "2024-02-28"
   (:item
    (:paragraph
