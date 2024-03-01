@@ -2,7 +2,6 @@
 
 ;;; We have to provide our own PEEK-CHAR function because CL:PEEK-CHAR
 ;;; obviously does not use Eclector's readtable.
-
 (defun peek-char (&optional peek-type
                             (input-stream *standard-input*)
                             (eof-error-p t)
@@ -15,15 +14,28 @@
                   (%reader-error input-stream 'end-of-file))
                  (t
                   eof-value))))
-    (if (not (eq peek-type t))
-        (done (cl:peek-char peek-type input-stream nil input-stream recursive-p))
+    ;; There are three peek types:
+    ;; NIL          Fetch the next character. We delegate to `cl:read'.
+    ;; T            Skip over whitespace, then peek. We do this
+    ;;              ourselves since we must use our readtable.
+    ;; a character  Skip until the supplied character is the next
+    ;;              character. We delegate to `cl:read'.
+    (if (eq peek-type t)
+        ;; Repeated `cl:read-char' and a final `unread-char' tends to
+        ;; be faster than repeating `cl:peek-char' and `cl:read-char'.
+        ;; Looking up the syntax type is relatively slow so we do it
+        ;; only once for runs of identical characters.
         (loop with readtable = (state-value *client* 'cl:*readtable*)
-              for char = (cl:peek-char nil input-stream nil input-stream recursive-p)
+              for previous of-type (or null character) = nil then char
+              for char = (cl:read-char input-stream nil input-stream recursive-p)
               while (and (not (eq char input-stream))
-                         (eq (eclector.readtable:syntax-type readtable char)
-                             :whitespace))
-              do (read-char input-stream) ; consume whitespace char
-              finally (return (done char))))))
+                         (or (eql previous char)
+                             (eq (eclector.readtable:syntax-type readtable char)
+                                 :whitespace)))
+              finally (unless (eq char input-stream)
+                        (unread-char char input-stream))
+                      (return (done char)))
+        (done (cl:peek-char peek-type input-stream nil input-stream recursive-p)))))
 
 ;;; Establishing context
 

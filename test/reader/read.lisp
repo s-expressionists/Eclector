@@ -22,6 +22,10 @@
 
       ("a" (:stream)          #\a))))
 
+;;; Avoid literal tab characters in the source code since editors may
+;;; display them inconsistently or even remove them.
+(defvar *ws* (format nil "  ~C  a" #\Tab))
+
 (test peek-char/smoke
   "Smoke test for the PEEK-CHAR function."
   (do-stream-input-cases ((input length) args
@@ -44,43 +48,55 @@
         (t
          (expect "value"      (equal expected (do-it)))
          (expect "host value" (equal expected (do-it/host))))))
-    '(;; Peek type T
-      (""   (t :stream)            eclector.reader:end-of-file)
-      (""   (t :stream nil)        nil)
-      (""   (t :stream nil :eof)   :eof)
+    `(;; Peek type T
+      (""    (t :stream)            eclector.reader:end-of-file)
+      (""    (t :stream nil)        nil)
+      (""    (t :stream nil :eof)   :eof)
 
-      (" "  (t :stream)            eclector.reader:end-of-file)
-      (" "  (t :stream nil)        nil)
-      (" "  (t :stream nil :eof)   :eof)
+      (" "   (t :stream)            eclector.reader:end-of-file)
+      (" "   (t :stream nil)        nil)
+      (" "   (t :stream nil :eof)   :eof)
 
-      (" a" (t :stream)            #\a)
-      (" a" (t :stream nil)        #\a)
-      (" a" (t :stream nil :eof)   #\a)
+      (" a"  (t :stream)            #\a)
+      (" a"  (t :stream nil)        #\a)
+      (" a"  (t :stream nil :eof)   #\a)
+
+      (,*ws* (t :stream)            #\a)
+      (,*ws* (t :stream nil)        #\a)
+      (,*ws* (t :stream nil :eof)   #\a)
       ;; Peek type NIL
-      (""   ()                     eclector.reader:end-of-file)
-      (""   (nil :stream)          eclector.reader:end-of-file)
-      (""   (nil :stream nil)      nil)
-      (""   (nil :stream nil :eof) :eof)
+      (""    ()                     eclector.reader:end-of-file)
+      (""    (nil :stream)          eclector.reader:end-of-file)
+      (""    (nil :stream nil)      nil)
+      (""    (nil :stream nil :eof) :eof)
 
-      (" "  (nil :stream)          #\Space)
-      (" "  (nil :stream nil)      #\Space)
-      (" "  (nil :stream nil :eof) #\Space)
+      (" "   (nil :stream)          #\Space)
+      (" "   (nil :stream nil)      #\Space)
+      (" "   (nil :stream nil :eof) #\Space)
 
-      (" a" (nil :stream)          #\Space)
-      (" a" (nil :stream nil)      #\Space)
-      (" a" (nil :stream nil :eof) #\Space)
+      (" a"  (nil :stream)          #\Space)
+      (" a"  (nil :stream nil)      #\Space)
+      (" a"  (nil :stream nil :eof) #\Space)
+
+      (,*ws* (nil :stream)            #\Space)
+      (,*ws* (nil :stream nil)        #\Space)
+      (,*ws* (nil :stream nil :eof)   #\Space)
       ;; Peek type CHAR
-      (""   (#\a :stream)          eclector.reader:end-of-file)
-      (""   (#\a :stream nil)      nil)
-      (""   (#\a :stream nil :eof) :eof)
+      (""    (#\a :stream)          eclector.reader:end-of-file)
+      (""    (#\a :stream nil)      nil)
+      (""    (#\a :stream nil :eof) :eof)
 
-      (" "  (#\a :stream)          eclector.reader:end-of-file)
-      (" "  (#\a :stream nil)      nil)
-      (" "  (#\a :stream nil :eof) :eof)
+      (" "   (#\a :stream)          eclector.reader:end-of-file)
+      (" "   (#\a :stream nil)      nil)
+      (" "   (#\a :stream nil :eof) :eof)
 
-      (" a" (#\a :stream)          #\a)
-      (" a" (#\a :stream nil)      #\a)
-      (" a" (#\a :stream nil :eof) #\a))))
+      (" a"  (#\a :stream)          #\a)
+      (" a"  (#\a :stream nil)      #\a)
+      (" a"  (#\a :stream nil :eof) #\a)
+
+      (,*ws* (#\a :stream)            #\a)
+      (,*ws* (#\a :stream nil)        #\a)
+      (,*ws* (#\a :stream nil :eof)   #\a))))
 
 (test read/smoke
   "Smoke test for the READ function."
