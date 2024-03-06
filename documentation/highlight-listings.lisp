@@ -191,7 +191,15 @@
 
 ;;;
 
+(defvar *documentation-readtable*
+  (let ((readtable (eclector.readtable:copy-readtable
+                    eclector.reader:*readtable*)))
+    (eclector.readtable:set-dispatch-macro-character
+     readtable #\# #\; 'eclector.syntax-extensions.s-expression-comment:s-expression-comment)
+    readtable))
+
 (let* ((filename "eclector.html")
        (string   (alexandria:read-file-into-string filename))
-       (result   (highlight-code string)))
+       (result   (let ((eclector.reader:*readtable* *documentation-readtable*))
+                   (highlight-code string))))
   (alexandria:write-string-into-file result filename :if-exists :supersede))
