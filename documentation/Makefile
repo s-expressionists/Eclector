@@ -1,4 +1,6 @@
 SBCL ?= sbcl
+QUICKLISP_DIRECTORY ?= $${HOME}/quicklisp/
+ASDF_SOURCE_REGISTRY ?= (quote (:source-registry (:directory "'$$(pwd)/..'") :ignore-inherited-configuration))
 
 NAME = eclector
 
@@ -40,10 +42,11 @@ $(NAME).html: $(INPUTS) $(FIGURES) $(wildcard *.css) highlight-listings.lisp
 	         --css-include=style-common.css \
 	         --css-include=style-single.css \
 	         $(NAME).texi
-	# TODO --no-userinit
-	$(SBCL) --noinform --disable-debugger --no-sysinit \
-	        --eval '(require :asdf)'                   \
-	        --load highlight-listings.lisp             \
+        # TODO --no-userinit
+	$(SBCL) --noinform --disable-debugger --no-sysinit --no-userinit                \
+	        --load "$(QUICKLISP_DIRECTORY)/setup.lisp"                              \
+	        --eval '(asdf:initialize-source-registry $(ASDF_SOURCE_REGISTRY))'      \
+	        --load highlight-listings.lisp                                          \
 	        --quit
 
 clean:

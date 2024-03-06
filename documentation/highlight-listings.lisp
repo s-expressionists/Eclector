@@ -1,9 +1,13 @@
 (require :asdf)
-(map nil #'asdf:load-asd
+(map nil (lambda (filename)
+           (asdf:load-asd (merge-pathnames filename *load-pathname*)))
      '(#P"../examples/highlight/eclector.examples.highlight.asd"
-       #P "../eclector-concrete-syntax-tree.asd"))
+       #P"../eclector-concrete-syntax-tree.asd"
+       #P"../eclector.syntax-extensions.asd"))
 (map nil #'asdf:load-system
-     '("eclector.examples.highlight" "eclector-concrete-syntax-tree"))
+     '("eclector.examples.highlight"
+       "eclector-concrete-syntax-tree"
+       "eclector.syntax-extensions"))
 
 ;;;
 
