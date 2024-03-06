@@ -142,10 +142,11 @@
     #+no (when start-index
       (format t "~D:~D ~A ~A~%" start-index end-index (subseq string start-index end-index) (> (- end-index start-index) 2)))
     (when (and start-index)
-      (values start-index end-index (not (or (and (<= (- end-index start-index) 2)
-                                                  (not (alphanumericp (aref string start-index))))
-                                             ;; Don't try to parse index entries
-                                             (char= #\: (aref string (1- end-index)))))))))
+      (values (1+ start-index) end-index
+              (not (or (and (<= (- end-index start-index) 2)
+                            (not (alphanumericp (aref string start-index))))
+                       ;; Don't try to parse index entries
+                       (char= #\: (aref string (1- end-index)))))))))
 
 (defun find-listing (string start)
   (let* ((start-string "<pre class=\"lisp-preformatted\">")
