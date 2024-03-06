@@ -239,7 +239,7 @@
                    (let ((reference (eclector.parse-result:make-expression-result
                                      client
                                      (eclector.parse-result::make-reference current-object)
-                                     current-object
+                                     '() ; current-object
                                      (cst:source child)))) ; let ((parse-result (nth-value 2 (eclector.reader:labeled-object-state client object))))
                      (setf (cst::%parent reference) object)
                      (setf (car cell) reference))
