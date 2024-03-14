@@ -39,7 +39,7 @@
 
 (defmethod labeled-object-state (client (object %labeled-object))
   (declare (ignore client))
-  (values (%labeled-object-state object) (%labeled-object-object object)))
+  (values (%labeled-object-state object) (%labeled-object-object object) object))
 
 (defmethod finalize-labeled-object (client
                                     (labeled-object %labeled-object)
@@ -120,7 +120,8 @@
   (%make-fixup-node (call-next-method) parent))
 
 (defmethod labeled-object-state (client (object %fixup-node))
-  (labeled-object-state client (%fixup-node-inner object)))
+  (let ((inner-labeled-object (%fixup-node-inner object))) ; TODO may have to fiddle with third return value (i.e. the "inner" labeled object)
+    (labeled-object-state client inner-labeled-object)))
 
 (defmethod finalize-labeled-object (client
                                     (labeled-object %fixup-node)

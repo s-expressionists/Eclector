@@ -69,7 +69,8 @@
                     (()
                      (eclector.reader:fixup client current-value seen))
                     (()
-                     (let ((reference (eclector.parse-result:make-reference current-raw-value))
+                     (let ((reference (eclector.parse-result:make-reference
+                                       current-raw-value))
                            (source (source current-value)))
                        (setf ,place (eclector.parse-result:make-expression-result
                                      client reference '() source))))))))
@@ -408,7 +409,7 @@
      (source   t))
   (let* ((labeled-object (eclector.parse-result:labeled-object result))
          (target-parse-result
-           (nth-value 2 (eclector.reader:labeled-object-state
+           (nth-value 3 (eclector.reader:labeled-object-state
                          client labeled-object))))
     (list :definition target-parse-result children source)))
 

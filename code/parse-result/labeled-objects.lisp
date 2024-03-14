@@ -49,7 +49,7 @@
          (parse-result (%wrapper-parse-result labeled-object)))
     (multiple-value-bind (state object)
         (eclector.reader:labeled-object-state client inner-labeled-object)
-      (values state object parse-result))))
+      (values state object inner-labeled-object parse-result))))
 
 (defmethod eclector.reader:finalize-labeled-object ((client parse-result-client)
                                                     (labeled-object %wrapper)
@@ -138,7 +138,7 @@
   ;; result).
   (let ((labeled-object (labeled-object result)))
     (nth-value
-     2 (eclector.reader:labeled-object-state client labeled-object))))
+     3 (eclector.reader:labeled-object-state client labeled-object))))
 
 (defmethod make-expression-result ((client parse-result-client)
                                    (result reference)
@@ -151,7 +151,7 @@
   ;; represent the labeled object reference itself as a parse result).
   (let ((labeled-object (labeled-object result)))
     (nth-value
-     2 (eclector.reader:labeled-object-state client labeled-object))))
+     3 (eclector.reader:labeled-object-state client labeled-object))))
 
 (defmethod eclector.reader:fixup-graph-p ((client parse-result-client)
                                           (root-labeled-object %wrapper))

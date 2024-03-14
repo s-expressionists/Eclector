@@ -65,9 +65,9 @@
 
 (macrolet ((labeled-object-result (client result source class)
              `(let ((labeled-object (eclector.parse-result:labeled-object ,result)))
-                (multiple-value-bind (state object parse-result)
+                (multiple-value-bind (state object labeled-object parse-result)
                     (eclector.reader:labeled-object-state ,client labeled-object)
-                  (declare (ignore state))
+                  (declare (ignore labeled-object state))
                   (make-instance ',class :source ,source
                                          :raw object
                                          :target parse-result)))))
