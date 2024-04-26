@@ -143,7 +143,7 @@
       (declare (ignore values))
       (fail "~@<When reading ~S, expected a condition of type ~S to be ~
              signaled but no condition was signaled.~@:>"
-            expected-condition-type))))
+            input expected-condition-type))))
 
 (defun %expected-condition-type (expected)
   (cond ((eq expected 'eclector.reader:feature-expression-type-error)
