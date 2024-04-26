@@ -76,9 +76,11 @@
          ;; in the middle of an object representation."  (HyperSpec
          ;; entry for READ)
          (let* ((*skip-reason* nil)
-                (values (multiple-value-list
+                (values (multiple-value-list ; TODO m-v-c (lambda (&rest values))
                          (call-reader-macro
                           client input-stream char readtable))))
+           ;; TODO when the result is `nil' dispatch to symbol construction
+           ;; protocol with package name "COMMON-LISP" and symbol-name "NIL"?
            (cond ((null values)
                   (note-skipped-input client input-stream
                                       (or *skip-reason* :reader-macro))
