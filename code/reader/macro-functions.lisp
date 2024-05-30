@@ -1309,9 +1309,8 @@
                  (unread-char (%character condition) stream)
                  fallback-value))))
       (let ((feature-expression
-              (with-state-values
-                  (client '*package*       '#:keyword
-                          '*read-suppress* nil)
+              (with-state-values (client '*package*       '#:keyword
+                                         '*read-suppress* nil)
                 (with-forbidden-quasiquotation (context)
                   (read-expression
                    'end-of-input-after-sharpsign-plus-minus
