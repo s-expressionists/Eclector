@@ -720,7 +720,7 @@ semantics for feature expressions.
 
 The reader state protocol consists of generic functions which the reader
 and the client call to query and modify the values of reader state
-@emph{aspects}.  Each aspect is named by a symbol and holds a current
+@dfn{aspects}.  Each aspect is named by a symbol and holds a current
 value and has a stack of shadowed values like a special variable.
 Aspects roughly correspond to the reader control variables defined in
 the @commonlisp{} specification.  @sysname{} defines the following
@@ -730,7 +730,7 @@ aspects:
 @table @code
 @item cl:*readtable*
 
-Like the @t{cl:*readtable*} special variable, this aspects controls the
+Like the @t{cl:*readtable*} special variable, this aspect controls the
 readtable object in which the reader looks up the syntax types of
 characters, the case conversion mode as well as reader macros.  By
 default, values of this aspect must satisfy the
@@ -740,7 +740,8 @@ default, values of this aspect must satisfy the
 
 Like the @t{cl:*package*} special variable, this aspects controls the
 package which the reader uses when it looks up or interns symbols in the
-current package.
+current package.  By default, values of this aspect must be package
+designators.
 
 @item cl:*read-suppress*
 
@@ -756,12 +757,14 @@ whether the reader evaluates expressions in @t{#.} constructs.
 
 Like the @t{cl:*features*} special variable, this aspect controls the
 evaluation of features in feature expressions in @t{#+} and @t{#-}
-constructs.
+constructs.  By default, values of this aspect must be proper lists of
+symbols.
 
 @item cl:*read-base*
 
 Like the @t{cl:*read-base*} special variable, this aspect controls the
-interpretation of tokens by the reader as being integers or ratios.
+interpretation of tokens by the reader as being integers or ratios.  By
+default, values of this aspect must be of type @t{(integer 1 36)}.
 
 @item cl:*read-default-float-format*
 
