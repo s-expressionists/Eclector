@@ -1532,15 +1532,18 @@ Thus, a client must define a method on this generic function.
 @end deffn
 
 @defgena {make-skipped-input-result,eclector.parse-result} client@
-  stream reason source
+  stream reason children source
 
 This generic function is called after the reader skipped over a range
-of characters in @var{stream}.  It returns either @t{nil} if
-the skipped input should not be represented or a client-specific
-representation of the skipped input.  The value of the @var{source}
-parameter designates the skipped range using a source range
-representation obtained via @t{make-source-range} and
-@t{source-position}.
+of characters in @var{stream}.  It returns either @t{nil} if the
+skipped input should not be represented or a client-specific
+representation of the skipped input.  The value of the @var{children}
+parameter is a list of already constructed parse result objects which
+represent object read by recursive @t{read} calls (Such as the feature
+expression and the ignored expression in @t{#+(and (or) some-feature)
+skipped-expression}).  The value of the @var{source} parameter
+designates the skipped range using a source range representation
+obtained via @t{make-source-range} and @t{source-position}.
 
 Reasons for skipping input include comments, the @t{#+} and
 @t{#-} reader macros and @t{*read-suppress*}.  The

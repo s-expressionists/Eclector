@@ -86,8 +86,8 @@
   (list :result result :children children :source source))
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client list-result-client) (stream t) (reason t) (source t))
-  (list :reason reason :source source))
+    ((client list-result-client) (stream t) (reason t) (children t) (source t))
+  (list :reason reason :children children :source source))
 
 ;;; Smoke test with parse results
 
@@ -137,7 +137,7 @@
 (defclass eof-value-client (simple-result-client) ())
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client eof-value-client) (stream t) (reason t) (source t))
+    ((client eof-value-client) (stream t) (reason t) (children t) (source t))
   (list reason source))
 
 (test read/eof-value
@@ -298,17 +298,17 @@
       ("   "    (nil nil) nil :whitespace)
       ("   "    (nil nil) nil :whitespace)
       ;; Skip
-      (";  "    (nil nil) nil :skip       (:reason (:line-comment . 1) :source (0 . 3))  )
+      (";  "    (nil nil) nil :skip       (:reason (:line-comment . 1) :children () :source (0 . 3))  )
 
-      ("#||#"   (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))       )
-      ("#||# "  (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))      4)
-      ("#||#  " (nil nil) nil :skip       (:reason :block-comment :source (0 . 4))      4)
-      ("#||#"   (nil t)   nil :skip       (:reason :block-comment :source (0 . 4))       )
+      ("#||#"   (nil nil) nil :skip       (:reason :block-comment      :children () :source (0 . 4))  )
+      ("#||# "  (nil nil) nil :skip       (:reason :block-comment      :children () :source (0 . 4)) 4)
+      ("#||#  " (nil nil) nil :skip       (:reason :block-comment      :children () :source (0 . 4)) 4)
+      ("#||#"   (nil t)   nil :skip       (:reason :block-comment      :children () :source (0 . 4))  )
       ;; Object
-      ("1"      (nil nil) 1   :object     (:result 1 :children () :source (0 . 1))       )
-      ("1 "     (nil nil) 1   :object     (:result 1 :children () :source (0 . 1))      1)
-      ("1"      (nil t)   nil :suppress   (:reason *read-suppress* :source (0 . 1))      )
-      ("1 "     (nil t)   nil :suppress   (:reason *read-suppress* :source (0 . 1))     1))))
+      ("1"      (nil nil) 1   :object     (:result 1                   :children () :source (0 . 1))  )
+      ("1 "     (nil nil) 1   :object     (:result 1                   :children () :source (0 . 1)) 1)
+      ("1"      (nil t)   nil :suppress   (:reason *read-suppress*     :children () :source (0 . 1))  )
+      ("1 "     (nil t)   nil :suppress   (:reason *read-suppress*     :children () :source (0 . 1)) 1))))
 
 ;;; Source locations
 
@@ -413,8 +413,12 @@
     (list :definition target-parse-result children source)))
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client skipped-input-recording-client) (stream t) (reason t) (source t))
-  (list reason source))
+    ((client   skipped-input-recording-client)
+     (stream   t)
+     (reason   t)
+     (children t)
+     (source   t))
+  (list reason children source))
 
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."
@@ -437,32 +441,54 @@
       ("1 "               nil 1)
       ("1 2"              nil 1 () 2)
       ;; Toplevel comments
-      ("#||# 1"           nil 1                          ((:block-comment (0 . 4))))
-      ("#||# 1"           t   (*read-suppress* (5 . 6))  ((:block-comment (0 . 4))))
-      ("; test"           nil :eof                       (((:line-comment . 1) (0 . 6))))
-      ("; test~% 1"       nil 1                          (((:line-comment . 1) (0 . 7))))
-      (";; test~% 1"      nil 1                          (((:line-comment . 2) (0 . 8))))
-      (";;; test~% 1"     nil 1                          (((:line-comment . 3) (0 . 9))))
+      ("#||# 1"           nil 1                             ((:block-comment () (0 . 4))))
+      ("#||# 1"           t   (*read-suppress* () (5 . 6))  ((:block-comment () (0 . 4))))
+      ("#|#||#|# 1"       nil 1                             ((:block-comment () (0 . 8))))
+      ("#|#||#|# 1"       t   (*read-suppress* () (9 . 10)) ((:block-comment () (0 . 8))))
+      ("; test"           nil :eof                          (((:line-comment . 1) () (0 . 6))))
+      ("; test~% 1"       nil 1                             (((:line-comment . 1) () (0 . 7))))
+      (";; test~% 1"      nil 1                             (((:line-comment . 2) () (0 . 8))))
+      (";;; test~% 1"     nil 1                             (((:line-comment . 3) () (0 . 9))))
       ;; Toplevel reader conditionals
-      ("#+(or) 1 2"       nil 2                          (((:sharpsign-plus . (:or)) (0 . 8))))
-      ("#-(and) 1 2"      nil 2                          (((:sharpsign-minus . (:and)) (0 . 9))))
+      ("#+(or) 1 2"       nil 2                        (((:sharpsign-plus . (:or))
+                                                         (((:or) . (:or))
+                                                          (*read-suppress* () (7 . 8)))
+                                                         (0 . 8))))
+      ("#+(and) 1"        nil (1 . (((:and) :and) 1)))
+      ("#-(and) 1 2"      nil 2                        (((:sharpsign-minus . (:and))
+                                                         (((:and) . (:and))
+                                                          (*read-suppress* () (8 . 9)))
+                                                         (0 . 9))))
+      ("#+(or) 1 (2 3)"   nil ((2 3) . (2 3))          (((:sharpsign-plus . (:or))
+                                                         (((:or) . (:or))
+                                                          (*read-suppress* () (7 . 8)))
+                                                         (0 . 8))))
       ;; Non-toplevel comments
-      ("(#||# 1)"         nil ((1) . ((:block-comment (1 . 5))
+      ("(#||# 1)"         nil ((1) . ((:block-comment () (1 . 5))
                                       1)))
-      ("(~%; test~% 1)"   nil ((1) . (((:line-comment . 1) (2 . 9))
+      ("(~%; test~% 1)"   nil ((1) . (((:line-comment . 1) () (2 . 9))
                                       1)))
-      ("(~%;; test~% 1)"  nil ((1) . (((:line-comment . 2) (2 . 10))
+      ("(~%;; test~% 1)"  nil ((1) . (((:line-comment . 2) () (2 . 10))
                                       1)))
-      ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) (2 . 11))
+      ("(~%;;; test~% 1)" nil ((1) . (((:line-comment . 3) () (2 . 11))
                                       1)))
-      ("#1=#|foo|#2"      nil (:definition #1=2 ((:block-comment (3 . 10)) #1#) (0 . 11)))
+      ("#1=#|foo|#2"      nil (:definition #1=2 ((:block-comment () (3 . 10)) #1#) (0 . 11)))
       ;; Non-toplevel reader conditionals
-      ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or)) (1 . 9)) 2)))
+      ("(#+(or) 1 2)"     nil ((2) . (((:sharpsign-plus . (:or))
+                                       (((:or) . (:or))
+                                        (*read-suppress* () (8 . 9)))
+                                       (1 . 9))
+                                      2)))
       ;; Order of skipped inputs
-      ("#|1|# #|2|# 3"    nil 3                           ((:block-comment (0 . 5))
-                                                           (:block-comment (6 . 11))))
-      ("#|1|# #|2|# 3"    t   (*read-suppress* (12 . 13)) ((:block-comment (0 . 5))
-                                                           (:block-comment (6 . 11))))
+      ("#|1|# #|2|# 3"    nil 3                              ((:block-comment () (0 . 5))
+                                                              (:block-comment () (6 . 11))))
+      ("#|1|# #|2|# 3"    t   (*read-suppress* () (12 . 13)) ((:block-comment () (0 . 5))
+                                                              (:block-comment () (6 . 11))))
       ;; Non-toplevel suppressed objects
-      ("(nil)"            t   (*read-suppress* (0 . 5))  ())
-      ("#|1|# (nil)"      t   (*read-suppress* (6 . 11)) ((:block-comment (0 . 5)))))))
+      ("(nil)"            t   (*read-suppress*
+                               ((*read-suppress* () (1 . 4)))
+                               (0 . 5)))
+      ("#|1|# (nil)"      t   (*read-suppress*
+                               ((*read-suppress* () (7 . 10)))
+                               (6 . 11))
+                              ((:block-comment () (0 . 5)))))))

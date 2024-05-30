@@ -5,9 +5,9 @@
 (defgeneric make-expression-result (client result children source)
   (:argument-precedence-order result client children source))
 
-(defgeneric make-skipped-input-result (client stream reason source)
-  (:method (client stream reason source)
-    (declare (ignore client stream reason source))
+(defgeneric make-skipped-input-result (client stream reason children source)
+  (:method (client stream reason children source)
+    (declare (ignore client stream reason children source))
     nil))
 
 ;;; The purpose of the following structure classes is to

@@ -85,10 +85,11 @@
     (change-class result 'definition-with-children :children children)))
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client skipped-input+wrapper-cst-client)
-     (stream t)
-     (reason t)
-     (source t))
+    ((client   skipped-input+wrapper-cst-client)
+     (stream   t)
+     (reason   t)
+     (children t)
+     (source   t))
   ;; The representation does not matter here.  We just need some
   ;; representation of the skipped input.
   (list reason t))
