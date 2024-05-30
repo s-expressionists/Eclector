@@ -13,8 +13,9 @@
   (let* ((start *start*)
          (end (eclector.base:source-position client input-stream))
          (range (eclector.base:make-source-range client start end))
+         (children (reverse (first *stack*)))
          (parse-result (make-skipped-input-result
-                        client input-stream reason range)))
+                        client input-stream reason children range)))
     (when parse-result
       (push parse-result (second *stack*)))))
 

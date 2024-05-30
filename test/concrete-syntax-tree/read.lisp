@@ -257,8 +257,12 @@
              :initform '())))
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client skipped-input-recording-client) (stream t) (kind t) (source t))
-  (alexandria:appendf (skipped client) (list (list kind source))))
+    ((client skipped-input-recording-client)
+     (stream t)
+     (reason t)
+     (children t)
+     (source t))
+  (alexandria:appendf (skipped client) (list (list reason source))))
 
 (test make-skipped-input-result/smoke
   "Smoke test for the MAKE-SKIPPED-INPUT-RESULT function."

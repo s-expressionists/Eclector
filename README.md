@@ -91,8 +91,8 @@ input (due to e.g. comments and reader conditionals):
   (list :result result :source source :children children))
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client my-client) (stream t) (reason t) (source t))
-  (list :reason reason :source source))
+    ((client my-client) (stream t) (reason t) (children t) (source t))
+  (list :reason reason :source source :children children))
 
 (with-input-from-string (stream "(1 #|comment|# \"string\")")
   (eclector.parse-result:read (make-instance 'my-client) stream))
