@@ -164,13 +164,12 @@
 ;;; Generic conversion from results to nodes
 
 (defmethod eclector.parse-result:make-skipped-input-result
-    ((client highlight-client) (stream t) (reason t) (source t))
+    ((client highlight-client) (stream t) (reason t) (children t) (source t))
   (let ((class (typecase reason
                  ((eql :block-comment)       'cst:block-comment-node)
                  ((cons (eql :line-comment)) 'cst:line-comment-node)
                  (t                          'cst:skipped-node))))
-    (make-instance class :children '()
-                         :source   source)))
+    (make-instance class :children children :source source)))
 
 (defmethod eclector.parse-result:make-expression-result
     ((client highlight-client) (result cst:node) (children t) (source t))
