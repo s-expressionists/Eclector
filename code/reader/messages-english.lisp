@@ -93,7 +93,7 @@
 ;;; Type error
 
   (define-reporter ((condition read-object-type-error) stream)
-    (format stream "~@<The read object ~s is not of the required type ~S.~@:>"
+    (format stream "~@<The read object ~S is not of the required type ~S.~@:>"
             (type-error-datum condition)
             (type-error-expected-type condition)))
 
@@ -398,7 +398,7 @@
             (delimiter condition)))
 
   (define-reporter ((condition too-many-elements) stream)
-    (format stream "~@<~a was specified to have length ~D, but ~D ~
+    (format stream "~@<~A was specified to have length ~D, but ~D ~
                     element~:P ~:*~[were~;was~:;were~] found.~@:>"
             (array-type condition)
             (expected-number condition)
