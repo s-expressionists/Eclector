@@ -37,14 +37,17 @@
       #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
     (call-with-current-package client thunk value)))
 
-(macrolet ((define (aspect &key (variable aspect) predicate)
+(macrolet ((define (aspect &key (variable aspect) predicate type)
              `(progn
                 (defmethod valid-state-value-p ((client t)
                                                 (aspect (eql ',aspect))
                                                 (value t))
-                  ,(if (null predicate)
-                       't
-                       `(,predicate value)))
+                  ,(cond ((not (null predicate))
+                          `(,predicate value))
+                         ((not (null type))
+                          `(typep value ',type))
+                         (t
+                          't)))
 
                 (defmethod state-value ((client t)
                                         (aspect (eql ',aspect)))
@@ -61,7 +64,7 @@
   (define *read-suppress*)
   (define *read-eval*)
   (define *features*                  :predicate listp)
-  (define *read-base*)
+  (define *read-base*                 :type (integer 2 36))
   (define *read-default-float-format*))
 
 ;;; Evaluate BODY in the context of CALL-WITH-STATE-VALUE calls for
