@@ -186,6 +186,10 @@
     (declare (ignore client))
     (list 'unquote-splicing form)))
 
+(defgeneric wrap-in-unquote-nsplicing (client form)
+  (:method (client form)
+    (wrap-in-unquote-splicing client form)))
+
 (defgeneric wrap-in-function (client name)
   (:method (client name)
     (declare (ignore client))
