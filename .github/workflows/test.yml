@@ -24,6 +24,12 @@ jobs:
             --eval '(quicklisp-quickstart:install)' \
             --quit
 
+      - name: Fetch dependencies
+        run: |
+          mkdir -p "${HOME}/quicklisp/local-projects"
+          cd "${HOME}/quicklisp/local-projects"
+          git clone https://github.com/s-expressionists/quaviver
+
       - name: Run tests
         run: |
           sbcl --noinform --disable-debugger                                                                                                \
