@@ -8,6 +8,7 @@
   :version     (:read-file-form "data/version-string.sexp")
   :depends-on  ("alexandria"
                 "closer-mop"
+                "quaviver/jaffer"
                 "acclimation")
 
   :components  ((:module "base"

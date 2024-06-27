@@ -216,12 +216,14 @@
                         :float-format default-format
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
-                   (let ((magnitude (* (decimal-mantissa)
-                                       (expt 10 (- (if exponentp
-                                                       (* exponent-sign (exponent))
-                                                       0)
-                                                   decimal-exponent)))))
-                     (* sign (coerce magnitude type))))))
+                   (let ((significand (decimal-mantissa))
+                         (exponent (- (if exponentp
+                                          (* exponent-sign (exponent))
+                                          0)
+                                      decimal-exponent)))
+                    (quaviver:integer-float
+                     (load-time-value (make-instance 'quaviver/jaffer:client)) ; TODO: temporary
+                     type 10 significand exponent sign)))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
