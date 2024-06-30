@@ -363,14 +363,15 @@
 
   (define-reporter ((condition overflow-in-float) stream)
     (format stream "~@<A floating point overflow occurred when attempting to ~
-                    represent ~D * ~D * 10^~D as a ~A. Failed operation was ~
+                    represent ~D * ~D * 10^~D as a ~A.~@:>"
+                   #+maybe " Failed operation was ~
                     (~A~{~^ ~A~}).~@:>"
             (sign condition)
             (mantissa condition)
             (exponent condition)
             (float-format condition)
-            (arithmetic-error-operation condition)
-            (arithmetic-error-operands condition)))
+            #+maybe (arithmetic-error-operation condition)
+            #+maybe (arithmetic-error-operands condition)))
 
 ;;; Conditions related to block comments
 

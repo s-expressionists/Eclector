@@ -170,7 +170,7 @@
            (escape-range (first remaining-escape-ranges))
            (sign 1)
            (decimal-exponent 0)
-           (exponent-sign 1)
+           (exponent-sign nil)
            (exponent-marker nil)
            (position-package-marker-1 nil)
            (position-package-marker-2 nil)
@@ -218,12 +218,33 @@
                      (setf type 'single-float))
                    (let ((significand (decimal-mantissa))
                          (exponent (- (if exponentp
-                                          (* exponent-sign (exponent))
+                                          (* (or exponent-sign 1) (exponent))
                                           0)
                                       decimal-exponent)))
-                    (quaviver:integer-float
-                     (load-time-value (make-instance 'quaviver/jaffer:client)) ; TODO: temporary
-                     type 10 significand exponent sign)))))
+                     (handler-case
+                      (quaviver:integer-float
+                       (load-time-value (make-instance 'quaviver/liebler:client)) ; TODO: temporary
+                       type 10 significand exponent sign)
+                       (floating-point-overflow (condition)
+                         (let ((length (+ (length (format nil "~D~:[~;E~:[~;+~]~2:*~D~]"
+                                                          (* sign significand) (when exponentp (exponent)) exponent-sign)) ; TODO: don't call it again
+                                          (if (zerop decimal-exponent) 0 1) ; TODO not accurate
+                                          )))
+                           ;; The condition report might print the objects passed as
+                           ;; `:operands' which is fine since we pass truncated values.
+                           (%recoverable-reader-error
+                            input-stream 'overflow-in-float
+                            :position-offset (- length)                       ; `stream-position-condition'
+                            :operation (arithmetic-error-operation condition) ; `arithmetic-error'
+                            :operands (arithmetic-error-operands condition)   ; `arithmetic-error'
+                            :float-format type                                ; `float-format-condition'
+                            :sign sign                                        ; `overflow-in-float'
+                            :mantissa significand                             ; `overflow-in-float'
+                            :exponent exponent                                ; `overflow-in-float'
+                            :report 'use-replacement-float-format ; TODO report
+                            )
+                           ;; TODO: most extreme value instead?
+                           (coerce 1.0 type))))))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
