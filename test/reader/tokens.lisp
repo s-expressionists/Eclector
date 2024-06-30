@@ -405,3 +405,12 @@
     (mapc #'do-interpret-token-test-case
           '(("1.0" () 10 :upcase eclector.reader:invalid-default-float-format 3 0)
             ("1e0" () 10 :upcase eclector.reader:invalid-default-float-format 1 1)))))
+
+(test interpret-token.default/floating-point-overflow
+  "Make sure that too large exponents signal a OVERFLOW-IN-FLOAT condition."
+  (mapc #'do-interpret-token-test-case
+        '(("1e1000000" () 10 :upcase eclector.reader:overflow-in-float 0 9)
+          ("1f1000000" () 10 :upcase eclector.reader:overflow-in-float 0 9)
+          ("1d1000000" () 10 :upcase eclector.reader:overflow-in-float 0 9)
+          ("1d+1000000" () 10 :upcase eclector.reader:overflow-in-float 0 10)
+          ("-1d+1000000" () 10 :upcase eclector.reader:overflow-in-float 0 10))))
