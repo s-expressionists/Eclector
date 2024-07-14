@@ -135,6 +135,7 @@
 
   ;; S-expression creation protocol
   (:export
+   #:make-expression
    #:wrap-in-function
 
    #:wrap-in-quote

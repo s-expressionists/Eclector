@@ -1506,6 +1506,38 @@ builtin kinds:
 @node S-expression creation
 @subsection S-expression creation
 
+@cindex function
+@cindex quotation
+@cindex quasiquotation
+
+@cindex function
+
+@defgena {make-expression,@readerpackage{}} client kind sub-expression
+
+TODO This generic function is called by the default @t{#'}-reader macro
+function to construct a form that applies the @t{function} special
+operator to the @var{name} expression.
+
+The default method on this generic function returns a result equivalent
+to @code{(list 'common-lisp:function @var{form})}.
+@end deffn
+
+TODO describe kinds and default methods
+
+@example
+expression-kind
++-function-kind
++-any-quote-kind
+| +-quote-kind
+| `-quasiquote-kind
+`-any-quasiquote-kind
+    +-quasiquote-kind
+    `-any-unquote-kind
+      +-unquote-kind
+      `-unquote-splicing-kind
+@end example
+
+TODO deprecated
 
 @cindex function
 

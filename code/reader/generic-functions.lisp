@@ -256,23 +256,55 @@
 
 (defgeneric new-value-for-fixup (client labeled-object current-value final-value))
 
-;;; Creating s-expressions
+;;; Expression creation protocol
+
+(defclass expression-kind (kind) ()) ; abstract
+
+(defgeneric make-expression (client kind sub-expression))
+
+(define-kind function-kind (expression-kind) ())
+(defmethod make-expression ((client t) (kind function-kind) (sub-expression t))
+  (wrap-in-function client sub-expression))
 
 (defgeneric wrap-in-function (client name)
   (:method ((client t) (name t))
     (list 'function name)))
 
+(defclass any-quote-kind (expression-kind) ()) ; abstract
+
+(define-kind quote-kind (any-quote-kind) ())
+(defmethod make-expression ((client t) (kind quote-kind) (sub-expression t))
+  (wrap-in-quote client sub-expression))
+
 (defgeneric wrap-in-quote (client material)
   (:method ((client t) (material t))
     (list 'quote material)))
+
+(defclass any-quasiquote-kind (expression-kind) ()) ; abstract
+
+(define-kind quasiquote-kind (any-quasiquote-kind any-quote-kind) ())
+(defmethod make-expression ((client t) (kind quasiquote-kind) (sub-expression t))
+  (wrap-in-quasiquote client sub-expression))
 
 (defgeneric wrap-in-quasiquote (client form)
   (:method ((client t) (form t))
     (list 'quasiquote form)))
 
+(defclass any-unquote-kind (any-quasiquote-kind) ()) ; abstract
+
+(define-kind unquote-kind (any-unquote-kind) ())
+(defmethod make-expression ((client t) (kind unquote-kind) (sub-expression t))
+  (wrap-in-unquote client sub-expression))
+
 (defgeneric wrap-in-unquote (client form)
   (:method ((client t) (form t))
     (list 'unquote form)))
+
+(define-kind unquote-splicing-kind (any-unquote-kind) ())
+(defmethod make-expression ((client t)
+                            (kind unquote-splicing-kind)
+                            (sub-expression t))
+  (wrap-in-unquote-splicing client sub-expression))
 
 (defgeneric wrap-in-unquote-splicing (client form)
   (:method ((client t) (form t))
