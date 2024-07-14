@@ -1549,6 +1549,13 @@ operator to the @var{name} expression.
 
 The default method on this generic function returns a result equivalent
 to @code{(list 'common-lisp:function @var{form})}.
+
+@quotation Warning
+This generic function is deprecated as of @sysname{} 0.12 and will be
+removed in a future version.  Please use the generic function
+@t{eclector.reader:make-expression} with the expression kind
+@t{eclector.reader:function-kind} instead.
+@end quotation
 @end deffn
 
 @cindex quotation
@@ -1565,6 +1572,13 @@ the quoted material.
 
 The default method on this generic function returns a result
 equivalent to @code{(list 'common-lisp:quote @var{material})}.
+
+@quotation Warning
+This generic function is deprecated as of @sysname{} 0.12 and will be
+removed in a future version.  Please use the generic function
+@t{eclector.reader:make-expression} with the expression kind
+@t{eclector.reader:quote-kind} instead.
+@end quotation
 @end deffn
 
 @cindex quasiquotation
@@ -1580,6 +1594,13 @@ the quasiquoted material.
 
 The default method on this generic function returns a result
 equivalent to @code{(list '@readerpackage{}:quasiquote @var{form})}.
+
+@quotation Warning
+This generic function is deprecated as of @sysname{} 0.12 and will be
+removed in a future version.  Please use the generic function
+@t{eclector.reader:make-expression} with the expression kind
+@t{eclector.reader:quasiquote-kind} instead.
+@end quotation
 @end deffn
 
 @cindex unquote
@@ -1592,6 +1613,13 @@ unquoted material.
 
 The default method on this generic function returns a result
 equivalent to @code{(list '@readerpackage{}:unquote @var{form})}.
+
+@quotation Warning
+This generic function is deprecated as of @sysname{} 0.11 and will be
+removed in a future version.  Please use the generic function
+@t{eclector.reader:make-expression} with the expression kind
+@t{eclector.reader:unquote-kind} instead.
+@end quotation
 @end deffn
 
 @defgena {wrap-in-unquote-splicing,@readerpackage{}} client form
@@ -1603,6 +1631,13 @@ unquoted material.
 The default method on this generic function returns a result
 equivalent to
 @code{(list '@readerpackage{}:unquote-splicing @var{form})}.
+
+@quotation Warning
+This generic function is deprecated as of @sysname{} 0.11 and will be
+removed in a future version.  Please use the generic function
+@t{eclector.reader:make-expression} with the expression kind
+@t{eclector.reader:unquote-splicing-kind} instead.
+@end quotation
 @end deffn
 
 @node Readtable initialization
