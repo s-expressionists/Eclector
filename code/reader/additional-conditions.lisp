@@ -1,5 +1,12 @@
 (cl:in-package #:eclector.reader)
 
+;;; Conditions related to reader state
+
+(define-condition state-value-type-error (acclimation:condition
+                                          reader-error
+                                          type-error)
+  ((%aspect :initarg :aspect :reader aspect)))
+
 ;;; Type error
 
 (define-condition read-object-type-error (stream-position-reader-error

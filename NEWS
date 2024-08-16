@@ -50,6 +50,10 @@ Release 0.11 (not yet released)
   method definition. See Maintaining Portable Lisp Programs by Christophe
   Rhodes for a detailed discussion of this technique.
 
+* The new condition type ECLECTOR.READER:STATE-VALUE-TYPE-ERROR can be used to
+  indicate that a value of an unsuitable type has been provided for a reader
+  state aspect.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

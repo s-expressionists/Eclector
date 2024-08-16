@@ -90,6 +90,15 @@
                                  (language acclimation:english))
           ,name)))
 
+;;; Conditions related to reader state
+
+  (define-reporter ((condition state-value-type-error) stream)
+    (format stream "~@<The supplied value ~S is not of the type~@[ ~S~] ~
+                    required for the ~A reader state aspect.~@:>"
+            (type-error-datum condition)
+            (type-error-expected-type condition)
+            (aspect condition)))
+
 ;;; Type error
 
   (define-reporter ((condition read-object-type-error) stream)

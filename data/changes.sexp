@@ -57,7 +57,14 @@ expression result    bar")
     "the" "version" "without" "the" (:tt "children") "parameter" "of" "the"
     "method" "definition" "." "See" "Maintaining" "Portable" "Lisp" "Programs"
     "by" "Christophe" "Rhodes" "for" "a" "detailed" "discussion" "of" "this"
-    "technique" ".")))
+    "technique" "."))
+  (:item
+   (:paragraph
+    "The" "new" "condition" "type"
+    (:symbol "eclector.reader:state-value-type-error")
+    "can" "be" "used" "to" "indicate" "that" "a" "value" "of" "an"
+    "unsuitable" "type" "has" "been" "provided" "for" "a" "reader" "state"
+    "aspect" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

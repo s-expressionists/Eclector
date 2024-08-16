@@ -145,6 +145,9 @@
    #:missing-delimiter
    #:delimiter
 
+   #:state-value-type-error
+   #:aspect
+
    #:read-object-type-error
 
    #:unterminated-single-escape

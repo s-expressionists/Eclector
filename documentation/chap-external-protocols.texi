@@ -775,6 +775,19 @@ marker.
 
 @end table
 
+@defclassa{state-value-type-error,eclector.reader}
+
+Errors of this type are signaled when an attempt is made to establish an
+object as the value for a reader state aspect and the supplied object is
+not of the type required by the aspect.
+
+Since this condition type is a subtype of @t{cl:type-error}, the
+offending value and the expected type can be retrieved via the readers
+@t{cl:type-error-datum} and @t{cl:type-error-expected-type} respectively.
+The aspect for which the value was supplied can be retrieved via the
+reader @t{eclector.reader:aspect}.
+@end deftp
+
 @defgena{valid-state-value-p,eclector.reader} client aspect value
 
 This generic function is called by the reader to determine whether
