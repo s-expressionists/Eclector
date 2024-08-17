@@ -239,7 +239,7 @@ code.
 @node @commonlisp{} reader compatible interface
 @subsection @commonlisp{} reader compatible interface
 
-The following functions are like their standarad @commonlisp{}
+The following functions are like their standard @commonlisp{}
 counterparts with the two differences that their names are symbols in
 the @t{eclector.reader} package and that their behavior can deviate from
 that of the standard reader depending on the value of the
