@@ -64,7 +64,15 @@ expression result    bar")
     (:symbol "eclector.reader:state-value-type-error")
     "can" "be" "used" "to" "indicate" "that" "a" "value" "of" "an"
     "unsuitable" "type" "has" "been" "provided" "for" "a" "reader" "state"
-    "aspect" ".")))
+    "aspect" "."))
+  (:item
+   (:paragraph
+    "The" "reader" "state" "protocol"
+    (:when "manual" "(" (:ref :section "Reader state protocol") ")")
+    "now" "provides" "the" "generic" "function"
+    (:symbol "(setf eclector.readtable:state-value)") "which" "allows"
+    "clients" "to" "set" "reader" "state" "aspects" "in" "addition" "to"
+    "establishing" "dynamically" "scoped" "bindings" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

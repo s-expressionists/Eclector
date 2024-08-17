@@ -226,9 +226,8 @@
 
 ;;; Test customizing CALL-WITH-STATE-VALUE
 ;;;
-;;; The client ignores intercepts requests to change the current
-;;; package and changes the current package to some other, fixed
-;;; package.
+;;; The client intercepts requests to change the current package and
+;;; changes the current package to some other, fixed package.
 
 (defclass with-state-value-client ()
   ())
@@ -272,6 +271,48 @@
       (eclector.reader:read-from-string input))
     '(("#+foo       1 2")
       ("#+(bar baz) 1 2"))))
+
+;;; Test (setf state-value)
+
+(defun change-read-base (stream char)
+  (declare (ignore char))
+  (let ((new-base (eclector.reader:read stream t nil t)))
+    (setf (eclector.reader:state-value eclector.base:*client* '*read-base*)
+          new-base)
+    (values)))
+
+(defun change-package (stream char)
+  (declare (ignore char))
+  (let ((new-base (eclector.reader:read stream t nil t)))
+    (setf (eclector.reader:state-value eclector.base:*client* '*package*)
+          new-base)
+    (values)))
+
+(test setf-state-value/smoke
+  "Smoke test for the (setf state-value) generic function."
+  (let ((readtable (eclector.readtable:copy-readtable
+                    eclector.reader:*readtable*)))
+    (eclector.readtable:set-macro-character readtable #\! 'change-read-base)
+    (eclector.readtable:set-macro-character readtable #\@ 'change-package)
+    (flet ((test-case (expected input)
+             ;; Bind `*read-base*' and `*package*' to protect the
+             ;; global values.
+             (let ((result (let ((*read-base* *read-base*)
+                                 (*package* (find-package "CL-USER")))
+                             (eclector.reader:call-with-state-value
+                              eclector.base:*client*
+                              (lambda ()
+                                (eclector.reader:read-from-string input))
+                              '*readtable* readtable))))
+               (is (equal expected result)))))
+      (test-case '(11 17)
+                 "(11 !16 11)")
+      (test-case '(11 17 23)
+                 "(11 !16 11 !16 11)")
+      (test-case '(cl-user::foo :foo)
+                 "(foo @\"KEYWORD\" foo)")
+      (test-case '(cl-user::foo :foo cl-user::baz)
+                 "(foo @\"KEYWORD\" foo @\"CL-USER\" baz)"))))
 
 ;;; Test customizing labeled object processing
 

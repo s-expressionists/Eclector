@@ -832,6 +832,29 @@ values for this aspect.  In other words, the defaults coerce package
 designators to package objects.
 @end deffn
 
+@defgena{(setf state-value),eclector.reader} new-value client aspect
+
+Set the current value of the reader state aspect designated by
+@var{aspect} to @var{new-value}.
+
+@var{aspect} must designate a reader state aspect that is recognized by
+@var{client}.  At least the aspects listed in the
+@ref{table:minimal-reader-state-aspects,,minimal reader state aspects
+table} must be recognized by any client.
+
+@var{new-value} is the desired new value for the designated aspect.
+@var{new-value} has to be a valid value for @var{aspect} in the sense
+that @code{(eclector.reader:valid-state-value-p @var{client} @var{aspect}
+@var{value})} must return true.
+
+The @t{cl:*package*} aspect mandates further explanation: When the
+client uses only the default methods of the reader state protocol, the
+method on this generic function which handles the @t{cl:*package*}
+aspect coerces @var{new-value} from designators to package objects so
+that a subsequent @t{eclector.reader:state-value} call returns the
+designated package object.
+@end deffn
+
 @defgena{call-with-state-value,eclector.reader} client thunk aspect value
 
 Call @var{thunk} with the reader state aspect designated by @var{aspect}

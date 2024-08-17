@@ -54,6 +54,10 @@ Release 0.11 (not yet released)
   indicate that a value of an unsuitable type has been provided for a reader
   state aspect.
 
+* The reader state protocol now provides the generic function
+  (SETF ECLECTOR.READTABLE:STATE-VALUE) which allows clients to set reader
+  state aspects in addition to establishing dynamically scoped bindings.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

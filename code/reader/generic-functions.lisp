@@ -19,6 +19,8 @@
 
 (defgeneric state-value (client aspect))
 
+(defgeneric (setf state-value) (new-value client aspect))
+
 (defgeneric call-with-state-value (client thunk aspect value))
 
 ;;; Default methods for the reader state protocol
@@ -28,6 +30,12 @@
 
 (defmethod state-value ((client t) (aspect (eql '*package*)))
   *package*)
+
+(defmethod (setf state-value) ((new-value t)
+                               (client t)
+                               (aspect (eql '*package*)))
+  (setf *package* (find-package new-value))
+  new-value)
 
 (defmethod call-with-state-value ((client t)
                                   (thunk t)
@@ -52,6 +60,11 @@
                 (defmethod state-value ((client t)
                                         (aspect (eql ',aspect)))
                   ,variable)
+
+                (defmethod (setf state-value) ((new-value t)
+                                               (client t)
+                                               (aspect (eql ',aspect)))
+                  (setf ,variable new-value))
 
                 (defmethod call-with-state-value ((client t)
                                                   (thunk t)
