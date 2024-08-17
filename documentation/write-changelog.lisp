@@ -15,6 +15,14 @@
 
 (cl:in-package #:eclector.documentation.write-changelog)
 
+(defun write-escaped (string stream)
+  (loop for character across string
+        do (case character
+             (#\{ (write-string "@{" stream))
+             (#\} (write-string "@}" stream))
+             (#\@ (write-string "@@" stream))
+             (t   (write-char character stream)))))
+
 (defun write-paragraph (paragraph stream)
   (destructuring-bind (keyword &rest content) paragraph
     (assert (eq keyword :paragraph))
@@ -26,7 +34,9 @@
                              (when (equal (second chunk) "manual")
                                (write-content (nthcdr 2 chunk))))
                             ((cons (member :symbol :tt))
-                             (format stream "@t{~A}" (second chunk)))
+                             (format stream "@t{")
+                             (write-escaped (second chunk) stream)
+                             (format stream "}"))
                             ((cons (eql :ref))
                              (destructuring-bind (keyword namespace target) chunk
                                (declare (ignore keyword))
@@ -34,7 +44,7 @@
                                  (:figure (format stream "@ref{fig:~A}" target))
                                  (:section (format stream "@xref{~A}" target)))))
                             (string
-                             (write-string chunk stream)))
+                             (write-escaped chunk stream)))
                        when (and next
                                  (not (eq (punctuationp next) t))
                                  (not (eq (punctuationp chunk) :open)))
