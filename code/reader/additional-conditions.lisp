@@ -161,15 +161,27 @@
                                               incomplete-construct)
   ())
 
-(define-condition unquote-splicing-in-dotted-list (unquote-error)
+(define-condition unquote-macroexpansion-error (acclimation:condition
+                                                unquote-condition
+                                                error)
+  ((%argument :initarg :argument :reader argument)))
+
+(define-condition unquote-splicing-in-dotted-list (unquote-macroexpansion-error)
   ()
   (:default-initargs
    :splicing-p t))
 
-(define-condition unquote-splicing-at-top (unquote-error)
+(define-condition unquote-splicing-at-top (unquote-macroexpansion-error)
   ()
   (:default-initargs
    :splicing-p t))
+
+;;; Not intended for use by clients for now.  A similar condition type
+;;; will be provided by a dedicated module for quasiquote macros and a
+;;; quasiquote expansion protocol.
+(define-condition unquote-not-inside-backquote-during-macroexpansion
+    (unquote-macroexpansion-error)
+  ())
 
 ;;; Conditions related to lists
 

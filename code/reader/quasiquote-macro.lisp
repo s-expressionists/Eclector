@@ -35,8 +35,8 @@
                ((cons t (or (not cons) (cons (eql unquote))))
                 (list (transform (car object)) (transform (cdr object) nil)))
                ((cons t (cons (eql unquote-splicing)))
-                ;; FIXME see comment for UNQUOTE-SPLICING-AT-TOP below
-                (error 'unquote-splicing-in-dotted-list))
+                (error 'unquote-splicing-in-dotted-list
+                       :argument (second object)))
                (t
                 (list* (transform (car object)) (rec (cdr object)))))))
     (rec compound)))
@@ -46,10 +46,7 @@
     ((cons (eql unquote))
      (second argument))
     ((cons (eql unquote-splicing))
-     ;; FIXME This condition type is a subclass of
-     ;; reader-error, which should be given a stream, but at
-     ;; this point we no longer have the stream available.
-     (error 'unquote-splicing-at-top))
+     (error 'unquote-splicing-at-top :argument (second argument)))
     (cons
      `(append ,@(transform-compound argument)))
     ((and vector (not string))
@@ -70,3 +67,11 @@
 (defmacro quasiquote (&whole form argument)
   (declare (ignore argument))
   (expand form))
+
+(defmacro unquote (argument)
+  (error 'unquote-not-inside-backquote-during-macroexpansion
+         :splicing-p nil :argument argument))
+
+(defmacro unquote-splicing (argument)
+  (error 'unquote-not-inside-backquote-during-macroexpansion
+         :splicing-p t :argument argument))

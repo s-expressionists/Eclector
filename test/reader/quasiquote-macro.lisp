@@ -30,7 +30,10 @@
       ("`#(,@'(1))"    #(1))
       ("`#(,.'(1))"    #(1))
 
-      ("`\"foo\""      "foo"))))
+      ("`\"foo\""      "foo")
+
+      ("#.(second '`,1)"    eclector.reader::unquote-not-inside-backquote-during-macroexpansion)
+      ("#.(second '`,@(1))" eclector.reader::unquote-not-inside-backquote-during-macroexpansion))))
 
 (test expand-quasiquote.host-equivalence/random
   "Checks equivalence to host's result of expanded and evaluated

@@ -110,30 +110,27 @@
           "~@<When reading ~S, expected a condition of ~S, but got ~S~@:>"
           input expected-condition-type condition)
       ;; Check that STREAM-ERROR conditions contain a stream.
-      (when (typep condition
-                   `(and stream-error
-                         (not (or eclector.reader:unquote-splicing-in-dotted-list
-                                  eclector.reader:unquote-splicing-at-top))))
+      (when (typep condition 'stream-error)
         (is (not (null (stream-error-stream condition)))
             "~@<When reading ~S and condition ~S was signaled, expected a ~
              non-null stream in the condition, but got ~S.~@:>"
-            input condition nil))
-      ;; Check effective stream position in CONDITION against expected
-      ;; position.
-      (unless (null expected-position)
-        (let ((effective-position
-                (+ (eclector.base:stream-position condition)
-                   (eclector.base:position-offset condition))))
-          (is (= expected-position effective-position)
-              "~@<When reading ~S and condition ~S was signaled, expected ~
-               position ~S, but got ~S.~@:>"
-              input condition  expected-position effective-position)))
-      (unless (null expected-length)
-        (let ((length (eclector.base:range-length condition)))
-          (is (= expected-length length)
-              "~@<When reading ~S and condition ~S was signaled, expected ~
-               length ~S, but got ~S.~@:>"
-              input condition expected-length length)))
+            input condition nil)
+        ;; Check effective stream position in CONDITION against
+        ;; expected position.
+        (unless (null expected-position)
+          (let ((effective-position
+                  (+ (eclector.base:stream-position condition)
+                     (eclector.base:position-offset condition))))
+            (is (= expected-position effective-position)
+                "~@<When reading ~S and condition ~S was signaled, expected ~
+                 position ~S, but got ~S.~@:>"
+                input condition  expected-position effective-position)))
+        (unless (null expected-length)
+          (let ((length (eclector.base:range-length condition)))
+            (is (= expected-length length)
+                "~@<When reading ~S and condition ~S was signaled, expected ~
+                 length ~S, but got ~S.~@:>"
+                input condition expected-length length))))
       ;; Make sure CONDITION prints properly.
       (is (not (string= "" (princ-to-string condition)))
           "~@<When printing the signaled condition ~S expected a non-empty ~

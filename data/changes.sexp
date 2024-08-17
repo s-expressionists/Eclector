@@ -72,7 +72,35 @@ expression result    bar")
     "now" "provides" "the" "generic" "function"
     (:symbol "(setf eclector.readtable:state-value)") "which" "allows"
     "clients" "to" "set" "reader" "state" "aspects" "in" "addition" "to"
-    "establishing" "dynamically" "scoped" "bindings" ".")))
+    "establishing" "dynamically" "scoped" "bindings" "."))
+  (:item
+   (:paragraph
+    "The" "macros" (:symbol "eclector.reader:unquote") "and"
+    (:symbol "eclector.reader:unquote-splicing") "now" "signal" "sensible"
+    "errors" "when" "used" "outside" "of" "the" "lexical" "scope" "of" "a"
+    (:symbol "eclector.reader:quasiquote") "macro" "call" "." "Note" "that"
+    "the" "name" "of" "the" "associated" "condition" "type" "is" "not"
+    "exported" "for" "now" "since" "quasiquotation" "will" "be" "implemented"
+    "in" "a" "separate" "module" "in" "the" "future" ".")
+   (:paragraph
+    "Such" "invalid" "uses" "can" "happen" "when" "the" "above" "macros"
+    "are" "called" "directly" "or" "when" "the" (:tt ",") "," (:tt ",@")
+    "and" (:tt ",.") "reader" "macros" "are" "used" "in" "a" "way" "that"
+    "constructs" "the" "unquoted" "expression" "in" "one" "context" "and"
+    "then" "\"injects\"" "it" "into" "some" "other" "context" "," "for"
+    "example" "via" "an" "object" "reference" (:tt "#N#") "or" "read-time"
+    "evaluation" (:tt "#.(...)") "." "Full" "example" ":")
+   (:code :common-lisp "(progn
+  (print `(a #1=,(+ 1 2) c))
+  (print #1#))")
+   (:paragraph
+    "Another" "minor" "aspect" "of" "this" "change" "is" "that" "the"
+    "condition" "types"
+    (:symbol "eclector.reader:unquote-splicing-in-dotted-list") "and"
+    (:symbol "eclector.reader:unquote-splicing-at-top") "are" "no" "longer"
+    "subtypes" "of" (:symbol "common-lisp:stream-error") "." "The" "previous"
+    "relation" "did" "not" "make" "sense" "since" "errors" "of" "those"
+    "types" "are" "signaled" "during" "macro" "expansion" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

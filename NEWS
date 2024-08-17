@@ -58,6 +58,28 @@ Release 0.11 (not yet released)
   (SETF ECLECTOR.READTABLE:STATE-VALUE) which allows clients to set reader
   state aspects in addition to establishing dynamically scoped bindings.
 
+* The macros ECLECTOR.READER:UNQUOTE and ECLECTOR.READER:UNQUOTE-SPLICING now
+  signal sensible errors when used outside of the lexical scope of a
+  ECLECTOR.READER:QUASIQUOTE macro call. Note that the name of the associated
+  condition type is not exported for now since quasiquotation will be
+  implemented in a separate module in the future.
+
+  Such invalid uses can happen when the above macros are called directly or
+  when the ,, ,@ and ,. reader macros are used in a way that constructs the
+  unquoted expression in one context and then "injects" it into some other
+  context, for example via an object reference #N# or read-time evaluation
+  #.(...). Full example:
+
+    (progn
+      (print `(a #1=,(+ 1 2) c))
+      (print #1#))
+
+  Another minor aspect of this change is that the condition types
+  ECLECTOR.READER:UNQUOTE-SPLICING-IN-DOTTED-LIST and
+  ECLECTOR.READER:UNQUOTE-SPLICING-AT-TOP are no longer subtypes of
+  COMMON-LISP:STREAM-ERROR. The previous relation did not make sense since
+  errors of those types are signaled during macro expansion.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

@@ -256,6 +256,24 @@
   (define-reporter ((condition unquote-splicing-at-top) stream)
     (format stream "~@<Splicing unquote as backquote form (like `,@foo).~@:>"))
 
+  (define-reporter
+      ((condition unquote-not-inside-backquote-during-macroexpansion) stream)
+    (let ((argument (argument condition)))
+      (multiple-value-bind (operator description reader-macro)
+          (if (splicing-p condition)
+              (values 'unquote-splicing "A splicing unquote" '(",@" ",."))
+              (values 'unquote          "An unquote"         '(",")))
+        (format stream "~@<~A expression (indicated by a call of the ~S ~
+                        macro or the ~{\"~A\"~^ or ~} reader macro) with inner ~
+                        expression ~S occurred outside a quasiquote template ~
+                        (established by a call of the ~S macro or the \"`\" ~
+                        reader macro). This can happen when the unquoted ~
+                        expression is produced in one context and then ~
+                        \"injected\" into some other context, for example via ~
+                        an object reference #N# or read-time evaluation ~
+                        #.(...).~:@>"
+                description operator reader-macro argument 'quasiquote))))
+
 ;;; Conditions related to lists
 
   (define-reporter ((condition unterminated-list) stream)
