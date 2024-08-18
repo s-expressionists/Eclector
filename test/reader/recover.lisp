@@ -49,8 +49,7 @@
             (length remaining-conditions) remaining-conditions)))))
 
 (defun read-with-context-and-client (stream)
-  (let ((eclector.reader::*backquote-depth* 1)
-        (eclector.reader::*client* (make-instance 'sharpsign-s-client)))
+  (let ((eclector.reader::*client* (make-instance 'sharpsign-s-client)))
     (eclector.reader:read stream nil)))
 
 (test recover/smoke
@@ -89,18 +88,19 @@
                     eclector.reader:unterminated-string)                  "a")
 
           ;; Recover from quasiquotation-related errors.
-          ("`"         (eclector.reader:end-of-input-after-backquote)           (eclector.reader:quasiquote nil))
-          ("(`)"       (eclector.reader:object-must-follow-backquote)           ((eclector.reader:quasiquote nil)))
+          ("`"         (eclector.reader:end-of-input-after-backquote) (eclector.reader:quasiquote nil))
+          ("(`)"       (eclector.reader:object-must-follow-backquote) ((eclector.reader:quasiquote nil)))
 
-          ("`(1 ,)"    (eclector.reader:object-must-follow-unquote)             (eclector.reader:quasiquote
-                                                                                 (1 (eclector.reader:unquote nil))))
-          ("`,"        (eclector.reader:end-of-input-after-unquote)             (eclector.reader:quasiquote
-                                                                                 (eclector.reader:unquote nil)))
+          ("`(1 ,)"    (eclector.reader:object-must-follow-unquote)   (eclector.reader:quasiquote
+                                                                       (1 (eclector.reader:unquote nil))))
+          ("`,"        (eclector.reader:end-of-input-after-unquote)   (eclector.reader:quasiquote
+                                                                       (eclector.reader:unquote nil)))
 
-          ("#C(,1 2)"  (eclector.reader:unquote-in-invalid-context)             #C(1 2))
+          ("`#C(,1 2)" (eclector.reader:unquote-in-invalid-context)   (eclector.reader:quasiquote
+                                                                       #C(1 2)))
           ("#C(`,1 2)" (eclector.reader:backquote-in-invalid-context
                         eclector.reader:unquote-not-inside-backquote)
-                                                                                #C(1 2))
+                                                                      #C(1 2))
 
           ;; Recover from list-related errors
           ("("         (eclector.reader:unterminated-list)                      ())
