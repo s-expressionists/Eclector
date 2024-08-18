@@ -222,9 +222,28 @@
                                           0)
                                       decimal-exponent)))
                      (handler-case
-                      (quaviver:integer-float
+                      (quaviver:triple-float
                        (load-time-value (make-instance 'quaviver/liebler:client)) ; TODO: temporary
                        type 10 significand exponent sign)
+                       (floating-point-underflow (condition)
+                         (let ((length (+ (length (format nil "~D~:[~;E~:[~;+~]~2:*~D~]"
+                                                          (* sign significand) (when exponentp (exponent)) exponent-sign)) ; TODO: don't call it again
+                                          (if (zerop decimal-exponent) 0 1) ; TODO not accurate
+                                          )))
+                           ;; The condition report might print the objects passed as
+                           ;; `:operands' which is fine since we pass truncated values.
+                           (%recoverable-reader-error
+                            input-stream 'underflow-in-float
+                            :position-offset (- length)                       ; `stream-position-condition'
+                            :operation (arithmetic-error-operation condition) ; `arithmetic-error'
+                            :operands (arithmetic-error-operands condition)   ; `arithmetic-error'
+                            :float-format type                                ; `float-format-condition'
+                            :sign sign                                        ; `underflow-in-float'
+                            :mantissa significand                             ; `underflow-in-float'
+                            :exponent exponent                                ; `underflow-in-float'
+                            :report 'use-replacement-float-format ; TODO report
+                            )
+                           (quaviver:triple-float nil type 2 0 0 sign)))
                        (floating-point-overflow (condition)
                          (let ((length (+ (length (format nil "~D~:[~;E~:[~;+~]~2:*~D~]"
                                                           (* sign significand) (when exponentp (exponent)) exponent-sign)) ; TODO: don't call it again
@@ -243,8 +262,7 @@
                             :exponent exponent                                ; `overflow-in-float'
                             :report 'use-replacement-float-format ; TODO report
                             )
-                           ;; TODO: most extreme value instead?
-                           (coerce 1.0 type))))))))
+                           (quaviver:triple-float nil type 2 0 :infinity sign))))))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)

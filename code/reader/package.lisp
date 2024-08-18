@@ -221,6 +221,7 @@
    #:invalid-radix
    #:invalid-default-float-format
    #:overflow-in-float
+   #:underflow-in-float
 
    #:unterminated-block-comment
 

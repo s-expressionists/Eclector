@@ -361,6 +361,18 @@
             'cl:*read-default-float-format*
             (float-format condition)))
 
+  (define-reporter ((condition underflow-in-float) stream)
+    (format stream "~@<A floating point underflow occurred when attempting to ~
+                    represent ~D * ~D * 10^~D as a ~A.~@:>"
+                   #+maybe " Failed operation was ~
+                    (~A~{~^ ~A~}).~@:>"
+            (sign condition)
+            (mantissa condition)
+            (exponent condition)
+            (float-format condition)
+            #+maybe (arithmetic-error-operation condition)
+            #+maybe (arithmetic-error-operands condition)))
+
   (define-reporter ((condition overflow-in-float) stream)
     (format stream "~@<A floating point overflow occurred when attempting to ~
                     represent ~D * ~D * 10^~D as a ~A.~@:>"

@@ -268,6 +268,13 @@
    (%mantissa :initarg :mantissa :reader mantissa)
    (%exponent :initarg :exponent :reader exponent)))
 
+(define-condition underflow-in-float (stream-position-reader-error
+                                      floating-point-underflow
+                                      float-format-condition)
+  ((%sign :initarg :sign :reader sign)
+   (%mantissa :initarg :mantissa :reader mantissa)
+   (%exponent :initarg :exponent :reader exponent)))
+
 ;;; Conditions related to block comments
 
 (define-condition unterminated-block-comment (missing-delimiter)
