@@ -233,11 +233,14 @@
           ("#S(foo 1)"     (eclector.reader:slot-name-is-not-a-string-designator
                             eclector.reader:no-slot-value-found)
                                                                                            (foo))
+          ("#S(foo 1 2)"   (eclector.reader:slot-name-is-not-a-string-designator)          (foo))
           ("#S(foo :bar"   (eclector.reader:end-of-input-before-slot-value)                (foo))
           ("#S(foo :bar)"  (eclector.reader:no-slot-value-found)                           (foo))
           ("#S(foo :bar 1" (eclector.reader:end-of-input-before-slot-name)                 (foo :bar 1))
 
           ("#1S(foo)"      (eclector.reader:numeric-parameter-supplied-but-ignored)        (foo))
+
+          ("#S#.'(1)"      (eclector.reader:structure-type-name-is-not-a-symbol)           nil 8)
 
           ;; Recover from errors related to pathname literals
           ("#P"       (eclector.reader:end-of-input-after-sharpsign-p)         #P".")

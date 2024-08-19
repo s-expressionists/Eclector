@@ -850,7 +850,9 @@ variant, that is STRICT-SHARPSIGN-S."
       ("#.(list 1)"      nil nil eclector.reader:structure-type-name-is-not-a-symbol  9  1
                                  eclector.reader:non-list-following-sharpsign-s)
       ("#.(list 'foo 1)" nil nil eclector.reader:slot-name-is-not-a-string-designator 14 1
-                                 eclector.reader:non-list-following-sharpsign-s))))
+                                 eclector.reader:non-list-following-sharpsign-s)
+      ("#.'(a b 1 c 2)"  nil nil (a b 1 c 2)                                          nil nil
+                                 eclector.reader:non-list-following-sharpsign-s       13  1))))
 
 (test sharpsign-p/smoke
   "Smoke test for the SHARPSIGN-P reader macro function."
