@@ -100,7 +100,22 @@ expression result    bar")
     (:symbol "eclector.reader:unquote-splicing-at-top") "are" "no" "longer"
     "subtypes" "of" (:symbol "common-lisp:stream-error") "." "The" "previous"
     "relation" "did" "not" "make" "sense" "since" "errors" "of" "those"
-    "types" "are" "signaled" "during" "macro" "expansion" ".")))
+    "types" "are" "signaled" "during" "macro" "expansion" "."))
+  (:item
+   (:paragraph
+    "Eclector" "now" "uses" "the" "reader" "state" "protocol"
+    (:when "manual" "(" (:ref :section "Reader state protocol") ")")
+    "instead" "of" "plain" "special" "variables" "to" "query" "and" "track"
+    "the" "legality" "of" "quasiquotation" "operations" "and" "the" "consing"
+    "dot" "." "The" "additional" "reader" "state" "aspects" "are" "documented"
+    "but" "remain" "internal" "for" "now" ".")
+   (:paragraph
+    "The" "(" "internal" ")" "macro"
+    (:symbol "eclector.reader::with-forbidden-quasiquotation")
+    "is" "deprecated" "as" "of" "this" "release" "." "Clients" "which" "really"
+    "need" "a" "replacement" "immediately" "can" "use" "the" "new" "("
+    "internal" ")" "macro"
+    (:symbol "eclector.reader::with-quasiquotation-state") ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

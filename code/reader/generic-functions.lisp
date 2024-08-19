@@ -78,7 +78,11 @@
   (define *read-eval*)
   (define *features*                  :predicate listp)
   (define *read-base*                 :type (integer 2 36))
-  (define *read-default-float-format*))
+  (define *read-default-float-format*)
+  ;; Internal
+  (define *quasiquotation-state*      :type (cons symbol symbol))
+  (define *quasiquotation-depth*      :type (integer 0))
+  (define *consing-dot-allowed-p*     :type symbol))
 
 ;;; Evaluate BODY in the context of CALL-WITH-STATE-VALUE calls for
 ;;; all aspect-value pairs in BINDINGS.

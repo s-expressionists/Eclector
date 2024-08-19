@@ -16,7 +16,7 @@
     (input-stream eof-error-p eof-value recursive-p preserve-whitespace-p)
   (let ((client *client*))
     (if recursive-p
-        (let ((*consing-dot-allowed-p* nil))
+        (with-state-values (client '*consing-dot-allowed-p* nil)
           (read-common client input-stream eof-error-p eof-value))
         (flet ((read-common ()
                  (read-common client input-stream eof-error-p eof-value)))
@@ -42,8 +42,9 @@
                                                   (recursive-p nil))
             (if (and (constantp recursive-p)
                      (eval recursive-p))
-                `(let ((*consing-dot-allowed-p* nil))
-                   (read-common *client* ,input-stream ,eof-error-p ,eof-value))
+                `(let ((client *client*))
+                   (with-state-values (client '*consing-dot-allowed-p* nil)
+                     (read-common client ,input-stream ,eof-error-p ,eof-value)))
                 form)))))
   (define read                       recursive-p)
   (define read-preserving-whitespace t))
@@ -87,23 +88,29 @@
   (let ((client *client*)
         (state :proper))
     (handler-case
-        (loop with *consing-dot-allowed-p* = consing-dot-allowed-p
-              for object = (let ((*consing-dot-allowed-p* nil))
-                             (%read-list-element client stream close-char))
-                then (%read-list-element client stream close-char)
-              if (eq object *consing-dot*)
-                do (setf *consing-dot-allowed-p* nil
-                         state :tail)
-                   (funcall function state (read stream t nil t))
-                   (setf state :end)
-                   ;; This call to read must not return (it has to signal
-                   ;; END-OF-LIST).
-                   (read stream t nil t)
-                   (%recoverable-reader-error
-                    stream 'multiple-objects-following-consing-dot
-                    :position-offset -1 :report 'ignore-object) ; not accurate
-              else
-                do (funcall function state object))
+        (with-state-values
+            (client '*consing-dot-allowed-p* consing-dot-allowed-p)
+          (loop for object = (with-state-values
+                                 (client '*consing-dot-allowed-p* nil)
+                               (%read-list-element client stream close-char))
+                  then (case state
+                         (:proper
+                          (%read-list-element client stream close-char))
+                         (t
+                          (%read-list-element client stream close-char)))
+                if (eq object *consing-dot*)
+                  do (setf state :tail)
+                     (funcall function state (read stream t nil t))
+                     (setf state :end)
+                     ;; This call to READ must not return (it has to signal
+                     ;; END-OF-LIST).
+                     (read stream t nil t)
+                     (%recoverable-reader-error
+                      stream 'multiple-objects-following-consing-dot
+                      :position-offset -1 :report 'ignore-object) ; not accurate
+                     (setf (state-value client '*consing-dot-allowed-p*) nil)
+                else
+                  do (funcall function state object)))
       (end-of-list (condition)
         (let ((char (%character condition)))
           (unless (char= char close-char)

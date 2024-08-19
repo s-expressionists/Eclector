@@ -2,39 +2,55 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Macro WITH-FORBIDDEN-QUASIQUOTATION.
+;;; Macro WITH-QUASIQUOTATION-STATE.
 ;;;
 ;;; This macro controls whether quasiquote and/or unquote should be
 ;;; allowed in a given context.
 
-(defmacro with-forbidden-quasiquotation
-    ((context &optional (quasiquote-forbidden-p t)
-                        (unquote-forbidden-p t))
+(defmacro with-quasiquotation-state
+    ((client context quasiquote-forbidden-p unquote-forbidden-p)
      &body body)
-  (alexandria:with-unique-names (context*)
-    (let ((context-used-p nil))
-      (flet ((make-binding (variable value-form)
-               (cond ((constantp value-form)
-                      (case (eval value-form)
-                        (:keep
-                         '())
-                        ((nil)
-                         `((,variable nil)))
-                        (t
-                         (setf context-used-p t)
-                         `((,variable ,context*)))))
-                     (t
-                      (setf context-used-p t)
-                      `((,variable (case ,value-form
-                                     (:keep ,variable)
-                                     ((nil) nil)
-                                     (t ,context*))))))))
-        `(let* ((,context* ,context)
-                ,@(make-binding '*quasiquote-forbidden* quasiquote-forbidden-p)
-                ,@(make-binding '*unquote-forbidden* unquote-forbidden-p))
-           ,@(unless context-used-p
-               `((declare (ignore ,context*))))
-           ,@body)))))
+  (alexandria:once-only (client)
+    (alexandria:with-unique-names
+        (context*
+         old-state old-quasiquote-forbidden old-unquote-forbidden
+         new-state)
+      (let ((context-used-p nil)
+            (old-state-used-p nil))
+        (flet ((make-value (old-variable value-form)
+                 (cond ((constantp value-form)
+                        (case (eval value-form)
+                          (:keep
+                           (setf old-state-used-p t)
+                           old-variable)
+                          ((nil)
+                           'nil)
+                          (t
+                           (setf context-used-p t)
+                           context*)))
+                       (t
+                        (setf context-used-p t
+                              old-state-used-p t)
+                        `(case ,value-form
+                           (:keep ,old-variable)
+                           ((nil) nil)
+                           (t ,context*))))))
+          (let ((new-state-form `(cons ,(make-value old-quasiquote-forbidden
+                                                    quasiquote-forbidden-p)
+                                       ,(make-value old-unquote-forbidden
+                                                    unquote-forbidden-p))))
+            `(let* (,@(when context-used-p
+                        `((,context* ,context)))
+                    ,@(when old-state-used-p
+                        `((,old-state (state-value ,client '*quasiquotation-state*))
+                          (,old-quasiquote-forbidden (car ,old-state))
+                          (,old-unquote-forbidden (cdr ,old-state))))
+                    (,new-state ,new-state-form))
+               ,@(when old-state-used-p
+                   `((declare (ignorable ,old-quasiquote-forbidden
+                                         ,old-unquote-forbidden))))
+               (with-state-values (,client '*quasiquotation-state* ,new-state)
+                 ,@body))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -136,22 +152,27 @@
 ;;; track whether backquote and comma are allowed in the current
 ;;; context.
 ;;;
-;;; We could (and previously did) forbid backquote and comma except
-;;; inside lists and vectors, but in practice, clients expect control
-;;; over this behavior in order to implement reader macros such as
+;;; We could (and previously did) forbid backquote and comma
+;;; everywhere except inside lists and vectors, but in practice,
+;;; clients expect control over this behavior in order to implement
+;;; reader macros such as
 ;;;
 ;;;   #L`(,!1 ,!1) => (lambda (g1) `(,g1 ,g1))
 ;;;   `#{,key ,value} => (let ((g1 (make-hash-table ...))) ...)
 ;;;
-;;; We use the flags *QUASIQUOTE-FORBIDDEN-P* and
-;;; *UNQUOTE-FORBIDDEN-P* to control whether backquote and comma are
-;;; allowed.  Initially, both variables are bound to T, allowing
-;;; backquote and comma (*QUASIQUOTE-DEPTH* ensures that backquote and
-;;; comma are nested properly).  Reader macros such as #C, #A,
-;;; etc. bind the variables to a true value that also indicates the
-;;; context (usually the symbol naming the reader macro function).
-;;; The only way these variables can be re-bound to NIL (in the
-;;; standard readtable) is the SHARPSIGN-DOT reader macro.
+;;; We use a reader state aspect called *QUASIQUOTE-STATE* which by
+;;; default corresponds to the special variable *QUASIQUOTE-STATE* to
+;;; control whether quasiquote and unquote are allowed.  Initially,
+;;; the variable is bound to (nil . nil) which means that neither
+;;; quasiquote nor unquote is forbidden. The special variable
+;;; *QUASIQUOTE-DEPTH* ensures that quasiquote and unquote are nested
+;;; properly.  Reader macros such as #C, #A, etc. bind the variables
+;;; such that the CAR and/or CDR of the value is a true value that
+;;; also indicates the context (usually the symbol naming the reader
+;;; macro function).  The only way (in the standard readtable) these
+;;; variables can be re-bound such that quasiquote and unquote change
+;;; from being forbidden to being allowed is the SHARPSIGN-DOT reader
+;;; macro.
 ;;;
 ;;;
 ;;; Representation of quasiquoted forms
@@ -166,17 +187,23 @@
 
 (defun backquote (stream char)
   (declare (ignore char))
-  (let ((client *client*))
-    (alexandria:when-let ((context *quasiquote-forbidden*))
-      (unless (state-value client '*read-suppress*)
-        (%recoverable-reader-error
-         stream 'backquote-in-invalid-context
-         :position-offset -1 :context context :report 'ignore-quasiquote)
-        (return-from backquote
-          (let ((*backquote-depth* 0))
-            (read stream t nil t)))))
-    (let ((material (let ((*backquote-depth* (1+ *backquote-depth*))
-                          (*unquote-forbidden* nil))
+  (let* ((client *client*)
+         (quasiquotation-state (state-value client '*quasiquotation-state*))
+         (quasiquote-forbidden (car quasiquotation-state))
+         (depth (state-value client '*quasiquotation-depth*)))
+    (when (and (not (null quasiquote-forbidden))
+               (not (state-value client '*read-suppress*)))
+      (%recoverable-reader-error
+       stream 'backquote-in-invalid-context
+       :position-offset -1
+       :context quasiquote-forbidden
+       :report 'ignore-quasiquote)
+      (return-from backquote
+        (with-state-values (client '*quasiquotation-depth* 0)
+          (read stream t nil t))))
+    (let ((material (with-state-values
+                        (client '*quasiquotation-state* '(nil . nil)
+                                '*quasiquotation-depth* (1+ depth))
                       (handler-case
                           (read stream t nil t)
                         ((and end-of-file (not incomplete-construct)) (condition)
@@ -196,7 +223,9 @@
 (defun comma (stream char)
   (declare (ignore char))
   (let* ((client *client*)
-         (depth *backquote-depth*)
+         (quasiquotation-state (state-value client '*quasiquotation-state*))
+         (unquote-forbidden (cdr quasiquotation-state))
+         (depth (state-value client '*quasiquotation-depth*))
          (char2 (read-char stream nil nil t))
          (splicing-p (case char2
                        ((#\@ #\.) t)
@@ -224,15 +253,17 @@
          :position-offset (if splicing-p -2 -1)
          :splicing-p splicing-p :report 'ignore-unquote)
         (return-from comma (read-material)))
-      (alexandria:when-let ((context *unquote-forbidden*))
-        (unless (state-value client '*read-suppress*)
-          (%recoverable-reader-error
-           stream 'unquote-in-invalid-context
-           :position-offset (if splicing-p -2 -1)
-           :splicing-p splicing-p :context context :report 'ignore-unquote)
-          (return-from comma (read-material))))
-      (let* ((*backquote-depth* (1- depth))
-             (form (read-material)))
+      (when (and (not (null unquote-forbidden))
+                 (not (state-value client '*read-suppress*)))
+        (%recoverable-reader-error
+         stream 'unquote-in-invalid-context
+         :position-offset (if splicing-p -2 -1)
+         :splicing-p splicing-p
+         :context unquote-forbidden
+         :report 'ignore-unquote)
+        (return-from comma (read-material)))
+      (let ((form (with-state-values (client '*quasiquotation-depth* (1- depth))
+                    (read-material))))
         (if splicing-p
             (wrap-in-unquote-splicing client form)
             (wrap-in-unquote client form))))))
@@ -276,29 +307,31 @@
 ;;; will create and return a proper list containing the accumulated
 ;;; elements.
 ;;;
-;;; We use a special variable name *CONSING-DOT-ALLOWED-P* to
-;;; determine the contexts in which a consing dot is allowed.
-;;; Whenever the token parser detects a consing dot, it examines this
-;;; variable, and if it is true it returns the unique CONSING-DOT
-;;; token, and if it is false, signals an error.  Initially, this
-;;; variable has the value FALSE.  Whenever the reader macro for left
-;;; parenthesis is called, it binds this variable to TRUE.  When a
-;;; recursive call to READ returns with the consing dot as a value,
-;;; the reader macro for left parenthesis does three things.  First it
-;;; SETS (as opposed to BINDS) *CONSING-DOT-ALLOWED-P* to FALSE, so
-;;; that if a second consing dot should occur, then the token reader
-;;; signals an error.  Second, it establishes a nested handler for
-;;; END-OF-LIST, so that if a right parenthesis should occur
-;;; immediately after the consing dot, then an error is signaled.
-;;; With this handler established, READ is called.  If it returns
-;;; normally, then the return value becomes the value of the variable
-;;; TAIL.  Third, it calls READ again without any nested handler
-;;; established.  This call had better result in a right parenthesis,
-;;; so that END-OF-LIST is signaled, which is caught by the outermost
-;;; handler and the correct list is built and returned.  If this call
-;;; should return normally, we have a problem, because this means that
-;;; there was a second subform after the consing dot in the list, so
-;;; we signal an ERROR.
+;;; We use a reader state aspect called *CONSING-DOT-ALLOWED-P* which
+;;; by default corresponds to the special variable
+;;; *CONSING-DOT-ALLOWED-P* to determine the contexts in which a
+;;; consing dot is allowed.  Whenever the token parser detects a
+;;; consing dot, it examines the value of this state aspect, and if it
+;;; is true the token parser returns the unique CONSING-DOT token, and
+;;; if it is false, signals an error.  Initially, this reader state
+;;; aspect has the value false.  Whenever the reader macro for left
+;;; parenthesis is called, it binds the reader state aspect to true.
+;;; When a recursive call to READ returns with the consing dot as a
+;;; value, the reader macro for left parenthesis does three things.
+;;; First it SETS (as opposed to BINDS) *CONSING-DOT-ALLOWED-P* to
+;;; false, so that if a second consing dot should occur, then the
+;;; token reader signals an error.  Second, it establishes a nested
+;;; handler for END-OF-LIST, so that if a right parenthesis should
+;;; occur immediately after the consing dot, then an error is
+;;; signaled.  With this handler established, READ is called.  If it
+;;; returns normally, then the return value becomes the value of the
+;;; variable TAIL.  Third, it calls READ again without any nested
+;;; handler established.  This call had better result in a right
+;;; parenthesis, so that END-OF-LIST is signaled, which is caught by
+;;; the outermost handler and the correct list is built and returned.
+;;; If this call should return normally, we have a problem, because
+;;; this means that there was a second subform after the consing dot
+;;; in the list, so we signal an ERROR.
 
 (defun left-parenthesis (stream char)
   (declare (ignore char))
@@ -325,22 +358,23 @@
     (unless (null parameter)
       (numeric-parameter-ignored
        stream 'sharpsign-single-quote parameter suppress))
-    (let ((name (with-forbidden-quasiquotation
-                    ('sharpsign-single-quote :keep (if allow-unquote :keep t))
-                  (handler-case
-                      (read stream t nil t)
-                    ((and end-of-file (not incomplete-construct)) (condition)
-                      (%recoverable-reader-error
-                       stream 'end-of-input-after-sharpsign-single-quote
-                       :stream-position (stream-position condition)
-                       :report 'inject-nil)
-                      nil)
-                    (end-of-list (condition)
-                      (%recoverable-reader-error
-                       stream 'object-must-follow-sharpsign-single-quote
-                       :position-offset -1 :report 'inject-nil)
-                      (unread-char (%character condition) stream)
-                      nil)))))
+    (let* ((unquote-forbidden-p (if allow-unquote :keep t))
+           (name (with-quasiquotation-state
+                     (client 'sharpsign-single-quote :keep unquote-forbidden-p)
+                   (handler-case
+                       (read stream t nil t)
+                     ((and end-of-file (not incomplete-construct)) (condition)
+                       (%recoverable-reader-error
+                        stream 'end-of-input-after-sharpsign-single-quote
+                        :stream-position (stream-position condition)
+                        :report 'inject-nil)
+                       nil)
+                     (end-of-list (condition)
+                       (%recoverable-reader-error
+                        stream 'object-must-follow-sharpsign-single-quote
+                        :position-offset -1 :report 'inject-nil)
+                       (unread-char (%character condition) stream)
+                       nil)))))
       (cond (suppress nil)
             ((null name) nil)
             (t (wrap-in-function client name))))))
@@ -438,7 +472,7 @@
           (suppress
            (read stream t nil t))
           (t
-           (let ((expression (with-forbidden-quasiquotation (nil nil nil)
+           (let ((expression (with-quasiquotation-state (client nil nil nil)
                                (let ((*list-reader* nil))
                                  (handler-case
                                      (read stream t nil t)
@@ -816,8 +850,8 @@
                                            (1+ axis) subseq))
                                     initial-contents)))))
              (rec (first dimensions) (rest dimensions) 0 initial-contents)))
-         (read-init (stream)
-           (with-forbidden-quasiquotation ('sharpsign-a :keep)
+         (read-init (client stream)
+           (with-quasiquotation-state (client 'sharpsign-a :keep t)
              (handler-case
                  (read stream t nil t)
                ((and end-of-file (not incomplete-construct)) (condition)
@@ -835,24 +869,25 @@
 
   (defun sharpsign-a (stream char parameter)
     (declare (ignore char))
-    (when (state-value *client* '*read-suppress*)
-      (return-from sharpsign-a (read stream t nil t)))
-    (let ((rank (cond ((null parameter)
-                       (numeric-parameter-not-supplied
-                        stream 'sharpsign-a nil)
-                       0)
-                      (t
-                       parameter))))
-      (multiple-value-bind (dimensions init)
-          (restart-case
-              (let* ((init (read-init stream))
-                     (dimensions (determine-dimensions
-                                  stream rank init)))
-                (check-dimensions stream dimensions init)
-                (values dimensions init))
-            (%make-empty ()
-              (values (make-empty-dimensions rank) '())))
-        (make-array dimensions :initial-contents init)))))
+    (let ((client *client*))
+      (when (state-value client '*read-suppress*)
+        (return-from sharpsign-a (read stream t nil t)))
+      (let ((rank (cond ((null parameter)
+                         (numeric-parameter-not-supplied
+                          stream 'sharpsign-a nil)
+                         0)
+                        (t
+                         parameter))))
+        (multiple-value-bind (dimensions init)
+            (restart-case
+                (let* ((init (read-init client stream))
+                       (dimensions (determine-dimensions
+                                    stream rank init)))
+                  (check-dimensions stream dimensions init)
+                  (values dimensions init))
+              (%make-empty ()
+                (values (make-empty-dimensions rank) '())))
+          (make-array dimensions :initial-contents init))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -998,7 +1033,7 @@
             ;;   result construction so (1 2) will not appear as a list
             ;;   result with two atom result children.
             ;; We bind *LIST-READER* to use READ-PARTS for reading lists.
-            (with-forbidden-quasiquotation ('sharpsign-c)
+            (with-quasiquotation-state (client 'sharpsign-c t t)
               (let ((*list-reader* #'read-parts))
                 (values (if allow-non-list
                             (read stream t nil t)
@@ -1063,30 +1098,32 @@
     ;; or the end of input. The variable ELEMENT keeps track of the
     ;; currently expected ELEMENT which can be :TYPE, :SLOT-NAME, or
     ;; :SLOT-VALUE.
-    (let ((old-quasiquote-forbidden *quasiquote-forbidden*)
-          (listp nil)
-          (element :type)
-          (type)
-          (slot-name)
-          (initargs '()))
+    (let* ((old-quasiquotation-state (state-value client '*quasiquotation-state*))
+           (old-quasiquote-forbidden-p (car old-quasiquotation-state))
+           (listp nil)
+           (element :type)
+           (type)
+           (slot-name)
+           (initargs '()))
       (labels ((element (kind value)
                  (declare (ignore kind))
                  (case element
                    (:type
                     (collect-type value)
-                    (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
-                          *unquote-forbidden* 'sharpsign-s-slot-name
-                          element :name))
+                    (setf (state-value client '*quasiquotation-state*)
+                          '(#3=sharpsign-s-slot-name . #3#))
+                    (setf element :name))
                    (:name
                     (collect-name value)
-                    (setf *quasiquote-forbidden* old-quasiquote-forbidden
-                          *unquote-forbidden* 'sharpsign-s-slot-value
-                          element :object))
+                    (setf (state-value client '*quasiquotation-state*)
+                          (cons old-quasiquote-forbidden-p
+                                'sharpsign-s-slot-value))
+                    (setf element :object))
                    (:object
                     (collect-value value)
-                    (setf *quasiquote-forbidden* 'sharpsign-s-slot-name
-                          *unquote-forbidden* 'sharpsign-s-slot-name
-                          element :name))))
+                    (setf (state-value client '*quasiquotation-state*)
+                          '(#4=sharpsign-s-slot-name . #4#))
+                    (setf element :name))))
                (collect-type (value)
                  (typecase value
                    ((eql #1=#.(make-symbol "END-OF-LIST"))
@@ -1141,8 +1178,8 @@
                  ;; parts are processed normally instead of with
                  ;; READ-CONSTRUCTOR.
                  (setf listp t)
-                 (setf *quasiquote-forbidden* 'sharpsign-s-type
-                       *unquote-forbidden* 'sharpsign-s-type)
+                 (setf (state-value client '*quasiquotation-state*)
+                       '(#5=sharpsign-s-type . #5#))
                  (let ((*list-reader* nil))
                    (%read-list-elements stream #'element '#1# '#2# char nil))))
         (handler-case
@@ -1155,7 +1192,7 @@
             ;;   result construction so (foo :bar 2) will not appear as
             ;;   a list result with three atom result children.
             ;; We bind *LIST-READER* to use READ-CONSTRUCTOR for reading lists.
-            (with-forbidden-quasiquotation ('sharpsign-s)
+            (with-quasiquotation-state (client 'sharpsign-s t t)
               (let ((*list-reader* #'read-constructor))
                 (values (if allow-non-list
                             (read stream t nil t)
@@ -1199,36 +1236,37 @@
 
 (defun sharpsign-p (stream char parameter)
   (declare (ignore char))
-  (when (state-value *client* '*read-suppress*)
-    (read stream t nil t)
-    (return-from sharpsign-p nil))
-  (unless (null parameter)
-    (numeric-parameter-ignored stream 'sharpsign-p parameter nil))
-  (let ((expression
-          (with-forbidden-quasiquotation ('sharpsign-p)
-            (handler-case
-                (read stream t nil t)
-              ((and end-of-file (not incomplete-construct)) (condition)
-                (%recoverable-reader-error
-                 stream 'end-of-input-after-sharpsign-p
-                 :stream-position (stream-position condition)
-                 :report 'replace-namestring)
-                ".")
-              (end-of-list (condition)
-                (%recoverable-reader-error
-                 stream 'namestring-must-follow-sharpsign-p
-                 :position-offset -1 :report 'replace-namestring)
-                (unread-char (%character condition) stream)
-                ".")))))
-    (cond ((stringp expression)
-           (values (parse-namestring expression)))
-          (t
-           (%recoverable-reader-error
-            stream 'non-string-following-sharpsign-p
-            :position-offset -1
-            :expected-type 'string :datum expression
-            :report 'replace-namestring)
-           #P"."))))
+  (let ((client *client*))
+    (when (state-value client '*read-suppress*)
+      (read stream t nil t)
+      (return-from sharpsign-p nil))
+    (unless (null parameter)
+      (numeric-parameter-ignored stream 'sharpsign-p parameter nil))
+    (let ((expression
+            (with-quasiquotation-state (client 'sharpsign-p t t)
+              (handler-case
+                  (read stream t nil t)
+                ((and end-of-file (not incomplete-construct)) (condition)
+                  (%recoverable-reader-error
+                   stream 'end-of-input-after-sharpsign-p
+                   :stream-position (stream-position condition)
+                   :report 'replace-namestring)
+                  ".")
+                (end-of-list (condition)
+                  (%recoverable-reader-error
+                   stream 'namestring-must-follow-sharpsign-p
+                   :position-offset -1 :report 'replace-namestring)
+                  (unread-char (%character condition) stream)
+                  ".")))))
+      (cond ((stringp expression)
+             (values (parse-namestring expression)))
+            (t
+             (%recoverable-reader-error
+              stream 'non-string-following-sharpsign-p
+              :position-offset -1
+              :expected-type 'string :datum expression
+              :report 'replace-namestring)
+             #P".")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -1311,7 +1349,7 @@
       (let ((feature-expression
               (with-state-values (client '*package*       '#:keyword
                                          '*read-suppress* nil)
-                (with-forbidden-quasiquotation (context)
+                (with-quasiquotation-state (client context t t)
                   (read-expression
                    'end-of-input-after-sharpsign-plus-minus
                    'feature-expression-must-follow-sharpsign-plus-minus

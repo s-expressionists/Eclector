@@ -59,8 +59,8 @@
                               ;; implementation.
                               (:file "variables"
                                :if-feature :eclector-define-cl-variables)
-                              (:file "generic-functions")
                               (:file "more-variables")
+                              (:file "generic-functions")
                               (:file "additional-conditions")
                               (:file "utilities")
                               (:file "labeled-objects")

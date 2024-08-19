@@ -70,13 +70,14 @@
                                              (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
-               (let ((eclector.reader::*quasiquote-forbidden*
-                       (if quasiquote-forbidden
-                           'eclector.reader::sharpsign-a
-                           nil))
-                     (eclector.reader::*unquote-forbidden*
-                       'eclector.reader::sharpsign-a)
-                     (eclector.reader::*backquote-depth* 0))
+               (eclector.reader::with-state-values
+                   (eclector.base:*client*
+                    'eclector.reader::*quasiquotation-state*
+                    (cons (if quasiquote-forbidden
+                              'eclector.reader::sharpsign-a
+                              nil)
+                          'eclector.reader::sharpsign-a)
+                    'eclector.reader::*quasiquotation-depth* 0)
                  (eclector.reader::backquote stream #\`)))))
       (error-case (input expected expected-position expected-length)
         (error (do-it))
@@ -98,12 +99,15 @@
                                              (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
-               (let ((eclector.reader::*unquote-forbidden*
-                       (if unquote-forbidden
-                           'eclector.reader::sharpsign-a
-                           nil))
-                     (eclector.reader::*backquote-depth*
-                       backquote-depth))
+               (eclector.reader::with-state-values
+                   (eclector.base:*client*
+                    'eclector.reader::*quasiquotation-state*
+                    (cons nil
+                          (if unquote-forbidden
+                              'eclector.reader::sharpsign-a
+                              nil))
+                    'eclector.reader::*quasiquotation-depth*
+                    backquote-depth)
                  (eclector.reader::comma stream #\,)))))
       (error-case (input expected expected-position expected-length)
         (error (do-it))
@@ -176,9 +180,11 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
                                     (expected-length-strict expected-length-relaxed))
     (labels ((do-call (function)
                (with-stream (stream)
-                 (let ((*read-suppress* read-suppress)
-                       (eclector.reader::*backquote-depth* 1))
-                   (funcall function stream #\' parameter))))
+                 (eclector.reader::with-state-values
+                     (eclector.base:*client*
+                      '*read-suppress* read-suppress
+                      'eclector.reader::*quasiquotation-depth* 1)
+                     (funcall function stream #\' parameter))))
              (do-variant (function expected expected-position expected-length)
                (error-case (input expected expected-position expected-length)
                  (error (do-call function))
@@ -612,8 +618,10 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                                              (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
-               (let ((eclector.reader::*backquote-depth* 1)
-                     (*read-suppress* read-suppress))
+               (eclector.reader::with-state-values
+                   (eclector.base:*client*
+                    'eclector.reader::*quasiquotation-depth* 1
+                    '*read-suppress* read-suppress)
                  (eclector.reader::sharpsign-a stream #\A parameter)))))
       (error-case (input expected expected-position expected-length)
         (error (do-it))
@@ -704,8 +712,10 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
                                     (expected-length-strict expected-length-relaxed))
     (labels ((do-call (function)
                (with-stream (stream)
-                 (let ((*read-suppress* read-suppress)
-                       (eclector.reader::*backquote-depth* 1))
+                 (eclector.reader::with-state-values
+                     (eclector.base:*client*
+                      '*read-suppress* read-suppress
+                      'eclector.reader::*quasiquotation-depth* 1)
                    (funcall function stream #\C parameter))))
              (do-variant (function expected expected-position expected-length)
                (error-case (input expected expected-position expected-length)
@@ -773,11 +783,13 @@ variant, that is STRICT-SHARPSIGN-S."
                                     (expected-length-strict    expected-length-relaxed))
     (labels ((do-call (function)
                (with-stream (stream)
-                 (let ((*read-suppress* read-suppress)
-                       (eclector.reader::*backquote-depth* 1)
-                       (eclector.reader::*client*
-                         (make-instance 'sharpsign-s-client)))
-                   (funcall function stream #\S parameter))))
+                 (let* ((client (make-instance 'sharpsign-s-client))
+                        (eclector.base:*client* client))
+                  (eclector.reader::with-state-values
+                      (client
+                       '*read-suppress* read-suppress
+                       'eclector.reader::*quasiquotation-depth* 1)
+                    (funcall function stream #\S parameter)))))
              (do-variant (function expected expected-position expected-length)
                (error-case (input expected expected-position expected-length)
                  (error (do-call function))
@@ -847,8 +859,10 @@ variant, that is STRICT-SHARPSIGN-S."
                                              (expected-length 1))
     (flet ((do-it ()
              (with-stream (stream)
-               (let ((*read-suppress* read-suppress)
-                     (eclector.reader::*backquote-depth* 1))
+               (eclector.reader::with-state-values
+                   (eclector.base:*client*
+                    '*read-suppress* read-suppress
+                    'eclector.reader::*quasiquotation-depth* 1)
                  (eclector.reader::sharpsign-p stream #\P parameter)))))
       (error-case (input expected expected-position expected-length)
         (error (do-it))
@@ -877,7 +891,9 @@ variant, that is STRICT-SHARPSIGN-S."
                                                   (expected-length 1))
     (labels ((do-it (which)
                (with-stream (stream)
-                 (let ((eclector.reader::*backquote-depth* 1))
+                 (eclector.reader::with-state-values
+                     (eclector.base:*client*
+                      'eclector.reader::*quasiquotation-depth* 1)
                    (multiple-value-list
                     (ecase which
                       (:plus  (eclector.reader::sharpsign-plus

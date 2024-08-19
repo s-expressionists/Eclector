@@ -96,7 +96,7 @@
          (let* ((*skip-reason* nil)
                 (object (read-token client input-stream eof-error-p eof-value)))
            (cond ((and (eq object *consing-dot*)
-                       (not *consing-dot-allowed-p*))
+                       (not (state-value client '*consing-dot-allowed-p*)))
                   (%recoverable-reader-error
                    input-stream 'invalid-context-for-consing-dot
                    :position-offset -1 :report 'skip-token)

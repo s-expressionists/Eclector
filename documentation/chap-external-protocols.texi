@@ -717,14 +717,18 @@ semantics for feature expressions.
 
 @cindex reader state
 @cindex aspect, reader state
+@cindex quasiquotation
+@cindex consing dot
 
 The reader state protocol consists of generic functions which the reader
 and the client call to query and modify the values of reader state
 @dfn{aspects}.  Each aspect is named by a symbol and holds a current
-value and has a stack of shadowed values like a special variable.
-Aspects roughly correspond to the reader control variables defined in
-the @commonlisp{} specification.  @sysname{} defines the following
-aspects:
+value and has a stack of shadowed values like a special variable.  Most
+aspects roughly correspond to a particular reader control variable
+defined in the @commonlisp{} specification.  In addition to those,
+@sysname{} uses aspects for representing the validity of the consing dot
+as well as the quasiquotation depth and validity in a given context.  In
+total, @sysname{} defines the following aspects:
 
 @anchor{table:minimal-reader-state-aspects}
 @table @code
@@ -772,6 +776,35 @@ Like the @t{cl:*read-default-float-format*} special variable, this
 aspect controls the floating-point format that the reader uses for
 floating-point numbers without exponent marker or the default exponent
 marker.
+
+@item eclector.reader::*quasiquotation-state*
+
+@quotation Warning
+Clients should not query, bind or set the value of this aspect at this
+time.
+@end quotation
+
+This aspect controls whether backquote and unquote are allowed in the
+current context.
+
+@item eclector.reader::*quasiquotation-depth*
+
+@quotation Warning
+Clients should not query, bind or set the value of this aspect at this
+time.
+@end quotation
+
+This aspect tracks the backquote nesting depth in the current context.
+
+@item eclector.reader::*consing-dot-allowed-p*
+
+@quotation Warning
+Clients should not query, bind or set the value of this aspect at this
+time.
+@end quotation
+
+This aspect controls whether the consing dot is allowed in the current
+context.
 
 @end table
 
@@ -894,10 +927,30 @@ object.
 
 Backquote and unquote syntax is forbidden in some contexts such as
 multi-dimensional array literals (@t{#A}) and structure literals
-(@t{#S}) thus @sysname{} has a mechanism for controlling whether
-backquote, unquote or both should be allowed in a given context.
-Since custom reader macros may also have to control this aspect,
-@sysname{} provides the following convenience macro:
+(@t{#S}).  @sysname{} tracks and controls whether backquote, unquote or
+both should be allowed in a given context using the aspects
+@t{eclector.reader::*quasiquotation-state*} and
+@t{eclector.reader::*quasiquotation-depth*} mentioned above.  Since
+custom reader macros may also have to control this state, @sysname{}
+provides the following convenience macro:
+
+@defmaca {with-quasiquotation-state,eclector.reader} client context@
+  quasiquote-forbidden-p unquote-forbidden-p @pbody body
+
+@quotation Warning
+This macro is experimental and its name is not exported for now.
+@end quotation
+
+Control whether backquote syntax, unquote syntax or both are allowed in
+@t{read} functions called during the execution of @var{body}.
+@var{context} is a symbol identifying the current context which is used
+for error reporting.  A typical value is the name of the reader macro
+function in which this macro is used.  @var{quasiquote-forbidden-p}
+controls whether backquote syntax should be forbidden.  The value
+@t{:keep} causes the binding to remain unchanged.
+@var{unquote-forbidden-p} controls whether unquote syntax should be
+forbidden.  The value @t{:keep} causes the binding to remain unchanged.
+@end deffn
 
 @defmaca {with-forbidden-quasiquotation,eclector.reader} context@
   @optional@
@@ -906,7 +959,10 @@ Since custom reader macros may also have to control this aspect,
   @pbody body
 
 @quotation Warning
-This macro is experimental and its name is not exported for now.
+This macro is deprecated as of @sysname{} 0.11 and will be removed in a
+future version.  This macro is replaced by the macro
+@t{eclector.reader::with-quasiquotation-state} but that macro is
+experimental and its name is not exported for now.
 @end quotation
 
 Disallow backquote syntax, unquote syntax or both in @t{read}

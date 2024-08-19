@@ -80,6 +80,16 @@ Release 0.11 (not yet released)
   COMMON-LISP:STREAM-ERROR. The previous relation did not make sense since
   errors of those types are signaled during macro expansion.
 
+* Eclector now uses the reader state protocol instead of plain special
+  variables to query and track the legality of quasiquotation operations and
+  the consing dot. The additional reader state aspects are documented but
+  remain internal for now.
+
+  The (internal) macro ECLECTOR.READER::WITH-FORBIDDEN-QUASIQUOTATION is
+  deprecated as of this release. Clients which really need a replacement
+  immediately can use the new (internal) macro
+  ECLECTOR.READER::WITH-QUASIQUOTATION-STATE.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

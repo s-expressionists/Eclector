@@ -8,11 +8,9 @@
 
 ;;; Quasiquote syntax
 
-(defparameter *quasiquote-forbidden* nil)
+(defparameter *quasiquotation-state* '(nil . nil))
 
-(defparameter *unquote-forbidden* nil)
-
-(defparameter *backquote-depth* 0)
+(defparameter *quasiquotation-depth* 0)
 
 ;;; List syntax
 
