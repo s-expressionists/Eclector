@@ -232,7 +232,7 @@ code.
 * Reader behavior protocol::
 * Reader state protocol::
 * Labeled objects and references::
-* S-expression creation and quasiquotation::
+* S-expression creation::
 * Readtable initialization::
 @end menu
 
@@ -888,6 +888,39 @@ coerces such string designators to package objects so that a subsequent
 object.
 @end deffn
 
+@cindex quasiquote
+@cindex backquote
+@cindex unquote
+
+Backquote and unquote syntax is forbidden in some contexts such as
+multi-dimensional array literals (@t{#A}) and structure literals
+(@t{#S}) thus @sysname{} has a mechanism for controlling whether
+backquote, unquote or both should be allowed in a given context.
+Since custom reader macros may also have to control this aspect,
+@sysname{} provides the following convenience macro:
+
+@defmaca {with-forbidden-quasiquotation,eclector.reader} context@
+  @optional@
+  (quasiquote-forbidden-p @t{t})@
+  (unquote-forbidden-p @t{t})@
+  @pbody body
+
+@quotation Warning
+This macro is experimental and its name is not exported for now.
+@end quotation
+
+Disallow backquote syntax, unquote syntax or both in @t{read}
+functions called during the execution of @var{body}.
+@var{context} is a symbol identifying the current context which is
+used for error reporting.  A typical value is the name of the reader
+macro function in which this macro is used.
+@var{quasiquote-forbidden-p} controls whether backquote syntax
+should be forbidden.  The value @t{:keep} causes the binding to
+remain unchanged.  @var{unquote-forbidden-p} controls whether
+unquote syntax should be forbidden.  The value @t{:keep} causes
+the binding to remain unchanged.
+@end deffn
+
 @node Labeled objects and references
 @subsection Labeled objects and references
 
@@ -1252,13 +1285,14 @@ An unspecialized @t{:around} method queries and updates
 @var{seen-objects} to ensure that each object is processed exactly once.
 @end deffn
 
-@node S-expression creation and quasiquotation
-@subsection S-expression creation and quasiquotation
+@node S-expression creation
+@subsection S-expression creation
 
 @cindex quotation
 
 The following generic functions allow clients to construct
-representations of quoted and quasiquoted forms.
+representations of quoted and quasiquoted forms as well as @t{function}
+special forms.
 
 @defgena {wrap-in-quote,eclector.reader} client material
 
@@ -1272,6 +1306,9 @@ equivalent to @code{(list 'common-lisp:quote @var{material})}.
 
 @cindex quasiquotation
 
+@cindex quasiquote
+@cindex backquote
+
 @defgena {wrap-in-quasiquote,eclector.reader} client form
 
 This generic function is called by the default @t{`}-reader macro
@@ -1281,6 +1318,8 @@ the quasiquoted material.
 The default method on this generic function returns a result
 equivalent to @code{(list 'eclector.reader:quasiquote @var{form})}.
 @end deffn
+
+@cindex unquote
 
 @defgena {wrap-in-unquote,eclector.reader} client form
 
@@ -1301,31 +1340,6 @@ unquoted material.
 The default method on this generic function returns a result
 equivalent to
 @code{(list 'eclector.reader:unquote-splicing @var{form})}.
-@end deffn
-
-Backquote and unquote syntax is forbidden in some contexts such as
-multi-dimensional array literals (@t{#A}) and structure literals
-(@t{#S}) thus @sysname{} has a mechanism for controlling whether
-backquote, unquote or both should be allowed in a given context.
-Since custom reader macros may also have to control this aspect,
-@sysname{} provides an external protocol:
-
-@defmaca {with-forbidden-quasiquotation,eclector.reader} context@
-  @optional@
-  (quasiquote-forbidden-p @t{t})@
-  (unquote-forbidden-p @t{t})@
-  @pbody body
-
-Disallow backquote syntax, unquote syntax or both in @t{read}
-functions called during the execution of @var{body}.
-@var{context} is a symbol identifying the current context which is
-used for error reporting.  A typical value is the name of the reader
-macro function in which this macro is used.
-@var{quasiquote-forbidden-p} controls whether backquote syntax
-should be forbidden.  The value @t{:keep} causes the binding to
-remain unchanged.  @var{unquote-forbidden-p} controls whether
-unquote syntax should be forbidden.  The value @t{:keep} causes
-the binding to remain unchanged.
 @end deffn
 
 @cindex function
