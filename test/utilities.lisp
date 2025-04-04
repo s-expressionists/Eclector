@@ -28,6 +28,22 @@
                              (rec (cdr left) (cdr right))))))))
       (rec left right))))
 
+(defun equalp* (left right)
+  (flet ((atom-test (recurse left right)
+           (typecase left
+             (vector
+              (values (and (typep right 'vector)
+                           (equal (array-element-type left)
+                                  (array-element-type right))
+                           (= (length left) (length right))
+                           (every recurse left right))
+                      t))
+             (atom
+              (values (equalp left right) t))
+             (t
+              (values nil nil)))))
+    (equal* left right :atom-test #'atom-test)))
+
 (defun code-equal (left right)
   (flet ((compare (recurse left right)
            (cond ((and (symbolp right) (not (symbol-package right)))

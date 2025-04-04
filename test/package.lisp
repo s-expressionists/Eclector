@@ -6,6 +6,7 @@
 
   (:export
    #:equal*
+   #:equalp*
    #:code-equal
 
    #:check-signals-error
