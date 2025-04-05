@@ -1,10 +1,10 @@
 (cl:in-package #:eclector.parse-result)
 
-;;; Instances wrap an "inner", ordinary labeled objects (that is
+;;; Each Instance wraps an "inner", ordinary labeled object (that is
 ;;; whatever the next MAKE-LABELED-OBJECT method for the current
 ;;; client returns) so that a parse result can be associated with the
 ;;; labeled object in addition to the final object which the inner
-;;; labeled object stores. An additional "outer" labeled object is
+;;; labeled object stores.  An additional "outer" labeled object is
 ;;; stored in case additional methods on MAKE-LABELED-OBJECT in turn
 ;;; wrap the %WRAPPER instance in some other object (which is the case
 ;;; by default; see the "Fixup work tree" section in
@@ -16,8 +16,8 @@
   (outer)
   (parse-result nil))
 
-;;; A binding with value NIL is established in the RAD-MAYBE-NOTHING
-;;; method specialized to PARSE-RESULT-CLIENT. The value of the
+;;; A binding with value NIL is established in the READ-MAYBE-NOTHING
+;;; method specialized to PARSE-RESULT-CLIENT.  The value of the
 ;;; binding is changed to a %WRAPPER object in a MAKE-LABELED-OBJECT
 ;;; below.
 (defvar *wrapper*)
