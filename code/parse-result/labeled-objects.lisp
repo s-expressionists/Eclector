@@ -114,9 +114,36 @@
                         :object-key (lambda (client labeled-object)
                                       (declare (ignore client))
                                       (%wrapper-parse-result labeled-object)))))
+                   ;; Due to custom reader macros which may have
+                   ;; bypassed our machinery, RESULT may be different
+                   ;; from the object in WRAPPER.
                    (let ((definition (make-definition wrapper)))
                      (declare (dynamic-extent definition))
-                     (make-expression-result client definition children source))))
+                     (if (eq result (nth-value
+                                     1 (eclector.reader:labeled-object-state
+                                        client wrapper)))
+                         ;; RESULT is the object of WRAPPER.  That
+                         ;; means it is safe to build the parse result
+                         ;; from DEFINITION and CHILDREN.
+                         (make-expression-result client definition children source)
+                         ;; RESULT is different from the object in
+                         ;; WRAPPER.  Call the next method with RESULT
+                         ;; and CHILDREN so that we can be sure that
+                         ;; we return a parse result with RESULT as
+                         ;; the "raw" object and CHILDREN as the
+                         ;; children (instead of the possible
+                         ;; incorrect data we would get from WRAPPER.
+                         ;; However, Try to slip a labeled object
+                         ;; definition parse result into children to
+                         ;; give the client a chance to reconstruct a
+                         ;; suitable parse result sub-tree.
+                         (let* ((definition-result (make-expression-result
+                                                    client definition children source))
+                                (children (substitute
+                                           definition-result
+                                           (%wrapper-parse-result wrapper)
+                                           children)))
+                           (call-next-method client result children source))))))
                 (t ; inner finalized, no parse result, but also no child
                  ;; This can happen when the clients chooses to
                  ;; recover for input like #1=.  In that case, no

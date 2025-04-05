@@ -105,3 +105,57 @@ labeled object definition wrapper CSTs."
     (is (cst:atom target))
     (is (eql 2 (cst:raw target)))
     (is (equal (list '(:block-comment t) target) (children result)))))
+
+;;; Make sure that a custom reader macro which bypasses some reader
+;;; functionality does not lead to invalid parse results, also in
+;;; combination with wrapper CSTs that represent labeled object
+;;; definitions and references.
+
+(defun bypassing-left-parenthesis (stream char)
+  (declare (ignore char))
+  (loop for peek = (eclector.reader:peek-char t stream t nil t)
+        when (eq peek #\))
+          do (eclector.reader:read-char stream t nil t)
+             (loop-finish)
+        ;; Instead of unconditionally calling READ recursively, do the
+        ;; reader macro lookup "manually".
+        collect (let ((function (eclector.readtable:get-macro-character
+                                 eclector.reader:*readtable* peek)))
+                  (cond (function
+                         (eclector.reader:read-char stream t nil t)
+                         (funcall function stream peek))
+                        (t
+                         (eclector.reader:read stream t nil t))))))
+
+(test custom-reader-macro/smoke
+  "Ensure that read objects and parse results remain consistent in the
+presence of custom reader macros that bypass some reader functionality."
+  (do-stream-input-cases ((input length) expected-result)
+      (let ((expected-source `(0 . ,length))
+            (client (make-instance 'wrapper-cst-client))
+            (eclector.reader:*readtable* (eclector.readtable:copy-readtable
+                                          eclector.reader:*readtable*)))
+        (eclector.readtable:set-macro-character
+         eclector.reader:*readtable* #\( #'bypassing-left-parenthesis)
+        (let ((result (let ((eclector.base:*client* client))
+                        (eclector.concrete-syntax-tree:read-from-string
+                         input))))
+          (expect "valid"  (valid-cst-parse-result-p result result))
+          (expect "raw"    (equalp* expected-result (cst:raw result)))
+          (expect "source" (equal expected-source (cst:source result)))
+          (is-consistent-with-raw result)))
+    '(("(print (quote (member :floor :ceiling)))"
+       (print (quote (member :floor :ceiling))))
+      ("(print '(member :floor :ceiling))"
+       (print '(member :floor :ceiling)))
+      ("(print #((member :floor :ceiling)))"
+       (print #((member :floor :ceiling))))
+      ("(print `(member ,:floor :ceiling))"
+       (print (eclector.reader:quasiquote
+               (member (eclector.reader:unquote :floor) :ceiling))))
+      ("(print (quote #1=(member :floor :ceiling)))"
+       (print (quote (member :floor :ceiling))))
+      ("#1=(print (quote #2=(member :floor :ceiling)))"
+       (print (quote (member :floor :ceiling))))
+      ("(print (quote #1=(member #1# :ceiling)))"
+       (print (quote #1=(member #1# :ceiling)))))))

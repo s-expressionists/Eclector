@@ -492,3 +492,58 @@
                                ((*read-suppress* () (7 . 10)))
                                (6 . 11))
                               ((:block-comment () (0 . 5)))))))
+
+;;; Custom reader macros
+
+(defun bypassing-left-parenthesis (stream char)
+  (declare (ignore char))
+  (loop for peek = (eclector.reader:peek-char t stream t nil t)
+        when (eq peek #\))
+          do (eclector.reader:read-char stream t nil t)
+             (loop-finish)
+        ;; Instead of unconditionally calling READ recursively, do the
+        ;; reader macro lookup "manually".
+        collect (let ((function (eclector.readtable:get-macro-character
+                                 eclector.reader:*readtable* peek)))
+                  (cond (function
+                         (eclector.reader:read-char stream t nil t)
+                         (funcall function stream peek))
+                        (t
+                         (eclector.reader:read stream t nil t))))))
+
+(test custom-reader-macro/smoke
+  "Ensure that read objects and parse results remain consistent in the
+presence of custom reader macros that bypass some reader functionality."
+  (do-stream-input-cases ((input length)
+                          expected-result
+                          &optional (expected-source `(0 . ,length)))
+      (let ((eclector.reader:*client* (make-instance 'simple-result-client))
+            (eclector.reader:*readtable* (eclector.readtable:copy-readtable
+                                          eclector.reader:*readtable*)))
+        (eclector.readtable:set-macro-character
+         eclector.reader:*readtable* #\( #'bypassing-left-parenthesis)
+        (multiple-value-bind (object result) (with-stream (stream)
+                                               (eclector.reader:read stream))
+          (expect "object" (equalp* expected-result object))
+          (expect "raw"    (equalp* expected-result (raw result)))
+          (expect "source" (equal expected-source (source result)))))
+    '(("(print (quote (member :floor :ceiling)))"
+       (print (quote (member :floor :ceiling))))
+      ("(print '(member :floor :ceiling))"
+       (print '(member :floor :ceiling)))
+      ("(print #((member :floor :ceiling)))"
+       (print #((member :floor :ceiling))))
+      ("(print `(member ,:floor :ceiling))"
+       (print (eclector.reader:quasiquote
+               (member (eclector.reader:unquote :floor) :ceiling))))
+      ("(print (quote #1=(member :floor :ceiling)))"
+       (print (quote (member :floor :ceiling))))
+      ;; We ignore the `make-expression-result' call with a
+      ;; `definition' instance and a source range for the entire
+      ;; input.  As a result, we must adjust the expected source range
+      ;; for the root parse result.
+      ("#1=(print (quote #2=(member :floor :ceiling)))"
+       (print (quote (member :floor :ceiling)))
+       (3 . 46))
+      ("(print (quote #1=(member #1# :ceiling)))"
+       (print (quote #1=(member #1# :ceiling)))))))

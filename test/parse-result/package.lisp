@@ -4,7 +4,7 @@
    #:fiveam)
 
   (:import-from #:eclector.test
-   #:equal*
+   #:equal* #:equalp*
 
    #:do-input-cases        #:expect
    #:do-stream-input-cases #:with-stream

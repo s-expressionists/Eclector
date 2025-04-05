@@ -115,7 +115,44 @@ expression result    bar")
     "is" "deprecated" "as" "of" "this" "release" "." "Clients" "which" "really"
     "need" "a" "replacement" "immediately" "can" "use" "the" "new" "("
     "internal" ")" "macro"
-    (:symbol "eclector.reader::with-quasiquotation-state") ".")))
+    (:symbol "eclector.reader::with-quasiquotation-state") "."))
+  (:item
+   (:paragraph
+    "Eclector" "no" "longer" "returns" "incorrect" "parse" "results" "when"
+    "custom" "reader" "macros" "bypass" "some" "reader" "functionality" "and"
+    "the" "input" "contains" "labeled" "object" "definitions" "or" "references"
+    ".")
+   (:paragraph
+    "An" "example" "of" "a" "situation" "that" "was" "previously" "handled"
+    "incorrectly" "is" "the" "following")
+   (:code :common-lisp "(defun bypassing-left-parenthesis (stream char)
+  (declare (ignore char))
+  (loop for peek = (eclector.reader:peek-char t stream t nil t)
+        when (eq peek #\\))
+          do (eclector.reader:read-char stream t nil t)
+             (loop-finish)
+        collect (let ((function (eclector.readtable:get-macro-character
+                                 eclector.reader:*readtable* peek)))
+                  (cond (function
+                         (eclector.reader:read-char stream t nil t)
+                         (funcall function stream peek))
+                        (t
+                         (eclector.reader:read stream t nil t))))))
+
+(let ((eclector.reader:*readtable* (eclector.readtable:copy-readtable
+                                    eclector.reader:*readtable*)))
+  (eclector.readtable:set-macro-character
+   eclector.reader:*readtable* #\\( #'bypassing-left-parenthesis)
+  (describe (eclector.parse-result:read-from-string
+             (make-instance 'eclector.parse-result.test::simple-result-client)
+             \"(print (quote #1=(member :floor :ceiling)))\")))
+;; [...]
+;; Slots with :INSTANCE allocation:
+;;   %RAW                           = (PRINT '(MEMBER :FLOOR :CEILING))
+;;   %SOURCE                        = (0 . 43)
+;; [...]
+;; The %RAW slot used to contain (MEMBER :FLOOR :CEILING) instead of
+;; (PRINT '(MEMBER :FLOOR :CEILING)).")))
 
  (:release "0.10" "2024-02-28"
   (:item
