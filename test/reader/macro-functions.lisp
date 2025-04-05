@@ -543,6 +543,21 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("1"    1   t   nil)
       ("1"    37  t   nil))))
 
+(test rational-reader-macro+digit-is-macro-character
+  "Ensure that non-terminating macro characters work as digits in
+rational numbers."
+  (let ((eclector.reader:*readtable* (eclector.readtable:copy-readtable
+                                      eclector.reader:*readtable*)))
+    (eclector.readtable:set-macro-character
+     eclector.reader:*readtable*
+     #\1
+     (lambda (stream char)
+       (declare (ignore stream char))
+       1)
+     t) ; non-terminating
+    (is (equal (values 16 4) (eclector.reader:read-from-string "#x10")))
+    (is (equal (values  1 4) (eclector.reader:read-from-string "#x01")))))
+
 (test sharpsign-asterisk/smoke
   "Smoke test for the SHARPSIGN-ASTERISK function."
   (do-stream-input-cases ((input length) parameter read-suppress

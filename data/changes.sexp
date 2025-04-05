@@ -157,7 +157,27 @@ expression result    bar")
    (:paragraph
     "The" "reader" "macros" "for" "non-decimal" "radices" "now" "accept"
     (:tt "+") "in" "the" "sign" "part" "." "For" "example" "," "Eclector" "now"
-    "accepts" (:tt "#x+10") "as" "a" "spelling" "of" (:tt "16") ".")))
+    "accepts" (:tt "#x+10") "as" "a" "spelling" "of" (:tt "16") "."))
+  (:item
+   (:paragraph
+    "The" "reader" "macros" "for" "non-decimal" "radices" "now" "treat"
+    "non-terminating" "macro" "characters" "that" "are" "valid" "digits"
+    "for" "the" "respective" "rational" "syntax" "as" "digits" "instead"
+    "of" "signaling" "an" "error" "." "This" "is" "in" "line" "with" "the"
+    "behavior" "for" "tokens" "outside" "of" "those" "reader" "macros" ".")
+   (:paragraph
+    "As" "an" "example" "," "the" "following" "signaled" "an" "error" "before"
+    "this" "change" ":")
+   (:code :common-lisp "(let ((eclector.reader:*readtable*
+        (eclector.readtable:copy-readtable eclector.reader:*readtable*)))
+  (eclector.readtable:set-macro-character
+   eclector.reader:*readtable*
+   #\\1
+   (lambda (stream char)
+     (declare (ignore stream char))
+     1)
+   t) ; non-terminating
+  (eclector.reader:read-from-string \"#x01\"))")))
 
  (:release "0.10" "2024-02-28"
   (:item

@@ -605,7 +605,8 @@
              (multiple-value-bind (char type) (next-char t)
                (cond (suppress
                       (values 1 0))
-                     ((not (eq type :constituent))
+                     ;; #x10 where 1 is non-terminating macro character
+                     ((not (member type '(:constituent :non-terminating-macro)))
                       (digit-expected char type nil))
                      ((char= char #\-)
                       (values -1 0))
@@ -635,14 +636,14 @@
                       (:terminating-macro
                        (unread-char char stream)
                        (return-from integer value))
-                      ((:non-terminating-macro
-                        :single-escape :multiple-escape)
+                      ((:single-escape :multiple-escape)
                        (cond (suppress
                               (go rest))
                              (t
                               (digit-expected char type nil)
                               (return-from integer value))))
-                      (:constituent
+                      ;; #x01 where 1 is non-terminating macro character
+                      ((:constituent :non-terminating-macro)
                        (cond (suppress
                               (go rest))
                              ((and /-allowed (eql char #\/))
