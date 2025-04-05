@@ -152,7 +152,12 @@ expression result    bar")
 ;;   %SOURCE                        = (0 . 43)
 ;; [...]
 ;; The %RAW slot used to contain (MEMBER :FLOOR :CEILING) instead of
-;; (PRINT '(MEMBER :FLOOR :CEILING)).")))
+;; (PRINT '(MEMBER :FLOOR :CEILING))."))
+  (:item
+   (:paragraph
+    "The" "reader" "macros" "for" "non-decimal" "radices" "now" "accept"
+    (:tt "+") "in" "the" "sign" "part" "." "For" "example" "," "Eclector" "now"
+    "accepts" (:tt "#x+10") "as" "a" "spelling" "of" (:tt "16") ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

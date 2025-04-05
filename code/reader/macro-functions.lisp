@@ -609,6 +609,8 @@
                       (digit-expected char type nil))
                      ((char= char #\-)
                       (values -1 0))
+                     ((char= char #\+)
+                      (values 1 0))
                      (t
                       (values 1 (ensure-digit char type))))))
            (integer (empty-allowed /-allowed initial-value)

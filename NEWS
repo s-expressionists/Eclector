@@ -126,6 +126,9 @@ Release 0.11 (not yet released)
     ;; The %RAW slot used to contain (MEMBER :FLOOR :CEILING) instead of
     ;; (PRINT '(MEMBER :FLOOR :CEILING)).
 
+* The reader macros for non-decimal radices now accept + in the sign part. For
+  example, Eclector now accepts #x+10 as a spelling of 16.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

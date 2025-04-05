@@ -375,8 +375,10 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ;; Good inputs
       ("1"      10 1)
       ("-1"     10 -1)
+      ("+1"     10 +1)
       ("1 "     10 1     1)
       ("-1 "    10 -1    2)
+      ("+1 "    10 1     2)
       ("12"     10 12)
       ("-12"    10 -12)
       ("12 "    10 12    2)
@@ -393,6 +395,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("-1/23"  10 -1/23)
       ("1/23 "  10 1/23  4)
       ("-1/23 " 10 -1/23 5)
+      ("+1/23 " 10 1/23  5)
       ("1 2"    10 1     1)
       ;; Base 10
       ("1"      10 1)
@@ -445,6 +448,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ;; Valid binary rationals
       ("1"    nil nil 1)
       ("-1"   nil nil -1)
+      ("+1"   nil nil 1)
       ("1/10" nil nil 1/2)
       ;; With *READ-SUPPRESS* bound to T
       ("1"    1   t   nil)
@@ -469,6 +473,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ;; Valid octal rationals
       ("1"    nil nil 1)
       ("-1"   nil nil -1)
+      ("+1"   nil nil 1)
       ("1/10" nil nil 1/8)
       ;; With *READ-SUPPRESS* bound to T
       ("1"    1   t   nil)
@@ -493,6 +498,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ;; Valid hexadecimal rationals
       ("1"    nil nil 1)
       ("-1"   nil nil -1)
+      ("+1"   nil nil 1)
       ("1/10" nil nil 1/16)
       ;; With *READ-SUPPRESS* bound to T
       ("1"    1   t   nil)
@@ -520,6 +526,7 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ;; Valid base-17 rationals
       ("1"    17  nil 1)
       ("-1"   17  nil -1)
+      ("+1"   17  nil 1)
       ("1/10" 17  nil 1/17)
       ("g"    17  nil 16)
       ("1 2"  16  nil 1 1)
