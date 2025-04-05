@@ -457,7 +457,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("/#!"  nil t   nil)
       ("-/#!" nil t   nil)
       ("2"    nil t   nil)
-      ("1."   nil t   nil)))
+      ("1."   nil t   nil)
+      ("\\1"  nil t   nil)
+      ("1\\2" nil t   nil)))
 
   (define-rational-reader-macro-test #\O
     '(;; Errors
@@ -482,7 +484,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("/#!"  nil t   nil)
       ("-/#!" nil t   nil)
       ("8"    nil t   nil)
-      ("1."   nil t   nil)))
+      ("1."   nil t   nil)
+      ("\\1"  nil t   nil)
+      ("1\\2" nil t   nil)))
 
   (define-rational-reader-macro-test #\X
     '(;; Errors
@@ -507,7 +511,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("/#!"  nil t   nil)
       ("-/#!" nil t   nil)
       ("g"    nil t   nil)
-      ("1."   nil t   nil)))
+      ("1."   nil t   nil)
+      ("\\1"  nil t   nil)
+      ("1\\2" nil t   nil)))
 
   (define-rational-reader-macro-test #\R
     '(;; Errors
@@ -541,7 +547,9 @@ SHARPSIGN-SINGLE-QUOTE reader macro function."
       ("1"    nil t   nil)
       ("1"    0   t   nil)
       ("1"    1   t   nil)
-      ("1"    37  t   nil))))
+      ("1"    37  t   nil)
+      ("\\1"  16  t   nil)
+      ("1\\2" 16  t   nil))))
 
 (test rational-reader-macro+digit-is-macro-character
   "Ensure that non-terminating macro characters work as digits in
