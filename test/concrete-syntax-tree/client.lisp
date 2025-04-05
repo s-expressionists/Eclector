@@ -15,9 +15,8 @@
          (client (make-instance 'annotating-cst-client))
          (result (let ((eclector.base:*client* client))
                    (eclector.concrete-syntax-tree:read-from-string input))))
-    (is-true (valid-cst-parse-result-p client result)
-             "~@<For input ~S, the result CST ~A is not valid.~@:>"
-             input result)
+    (is-true (valid-cst-parse-result-p client result))
+    (is-consistent-with-raw result)
     (is (equal* '(a #1=(b (:circular-reference #1#)
                         c (:another-circular-reference #1#)
                         d)
@@ -50,10 +49,11 @@
                          (eclector.concrete-syntax-tree:read-from-string input))))
           (assert (equal* expression (read-from-string input)))
           (is-true (valid-cst-parse-result-p client result)
-                   "~@<For input ~S, the result CST ~A is not valid.~@:>"
+                   "~@<For input ~S, the result CST ~S is not valid.~@:>"
                    input result)
-          (is (equal* expression (cst:raw result)))
-          (is (equal* expression (raw* result))))))))
+          (is-consistent-with-raw result)
+          (expect input "cst:raw" (equal* expression (cst:raw result)))
+          (expect input "raw*"    (equal* expression (raw* result))))))))
 
 (test wrapper-labeled-object-csts/missed-labeled-object
   "Check that no labeled objects remain in the parse result tree."
@@ -61,9 +61,8 @@
          (client (make-instance 'wrapper-cst-client))
          (result (let ((eclector.base:*client* client))
                    (eclector.concrete-syntax-tree:read-from-string input))))
-    (is (valid-cst-parse-result-p client result)
-        "~@<For input ~S, the result CST ~A is not valid.~@:>"
-        input result)))
+    (is-true (valid-cst-parse-result-p client result))
+    (is-consistent-with-raw result)))
 
 ;;; Test the interaction between wrapper CSTs for labeled objects and
 ;;; explicitly represented skipped input.  The potential problem
@@ -102,9 +101,11 @@ labeled object definition wrapper CSTs."
                    (eclector.concrete-syntax-tree:read-from-string
                     "#1=#|foo|#2")))
          (target (eclector.concrete-syntax-tree:target result)))
+    (is-true (valid-cst-parse-result-p client result))
+    (is-consistent-with-raw result)
+    (is (equal (list '(:block-comment t) target) (children result)))
     (is (cst:atom target))
-    (is (eql 2 (cst:raw target)))
-    (is (equal (list '(:block-comment t) target) (children result)))))
+    (is (eql 2 (cst:raw target)))))
 
 ;;; Make sure that a custom reader macro which bypasses some reader
 ;;; functionality does not lead to invalid parse results, also in
@@ -140,9 +141,11 @@ presence of custom reader macros that bypass some reader functionality."
         (let ((result (let ((eclector.base:*client* client))
                         (eclector.concrete-syntax-tree:read-from-string
                          input))))
-          (expect "valid"  (valid-cst-parse-result-p result result))
           (expect "raw"    (equalp* expected-result (cst:raw result)))
           (expect "source" (equal expected-source (cst:source result)))
+          (is-true (valid-cst-parse-result-p result result)
+                   "~@<For input ~S, the result CST ~S is not valid~@:>"
+                   input result)
           (is-consistent-with-raw result)))
     '(("(print (quote (member :floor :ceiling)))"
        (print (quote (member :floor :ceiling))))

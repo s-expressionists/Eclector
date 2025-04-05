@@ -13,4 +13,7 @@
                       (prin1-to-string expression)))
              (result (eclector.concrete-syntax-tree:read-from-string input)))
         (assert (equal* expression (read-from-string input)))
-        (is (equal* expression (cst:raw result)))))))
+        (is (equal* expression (cst:raw result)))
+        (is-true (valid-cst-parse-result-p
+                  eclector.concrete-syntax-tree::*cst-client* result))
+        (is-consistent-with-raw result)))))

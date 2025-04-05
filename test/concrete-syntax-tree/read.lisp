@@ -22,10 +22,11 @@
            ;; CST result and its raw content.
            (is (typep result 'cst:cst))
            (is-true (valid-cst-parse-result-p
-                     eclector.concrete-syntax-tree::*cst-client* result))
+                     eclector.concrete-syntax-tree::*cst-client* result)
+                    "~@<For input ~S, the result CST ~S it not valid~@:>"
+                    input result)
            (is-consistent-with-raw result)
-           (let ((raw (cst:raw result)))
-             (expect "raw result" (equal* expected-raw raw)))
+           (expect "raw result" (equal* expected-raw (cst:raw result)))
            ;; Expected source location.
            (expect "source location" (equal expected-location (cst:source result)))
            ;; Consumed all input.
@@ -65,10 +66,11 @@
            (multiple-value-bind (result orphan-results position) (do-it)
              (is (typep result 'cst:cst))
              (is-true (valid-cst-parse-result-p
-                       eclector.concrete-syntax-tree::*cst-client* result))
+                       eclector.concrete-syntax-tree::*cst-client* result)
+                      "~@<For input ~S, the result CST ~S is not valid~@:>"
+                      input result)
              (is-consistent-with-raw result)
-             (let ((raw (cst:raw result)))
-               (expect "raw results" (equal expected-result raw)))
+             (expect "raw results"    (equal expected-result (cst:raw result)))
              (expect "orphan results" (eq  '()               orphan-results))
              (expect "position"       (eql expected-position position))))))
     '(;; End of input
@@ -98,11 +100,12 @@
            (multiple-value-bind (result position) (do-it)
              (is (typep result 'cst:cst))
              (is-true (valid-cst-parse-result-p
-                       eclector.concrete-syntax-tree::*cst-client* result))
+                       eclector.concrete-syntax-tree::*cst-client* result)
+                      "~@<For input ~S, the result CST ~S is not valid~@:>"
+                      input result)
              (is-consistent-with-raw result)
-             (let ((raw (cst:raw result)))
-               (expect "raw result" (equal expected-value raw)))
-             (expect "position" (eql expected-position position))))))
+             (expect "raw result" (equal expected-value (cst:raw result)))
+             (expect "position"   (eql expected-position position))))))
     '(;; End of input
       (""         ()                               eclector.reader:end-of-file  0 0)
       (""         (nil :eof)                       :eof                         0)
@@ -244,9 +247,12 @@
 
 (test read-cst/custom-client
   "Test using a custom client with READ."
-  (let ((result (with-input-from-string (stream "#||# 1")
-                  (let ((eclector.reader:*client* (make-instance 'custom-client)))
-                    (eclector.concrete-syntax-tree:read stream)))))
+  (let* ((client (make-instance 'custom-client))
+         (result (with-input-from-string (stream "#||# 1")
+                   (let ((eclector.reader:*client* client))
+                     (eclector.concrete-syntax-tree:read stream)))))
+    (is-true (valid-cst-parse-result-p client result))
+    (is-consistent-with-raw result)
     (is (equalp #(-5 -6) (cst:source result)))))
 
 ;;; Skipped input
