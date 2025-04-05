@@ -72,6 +72,12 @@
 
 ;;; Processing test cases
 
+(defmacro expect (input label test)
+  `(is ,test
+       ,(format nil "~~@<For input ~~S, expected ~A ~~S but got ~~S~~@:>"
+                label)
+       ,input ,(second test) ,(third test)))
+
 (defun wrap-in-expect (input-var form)
   `(macrolet ((expect (label test)
                 `(is ,test
