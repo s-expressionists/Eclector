@@ -388,7 +388,6 @@ associated reader macro function if that reader macro function does not
 return a value.  In this case the function returns @t{nil} and
 @t{:skip}.
 @end itemize
-@end deffn
 
 @quotation Note
 This generic function may return more values in addition to the ones
@@ -398,6 +397,7 @@ features}).  Client defined methods on this generic function should
 accept such additional values when calling a next method and themselves
 return the additional values.
 @end quotation
+@end deffn
 
 @defgena {note-skipped-input,eclector.reader} client input-stream reason
 
