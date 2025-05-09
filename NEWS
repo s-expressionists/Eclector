@@ -55,8 +55,8 @@ Release 0.11 (not yet released)
   state aspect.
 
 * The reader state protocol now provides the generic function
-  (SETF ECLECTOR.READTABLE:STATE-VALUE) which allows clients to set reader
-  state aspects in addition to establishing dynamically scoped bindings.
+  (SETF ECLECTOR.READER:STATE-VALUE) which allows clients to set reader state
+  aspects in addition to establishing dynamically scoped bindings.
 
 * The macros ECLECTOR.READER:UNQUOTE and ECLECTOR.READER:UNQUOTE-SPLICING now
   signal sensible errors when used outside of the lexical scope of a

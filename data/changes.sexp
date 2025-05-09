@@ -70,7 +70,7 @@ expression result    bar")
     "The" "reader" "state" "protocol"
     (:when "manual" "(" (:ref :section "Reader state protocol") ")")
     "now" "provides" "the" "generic" "function"
-    (:symbol "(setf eclector.readtable:state-value)") "which" "allows"
+    (:symbol "(setf eclector.reader:state-value)") "which" "allows"
     "clients" "to" "set" "reader" "state" "aspects" "in" "addition" "to"
     "establishing" "dynamically" "scoped" "bindings" "."))
   (:item
