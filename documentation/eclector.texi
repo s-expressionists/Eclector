@@ -15,8 +15,11 @@
 @settitle @sysname{} User's Manual
 
 @copying
+This manual is for @sysname{} version @sysversion{}.
+
 Copyright @copyright{} 2010 - 2018 Robert Strandh
-Copyright @copyright{} 2018 - 2024 Jan Moringen
+
+Copyright @copyright{} 2018 - 2025 Jan Moringen
 @end copying
 
 @dircategory Common Lisp
@@ -36,7 +39,7 @@ Copyright @copyright{} 2018 - 2024 Jan Moringen
 @node Top
 @top @sysname{} User's Manual
 
-This manual is for @sysname{} version @sysversion{}.
+@insertcopying
 @end ifnottex
 
 @menu
