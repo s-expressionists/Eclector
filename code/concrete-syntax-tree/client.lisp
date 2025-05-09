@@ -25,7 +25,7 @@
   ;;
   ;; 2. The elements of CHILDREN, which is a "pool" of available
   ;;    sub-CSTs, should be incorporated as nodes into the CST rooted
-  ;;    as c whenever possible.
+  ;;    at c whenever possible.
   ;;
   ;; Note that property 2. does not imply that all elements of
   ;; CHILDREN should appear in the CST rooted at c.  For example, when
