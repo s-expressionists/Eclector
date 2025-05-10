@@ -17,15 +17,14 @@
                  :initform 0)))
 
 (defmethod eclector.reader:fixup-graph :after ((client call-counting-client)
-                                               labeled-object
+                                               (labeled-object t)
                                                &key object-key)
-  (declare (ignore labeled-object object-key))
+  (declare (ignore object-key))
   (incf (fixup-graph-count client)))
 
 (defmethod eclector.reader:fixup :after ((client call-counting-client)
-                                         object
-                                         seen-objects)
-  (declare (ignore object seen-objects))
+                                         (object t)
+                                         (traversal-state t))
   (incf (fixup-count client)))
 
 ;;; Tests

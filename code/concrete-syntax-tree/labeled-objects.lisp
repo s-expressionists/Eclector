@@ -4,12 +4,12 @@
 
 (defmethod eclector.reader:fixup ((client cst-client)
                                   (object cst:atom-cst)
-                                  seen-objects)
-  (declare (ignore seen-objects)))
+                                  (seen-objects t))
+  nil)
 
 (defmethod eclector.reader:fixup ((client cst-client)
                                   (object cst:cons-cst)
-                                  seen-objects)
+                                  (seen-objects t))
   (macrolet ((fixup-place (place)
                ;; Determine the labeled object state of the raw value
                ;; of the CST stored in PLACE. For a finalized labeled
@@ -55,13 +55,13 @@
 
 (defmethod eclector.reader:fixup ((client cst-client)
                                   (object definition-cst)
-                                  seen-objects)
+                                  (seen-objects t))
   (eclector.reader:fixup client (target object) seen-objects))
 
 (defmethod eclector.reader:fixup ((client cst-client)
                                   (object reference-cst)
-                                  seen-objects)
-  (declare (ignore seen-objects))) ; nothing to do
+                                  (seen-objects t))
+  nil) ; nothing to do
 
 (macrolet ((labeled-object-result (client result source class)
              `(let ((labeled-object (eclector.parse-result:labeled-object ,result)))
@@ -75,15 +75,13 @@
   (defmethod eclector.parse-result:make-expression-result
       ((client definition-csts-mixin)
        (result eclector.parse-result:definition)
-       children
-       source)
-    (declare (ignore children))
+       (children t)
+       (source t))
     (labeled-object-result client result source definition-cst))
 
   (defmethod eclector.parse-result:make-expression-result
       ((client reference-csts-mixin)
        (result eclector.parse-result:reference)
-       children
-       source)
-    (declare (ignore children))
+       (children t)
+       (source t))
     (labeled-object-result client result source reference-cst)))

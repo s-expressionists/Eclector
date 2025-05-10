@@ -23,19 +23,17 @@
 (defvar *wrapper*)
 
 (defmethod eclector.reader:make-labeled-object ((client parse-result-client)
-                                                input-stream
+                                                (input-stream t)
                                                 (label integer)
-                                                parent)
-  (declare (ignore input-stream parent))
+                                                (parent t))
   ;; Wrap inner labeled object.
   (let ((labeled-object (call-next-method)))
     (setf *wrapper* (%make-wrapper labeled-object))))
 
 (defmethod eclector.reader:make-labeled-object :around ((client parse-result-client)
-                                                        input-stream
+                                                        (input-stream t)
                                                         (label integer)
-                                                        parent)
-  (declare (ignore input-stream parent))
+                                                        (parent t))
   ;; Remember outermost labeled object in wrapper.
   (let ((labeled-object (call-next-method)))
     (setf (%wrapper-outer *wrapper*) labeled-object)
@@ -53,7 +51,7 @@
 
 (defmethod eclector.reader:finalize-labeled-object ((client parse-result-client)
                                                     (labeled-object %wrapper)
-                                                    object)
+                                                    (object t))
   ;; Delegate everything to the inner labeled object.
   (let* ((inner-labeled-object (%wrapper-inner labeled-object))
          (new-state (nth-value
@@ -62,7 +60,7 @@
     (values labeled-object new-state)))
 
 (defmethod eclector.reader:reference-labeled-object ((client parse-result-client)
-                                                     input-stream
+                                                     (input-stream t)
                                                      (labeled-object %wrapper))
   ;; Stash LABELED-OBJECT for MAKE-EXPRESSION-RESULT, delegate
   ;; everything else to the inner labeled object.
@@ -75,10 +73,9 @@
         result)))
 
 (defmethod make-expression-result :around ((client parse-result-client)
-                                           result
-                                           children
-                                           source)
-  (declare (ignore result))
+                                           (result t)
+                                           (children t)
+                                           (source t))
   ;; This is the complicated one.  In case MAKE-LABELED-OBJECT or
   ;; REFERENCE-LABELED-OBJECT was called in the READ call for which we
   ;; construct the expression result, *WRAPPER* is bound to a %WRAPPER
@@ -155,9 +152,8 @@
 
 (defmethod make-expression-result ((client parse-result-client)
                                    (result definition)
-                                   children
-                                   source)
-  (declare (ignore children source))
+                                   (children t)
+                                   (source t))
   ;; This method implements the default behavior of simply extracting
   ;; and returning the parse result which represents the object that
   ;; is defined by the labeled object definition (and therefore not
@@ -169,9 +165,8 @@
 
 (defmethod make-expression-result ((client parse-result-client)
                                    (result reference)
-                                   children
-                                   source)
-  (declare (ignore children source))
+                                   (children t)
+                                   (source t))
   ;; This method implements the default behavior of simply extracting
   ;; and returning the parse result which represents the object that
   ;; is referenced by the labeled object reference (and therefore not

@@ -11,40 +11,40 @@
   (state :defined :type labeled-object-state)
   (object nil))
 
-(defmethod call-with-label-tracking (client thunk)
-  (declare (ignore client))
+(defmethod call-with-label-tracking ((client t) (thunk t))
   ;; Establish a binding but don't allocate the hash table yet.
   (let ((*labels* nil))
     (funcall thunk)))
 
-(defmethod note-labeled-object (client input-stream (label integer) parent)
+(defmethod note-labeled-object ((client t)
+                                (input-stream t)
+                                (label integer)
+                                (parent t))
   ;; Allocate hash table lazily.
   (let ((labels (or *labels*
                     (setf *labels* (make-hash-table)))))
     (setf (gethash label labels)
           (make-labeled-object client input-stream label parent))))
 
-(defmethod forget-labeled-object (client (label integer))
-  (declare (ignore client))
+(defmethod forget-labeled-object ((client t) (label integer))
   (remhash label *labels*))
 
-(defmethod find-labeled-object (client (label integer))
-  (declare (ignore client))
+(defmethod find-labeled-object ((client t) (label integer))
   (alexandria:when-let ((labels *labels*))
     (values (gethash label labels))))
 
-(defmethod make-labeled-object (client input-stream (label integer) parent)
-  (declare (ignore client input-stream parent))
+(defmethod make-labeled-object ((client t)
+                                (input-stream t)
+                                (label integer)
+                                (parent t))
   (%make-labeled-object))
 
-(defmethod labeled-object-state (client (object %labeled-object))
-  (declare (ignore client))
+(defmethod labeled-object-state ((client t) (object %labeled-object))
   (values (%labeled-object-state object) (%labeled-object-object object)))
 
-(defmethod finalize-labeled-object (client
+(defmethod finalize-labeled-object ((client t)
                                     (labeled-object %labeled-object)
-                                    object)
-  (declare (ignore client))
+                                    (object t))
   (let ((new-state (case (%labeled-object-state labeled-object)
                      (:defined  :final)
                      (:circular :final/circular))))
@@ -52,10 +52,9 @@
           (%labeled-object-object labeled-object) object)
     (values labeled-object new-state)))
 
-(defmethod reference-labeled-object (client
-                                     input-stream
+(defmethod reference-labeled-object ((client t)
+                                     (input-stream t)
                                      (labeled-object %labeled-object))
-  (declare (ignore client input-stream))
   (ecase (%labeled-object-state labeled-object)
     ((:final :final/circular) ; Use final object, if it has already been stored
      (%labeled-object-object labeled-object))
@@ -65,8 +64,7 @@
     (:circular ; Same but without changing the state
      labeled-object)))
 
-(defmethod fixup-graph-p (client (root-labeled-object %labeled-object))
-  (declare (ignore client))
+(defmethod fixup-graph-p ((client t) (root-labeled-object %labeled-object))
   (eq (%labeled-object-state root-labeled-object) :final/circular))
 
 ;;; Fixup work tree
@@ -115,16 +113,18 @@
   (parent (error "required") :read-only t)
   (children '() :type list))
 
-(defmethod make-labeled-object :around (client input-stream (label integer) parent)
-  (declare (ignore client input-stream))
+(defmethod make-labeled-object :around ((client t)
+                                        (input-stream t)
+                                        (label integer)
+                                        (parent t))
   (%make-fixup-node (call-next-method) parent))
 
 (defmethod labeled-object-state (client (object %fixup-node))
   (labeled-object-state client (%fixup-node-inner object)))
 
-(defmethod finalize-labeled-object (client
+(defmethod finalize-labeled-object ((client t)
                                     (labeled-object %fixup-node)
-                                    object)
+                                    (object t))
   (let* ((inner-labeled-object (%fixup-node-inner labeled-object))
          (new-state (nth-value 1 (finalize-labeled-object
                                   client inner-labeled-object object))))
@@ -135,8 +135,8 @@
         (fixup-graph client labeled-object)))
     (values labeled-object new-state)))
 
-(defmethod reference-labeled-object (client
-                                     input-stream
+(defmethod reference-labeled-object ((client t)
+                                     (input-stream t)
                                      (labeled-object %fixup-node))
   (let* ((inner-labeled-object (%fixup-node-inner labeled-object))
          (result (reference-labeled-object
@@ -145,13 +145,13 @@
         labeled-object
         result)))
 
-(defmethod fixup-graph-p (client (root-labeled-object %fixup-node))
+(defmethod fixup-graph-p ((client t) (root-labeled-object %fixup-node))
   (and (null (%fixup-node-parent root-labeled-object))
        (or (not (null (%fixup-node-children root-labeled-object)))
            (let ((inner-labeled-object (%fixup-node-inner root-labeled-object)))
              (fixup-graph-p client inner-labeled-object)))))
 
-(defmethod fixup-graph (client (root-labeled-object %fixup-node)
+(defmethod fixup-graph ((client t) (root-labeled-object %fixup-node)
                         &key (object-key (lambda (client labeled-object)
                                            (nth-value
                                             1 (labeled-object-state
@@ -164,8 +164,8 @@
       (declare (dynamic-extent #'visit))
       (walk-fixup-tree client #'visit root-labeled-object))))
 
-(defmethod walk-fixup-tree (client
-                            function
+(defmethod walk-fixup-tree ((client t)
+                            (function t)
                             (root-labeled-object %fixup-node))
   (let ((function (alexandria:ensure-function function)))
     (labels ((rec (node)
@@ -187,14 +187,12 @@
 ;;; objects and replaces placeholders with their respective final
 ;;; objects by modifying the containing places.
 
-(defmethod fixup :around (client object seen-objects)
-  (declare (ignore client))
+(defmethod fixup :around ((client t) (object t) (seen-objects hash-table))
   (unless (gethash object seen-objects)
     (setf (gethash object seen-objects) t)
     (call-next-method)))
 
-(defmethod fixup (client object seen-objects)
-  (declare (ignore client object seen-objects))
+(defmethod fixup ((client t) (object t) (seen-objects t))
   nil)
 
 (defmacro fixup-case ((client value &key ((:state state-var) (gensym "STATE")))
@@ -229,11 +227,11 @@
   `(let ((current-value ,place))
      (fixup-place-using-value ,client ,place current-value ,seen-objects)))
 
-(defmethod fixup (client (object cons) seen-objects)
+(defmethod fixup ((client t) (object cons) (seen-objects t))
   (fixup-place client (car object) seen-objects)
   (fixup-place client (cdr object) seen-objects))
 
-(defmethod fixup (client (object array) seen-objects)
+(defmethod fixup ((client t) (object array) (seen-objects t))
   ;; Fix up array elements unless the array element type indicates
   ;; that no fix up is required.
   (let ((element-type (array-element-type object)))
@@ -242,13 +240,13 @@
       (loop for i from 0 below (array-total-size object)
             do (fixup-place client (row-major-aref object i) seen-objects)))))
 
-(defmethod fixup (client (object standard-object) seen-objects)
+(defmethod fixup ((client t) (object standard-object) (seen-objects t))
   (loop for slot-definition in (closer-mop:class-slots (class-of object))
         for name = (closer-mop:slot-definition-name slot-definition)
         when (slot-boundp object name)
           do (fixup-place client (slot-value object name) seen-objects)))
 
-(defmethod fixup (client (object hash-table) seen-objects)
+(defmethod fixup ((client t) (object hash-table) (seen-objects t))
   (let ((key-changes '()))
     (maphash (lambda (key value)
                ;; If KEY has to be replaced, remove the entry for
