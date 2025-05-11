@@ -26,8 +26,13 @@ jobs:
 
       - name: Run tests
         run: |
+          SYSTEMS='"eclector" "eclector-concrete-syntax-tree" "eclector.syntax-extensions"'
+          TEST_SYSTEMS='"eclector/test" "eclector-concrete-syntax-tree/test" "eclector.syntax-extensions/test"'
           sbcl --noinform --disable-debugger                                                                                                \
             --load "${HOME}/quicklisp/setup.lisp"                                                                                           \
             --eval '(asdf:initialize-source-registry (quote (:source-registry (:directory "'"$(pwd)"'") :ignore-inherited-configuration)))' \
-            --eval '(ql:quickload (list "eclector/test" "eclector-concrete-syntax-tree/test" "eclector.syntax-extensions/test"))'           \
-            --eval '(mapc (function asdf:test-system) (list "eclector" "eclector-concrete-syntax-tree" "eclector.syntax-extensions"))'
+            --eval '(ql:quickload (list '"${TEST_SYSTEMS}"'))'                                                                              \
+            --eval '(let ((*result* t))
+                      (declare (special *result*))
+                      (mapc (function asdf:test-system) (list '"${SYSTEMS}"'))
+                      (uiop:quit (if *result* 0 1)))'
