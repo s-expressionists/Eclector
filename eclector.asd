@@ -156,4 +156,6 @@
                               (:file "read-code"))))
 
   :perform     (test-op (operation component)
-                 (uiop:symbol-call '#:eclector.test '#:run-tests)))
+                 (let ((successp (uiop:symbol-call '#:eclector.test '#:run-tests)))
+                   (when (and (boundp 'cl-user::*result*) (not successp))
+                     (setf (symbol-value 'cl-user::*result*) nil)))))

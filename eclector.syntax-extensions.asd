@@ -26,4 +26,8 @@
                               (:file "s-expression-comment"))))
 
   :perform     (test-op (operation component)
-                 (uiop:symbol-call '#:eclector.syntax-extensions.test '#:run-tests)))
+                 (let ((successp (uiop:symbol-call
+                                  '#:eclector.syntax-extensions.test
+                                  '#:run-tests)))
+                   (when (and (boundp 'cl-user::*result*) (not successp))
+                     (setf (symbol-value 'cl-user::*result*) nil)))))
