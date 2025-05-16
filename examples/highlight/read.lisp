@@ -16,11 +16,12 @@
 
 ;;; Environment
 
-(defmethod eclector.reader:call-with-current-package ((client             highlight-client)
-                                                      (thunk              t)
-                                                      (package-designator t))
+(defmethod eclector.reader:call-with-state-value ((client highlight-client)
+                                                  (thunk  t)
+                                                  (aspect (eql '*package*))
+                                                  (value  t))
   (let ((old-package (current-package client)))
-    (setf (current-package client) (string package-designator))
+    (setf (current-package client) (string value))
     (unwind-protect
          (funcall thunk)
       (setf (current-package client) old-package))))
