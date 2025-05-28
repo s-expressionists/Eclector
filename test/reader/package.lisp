@@ -10,10 +10,12 @@
 
   (:import-from #:eclector.test
    #:equal*
+   #:relaxed-equalp
    #:do-input-cases        #:expect
    #:do-stream-input-cases #:with-stream
    #:check-signals-error
    #:error-case
+   #:do-recover-test-case
 
    #:gen-labels-and-references)
 

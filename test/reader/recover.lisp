@@ -3,51 +3,6 @@
 (def-suite* :eclector.reader.recover
   :in :eclector.reader)
 
-(defun do-recover-test-case (input-and-expected reader)
-  (destructuring-bind (input expected-conditions expected-value
-                       &optional (expected-position (length input)))
-      input-and-expected
-    (let ((remaining-conditions expected-conditions))
-      (flet ((do-it ()
-               (handler-bind
-                   ((error
-                      (lambda (condition)
-                        (let ((expected-condition (pop remaining-conditions)))
-                          (is (typep condition expected-condition)
-                              "~@<For input ~S, expected a condition ~
-                               of type ~S but got ~S~@:>"
-                              input expected-condition condition))
-                        (let ((restart (find-restart 'eclector.reader:recover)))
-                          (is-true (typep restart 'restart)
-                                   "~@<For input ~S expected a RECOVER ~
-                                    restart~@:>"
-                                   input)
-                          (unless restart
-                            (return-from do-recover-test-case))
-                          (is (not (string= "" (princ-to-string restart)))
-                              "~@<For input ~S expected restart to ~
-                               print properly~@:>"
-                              input)
-                          (invoke-restart restart)))))
-                 (with-input-from-string (stream input)
-                   (values (funcall reader stream) (file-position stream))))))
-        ;; Check expected value and position.
-        (multiple-value-bind (value position) (do-it)
-          (is (relaxed-equalp expected-value value)
-              "~@<For input ~S, expected return value ~S but got ~
-               ~S~@:>"
-              input expected-value value)
-          (is (equalp expected-position position)
-              "~@<For input ~S, expected position ~S but got ~S~@:>"
-              input expected-position position))
-        ;; All signaled conditions were as expected. Make sure
-        ;; all expected conditions were signaled.
-        (is (null remaining-conditions)
-            "~@<For input ~S, expected condition~P ~S but those ~
-             were not signaled~@:>"
-            input
-            (length remaining-conditions) remaining-conditions)))))
-
 (defun read-with-context-and-client (stream)
   (let ((eclector.reader::*client* (make-instance 'sharpsign-s-client)))
     (eclector.reader:read stream nil)))

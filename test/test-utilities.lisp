@@ -44,6 +44,39 @@
               (values nil nil)))))
     (equal* left right :atom-test #'atom-test)))
 
+;;; Specialized equality predicated
+
+(defun relaxed-equalp (expected value)
+  "Examples:
+
+  (relaxed-equalp \"foo\" \"FOO\") => nil
+
+  (relaxed-equalp '#:foo '#:foo) => t
+
+  (relaxed-equalp #(1 2) #(1 2)) => t
+
+  (relaxed-equalp '(foo #:bar 1) '(foo #:bar 1)) => t"
+  (labels ((mappablep (thing)
+             (and (typep thing 'sequence)
+                  (or (not (listp thing))
+                      (alexandria:proper-list-p thing))))
+           (rec (expected value)
+             (cond ((stringp expected)
+                    (equal expected value))
+                   ((mappablep expected)
+                    (and (eq (class-of expected) (class-of value))
+                         (mappablep value)
+                         (= (length expected) (length value))
+                         (every #'rec expected value)))
+                   ((not (symbolp expected))
+                    (equalp expected value))
+                   ((not (symbol-package expected))
+                    (string= (symbol-name expected)
+                             (symbol-name value)))
+                   (t
+                    (eq expected value)))))
+    (rec expected value)))
+
 (defun code-equal (left right)
   (flet ((compare (recurse left right)
            (cond ((and (symbolp right) (not (symbol-package right)))
@@ -204,3 +237,52 @@
             (lambda () ,@error-body))
            (case ,expected-expression
              ,@other-clauses)))))
+
+;;; Testing error recovery
+
+(defun read-and-check-recover (input expected-conditions reader)
+  (let ((remaining-conditions expected-conditions))
+    (multiple-value-prog1
+        (handler-bind
+            ((error
+               (lambda (condition)
+                 (let ((expected-condition (pop remaining-conditions)))
+                   (is (typep condition expected-condition)
+                       "~@<For input ~S, expected a condition of type ~S ~
+                        but got ~S~@:>"
+                       input expected-condition condition))
+                 (let ((restart (find-restart 'eclector.reader:recover)))
+                   (is-true (typep restart 'restart)
+                            "~@<For input ~S expected a RECOVER restart~@:>"
+                            input)
+                   (unless restart
+                     (return-from read-and-check-recover))
+                   (is (not (string= "" (princ-to-string restart)))
+                       "~@<For input ~S expected restart to print ~
+                        properly~@:>"
+                       input)
+                   (invoke-restart restart)))))
+          (with-input-from-string (stream input)
+            (let ((values (multiple-value-list (funcall reader stream)))
+                  (position (file-position stream)))
+              (apply #'values position values))))
+      ;; All signaled conditions were as expected.  Make sure all
+      ;; expected conditions were signaled.
+      (is (null remaining-conditions)
+          "~@<For input ~S, expected condition~P ~S but those were not ~
+           signaled~@:>"
+          input (length remaining-conditions) remaining-conditions))))
+
+(defun do-recover-test-case (input-and-expected reader)
+  (destructuring-bind (input expected-conditions expected-value
+                       &optional (expected-position (length input)))
+      input-and-expected
+    ;; Check expected value and position.
+    (multiple-value-bind (position value)
+        (read-and-check-recover input expected-conditions reader)
+      (is (equalp expected-position position)
+          "~@<For input ~S, expected position ~S but got ~S~@:>"
+          input expected-position position)
+      (is (relaxed-equalp expected-value value)
+          "~@<For input ~S, expected return value ~S but got ~S~@:>"
+          input expected-value value))))

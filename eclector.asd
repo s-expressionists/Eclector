@@ -101,7 +101,7 @@
   :components  ((:module "test"
                  :serial t
                  :components ((:file "package")
-                              (:file "utilities")
+                              (:file "test-utilities")
                               (:file "code-reading-utilities")
                               (:file "gen-labeled-objects")))
 
@@ -125,7 +125,7 @@
                  :serial t
                  :components ((:file "package")
 
-                              (:file "helpers")
+                              (:file "test-utilities")
                               (:file "gen-quasiquote")
 
                               (:file "utilities")

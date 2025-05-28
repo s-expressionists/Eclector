@@ -7,10 +7,14 @@
   (:export
    #:equal*
    #:equalp*
+   #:relaxed-equalp
    #:code-equal
 
    #:check-signals-error
-   #:error-case)
+   #:error-case
+
+   #:read-and-check-recover
+   #:do-recover-test-case)
 
   (:export
    #:gen-labels-and-references)
