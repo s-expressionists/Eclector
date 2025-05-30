@@ -189,7 +189,13 @@ expression result    bar")
 <eof>")
    (:paragraph
     "Eclector" "no" "longer" "returns" "an" "invalid" "parse" "result" "graph"
-    ".")))
+    "."))
+  (:item
+   (:paragraph
+    "When" "producing" "parse" "results" "and" "recovering" "from" "an"
+    "invalid" "input" "of" "a" "form" "like" (:tt "#1=#1#")
+    "," "Eclector" "no" "longer" "returns" "an" "invalid" "parse" "result"
+    "graph" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

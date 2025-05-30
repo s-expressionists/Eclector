@@ -18,13 +18,14 @@
 ;;; non-circular) labeled object, the state changes again to :DEFINED
 ;;; which signals to the parse result construction for subsequent
 ;;; references to the labeled object that the stored parse result can
-;;; be used.
+;;; be used.  In uncommon cases like error recovery, a
+;;; FORGET-LABELED-OBJECT call changes the state to :FORGOTTEN.
 (defstruct (%wrapper (:constructor %make-wrapper (inner))
                      (:predicate nil)
                      (:copier nil))
   (inner (error "required") :read-only t)
   (outer)
-  (state :undefined :type (member :undefined :available :defined))
+  (state :undefined :type (member :undefined :available :defined :forgotten))
   (parse-result nil))
 
 ;;; A binding with value NIL is established in the READ-MAYBE-NOTHING
@@ -32,6 +33,18 @@
 ;;; binding is changed to a %WRAPPER object in a MAKE-LABELED-OBJECT
 ;;; below.
 (defvar *wrapper* nil)
+
+(defmethod eclector.reader:forget-labeled-object
+    :before ((client parse-result-client) (label integer))
+  ;; If the labeled object designated by LABEL is forgotten due to
+  ;; error recovery, mark the current wrapper (if any) as forgotten.
+  ;; Without marking the wrapper like that, the parse result
+  ;; associated with the wrapper could appear in the final parse
+  ;; result graph which would be bad because that parse result
+  ;; corresponds to a labeled object marker that has not undergone
+  ;; fixup processing (because of the error recovery).
+  (when-let ((wrapper *wrapper*))
+    (setf (%wrapper-state wrapper) :forgotten)))
 
 (defmethod eclector.reader:make-labeled-object ((client parse-result-client)
                                                 (input-stream t)
@@ -95,7 +108,23 @@
     (let* ((inner-labeled-object (%wrapper-inner wrapper))
            (state (eclector.reader:labeled-object-state
                    client inner-labeled-object)))
-      (cond ;; In this case, the inner parse result is not yet finalized.
+      (cond ;; In this case, the parse result has been "forgotten",
+            ;; for example due to error recovery in a case like
+            ;; #1=#1#.  We have to remove the labeled object marker
+            ;; from CHILDREN since there will be no fixup.
+            ((eq (%wrapper-state wrapper) :forgotten)
+             ;; We don't use
+             ;;
+             ;;   (call-next-method client result other-children source)
+             ;;
+             ;; since CHILDREN could be a proper list and
+             ;; OTHER-CHILDREN could be null which could change the
+             ;; set of applicable methods (which is illegal).
+             (let* ((parse-result (%wrapper-parse-result wrapper))
+                    (other-children (remove parse-result children))
+                    (*wrapper* nil)) ; avoid re-entry
+               (make-expression-result client result other-children source)))
+            ;; In this case, the inner parse result is not yet finalized.
             ((not (find state '(:final :final/circular)))
              (call-next-method))
             ;; In this case the parse result which corresponds to the

@@ -11,7 +11,7 @@
   "Test recovering from syntax errors related to labeled objects."
   (mapc (alexandria:rcurry #'eclector.test:do-recover-test-case
                            #'read-with-list-result-client)
-        '(#+fails ("#1=#1#"
+        '(("#1=#1#"
            (eclector.reader:sharpsign-equals-only-refers-to-self)
            (:result   nil
             :children ()

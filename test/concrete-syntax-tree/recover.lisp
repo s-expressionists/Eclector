@@ -22,7 +22,7 @@
                   input expected-position position)
               (is-consistent-with-raw cst)
               (is (equal '() orphans)))))
-        '(#+fails ("#1=#1#"
+        '(("#1=#1#"
            (eclector.reader:sharpsign-equals-only-refers-to-self))
           ("(#1="
            (eclector.reader:end-of-input-after-sharpsign-equals
