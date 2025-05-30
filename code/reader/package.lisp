@@ -121,6 +121,7 @@
    #:fixup-graph
    #:walk-fixup-tree
    #:fixup
+   #:new-value-for-fixup
 
    #:fixup-case
    #:fixup-place-using-value

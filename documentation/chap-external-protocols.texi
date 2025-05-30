@@ -1049,25 +1049,26 @@ functions with corresponding state transitions.}
 @end float
 
 In addition to the generic functions referenced in the above diagram,
-the generic functions @t{fixup-graph-p}, @t{fixup-graph} and @t{fixup}
-are part of the protocol.  Those functions are used to replace labeled
-objects with their respective final objects within an object that is
-about to be returned to the caller of @t{eclector.reader:read}
-@footnote{This fixup processing has to be delayed under certain
-circumstances (@pxref{Circular objects and custom reader macros}).}.  To
-this end, the @t{#=} reader macro function must inspect and update the
-state of the labeled object it is processing after reading
-@t{@var{expression}} by calling @t{finalize-labeled-object}.
-@t{finalize-labeled-object} decides whether @t{fixup-graph} (see below)
-must be called: If after reading @t{@var{expression}} the labeled object
-is in state @t{:circular}, @t{@var{expression}} must have contained
-circular references and the result of reading it contains labeled
-objects that have to be replaced with their respective final objects.
-@t{fixup-graph} and @t{fixup} perform this replacement.  This
-replacement is performed by recursively traversing objects which are
-reachable from the final object of the labeled objects, for example by
-visiting the slots of standard objects, and replacing labeled objects
-with their respective final object.
+the generic functions @t{fixup-graph-p}, @t{fixup-graph}, @t{fixup} and
+@t{new-value-for-fixup} are part of the protocol.  Those functions are
+used to replace labeled objects with their respective final objects
+within an object that is about to be returned to the caller of
+@t{eclector.reader:read} @footnote{This fixup processing has to be
+delayed under certain circumstances (@pxref{Circular objects and custom
+reader macros}).}.  To this end, the @t{#=} reader macro function must
+inspect and update the state of the labeled object it is processing
+after reading @t{@var{expression}} by calling
+@t{finalize-labeled-object}.  @t{finalize-labeled-object} decides
+whether @t{fixup-graph} (see below) must be called: If after reading
+@t{@var{expression}} the labeled object is in state @t{:circular},
+@t{@var{expression}} must have contained circular references and the
+result of reading it contains labeled objects that have to be replaced
+with their respective final objects.  @t{fixup-graph}, @t{fixup}
+@t{new-value-for-fixup} perform this replacement.  This replacement is
+performed by recursively traversing objects which are reachable from the
+final object of the labeled objects, for example by visiting the slots
+of standard objects, and replacing labeled objects with their respective
+final object.
 
 In certain cases, the computational complexity of this traversal and
 replacement can be rather high, depending on when and how exactly the
@@ -1335,10 +1336,50 @@ is returned as the second value.  Parts are replaced by mutating
 
 Default methods specializing the @var{object} parameter to @t{cons},
 @t{array}, @t{standard-object} and @t{hash-table} process instances of
-those classes in the obvious way.
+those classes by calling
+@ref{Generic-Function eclector.reader|new-value-for-fixup,new-value-for-fixup}
+for each ``slot'' in @var{object} and storing the returned object in the
+``slot''.
 
 An unspecialized @t{:around} method queries and updates
 @var{seen-objects} to ensure that each object is processed exactly once.
+@end deffn
+
+@defgena {new-value-for-fixup,eclector.reader} client labeled-object @
+  current-value final-value
+
+This generic function is called by the generic function
+@ref{Generic-Function eclector.reader|fixup,fixup,fixup} when a new
+value for a ``place'' within a circular object must be produced.  This
+function is used when fixup processing is applied to both ordinary
+objects and parse results.
+
+@var{labeled-object} is the labeled object marker which will be
+replaced by the computed value to finalize the circular object.
+
+@var{current-value} is the current value of the ``place'' in the
+circular object.  The value of this parameter is the same as
+@var{labeled-object} when fixup processing is applied to an ordinary
+object but is different when fixup processing is applied to a parse
+result.  In the latter case, @var{current-value} is a parse result and
+@var{labeled-object} is the is ordinary object represented by the parse
+result.
+
+@var{final-value} is the ordinary object that should replace
+@var{labeled-object} in the circular ordinary object regardless of
+whether fixup processing is performed on ordinary objects or parse
+results.  In the latter case, methods on this generic function must
+return a suitable parse result that represents @var{final-value} and can
+replace @var{current-value}.
+
+The default method on this generic function simply returns
+@var{final-value}.
+
+A method specialized to @t{(client cst-client)} and @t{(current-value
+cst:cst)} returns a CST that represents @var{final-value}.  Depending on
+the client, the returned CST is either another occurrence of the CST
+that represents the definition of @var{final-value} or a new CST that
+explicitly represents the labeled object reference.
 @end deffn
 
 @node S-expression creation

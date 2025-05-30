@@ -181,6 +181,8 @@
 
 (defgeneric fixup (client object seen-objects))
 
+(defgeneric new-value-for-fixup (client labeled-object current-value final-value))
+
 ;;; Creating s-expressions
 
 (defgeneric wrap-in-quote (client material)

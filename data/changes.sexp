@@ -195,7 +195,18 @@ expression result    bar")
     "When" "producing" "parse" "results" "and" "recovering" "from" "an"
     "invalid" "input" "of" "a" "form" "like" (:tt "#1=#1#")
     "," "Eclector" "no" "longer" "returns" "an" "invalid" "parse" "result"
-    "graph" ".")))
+    "graph" "."))
+  (:item
+   (:paragraph
+    "The" "new" "generic" "function"
+    (:symbol "eclector.reader:new-value-for-fixup") "is" "called" "by"
+    (:symbol "eclector.reader:fixup") "to" "compute" "the" "replacement"
+    "value" "for" "a" "labeled" "object" "marker" "," "both" "in" "ordinary"
+    "objects" "and" "in" "parse" "results" "." "Clients" "can" "define"
+    "methods" "on" "the" "new" "generic" "function" "to" "customize" "such"
+    "replacements" "which" "is" "probably" "only" "useful" "when" "parse"
+    "results" "are" "processed" "since" "there" "is" "not" "a" "lot" "of"
+    "leeway" "in" "the" "processing" "of" "ordinary" "objects" "." )))
 
  (:release "0.10" "2024-02-28"
   (:item

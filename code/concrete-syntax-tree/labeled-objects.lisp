@@ -12,28 +12,42 @@
                                   (seen-objects t))
   (macrolet ((fixup-place (place)
                ;; Determine the labeled object state of the raw value
-               ;; of the CST stored in PLACE. For a finalized labeled
+               ;; of the CST stored in PLACE.  For a finalized labeled
                ;; object, create a "reference" CST object (which may
                ;; just be the parse result for the circular object,
                ;; depending on the client) and replace the value of
                ;; PLACE with that reference CST object.
                `(let* ((current-value ,place)
-                       (current-raw-value (cst:raw current-value)))
-                  (eclector.reader:fixup-case (client current-raw-value)
+                       (labeled-object (cst:raw current-value)))
+                  (eclector.reader:fixup-case (client labeled-object)
                     (() ; not a labeled object
                      (eclector.reader:fixup client current-value seen-objects))
-                    (() ; finalized labeled object
-                     (let ((source (cst:source current-value)))
-                       ;; CURRENT-RAW-VALUE is a finalized labeled
-                       ;; object from which the (circular) final raw
-                       ;; value and parse result can be obtained.
-                       (let ((reference (eclector.parse-result:make-reference
-                                         current-raw-value)))
-                         (declare (dynamic-extent reference))
-                         (setf ,place (eclector.parse-result:make-expression-result
-                                       client reference '() source)))))))))
+                    ((final-value) ; finalized labeled object
+                      (setf ,place (eclector.reader:new-value-for-fixup
+                                    client labeled-object current-value final-value)))))))
     (fixup-place (slot-value object 'cst::%first))
     (fixup-place (slot-value object 'cst::%rest))))
+
+(defmethod eclector.reader:new-value-for-fixup ((client         cst-client)
+                                                (labeled-object t)
+                                                (current-value  cst:cst)
+                                                (final-value    t))
+  ;; LABELED-OBJECT is a finalized labeled object from which the
+  ;; (circular) final raw value and a not-yet-finalized parse result
+  ;; can be obtained.  CURRENT-VALUE is that not-yet-finalized parse
+  ;; result.  FINAL-VALUE is the final raw value.
+  ;;
+  ;; From these ingredients, we have to construct a parse result that
+  ;; will replace CURRENT-VALUE in order to make the parse result tree
+  ;; circular.  We make a `reference' instance which contains
+  ;; LABELED-OBJECT and call `make-expression-result' so that the
+  ;; client can decide whether to simply add the contained parse
+  ;; result to the parse result tree and form a back-edge or to insert
+  ;; some kind of first-class representation of the back-edge.
+  (let* ((source (cst:source current-value))
+         (reference (eclector.parse-result:make-reference labeled-object)))
+    (declare (dynamic-extent reference))
+    (eclector.parse-result:make-expression-result client reference '() source)))
 
 ;;; Explicit definition and reference CSTs
 ;;;

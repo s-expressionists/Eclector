@@ -220,12 +220,23 @@
                `((t ; not finalized
                   ,@circular-labeled-object-forms))))))
 
+(defmethod new-value-for-fixup ((client         t)
+                                (labeled-object t)
+                                (current-value  t)
+                                (final-value    t))
+  ;; This is the default behavior: Simply replace the labeled object
+  ;; marker CURRENT-VALUE with FINAL-VALUE.
+  final-value)
+
 (defmacro fixup-place-using-value (client place current-value seen-objects)
   (alexandria:once-only (client)
     (alexandria:with-unique-names (object)
       `(fixup-case (,client ,current-value)
-         (() (fixup ,client ,current-value ,seen-objects))
-         ((,object) (setf ,place ,object))))))
+         (()
+          (fixup ,client ,current-value ,seen-objects))
+         ((,object)
+          (setf ,place (new-value-for-fixup
+                        ,client ,current-value ,current-value ,object)))))))
 
 (defmacro fixup-place (client place seen-objects)
   `(let ((current-value ,place))

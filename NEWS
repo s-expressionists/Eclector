@@ -160,6 +160,13 @@ Release 0.11 (not yet released)
 * When producing parse results and recovering from an invalid input of a form
   like #1=#1#, Eclector no longer returns an invalid parse result graph.
 
+* The new generic function ECLECTOR.READER:NEW-VALUE-FOR-FIXUP is called by
+  ECLECTOR.READER:FIXUP to compute the replacement value for a labeled object
+  marker, both in ordinary objects and in parse results. Clients can define
+  methods on the new generic function to customize such replacements which is
+  probably only useful when parse results are processed since there is not a
+  lot of leeway in the processing of ordinary objects.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and
