@@ -7,8 +7,10 @@
 ;;;
 ;;; Avoiding unnecessary traversal of read objects and unnecessary
 ;;; `fixup' calls is an important aspect of the labeled objects
-;;; sub-system. The following client helps ensuring that no
-;;; unnecessary `fixup' calls are made.
+;;; sub-system.  The following client helps ensuring that no
+;;; unnecessary `fixup' calls are made.  The client counts only
+;;; `fixup' calls that were not stopped early by the `:around' method
+;;; on `fixup'.
 
 (defclass call-counting-client ()
   ((%fixup-graph-count :accessor fixup-graph-count
@@ -76,13 +78,13 @@
                        (marker (labeled-object a)))
                   (list (list 1 marker a (cons 2 marker))
                         (list 1 a      a (cons 2 a))
-                        9))
+                        5))
                 ;; vector
                 (let* ((a (gensym))
                        (marker (labeled-object a)))
                   (list (vector a marker)
                         (vector a a)
-                        2))
+                        1))
                 ;; Specialized arrays (smoke test since nothing has to be fixed up)
                 (list "foo" "foo" 1)
                 #.(if (subtypep (upgraded-array-element-type '(unsigned-byte 8))
@@ -98,7 +100,7 @@
                        (marker (labeled-object a)))
                   (list (make-instance 'mock-object :a a :b marker)
                         (list a a)
-                        2))
+                        1))
                 ;; standard-object with unbound slot
                 (let* ((a (gensym))
                        (marker (labeled-object a)))
@@ -133,7 +135,13 @@
                               (cons 7 (cons 8 c))
                               (cons d 9) (cons e d)
                               (cons marker6 (cons 10 b)) (cons 11 marker7))
-                        17))))))
+                        4))
+                ;; pathname (immutable and special-cased)
+                (let ((object #P"foo"))
+                  (list object object 0))
+                ;; random-state (immutable but not special-cased)
+                (let ((object (make-random-state)))
+                  (list object object 1))))))
 
 (test fixup/call-count
   "Ensure absence of redundant `fixup' calls."
@@ -150,9 +158,9 @@
       (expect "fixup call count"
               (= expected-fixup-count (fixup-count client))))
     '(("(#1=(:a :b) #1#)"               0 0)
-      ("#1=(#2=(:a #2# :b) :c #1# :d)"  1 12)
-      ("(#1=(:a #2=(#3=(:b #3#))) #1#)" 1 4)
-      ("(#1=(:a #1#) :b #2=(:b #2#))"   2 8))))
+      ("#1=(#2=(:a #2# :b) :c #1# :d)"  1 7)
+      ("(#1=(:a #2=(#3=(:b #3#))) #1#)" 1 2)
+      ("(#1=(:a #1#) :b #2=(:b #2#))"   2 4))))
 
 ;;; Random test
 

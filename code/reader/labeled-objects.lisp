@@ -188,9 +188,13 @@
 ;;; objects by modifying the containing places.
 
 (defmethod fixup :around ((client t) (object t) (seen-objects hash-table))
-  (unless (gethash object seen-objects)
-    (setf (gethash object seen-objects) t)
-    (call-next-method)))
+  ;; Skip immutable objects (in terms of fixup processing) early to
+  ;; lessen pressure on the SEEN-OBJECTS hash-table and generic
+  ;; function dispatch.
+  (unless (typep object '(or number character symbol package pathname))
+    (unless (gethash object seen-objects)
+      (setf (gethash object seen-objects) t)
+      (call-next-method))))
 
 (defmethod fixup ((client t) (object t) (seen-objects t))
   nil)
