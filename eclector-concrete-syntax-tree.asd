@@ -38,6 +38,7 @@
                               (:file "read")
                               (:file "client")
                               (:file "labeled-objects")
+                              (:file "recover")
                               (:file "read-code"))))
 
   :perform     (test-op (operation component)

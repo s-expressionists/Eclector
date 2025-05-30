@@ -9,6 +9,7 @@
    #:do-input-cases        #:expect
    #:do-stream-input-cases #:with-stream
    #:error-case
+   #:read-and-check-recover
 
    #:gen-labels-and-references)
 
