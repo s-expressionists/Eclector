@@ -65,6 +65,7 @@
   (declare (ignore eof-error-p eof-value))
   (let* (;; *WRAPPER* is used in MAKE-LABELED-OBJECT,
          ;; REFERENCE-LABELED-OBJECT and MAKE-EXPRESSION-RESULT.
+         (outer-wrapper *wrapper*)
          (*wrapper* nil)
          (stack (list* '() *stack*))
          (start (eclector.base:source-position client input-stream)))
@@ -82,6 +83,9 @@
                 (source (eclector.base:make-source-range client start end))
                 (parse-result (make-expression-result
                                client value children source)))
+           (when outer-wrapper
+             (setf (%wrapper-state outer-wrapper) :available
+                   (%wrapper-parse-result outer-wrapper) parse-result))
            (push parse-result (second stack))
            (values value what parse-result)))
         ((:eof :whitespace)

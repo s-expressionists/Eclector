@@ -21,4 +21,16 @@
             eclector.reader:unterminated-list)
            (:result   (nil)
             :children ((:result nil :children () :source (1 . 4)))
-            :source   (0 . 4))))))
+            :source   (0 . 4)))
+          ("#1=
+;;2
+;;3"
+           (eclector.reader:end-of-input-after-sharpsign-equals)
+           (:result   nil
+            :children ((:reason   (:line-comment . 2)
+                        :children ()
+                        :source   (4 . 8))
+                       (:reason   (:line-comment . 2)
+                        :children ()
+                        :source   (8 . 11)))
+            :source   (0 . 11))))))

@@ -177,7 +177,19 @@ expression result    bar")
      (declare (ignore stream char))
      1)
    t) ; non-terminating
-  (eclector.reader:read-from-string \"#x01\"))")))
+  (eclector.reader:read-from-string \"#x01\"))"))
+  (:item
+   (:paragraph
+    "When" "producing" "parse" "results" "and" "recovering" "from" "an"
+    "invalid" "input" "of" "a" "form" "like")
+   (:code :common-lisp
+          "#1=
+;; a
+;; b
+<eof>")
+   (:paragraph
+    "Eclector" "no" "longer" "returns" "an" "invalid" "parse" "result" "graph"
+    ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

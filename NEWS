@@ -147,6 +147,16 @@ Release 0.11 (not yet released)
        t) ; non-terminating
       (eclector.reader:read-from-string "#x01"))
 
+* When producing parse results and recovering from an invalid input of a form
+  like
+
+    #1=
+    ;; a
+    ;; b
+    <eof>
+
+  Eclector no longer returns an invalid parse result graph.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

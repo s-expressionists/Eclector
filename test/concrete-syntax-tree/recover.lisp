@@ -26,4 +26,8 @@
            (eclector.reader:sharpsign-equals-only-refers-to-self))
           ("(#1="
            (eclector.reader:end-of-input-after-sharpsign-equals
-            eclector.reader:unterminated-list)))))
+            eclector.reader:unterminated-list))
+          ("#1=
+;;2
+;;3"
+           (eclector.reader:end-of-input-after-sharpsign-equals)))))
