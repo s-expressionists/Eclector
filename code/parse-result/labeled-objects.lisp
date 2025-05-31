@@ -71,7 +71,7 @@
          (parse-result (%wrapper-parse-result labeled-object)))
     (multiple-value-bind (state object)
         (eclector.reader:labeled-object-state client inner-labeled-object)
-      (values state object parse-result))))
+      (values state object parse-result inner-labeled-object))))
 
 (defmethod eclector.reader:finalize-labeled-object ((client parse-result-client)
                                                     (labeled-object %wrapper)

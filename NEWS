@@ -171,6 +171,10 @@ Release 0.11 (not yet released)
   true if ECLECTOR.READER:LABELED-OBJECT-STATE indicates that the labeled
   object in question is final and circular.
 
+* When ECLECTOR.PARSE-RESULT:PARSE-RESULT-CLIENT is used,
+  ECLECTOR.READER:LABELED-OBJECT-STATE now returns inner labeled object as its
+  fourth value.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

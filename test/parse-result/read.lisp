@@ -406,11 +406,14 @@
      (result   eclector.parse-result:definition)
      (children t)
      (source   t))
-  (let* ((labeled-object (eclector.parse-result:labeled-object result))
-         (target-parse-result
-           (nth-value 2 (eclector.reader:labeled-object-state
-                         client labeled-object))))
-    (list :definition target-parse-result children source)))
+  (let ((labeled-object (eclector.parse-result:labeled-object result)))
+    (multiple-value-bind (state object target-parse-result inner-labeled-object)
+        (eclector.reader:labeled-object-state client labeled-object)
+      (multiple-value-bind (inner-state inner-object)
+          (eclector.reader:labeled-object-state client inner-labeled-object)
+        (assert (eql state inner-state))
+        (assert (eql object inner-object)))
+      (list :definition target-parse-result children source))))
 
 (defmethod eclector.parse-result:make-skipped-input-result
     ((client   skipped-input-recording-client)

@@ -212,7 +212,12 @@ expression result    bar")
     "There" "is" "now" "a" "default" "method" "on"
     (:symbol "eclector.reader:fixup-graph-p") "which" "returns" "true" "if"
     (:symbol "eclector.reader:labeled-object-state") "indicates" "that" "the"
-    "labeled" "object" "in" "question" "is" "final" "and" "circular" ".")))
+    "labeled" "object" "in" "question" "is" "final" "and" "circular" "."))
+  (:item
+   (:paragraph
+    "When" (:symbol "eclector.parse-result:parse-result-client") "is" "used" ","
+    (:symbol "eclector.reader:labeled-object-state") "now" "returns" "inner"
+    "labeled" "object" "as" "its" "fourth" "value" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item
