@@ -206,7 +206,13 @@ expression result    bar")
     "methods" "on" "the" "new" "generic" "function" "to" "customize" "such"
     "replacements" "which" "is" "probably" "only" "useful" "when" "parse"
     "results" "are" "processed" "since" "there" "is" "not" "a" "lot" "of"
-    "leeway" "in" "the" "processing" "of" "ordinary" "objects" "." )))
+    "leeway" "in" "the" "processing" "of" "ordinary" "objects" "." ))
+  (:item
+   (:paragraph
+    "There" "is" "now" "a" "default" "method" "on"
+    (:symbol "eclector.reader:fixup-graph-p") "which" "returns" "true" "if"
+    (:symbol "eclector.reader:labeled-object-state") "indicates" "that" "the"
+    "labeled" "object" "in" "question" "is" "final" "and" "circular" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

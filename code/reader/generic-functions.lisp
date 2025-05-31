@@ -173,7 +173,9 @@
 
 (defgeneric reference-labeled-object (client input-stream labeled-object))
 
-(defgeneric fixup-graph-p (client root-labeled-object))
+(defgeneric fixup-graph-p (client root-labeled-object)
+  (:method ((client t) (root-labeled-object t))
+    (eq (labeled-object-state client root-labeled-object) :final/circular)))
 
 (defgeneric fixup-graph (client root-labeled-object &key object-key))
 

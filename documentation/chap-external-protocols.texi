@@ -1281,14 +1281,14 @@ fixup processing for ancestor labeled objects will subsume the fixup
 processing for @var{root-labeled-object}).
 
 @item
-If @var{root-labeled-object} does not have parent labeled object but has
-child labeled objects, @var{root-labeled-object} should be fixed up
+If @var{root-labeled-object} does not have a parent labeled object but
+has child labeled objects, @var{root-labeled-object} should be fixed up
 immediately.
 
 @item
-If @var{root-labeled-object} does not have parent labeled object and is
-in state @t{:final/circular}, @var{root-labeled-object} should be fixed
-up immediately.
+If @var{root-labeled-object} does not have a parent labeled object and
+is in state @t{:final/circular}, @var{root-labeled-object} should be
+fixed up immediately.
 @end itemize
 @end deffn
 

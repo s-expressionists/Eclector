@@ -167,6 +167,10 @@ Release 0.11 (not yet released)
   probably only useful when parse results are processed since there is not a
   lot of leeway in the processing of ordinary objects.
 
+* There is now a default method on ECLECTOR.READER:FIXUP-GRAPH-P which returns
+  true if ECLECTOR.READER:LABELED-OBJECT-STATE indicates that the labeled
+  object in question is final and circular.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and
