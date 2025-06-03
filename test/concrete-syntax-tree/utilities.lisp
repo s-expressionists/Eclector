@@ -17,6 +17,12 @@
                      (setf worklist cell)
                      (setf (cdr tail) cell))
                  (setf tail cell)))
+             (check-raw (actual-raw cst)
+               (let ((raw (cst:raw cst)))
+                 (unless (eq actual-raw raw)
+                   (fail "~@<Expected the raw of CST ~A to be ~S but it is ~
+                          ~S.~@:>"
+                         cst actual-raw raw))))
              (check-cst (cst)
                (unless (gethash cst seen)
                  (setf (gethash cst seen) t)
@@ -24,7 +30,12 @@
                      (check-cst (eclector.concrete-syntax-tree:target cst))
                      (multiple-value-bind (cst-atom-p raw-atom-p)
                          (both (atom cst))
-                       (is (eq raw-atom-p cst-atom-p))
+                       (unless (eq raw-atom-p cst-atom-p)
+                         (fail "~@<Expected raw and CST to either both be ~
+                                atoms or both be conses but raw is ~
+                                ~:[a cons~;an atom~] and CST is ~
+                                ~:[a cons~;an atom~].~@:>"
+                               raw-atom-p cst-atom-p))
                        (if raw-atom-p
                            (let ((raw-atom (cst:raw cst)))
                              ;; For atoms like pathnames, instances of
@@ -48,14 +59,18 @@
                                (multiple-value-bind (existing-cst foundp)
                                    (gethash raw-atom atom->cst)
                                  (if foundp
-                                     (is (eq cst existing-cst))
+                                     (unless (eq cst existing-cst)
+                                       (fail "~@<Expected a single CST to be ~
+                                              associated with ~S but ~
+                                              encountered CSTs ~S and ~S.~@:>"
+                                             raw-atom cst existing-cst))
                                      (setf (gethash raw-atom atom->cst) cst)))))
                            (multiple-value-bind (cst-car raw-car)
                                (both (first cst))
                              (multiple-value-bind (cst-cdr raw-cdr)
                                  (both (rest cst))
-                               (is (eq raw-car (cst:raw cst-car)))
-                               (is (eq raw-cdr (cst:raw cst-cdr)))
+                               (check-raw raw-car cst-car)
+                               (check-raw raw-cdr cst-cdr)
                                (enqueue cst-car)
                                (enqueue cst-cdr)))))))))
       (loop for cst = (pop worklist)
