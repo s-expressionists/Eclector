@@ -55,21 +55,21 @@
 
 (defmethod eclector.reader:fixup ((client simple-result-client)
                                   (object atom-result)
-                                  seen)
-  ;; Simplified, things like arrays and structures need fixup.
-  (declare (ignore seen)))
+                                  (traversal-state t))
+  nil) ; Simplified, things like arrays and structures need fixup.
 
 (defmethod eclector.reader:fixup ((client simple-result-client)
                                   (object cons-result)
-                                  seen)
+                                  (traversal-state t))
   (macrolet ((fixup-place (place)
                `(let* ((current-value ,place)
                        (current-raw-value (raw current-value)))
                   (eclector.reader:fixup-case (client current-raw-value)
                     (()
-                     (eclector.reader:fixup client current-value seen))
+                     (eclector.reader:fixup client current-value traversal-state))
                     (()
-                     (let ((reference (eclector.parse-result:make-reference current-raw-value))
+                     (let ((reference (eclector.parse-result:make-reference
+                                       current-raw-value))
                            (source (source current-value)))
                        (setf ,place (eclector.parse-result:make-expression-result
                                      client reference '() source))))))))

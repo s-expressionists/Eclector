@@ -11,7 +11,16 @@
    #:error-case
    #:read-and-check-recover
 
+   #:make-car-spine-list
+   #:make-tree
+   #:read-long-list
+
    #:gen-labels-and-references)
+
+  (:import-from #:eclector.reader.test
+   #:call-counting-client
+   #:fixup-graph-count
+   #:fixup-count)
 
   (:export
    #:run-tests))

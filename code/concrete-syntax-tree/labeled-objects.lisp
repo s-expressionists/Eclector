@@ -4,12 +4,12 @@
 
 (defmethod eclector.reader:fixup ((client cst-client)
                                   (object cst:atom-cst)
-                                  (seen-objects t))
+                                  (traversal-state t))
   nil)
 
 (defmethod eclector.reader:fixup ((client cst-client)
                                   (object cst:cons-cst)
-                                  (seen-objects t))
+                                  (traversal-state t))
   (macrolet ((fixup-place (place)
                ;; Determine the labeled object state of the raw value
                ;; of the CST stored in PLACE.  For a finalized labeled
@@ -21,7 +21,7 @@
                        (labeled-object (cst:raw current-value)))
                   (eclector.reader:fixup-case (client labeled-object)
                     (() ; not a labeled object
-                     (eclector.reader:fixup client current-value seen-objects))
+                     (eclector.reader:fixup client current-value traversal-state))
                     ((final-value) ; finalized labeled object
                       (setf ,place (eclector.reader:new-value-for-fixup
                                     client labeled-object current-value final-value)))))))

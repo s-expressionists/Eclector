@@ -175,6 +175,14 @@ Release 0.11 (not yet released)
   ECLECTOR.READER:LABELED-OBJECT-STATE now returns inner labeled object as its
   fourth value.
 
+* Elector now breaks up long chains of recursive ECLECTOR.READER:FIXUP calls in
+  order to avoid exhausting available stack space. As a consequence, methods on
+  the generic function ECLECTOR.READER:FIXUP can no longer assume an unbroken
+  chain of recursive calls that correspond to the nesting structure of the
+  object graph that is being fixed up. In particular, a call for an inner
+  object cannot rely on the fact that a particular dynamic environment
+  established by a call for an outer object is still active.
+
 Release 0.10 (2024-02-28)
 
 * The deprecated generic functions ECLECTOR.PARSE-RESULT:SOURCE-POSITION and

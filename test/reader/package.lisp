@@ -17,6 +17,10 @@
    #:error-case
    #:do-recover-test-case
 
+   #:make-car-spine-list
+   #:make-tree
+   #:read-long-list
+
    #:gen-labels-and-references)
 
   (:export

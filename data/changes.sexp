@@ -217,7 +217,19 @@ expression result    bar")
    (:paragraph
     "When" (:symbol "eclector.parse-result:parse-result-client") "is" "used" ","
     (:symbol "eclector.reader:labeled-object-state") "now" "returns" "inner"
-    "labeled" "object" "as" "its" "fourth" "value" ".")))
+    "labeled" "object" "as" "its" "fourth" "value" "."))
+  (:item
+   (:paragraph
+    "Elector" "now" "breaks" "up" "long" "chains" "of" "recursive"
+    (:symbol "eclector.reader:fixup") "calls" "in" "order" "to" "avoid"
+    "exhausting" "available" "stack" "space" "." "As" "a" "consequence" ","
+    "methods" "on" "the" "generic" "function" (:symbol "eclector.reader:fixup")
+    "can" "no" "longer" "assume" "an" "unbroken" "chain" "of" "recursive"
+    "calls" "that" "correspond" "to" "the" "nesting" "structure" "of" "the"
+    "object" "graph" "that" "is" "being" "fixed" "up" "." "In" "particular" ","
+    "a" "call" "for" "an" "inner" "object" "cannot" "rely" "on" "the" "fact"
+    "that" "a" "particular" "dynamic" "environment" "established" "by" "a"
+    "call" "for" "an" "outer" "object" "is" "still" "active" ".")))
 
  (:release "0.10" "2024-02-28"
   (:item

@@ -145,6 +145,8 @@
         labeled-object
         result)))
 
+;;; Fixup graph
+
 (defmethod fixup-graph-p ((client t) (root-labeled-object %fixup-node))
   (and (null (%fixup-node-parent root-labeled-object))
        (or (not (null (%fixup-node-children root-labeled-object)))
@@ -160,7 +162,7 @@
         (seen (make-hash-table :test #'eq)))
     (flet ((visit (client labeled-object)
              (let ((object (funcall object-key client labeled-object)))
-               (fixup client object seen))))
+               (fixup-all client object seen))))
       (declare (dynamic-extent #'visit))
       (walk-fixup-tree client #'visit root-labeled-object))))
 
@@ -177,26 +179,88 @@
       (declare (dynamic-extent #'rec))
       (rec root-labeled-object))))
 
-;;; Fixup
+;;; Recursive object fixup
 ;;;
 ;;; We start from an object that was read and is known to contain
-;;; labeled objects as placeholders for circular references. All such
+;;; labeled objects as placeholders for circular references.  All such
 ;;; placeholders have been finalized which means that they contain the
-;;; respective object they stand in for. The fixup processing
-;;; recursively traverses places in the object and its descendant
-;;; objects and replaces placeholders with their respective final
-;;; objects by modifying the containing places.
+;;; respective object they stand in for.  The fixup processing
+;;; recursively traverses places in the object and its mutable
+;;; descendant objects and replaces placeholders with their respective
+;;; final objects by modifying the containing places.  If the
+;;; recursion gets too deep, unprocessed objects at the fringe are put
+;;; onto a worklist and processed later via "fresh" `fixup' calls.
 
-(defmethod fixup :around ((client t) (object t) (seen-objects hash-table))
+(defconstant +recursion-depth-limit+ 1000)
+
+(deftype traversal-depth ()
+  `(integer 0 ,+recursion-depth-limit+))
+
+(defstruct (traversal-state
+            (:constructor make-traversal-state (seen-objects enqueue))
+            (:conc-name traversal-)
+            (:predicate nil)
+            (:copier nil))
+  ;; Used as a set of all objects that have been encountered (not
+  ;; necessarily fully processed) so far.
+  (seen-objects (make-hash-table :test #'eq) :read-only t)
+  ;; The nesting depth of `fixup' calls.
+  (depth 0 :type traversal-depth)
+  ;; A function that accepts an object as its sole argument and puts
+  ;; that object onto the worklist for later processing.
+  (enqueue (error "required") :type function :read-only t))
+
+(defun fixup-all (client root state)
+  ;; In case the recursive `fixup' calls get nested too deeply, we use
+  ;; a FIFO queue.  In the common case, the queue is not touched at
+  ;; all.
+  (let ((tail nil) (worklist '()))
+    (flet ((enqueue (object)
+             (let ((cell (list object)))
+               (if (null worklist)
+                   (setf worklist cell)
+                   (setf (cdr tail) cell))
+               (setf tail cell))))
+      (declare (dynamic-extent #'enqueue))
+      (let ((traversal-state (make-traversal-state state #'enqueue)))
+        (declare (dynamic-extent traversal-state))
+        (fixup client root traversal-state)
+        (when (not (null worklist))
+          (loop until (null worklist)
+                do (fixup client (pop worklist) traversal-state))
+          ;; Slightly random assertion but this should happen rarely
+          ;; and things are pretty bad if the assertion does not hold.
+          (assert (zerop (traversal-depth traversal-state))))))))
+
+;;; This method exists for backwards compatibility reasons: there may
+;;; be clients which call `fixup' directly.
+(defmethod fixup :around ((client t) (object t) (traversal-state hash-table))
+  (fixup-all client object traversal-state))
+
+(defmethod fixup :around ((client t)
+                          (object t)
+                          (traversal-state traversal-state))
   ;; Skip immutable objects (in terms of fixup processing) early to
-  ;; lessen pressure on the SEEN-OBJECTS hash-table and generic
+  ;; lessen pressure on the hash-table in TRAVERSAL-STATE and generic
   ;; function dispatch.
-  (unless (typep object '(or number character symbol package pathname))
-    (unless (gethash object seen-objects)
-      (setf (gethash object seen-objects) t)
-      (call-next-method))))
+  (unless (typep object '(or symbol character number package pathname))
+    (let ((depth (traversal-depth traversal-state))
+          (seen-objects (traversal-seen-objects traversal-state)))
+      ;; Process OBJECT is the nesting of recursive `fixup' calls
+      ;; isn't too deep.  Otherwise, enqueue OBJECT for later
+      ;; processing.
+      (unless (gethash object seen-objects)
+        (cond ((< depth +recursion-depth-limit+)
+               (setf (gethash object seen-objects) t)
+               (progn
+                 (setf (traversal-depth traversal-state) (1+ depth))
+                 (call-next-method)
+                 (setf (traversal-depth traversal-state) depth)))
+              (t
+               (funcall (traversal-enqueue traversal-state) object))))))
+  nil)
 
-(defmethod fixup ((client t) (object t) (seen-objects t))
+(defmethod fixup ((client t) (object t) (traversal-state t))
   nil)
 
 (defmacro fixup-case ((client value &key ((:state state-var) (gensym "STATE")))
@@ -228,40 +292,40 @@
   ;; marker CURRENT-VALUE with FINAL-VALUE.
   final-value)
 
-(defmacro fixup-place-using-value (client place current-value seen-objects)
+(defmacro fixup-place-using-value (client place current-value traversal-state)
   (alexandria:once-only (client)
     (alexandria:with-unique-names (object)
       `(fixup-case (,client ,current-value)
          (()
-          (fixup ,client ,current-value ,seen-objects))
+          (fixup ,client ,current-value ,traversal-state))
          ((,object)
           (setf ,place (new-value-for-fixup
                         ,client ,current-value ,current-value ,object)))))))
 
-(defmacro fixup-place (client place seen-objects)
+(defmacro fixup-place (client place traversal-state)
   `(let ((current-value ,place))
-     (fixup-place-using-value ,client ,place current-value ,seen-objects)))
+     (fixup-place-using-value ,client ,place current-value ,traversal-state)))
 
-(defmethod fixup ((client t) (object cons) (seen-objects t))
-  (fixup-place client (car object) seen-objects)
-  (fixup-place client (cdr object) seen-objects))
+(defmethod fixup ((client t) (object cons) (traversal-state t))
+  (fixup-place client (car object) traversal-state)
+  (fixup-place client (cdr object) traversal-state))
 
-(defmethod fixup ((client t) (object array) (seen-objects t))
+(defmethod fixup ((client t) (object array) (traversal-state t))
   ;; Fix up array elements unless the array element type indicates
   ;; that no fix up is required.
   (let ((element-type (array-element-type object)))
     (when (or (eq element-type 't) ; fast path
               (not (subtypep element-type '(or character number symbol))))
       (loop for i from 0 below (array-total-size object)
-            do (fixup-place client (row-major-aref object i) seen-objects)))))
+            do (fixup-place client (row-major-aref object i) traversal-state)))))
 
-(defmethod fixup ((client t) (object standard-object) (seen-objects t))
+(defmethod fixup ((client t) (object standard-object) (traversal-state t))
   (loop for slot-definition in (closer-mop:class-slots (class-of object))
         for name = (closer-mop:slot-definition-name slot-definition)
         when (slot-boundp object name)
-          do (fixup-place client (slot-value object name) seen-objects)))
+          do (fixup-place client (slot-value object name) traversal-state)))
 
-(defmethod fixup ((client t) (object hash-table) (seen-objects t))
+(defmethod fixup ((client t) (object hash-table) (traversal-state t))
   (let ((key-changes '()))
     (maphash (lambda (key value)
                ;; If KEY has to be replaced, remove the entry for
@@ -275,17 +339,17 @@
                ;; entry.
                (fixup-case (client key)
                  (() ; not a labeled object
-                  (fixup client key seen-objects)
+                  (fixup client key traversal-state)
                   (fixup-place-using-value
-                   client (gethash key object) value seen-objects))
+                   client (gethash key object) value traversal-state))
                  ((final-key) ; finalized labeled object
                   (remhash key object)
                   (let ((change (cons final-key value)))
                     (fixup-place-using-value
-                     client (cdr change) value seen-objects)
+                     client (cdr change) value traversal-state)
                     (push change key-changes)))
                  (() ; labeled object not finalized
-                  (fixup client value seen-objects))))
+                  (fixup client value traversal-state))))
              object)
     (loop for (final-key . final-value) in key-changes
           do (setf (gethash final-key object) final-value))))

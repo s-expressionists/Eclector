@@ -14,7 +14,11 @@
    #:error-case
 
    #:read-and-check-recover
-   #:do-recover-test-case)
+   #:do-recover-test-case
+
+   #:make-car-spine-list
+   #:make-tree
+   #:read-long-list)
 
   (:export
    #:gen-labels-and-references)

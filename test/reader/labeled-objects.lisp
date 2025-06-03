@@ -175,3 +175,57 @@
              (result (eclector.reader:read-from-string input)))
         (assert (equal* expression (read-from-string input)))
         (is (equal* expression result))))))
+
+;;; Tests for fixing up deeply nested structures
+
+(test recursive-fixup.cdr-spine-list
+  "Read and fixup a structure of the form #1=(1 2 3 . #1#) but much
+deeper."
+  (let* ((length 200000)
+         (client (make-instance 'call-counting-client))
+         (list-maker (lambda ()
+                       (let ((root (alexandria:iota length :start 1)))
+                         (values root
+                                 (lambda (leaf)
+                                   (setf (cdr (last root)) leaf))))))
+         (result (read-long-list client list-maker)))
+    (is-true (typep result 'list))
+    (is (eq result (loop repeat (1+ length)
+                         for object = result then (cdr object)
+                         finally (return object))))
+    (is (= 1 (fixup-graph-count client)))
+    (is (= length (fixup-count client)))))
+
+(test recursive-fixup.car-spine-list
+  "Read and fixup a structure of the form #1=(((#1# . 1) . 2) . 3) but much
+deeper.  This test ensures that we don't just get lucky via structural
+tail recursion on the cdr slot."
+  (let* ((length 200000)
+         (client (make-instance 'call-counting-client))
+         (list-maker (lambda () (make-car-spine-list length)))
+         (result (read-long-list client list-maker)))
+    (is-true (typep result 'list))
+    (is (eq result (loop repeat (1+ length)
+                         for object = result then (car object)
+                         finally (return object))))
+    (is (= 1 (fixup-graph-count client)))
+    (is (= length (fixup-count client)))))
+
+(test recursive-fixup.tree
+  "Read and fixup a structure of the form #1=((L . L) . (L . L)) where
+each L is of the form (((#1# . 1) . 2) . 3).  The actual structure is
+much deeper, of course.  The outer tree structure ensures that work
+items actually build up in the worklist instead of one item being
+added and immediately processed like for the list structures."
+  (let* ((depth 10000)
+         (client (make-instance 'call-counting-client))
+         (tree-maker (lambda () (make-tree depth)))
+         (result (read-long-list client tree-maker)))
+    (is-true (typep result 'list))
+    (is (eq result (loop repeat (1+ depth)
+                         for object = result then (car object)
+                         finally (return object))))
+    (is (= 1 (fixup-graph-count client)))
+    (is (= (+ (1- (ash 1 5))               ; node count
+              (* (ash 1 4) 2 (- depth 5))) ; leaf count * 2 * list length
+           (fixup-count client)))))

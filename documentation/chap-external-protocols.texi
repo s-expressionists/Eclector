@@ -1063,12 +1063,14 @@ whether @t{fixup-graph} (see below) must be called: If after reading
 @t{@var{expression}} the labeled object is in state @t{:circular},
 @t{@var{expression}} must have contained circular references and the
 result of reading it contains labeled objects that have to be replaced
-with their respective final objects.  @t{fixup-graph}, @t{fixup}
-@t{new-value-for-fixup} perform this replacement.  This replacement is
-performed by recursively traversing objects which are reachable from the
-final object of the labeled objects, for example by visiting the slots
-of standard objects, and replacing labeled objects with their respective
-final object.
+with their respective final objects.  @t{fixup-graph}, @t{fixup} and
+@t{new-value-for-fixup} perform this replacement.  The replacement is
+performed by recursively@footnote{The implementation of the traversal is
+not purely recursive since a purely recursive implementation could lead
+to function call nesting of an unbounded depth.} traversing objects
+which are reachable from the final object of the labeled objects, for
+example by visiting the slots of standard objects, and replacing labeled
+objects with their respective final object.
 
 In certain cases, the computational complexity of this traversal and
 replacement can be rather high, depending on when and how exactly the
@@ -1321,17 +1323,17 @@ to recursively process objects in the object graph which is reachable
 from the object of @var{root-labeled-object}.
 @end deffn
 
-@defgena {fixup,eclector.reader} client object seen-objects
+@defgena {fixup,eclector.reader} client object traversal-state
 
 This generic function is potentially called to apply circularity-related
 changes to the object constructed by the reader before it is returned to
 the caller.  @var{object} is the object that should be modified.
-@var{seen-objects} is a @t{eq}-hash table used to track already
-processed objects (see below).  A method specialized to a class,
-instances of which consists of parts, should modify @var{object} by
-scanning its parts for labeled object markers, replacing found labeled
-object markers with the respective final object and recursively calling
-@t{fixup} for all parts.
+@var{traversal-state} is an unspecified object that is used, among other
+things, to track already processed objects (see below).  A method
+specialized to a class, instances of which consist of parts, should
+modify @var{object} by scanning its parts for labeled object markers,
+replacing found labeled object markers with the respective final object
+and recursively calling @t{fixup} for all parts.
 
 To recognize labeled objects which have to be replaced, methods should
 call @t{labeled-object-state} on each part of @var{object} and interpret
@@ -1345,13 +1347,28 @@ is returned as the second value.  Parts are replaced by mutating
 
 Default methods specializing the @var{object} parameter to @t{cons},
 @t{array}, @t{standard-object} and @t{hash-table} process instances of
-those classes by calling
-@ref{Generic-Function eclector.reader|new-value-for-fixup,new-value-for-fixup}
-for each ``slot'' in @var{object} and storing the returned object in the
-``slot''.
+those classes by calling @ref{Generic-Function
+eclector.reader|new-value-for-fixup,new-value-for-fixup} for each
+``place'' in @var{object} and storing the returned object in the
+``place''.
 
 An unspecialized @t{:around} method queries and updates
-@var{seen-objects} to ensure that each object is processed exactly once.
+@var{traversal-state} to ensure that each object reachable from
+@var{object} is processed exactly once.  The method also limits the
+depth of nested function invocations (but importantly not the nesting
+depth or structure of the processed object graph, in fact the opposite:
+the limit on function invocation nesting is a consequence of allowing
+arbitrary object graphs to be processed).
+
+@quotation Warning
+Due to the limit on function call nesting, methods on this generic
+function must not rely on the traversal from the root object to
+@var{object} resulting in an uninterrupted chain of nested function
+calls.  In particular, bindings of special variables and
+@t{unwind-protect} cleanups that are established in a call which
+processes one object may not be in scope in calls which process objects
+that are logically at a deeper nesting level.
+@end quotation
 @end deffn
 
 @defgena {new-value-for-fixup,eclector.reader} client labeled-object @

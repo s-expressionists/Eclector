@@ -286,3 +286,63 @@
       (is (relaxed-equalp expected-value value)
           "~@<For input ~S, expected return value ~S but got ~S~@:>"
           input expected-value value))))
+
+;;; Utilities for generating and reading deeply nested s-expressions
+
+(defun make-car-spine-list (length)
+  (loop with outer = (cons nil length)
+        for i from (1- length) downto 1
+        for cell = outer then (car cell)
+        do (setf (car cell) (cons nil i))
+        finally
+           (return (values outer (lambda (leaf)
+                                   (setf (caar cell) leaf))))))
+
+(defun make-tree (depth)
+  (loop with leaf-parents = ()
+        with root = (cons nil nil)
+        with worklist = (list (cons 0 root))
+        for (level . node) = (pop worklist)
+        while level
+        do (let* ((left (cons nil nil))
+                  (right (cons nil nil)))
+             (setf (car node) left (cdr node) right)
+             (cond ((< level 3)
+                    (let ((level+1 (1+ level)))
+                      (push (cons level+1 left) worklist)
+                      (push (cons level+1 right) worklist)))
+                   (t
+                    (push left leaf-parents)
+                    (push right leaf-parents))))
+        finally
+           (return (values
+                    root
+                    (lambda (leaf)
+                      (flet ((leaf-list ()
+                               (multiple-value-bind (list tie-knot)
+                                   (make-car-spine-list (- depth 5))
+                                 (funcall tie-knot leaf)
+                                 list)))
+                        (loop for leaf-parent in leaf-parents
+                              do (setf (car leaf-parent) (leaf-list)
+                                       (cdr leaf-parent) (leaf-list)))))))))
+
+(defun make-readtable-with-list-reader (list-maker)
+  (let ((readtable (eclector.readtable:copy-readtable
+                    eclector.reader:*readtable*)))
+    (eclector.readtable:set-macro-character
+     readtable #\?
+     (lambda (stream char)
+       (declare (ignore char))
+       (multiple-value-bind (root leaf) (funcall list-maker)
+         (funcall leaf (eclector.reader:read stream nil nil t))
+         root)))
+    readtable))
+
+(defun read-long-list (client list-maker)
+  (let ((eclector.reader:*client* client)
+        (eclector.reader:*readtable* (make-readtable-with-list-reader
+                                      list-maker)))
+    (with-input-from-string (stream "#1=?#1#")
+      (eclector.reader:read stream))))
+

@@ -181,7 +181,7 @@
 
 (defgeneric walk-fixup-tree (client function root-labeled-object))
 
-(defgeneric fixup (client object seen-objects))
+(defgeneric fixup (client object traversal-state))
 
 (defgeneric new-value-for-fixup (client labeled-object current-value final-value))
 
