@@ -1,5 +1,5 @@
 (:changes
- (:release "0.11" nil
+ (:release "0.11" "2025-06-08"
   (:item
    (:paragraph
     "Major" "incompatible" "change")
