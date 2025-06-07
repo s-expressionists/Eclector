@@ -24,6 +24,12 @@ jobs:
             --eval '(quicklisp-quickstart:install)' \
             --quit
 
+      # Until concrete-syntax-tree 0.3 becomes available via Quicklisp
+      - name: Clone dependencies into local-projects
+        run: |
+          cd "${HOME}/quicklisp/local-projects"                                             \
+            && git clone -b master https://github.com/s-expressionists/concrete-syntax-tree
+
       - name: Run tests
         run: |
           SYSTEMS='"eclector" "eclector-concrete-syntax-tree" "eclector.syntax-extensions"'
