@@ -141,8 +141,6 @@
 
                               (:file "recover")
 
-                              (:file "deprecation")
-
                               (:file "read-code")))
 
                 (:module "parse-result"

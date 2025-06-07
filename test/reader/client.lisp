@@ -239,7 +239,8 @@
      (value t))
   ;; VALUE is a string designator, but the default method accepts
   ;; package designators, so supplying a package object is fine.
-  (call-next-method client thunk aspect (find-package '#:eclector.reader.test)))
+  (let ((package (find-package '#:eclector.reader.test)))
+    (call-next-method client thunk aspect package)))
 
 (defmethod eclector.reader:check-feature-expression
     ((client with-state-value-client)

@@ -631,31 +631,6 @@ portable way to construct structure instances given only the name of
 the structure type.
 @end deffn
 
-@defgena {call-with-current-package,eclector.reader} client thunk@
-  package-designator
-
-@quotation Warning
-This generic function is deprecated as of @sysname{} 0.9 and will be
-removed in a future version.  Please use the generic function
-@t{eclector.reader:call-with-state-value} with the aspect designator
-@t{'cl:*package*} instead (@pxref{Reader state protocol} for more
-information on the reader state protocol).
-@end quotation
-
-This generic function is called by the reader when input has to be
-read with a particular current package.  This is currently only the
-case in the @t{#+} and @t{#-} reader macro functions which
-read feature expressions in the keyword package.  @var{thunk} is a
-function that should be called without arguments.
-@var{package-designator} designates the package that should be the
-current package around the call to @var{thunk}.
-
-The default method on this generic function simply binds
-@t{cl:*package*} to the result of
-@code{(cl:find-package @var{package-designator})}
-around calling @var{thunk}.
-@end deffn
-
 @defgena {evaluate-expression,eclector.reader} client expression
 
 This generic function is called by the default @t{#.} reader

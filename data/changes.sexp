@@ -1,5 +1,12 @@
 (:changes
- (:release "0.12" nil)
+ (:release "0.12" nil
+  (:item
+   (:paragraph
+    "The" "deprecated" "generic" "functions"
+    (:symbol "eclector.reader:call-with-current-package")
+    "has" "been" "removed" "." "Clients" "should" "use"
+    (:symbol "eclector.base:call-with-state-value") "with" "the"
+    (:symbol "cl:*package*") "aspect" ".")))
 
  (:release "0.11" "2025-06-08"
   (:item
