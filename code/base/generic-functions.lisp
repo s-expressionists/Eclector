@@ -3,11 +3,9 @@
 ;;; Source location protocol
 
 (defgeneric source-position (client stream)
-  (:method (client stream)
-    (declare (ignore client))
+  (:method ((client t) (stream t))
     (file-position stream)))
 
 (defgeneric make-source-range (client start end)
-  (:method (client start end)
-    (declare (ignore client))
+  (:method ((client t) (start t) (end t))
     (cons start end)))

@@ -22,10 +22,12 @@
 ;;; Establishing context
 
 (defmethod eclector.reader:call-as-top-level-read :around
-    ((client parse-result-client) thunk input-stream
-     eof-error-p eof-value preserve-whitespace-p)
-  (declare (ignore thunk input-stream preserve-whitespace-p
-                   eof-error-p eof-value))
+    ((client parse-result-client)
+     (thunk t)
+     (input-stream t)
+     (eof-error-p t)
+     (eof-value t)
+     (preserve-whitespace-p t))
   ;; We bind *CLIENT* here (instead of in, say, READ-AUX) to allow
   ;; (call-as-top-level-read
   ;;  client (lambda () ... (read-maybe-nothing client ...) ...) ...)
@@ -61,8 +63,10 @@
              ((:whitespace :skip)))))
 
 (defmethod eclector.reader:read-maybe-nothing
-    ((client parse-result-client) input-stream eof-error-p eof-value)
-  (declare (ignore eof-error-p eof-value))
+    ((client parse-result-client)
+     (input-stream t)
+     (eof-error-p t)
+     (eof-value t))
   (let* (;; *WRAPPER* is used in MAKE-LABELED-OBJECT,
          ;; REFERENCE-LABELED-OBJECT and MAKE-EXPRESSION-RESULT.
          (outer-wrapper *wrapper*)

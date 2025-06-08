@@ -2,8 +2,8 @@
 
 ;;; Token Reading
 
-(defmethod read-token (client input-stream eof-error-p eof-value)
-  (declare (ignore eof-error-p eof-value))
+(defmethod read-token
+    ((client t) (input-stream t) (eof-error-p t) (eof-value t))
   (with-token-info (push-char (start-escape end-escape) finalize)
     (labels ((handle-char (char escapep)
                (declare (ignore escapep))
@@ -160,8 +160,8 @@
                              (declare (dynamic-extent ,@function-names))
                              ,@body)))))
 
-(defmethod interpret-token (client input-stream token escape-ranges)
-  (declare (type token-string token))
+(defmethod interpret-token
+    ((client t) (input-stream t) (token t) (escape-ranges t))
   (let ((read-base (state-value client '*read-base*))
         (readtable (state-value client 'cl:*readtable*)))
     (convert-according-to-readtable-case readtable token escape-ranges)
@@ -431,10 +431,11 @@
 
 ;;; Symbol token interpretation
 
-(defmethod interpret-symbol-token (client input-stream
-                                   token
-                                   position-package-marker-1
-                                   position-package-marker-2)
+(defmethod interpret-symbol-token ((client t)
+                                   (input-stream t)
+                                   (token t)
+                                   (position-package-marker-1 t)
+                                   (position-package-marker-2 t))
   (let ((package-markers-end (or position-package-marker-2
                                  position-package-marker-1)))
     (flet ((interpret (package symbol internp)
@@ -456,11 +457,12 @@
                         (subseq token (1+ position-package-marker-1))
                         nil))))))
 
-(defmethod check-symbol-token (client input-stream
-                               token escape-ranges
-                               position-package-marker-1
-                               position-package-marker-2)
-  (declare (ignore client))
+(defmethod check-symbol-token ((client t)
+                               (input-stream t)
+                               (token t)
+                               (escape-ranges t)
+                               (position-package-marker-1 t)
+                               (position-package-marker-2 t))
   (let ((length (length token)))
     (cond ;; This signals an error for ":" and "::" but accepts ":||". "::" is
           ;; handled via TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST.
@@ -507,9 +509,11 @@
                  position-package-marker-2 nil))))
   (values token position-package-marker-1 position-package-marker-2))
 
-(defmethod interpret-symbol (client input-stream
-                             (package-indicator null) symbol-name internp)
-  (declare (ignore client input-stream internp))
+(defmethod interpret-symbol ((client t)
+                             (input-stream t)
+                             (package-indicator null)
+                             (symbol-name t)
+                             (internp t))
   (make-symbol symbol-name))
 
 ;;; INTERPRET-SYMBOL for interned symbols
@@ -600,8 +604,11 @@
                                         package symbol-name))
       symbol)))
 
-(defmethod interpret-symbol (client input-stream
-                             package-indicator symbol-name internp)
+(defmethod interpret-symbol ((client t)
+                             (input-stream t)
+                             (package-indicator t)
+                             (symbol-name t)
+                             (internp t))
   (prog (package symbol)
    package
      (setf package (case package-indicator

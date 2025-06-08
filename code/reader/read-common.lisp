@@ -39,9 +39,12 @@
 
 ;;; Establishing context
 
-(defmethod call-as-top-level-read (client thunk input-stream
-                                   eof-error-p eof-value preserve-whitespace-p)
-  (declare (ignore eof-error-p eof-value))
+(defmethod call-as-top-level-read ((client t)
+                                   (thunk t)
+                                   (input-stream t)
+                                   (eof-error-p t)
+                                   (eof-value t)
+                                   (preserve-whitespace-p t))
   (multiple-value-prog1
       (call-with-label-tracking client thunk)
     ;; All reading in READ-COMMON and its callees was done in a

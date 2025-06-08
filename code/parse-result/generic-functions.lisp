@@ -6,8 +6,7 @@
   (:argument-precedence-order result client children source))
 
 (defgeneric make-skipped-input-result (client stream reason children source)
-  (:method (client stream reason children source)
-    (declare (ignore client stream reason children source))
+  (:method ((client t) (stream t) (reason t) (children t) (source t))
     nil))
 
 ;;; The purpose of the following structure classes is to

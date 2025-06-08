@@ -10,8 +10,7 @@
 (defgeneric read-maybe-nothing (client input-stream eof-error-p eof-value))
 
 (defgeneric note-skipped-input (client input-stream reason)
-  (:method ((client t) (input-stream t) (reason t))
-    (declare (ignore client input-stream reason))))
+  (:method ((client t) (input-stream t) (reason t))))
 
 ;;; Reader state protocol
 
@@ -135,12 +134,10 @@
 
 (defgeneric evaluate-expression (client expression)
   (:method ((client t) (expression t))
-    (declare (ignore client))
     (eval expression)))
 
 (defgeneric check-feature-expression (client feature-expression)
   (:method ((client t) (feature-expression t))
-    (declare (ignore client))
     (check-standard-feature-expression feature-expression)))
 
 (defgeneric evaluate-feature-expression (client feature-expression)
@@ -163,8 +160,7 @@
 (defgeneric make-labeled-object (client input-stream label parent))
 
 (defgeneric labeled-object-state (client object)
-  (:method (client object)
-    (declare (ignore client object))
+  (:method ((client t) (object t))
     ;; Default behavior: OBJECT is not a labeled object.
     nil))
 
@@ -187,26 +183,21 @@
 ;;; Creating s-expressions
 
 (defgeneric wrap-in-quote (client material)
-  (:method (client material)
-    (declare (ignore client))
+  (:method ((client t) (material t))
     (list 'quote material)))
 
 (defgeneric wrap-in-quasiquote (client form)
-  (:method (client form)
-    (declare (ignore client))
+  (:method ((client t) (form t))
     (list 'quasiquote form)))
 
 (defgeneric wrap-in-unquote (client form)
-  (:method (client form)
-    (declare (ignore client))
+  (:method ((client t) (form t))
     (list 'unquote form)))
 
 (defgeneric wrap-in-unquote-splicing (client form)
-  (:method (client form)
-    (declare (ignore client))
+  (:method ((client t) (form t))
     (list 'unquote-splicing form)))
 
 (defgeneric wrap-in-function (client name)
-  (:method (client name)
-    (declare (ignore client))
+  (:method ((client t) (name t))
     (list 'function name)))
