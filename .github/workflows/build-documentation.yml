@@ -13,7 +13,7 @@ jobs:
         run: |
           DEBIAN_FRONTEND=noninteractive sudo apt-get -qq update \
               && DEBIAN_FRONTEND=noninteractive sudo apt-get -qq --assume-yes install \
-                   sbcl texlive texlive-latex-extra
+                   sbcl texlive texlive-latex-extra librsvg2-bin
 
       - uses: actions/checkout@v1
 
