@@ -82,3 +82,12 @@ eclector
 @anchor{Class \PACKAGE\|\NAME\}
 @deftp {Class} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
+
+@c Link to Common Lisp specification
+
+@macro speclink{CATEGORY,NAME}
+@url{https://novaspec.org/cl/\CATEGORY\_\NAME\,@t{cl:\NAME\}}
+@end macro
+@macro speclinkl{CATEGORY,NAME,LABEL}
+@url{https://novaspec.org/cl/\CATEGORY\_\NAME\,@t{\LABEL\}}
+@end macro

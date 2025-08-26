@@ -15,11 +15,11 @@
 
 @sysname{} offers extensive support for recovering from many syntax
 errors, continuing to read from the input stream and return a result
-that somewhat resembles what would have been returned in case the
-syntax had been valid.  To this end, a restart named
-@t{@readerpackage{}:recover} is established when recoverable
-errors are signaled.  Like the standard @commonlisp{} restart
-@t{cl:continue}, this restart can be invoked by a function of the
+that somewhat resembles what would have been returned in case the syntax
+had been valid.  To this end, a restart named
+@t{@readerpackage{}:recover} is established when recoverable errors are
+signaled.  Like the standard @commonlisp{} restart
+@speclink{r,continue}, this restart can be invoked by a function of the
 same name:
 
 @deffuna {recover,@readerpackage{}} @optional condition

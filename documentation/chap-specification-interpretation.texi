@@ -151,8 +151,8 @@ in any way other than returning the object or using the object as a part
 of a compound object.
 
 The following example violates this principle since the reader macro
-function in @t{custom-macro-readtable} calls @t{cl:second} on the object
-returned by @t{@readerpackage{}:read}:
+function in @t{custom-macro-readtable} calls @speclink{f,first} on the
+object returned by @t{@readerpackage{}:read}:
 
 @lisp
 (defun custom-macro-readtable ()

@@ -172,7 +172,8 @@ signaled conditions and passing them as arguments to the
 @t{make-source-range} generic function.  A client is therefore free to
 define methods on this generic function that return arbitrary objects.
 
-The default method on this generic function calls @t{cl:file-position}.
+The default method on this generic function calls
+@speclink{f,file-position}.
 @end deffn
 
 @defgena {make-source-range,@basepackage{}} client start end
@@ -251,8 +252,8 @@ that of the standard reader depending on the value of the
   (recursive-p @t{nil})
 
 This function is the main entry point for the ordinary reader.  It is
-entirely compatible with the standard @commonlisp{} function with the same
-name.
+entirely compatible with the standard @commonlisp{} function
+@speclink{f,read}.
 @end deffn
 
 @deffuna {read-preserving-whitespace,@readerpackage{}} @optional (input-stream @t{*standard-input*})@
@@ -261,7 +262,7 @@ name.
   (recursive-p @t{nil})
 
 This function is entirely compatible with the standard @commonlisp{}
-function with the same name.
+function @speclinkl{f,read,read-preserving-whitespace}.
 @end deffn
 
 @deffuna {read-from-string,@readerpackage{}} string @optional@
@@ -273,7 +274,7 @@ function with the same name.
   (preserve-whitespace @t{nil})
 
 This function is entirely compatible with the standard @commonlisp{}
-function with the same name.
+function @speclink{f,read-from-string}.
 @end deffn
 
 @deffuna {read-delimited-list,@readerpackage{}} char @optional@
@@ -281,7 +282,7 @@ function with the same name.
   (recursive-p @t{nil})
 
 This function is entirely compatible with the standard @commonlisp{}
-function with the same name.
+function @speclink{f,read-delimited-list}.
 @end deffn
 
 @node Reader behavior protocol
@@ -554,15 +555,14 @@ the keyword @t{:keyword} designating the keyword package
 
 The @var{symbol-name} is the name of the desired symbol.
 
-The default method uses @t{cl:find-package} (or
-@t{cl:*package*} when @var{package-indicator} is
+The default method uses @speclink{f,find-package} (or
+@speclinkl{v,package,cl:*package*} when @var{package-indicator} is
 @t{:current}) to resolve @var{package-indicator} followed by
-@t{cl:find-symbol} or @t{cl:intern}, depending on
+@speclink{f,find-symbol} or @speclink{f,intern}, depending on
 @var{internp}, to resolve @var{symbol-name}.
 
-A second method which is specialized on @var{package-indicator}
-being @t{nil} uses @t{cl:make-symbol} to create uninterned
-symbols.
+A second method which is specialized on @var{package-indicator} being
+@t{nil} uses @speclink{f,make-symbol} to create uninterned symbols.
 @end deffn
 
 @defgena {call-reader-macro,@readerpackage{}} client input-stream char@
@@ -606,11 +606,12 @@ looking up the designated character.
 
 A default method on this generic function that is not specialized to any
 particular client but is specialized to @var{designator} being a
-@t{string} recognizes the mandatory character names listing in HyperSpec
-Section 13.1.7 Character Names.  Another default method on this generic
-function that is not specialized to any particular client but is
-specialized to @var{designator} being a @t{character} just returns
-@var{designator}.
+@t{string} recognizes the mandatory character names listing in
+@uref{https://novaspec.org/cl/13_1_Character_Concepts#sec_13_1_7,
+Section 13.1.7 Character Names of the @commonlisp{} specification}.
+Another default method on this generic function that is not specialized
+to any particular client but is specialized to @var{designator} being a
+@t{character} just returns @var{designator}.
 @end deffn
 
 @defgena {make-structure-instance,@readerpackage{}} client name initargs
@@ -710,48 +711,52 @@ total, @sysname{} defines the following aspects:
 @table @code
 @item cl:*readtable*
 
-Like the @t{cl:*readtable*} special variable, this aspect controls the
-readtable object in which the reader looks up the syntax types of
-characters, the case conversion mode as well as reader macros.  By
-default, values of this aspect must satisfy the
+Like the @speclinkl{v,readtable,cl:*readtable*} special variable, this
+aspect controls the readtable object in which the reader looks up the
+syntax types of characters, the case conversion mode as well as reader
+macros.  By default, values of this aspect must satisfy the
 @t{@rtpackage{}:readtablep} predicate.
 
 @item cl:*package*
 
-Like the @t{cl:*package*} special variable, this aspects controls the
-package which the reader uses when it looks up or interns symbols in the
-current package.  By default, values of this aspect must be package
-designators.
+Like the @speclinkl{v,package,cl:*package*} special variable, this
+aspects controls the package which the reader uses when it looks up or
+interns symbols in the current package.  By default, values of this
+aspect must be package designators.
 
 @item cl:*read-suppress*
 
-Like the @t{cl:*read-suppress*} special variable, this aspect controls
-whether the reader skips over expressions without detailed parsing.
+Like the @speclinkl{v,read-suppress,cl:*read-suppress*} special
+variable, this aspect controls whether the reader skips over expressions
+without detailed parsing.
 
 @item cl:*read-eval*
 
-Like the @t{cl:*read-eval*} special variable, this aspect controls
-whether the reader evaluates expressions in @t{#.} constructs.
+Like the @speclinkl{v,read-eval,cl:*read-eval*} special variable, this
+aspect controls whether the reader evaluates expressions in @t{#.}
+constructs.
 
 @item cl:*features*
 
-Like the @t{cl:*features*} special variable, this aspect controls the
-evaluation of features in feature expressions in @t{#+} and @t{#-}
-constructs.  By default, values of this aspect must be proper lists of
-symbols.
+Like the @speclinkl{v,features,cl:*features*} special variable, this
+aspect controls the evaluation of features in feature expressions in
+@t{#+} and @t{#-} constructs.  By default, values of this aspect must be
+proper lists of symbols.
 
 @item cl:*read-base*
 
-Like the @t{cl:*read-base*} special variable, this aspect controls the
-interpretation of tokens by the reader as being integers or ratios.  By
-default, values of this aspect must be of type @t{(integer 1 36)}.
+Like the @speclinkl{v,read-base,cl:*read-base*} special variable, this
+aspect controls the interpretation of tokens by the reader as being
+integers or ratios.  By default, values of this aspect must be of type
+@t{(integer 1 36)}.
 
 @item cl:*read-default-float-format*
 
-Like the @t{cl:*read-default-float-format*} special variable, this
-aspect controls the floating-point format that the reader uses for
-floating-point numbers without exponent marker or the default exponent
-marker.
+Like the
+@speclinkl{v,read-default-float-format,cl:*read-default-float-format*}
+special variable, this aspect controls the floating-point format that
+the reader uses for floating-point numbers without exponent marker or
+the default exponent marker.
 
 @item @readerpackage{}::*quasiquotation-state*
 
@@ -790,9 +795,10 @@ Errors of this type are signaled when an attempt is made to establish an
 object as the value for a reader state aspect and the supplied object is
 not of the type required by the aspect.
 
-Since this condition type is a subtype of @t{cl:type-error}, the
+Since this condition type is a subtype of @speclink{t,type-error}, the
 offending value and the expected type can be retrieved via the readers
-@t{cl:type-error-datum} and @t{cl:type-error-expected-type} respectively.
+@speclink{f,type-error-datum} and
+@speclinkl{f,type-error-datum,cl:type-error-expected-type} respectively.
 The aspect for which the value was supplied can be retrieved via the
 reader @t{@readerpackage{}:aspect}.
 @end deftp
@@ -836,9 +842,9 @@ table} must be recognized by any client.
 The @t{cl:*package*} aspect mandates further explanation: When the
 client uses only the default methods of the reader state protocol, the
 return value of this generic function for the @t{cl:*package*} aspect is
-of type @t{cl:package} which is a strict subtype of the type of valid
-values for this aspect.  In other words, the defaults coerce package
-designators to package objects.
+of type @speclink{t,package} which is a strict subtype of the type of
+valid values for this aspect.  In other words, the defaults coerce
+package designators to package objects.
 @end deffn
 
 @defgena{(setf state-value),@readerpackage{}} new-value client aspect
@@ -1321,9 +1327,10 @@ is returned as the second value.  Parts are replaced by mutating
 
 @t{fixup} is called for side effects -- its return value is ignored.
 
-Default methods specializing the @var{object} parameter to @t{cons},
-@t{array}, @t{standard-object} and @t{hash-table} process instances of
-those classes by calling @ref{Generic-Function
+Default methods specializing the @var{object} parameter to
+@speclink{t,cons}, @speclink{t,array}, @speclink{t,standard-object} and
+@speclink{t,hash-table} process instances of those classes by calling
+@ref{Generic-Function
 @readerpackage{}|new-value-for-fixup,new-value-for-fixup} for each
 ``place'' in @var{object} and storing the returned object in the
 ``place''.
@@ -1341,9 +1348,9 @@ Due to the limit on function call nesting, methods on this generic
 function must not rely on the traversal from the root object to
 @var{object} resulting in an uninterrupted chain of nested function
 calls.  In particular, bindings of special variables and
-@t{unwind-protect} cleanups that are established in a call which
-processes one object may not be in scope in calls which process objects
-that are logically at a deeper nesting level.
+@speclink{f,unwind-protect} cleanups that are established in a call
+which processes one object may not be in scope in calls which process
+objects that are logically at a deeper nesting level.
 @end quotation
 @end deffn
 
@@ -1390,8 +1397,8 @@ explicitly represents the labeled object reference.
 @cindex quotation
 
 The following generic functions allow clients to construct
-representations of quoted and quasiquoted forms as well as @t{function}
-special forms.
+representations of quoted and quasiquoted forms as well as
+@speclink{f,function} special forms.
 
 @defgena {wrap-in-quote,@readerpackage{}} client material
 
@@ -1465,22 +1472,25 @@ following functions are provided for this purpose:
 
 @deffuna {set-standard-syntax-types,@readerpackage{}} readtable
 
-This function sets the standard syntax types in @var{readtable}
-(See HyperSpec section 2.1.4.)
+This function sets the standard syntax types in @var{readtable} (See
+@uref{https://novaspec.org/cl/2_1_Character_Syntax#sec_2_1_4, Section
+2.1.4 Character Syntax Types in the @commonlisp{} specification}).
 @end deffn
 
 @deffuna {set-standard-macro-characters,@readerpackage{}} readtable
 
-This function sets the standard macro characters in @var{readtable}
-(See HyperSpec section 2.4.)
+This function sets the standard macro characters in @var{readtable} (See
+@uref{https://novaspec.org/cl/2_4_Standard_Macro_Characters,Section 2.4
+Standard Macro Characters in the @commonlisp{} specification}).
 @end deffn
 
 @deffuna {set-standard-dispatch-macro-characters,@readerpackage{}}@
   readtable
 
 This function sets the standard dispatch macro characters, that is
-sharpsign and its sub-characters, in @var{readtable} (See HyperSpec
-section 2.4.8.)
+sharpsign and its sub-characters, in @var{readtable} (See
+@uref{https://novaspec.org/cl/2_4_Standard_Macro_Characters#sec_2_4_8,Section
+2.4.8 Sharpsign in the @commonlisp{} specification}).
 @end deffn
 
 @deffuna {set-standard-syntax-and-macros,@readerpackage{}} readtable
@@ -1514,7 +1524,7 @@ Symbols bound to additional functions and condition types.
 @defgena {readtablep,@rtpackage{}} object
 
 This function is the generic version of the standard @commonlisp{}
-function @t{cl:readtablep}.  The function returns true if
+function @speclink{f,readtablep}.  The function returns true if
 @var{object} can be used as a readtable in @sysname{} via the
 protocol functions in the @t{ecelctor.readtable} package.  The
 default method returns @t{nil}.
@@ -1533,11 +1543,11 @@ In this section, symbols written without package marker are in the
 result construction features}).
 
 This package provides clients with a reader that behaves similarly to
-@t{cl:read} but returns custom parse result objects controlled by
+@speclink{f,read} but returns custom parse result objects controlled by
 the client.  Some parse results correspond to things like symbols,
-numbers and lists that @t{cl:read} would return, while others, if
+numbers and lists that @speclink{f,read} would return, while others, if
 the client chooses, represent comments and other kinds of input that
-@t{cl:read} would discard.  Furthermore, clients can associate
+@speclink{f,read} would discard.  Furthermore, clients can associate
 source location information with parse results.
 
 Clients using this package pass a ``client'' object for which methods on
@@ -1597,7 +1607,7 @@ code.
 
 This function is the main entry point for this variant of the reader.
 It is in many ways similar to the standard @commonlisp{} function
-@t{cl:read}.  The differences are:
+@speclink{f,read}.  The differences are:
 
 @itemize
 @item
@@ -1628,8 +1638,8 @@ behave suitably.
   (eof-value @t{nil})
 
 This function is similar to the standard @commonlisp{} function
-@t{cl:read-preserving-whitespace}.  The differences are the same
-as described above for @t{read} compared to @t{cl:read}.
+@speclinkl{f,read,cl:read-preserving-whitespace}.  The differences are
+the same as described above for @t{read} compared to @speclink{f,read}.
 @end deffn
 
 @deffuna {read-from-string,@prpackage{}} client string@
@@ -1642,7 +1652,7 @@ as described above for @t{read} compared to @t{cl:read}.
   (preserve-whitespace @t{nil})
 
 This function is similar to the standard @commonlisp{} function
-@t{cl:read-from-string}.  The differences are:
+@speclink{f,read-from-string}.  The differences are:
 
 @itemize
 @item
@@ -1734,7 +1744,7 @@ features}).
 
 This function is the main entry point for the CST reader.  It is
 mostly compatible with the standard @commonlisp{} function
-@t{cl:read}.  The differences are:
+@speclink{f,read}.  The differences are:
 
 @itemize
 @item
@@ -1753,8 +1763,8 @@ behave suitably.
   (eof-value @t{nil})
 
 This function is similar to the standard @commonlisp{} function
-@t{cl:read-preserving-whitespace}.  The differences are the same
-as described above for @t{read} compared to @t{cl:read}.
+@speclinkl{f,read,cl:read-preserving-whitespace}.  The differences are the same
+as described above for @t{read} compared to @speclink{f,read}.
 @end deffn
 
 @deffuna {read-from-string,@cstpackage{}} string@
@@ -1767,6 +1777,6 @@ as described above for @t{read} compared to @t{cl:read}.
   (preserve-whitespace @t{nil})
 
 This function is similar to the standard @commonlisp{} function
-@t{cl:read-from-string}.  The differences are the same as
-described above for @t{read} compared to @t{cl:read}.
+@speclink{f,read-from-string}.  The differences are the same as
+described above for @t{read} compared to @speclink{f,read}.
 @end deffn

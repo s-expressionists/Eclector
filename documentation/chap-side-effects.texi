@@ -82,7 +82,7 @@ symbols, thereby modifying the package system.
 @subsection Read-time evaluation (default client)
 
 The default method on the generic function
-@t{@readerpackage{}:evaluate-expression} uses @t{cl:eval} to
+@t{@readerpackage{}:evaluate-expression} uses @speclink{f,eval} to
 evaluate arbitrary expressions, potentially causing side effects.
 With the default readtable, the generic function is only called by the
 macro function of the @t{#.} reader macro.

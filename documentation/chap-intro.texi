@@ -6,10 +6,11 @@
 @cindex concrete syntax tree
 
 @sysname{} is a portable, implementation-independent version of the
-@commonlisp{} function @t{read}, a corresponding readtable and a
-quasiquotation facility.  As opposed to existing implementation-specific
-versions of @t{read}, @sysname{} uses generic functions to allow clients
-to customize the exact behavior, such as the interpretation of tokens.
+@commonlisp{} function @speclink{f,read}, a corresponding readtable and
+a quasiquotation facility.  As opposed to existing
+implementation-specific versions of @speclink{f,read}, @sysname{} uses
+generic functions to allow clients to customize the exact behavior, such
+as the interpretation of tokens.
 
 Another unusual feature of @sysname{} is its ability to, at the discretion
 of the client, recover from many syntax errors, continue reading and
