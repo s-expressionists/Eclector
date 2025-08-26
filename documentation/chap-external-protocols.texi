@@ -156,9 +156,9 @@ Applicable methods exist for all conditions of type
 @defvara {*client*,@basepackage{}}
 
 This variable is used by several generic functions which are called by
-@t{@readerpackage{}:read}.  The default value of the variable is @t{nil}.
-Clients that want to override or extend the default behavior of some
-generic function of @sysname{} should bind this variable to some
+@funref{read,@readerpackage{}}.  The default value of the variable is
+@t{nil}.  Clients that want to override or extend the default behavior
+of some generic function of @sysname{} should bind this variable to some
 standard object and provide a method on that generic function,
 specialized to the class of that standard object.
 @end defvar
@@ -200,15 +200,18 @@ In this section, symbols written without package marker are in the
 The features provided in this package fall into two categories:
 @itemize
 @item
-The functions @t{read}, @t{read-preserving-whitespace},
-@t{read-from-string} and @t{read-delimited-list} which, together with
+The functions @funref{read,@readerpackage{}},
+@funref{read-preserving-whitespace,@readerpackage{}},
+@funref{read-from-string,@readerpackage{}} and
+@funref{read-delimited-list,@readerpackage{}} which, together with
 standard special variables, replicate the interface of the standard
-@commonlisp{} reader (except functions related to readtables which @sysname{}
-provides separately, @pxref{Readtable features}).  These functions are
-discussed in the section @ref{@commonlisp{} reader compatible interface}.
+@commonlisp{} reader (except functions related to readtables which
+@sysname{} provides separately, @pxref{Readtable features}).  These
+functions are discussed in the section @ref{@commonlisp{} reader
+compatible interface}.
 
 @item
-The second category is comprised of the @t{@basepackage{}:*client*}
+The second category is comprised of the @varref{*client*,@basepackage{}}
 special variable and a collection of protocols which allow customizing
 the behavior of the reader by defining methods specialized to a
 particular client on the generic functions of the protocols.
@@ -224,9 +227,10 @@ Labels above arrows represent arguments and return values.}
 @ref{fig:read-call-sequence-ordinary} illustrates the categorization
 into the @commonlisp{} reader compatible interface and the extensible
 behavior protocol as well as typical function call patterns that arise
-when the functions @t{read}, @t{read-preserving-whitespace},
-@t{read-from-string} and @t{read-delimited-list} are called by client
-code.
+when the functions @funref{read,@readerpackage{}},
+@funref{read-preserving-whitespace,@readerpackage},
+@funref{read-from-string,@readerpackage} and
+@funref{read-delimited-list,@readerpackage} are called by client code.
 
 @menu
 * @commonlisp{} reader compatible interface::
@@ -244,7 +248,7 @@ The following functions are like their standard @commonlisp{}
 counterparts with the two differences that their names are symbols in
 the @t{@readerpackage{}} package and that their behavior can deviate from
 that of the standard reader depending on the value of the
-@t{@basepackage{}:*client*} variable.
+@varref{*client*,@basepackage{}} variable.
 
 @deffuna {read,@readerpackage{}} @optional (input-stream @t{*standard-input*})@
   (eof-error-p @t{t})@
@@ -309,14 +313,15 @@ algorithm.
 @defgena {call-as-top-level-read,@readerpackage{}} client thunk input-stream@
   eof-error-p eof-value preserve-whitespace-p
 
-This generic function is called by @t{read} if @t{read} is called with a
-false value for the @var{recursive-p} parameter.  It calls @var{thunk}
-with the necessary context for a global @t{read} call.  @var{thunk}
-should read and return an object without consuming any whitespace
-following the object.  If @var{preserve-whitespace-p} is false, this
-function reads up to one character of whitespace after @var{thunk}
-returns.  By default, this function returns the object or
-@var{eof-value} returned by @var{thunk} as its sole value.
+This generic function is called by @funref{read,@readerpackage{}} if
+@t{read} is called with a false value for the @var{recursive-p}
+parameter.  It calls @var{thunk} with the necessary context for a global
+@t{read} call.  @var{thunk} should read and return an object without
+consuming any whitespace following the object.  If
+@var{preserve-whitespace-p} is false, this function reads up to one
+character of whitespace after @var{thunk} returns.  By default, this
+function returns the object or @var{eof-value} returned by @var{thunk}
+as its sole value.
 
 @quotation Note
 This generic function may return more values in addition to the one
@@ -324,7 +329,8 @@ described above.  Clients may use this feature to communicate additional
 information between methods (@pxref{Parse result construction
 features}).  Client defined methods on this generic function should
 accept such additional values when calling @var{thunk}, a next method or
-@t{read-common} and themselves return the additional values.
+@genref{read-common,@readerpackage{}} and themselves return the
+additional values.
 @end quotation
 
 The default method on this generic function performs two tasks:
@@ -341,9 +347,10 @@ It realizes the requested @var{preserve-whitespace-p} behavior.
 @defgena {read-common,@readerpackage{}} client input-stream @
   eof-error-p eof-value
 
-This generic function is called by @t{read}, passing it the value of the
-variable @t{@basepackage{}:*client*} and the corresponding parameters.
-By default, this generic function returns the objects as its sole value.
+This generic function is called by @funref{read,@readerpackage{}},
+passing it the value of the variable @varref{*client*,@basepackage{}}
+and the corresponding parameters.  By default, this generic function
+returns the objects as its sole value.
 
 @quotation Note
 This generic function may return more values in addition to the one
@@ -355,19 +362,21 @@ accept such additional values when calling a next method or
 @end quotation
 
 Client code can add methods on this function, specializing them to the
-client class of its choice.  The actions that @t{read} needs to take for
-different values of the parameter @var{recursive-p} have already been
-taken before @t{read} calls this generic function.
+client class of its choice.  The actions that
+@funref{read,@readerpackage{}} needs to take for different values of the
+parameter @var{recursive-p} have already been taken before @t{read}
+calls this generic function.
 @end deffn
 
 @defgena {read-maybe-nothing,@readerpackage{}} client input-stream@
   eof-error-p eof-value
 
 This generic function can be called directly by the client or by the
-generic function @t{read-common} to read an object or consume input
-without returning an object.  If called directly by the client, the call
-has to be in the dynamic scope of a @t{call-as-top-level-read} call.
-The function @t{read-maybe-nothing} either
+generic function @genref{read-common,@readerpackage{}} to read an object
+or consume input without returning an object.  If called directly by the
+client, the call has to be in the dynamic scope of a
+@genref{call-as-top-level-read,@readerpackage{}} call.  The function
+@t{read-maybe-nothing} either
 
 @itemize
 @item
@@ -406,16 +415,17 @@ return the additional values.
 This generic function is called whenever the reader skips some input
 such as a comment or a form that must be skipped because of a reader
 conditional.  It is called with the value of the variable
-@t{@basepackage{}:*client*}, the input stream from which the input is
-being read and an object indicating the reason for skipping the input.
-The default method on this generic function does nothing.  Client code
-can supply a method that specializes to the client class of its choice.
+@varref{*client*,@basepackage{}}, the input stream from which the input
+is being read and an object indicating the reason for skipping the
+input.  The default method on this generic function does nothing.
+Client code can supply a method that specializes to the client class of
+its choice.
 
 When this function is called, the stream is positioned immediately
-@emph{after} the skipped input.  Client code that wants to know both
-the beginning and the end of the skipped input must remember the
-stream position before the call to @t{read} was made as well as
-the stream position when the call to this function is made.
+@emph{after} the skipped input.  Client code that wants to know both the
+beginning and the end of the skipped input must remember the stream
+position before the call to @funref{read,@readerpackage{}} was made as
+well as the stream position when the call to this function is made.
 @end deffn
 
 @defvara {*skip-reason*,@readerpackage{}}
@@ -424,46 +434,46 @@ This variable is used by the reader to determine why a range of input
 characters has been skipped.  To this end, internal functions of the
 reader as well as reader macros can set this variable to a suitable
 value before skipping over some input.  Then, after the input has been
-skipped, the generic function @t{note-skipped-input} is called
-with the value of the variable as its @var{reason} argument.
+skipped, the generic function
+@genref{note-skipped-input,@readerpackage{}} is called with the value of
+the variable as its @var{reason} argument.
 
-As an example, the method on @t{note-skipped-input} specialized to
-@t{@prpackage{}:parse-result-client} relays the reason and
+As an example, the method on
+@genref{note-skipped-input,@readerpackage{}} specialized to
+@classref{parse-result-client,@prpackage{}} relays the reason and
 position information to the client by calling the
-@t{@prpackage{}:make-skipped-input-result} generic function
+@genref{make-skipped-input-result,@prpackage{}} generic function
 (@pxref{Parse result construction features}).
 @end defvar
 
 @defgena {read-token,@readerpackage{}} client input-stream @
   eof-error-p eof-value
 
-This generic function is called by @t{read-common} when it has
-been detected that a token should be read.  This function is
+This generic function is called by @genref{read-common,@readerpackage{}}
+when it has been detected that a token should be read.  This function is
 responsible for accumulating the characters of the token and then
-calling @t{interpret-token} (see below) in order to create and
+calling @genref{interpret-token,@readerpackage{}} in order to create and
 return a token.
 @end deffn
 
 @defgena {interpret-token,@readerpackage{}} client input-stream token@
   escape-ranges
 
-This generic function is called by @t{read-token} in order to
-create a token from accumulated token characters.  The parameter
-@var{token} is a string containing the characters that make up the
-token.  The parameter @var{escape-ranges} indicates ranges of
-characters read from @var{input-stream} and preceded by a character
-with single-escape syntax or delimited by characters with
-multiple-escape syntax.  Values of @var{escape-ranges} are lists of
-elements of the form @t{(@var{start}\ .\ @var{end})} where
-@t{@var{start}} is the index of the first escaped character
-and @t{@var{end}} is the index @emph{following} the last
-escaped character.  Note that @t{@var{start}} and
-@t{@var{var}} can be identical indicating no escaped
-characters.  This can happen in cases like @t{a||b}.  The
-information conveyed by the @var{escape-ranges} parameter is used
-to convert the characters in @var{token} according to the
-@emph{readtable case} of the current readtable before a token is
-constructed.
+This generic function is called by @genref{read-token,@readerpackage{}}
+in order to create a token from accumulated token characters.  The
+parameter @var{token} is a string containing the characters that make up
+the token.  The parameter @var{escape-ranges} indicates ranges of
+characters read from @var{input-stream} and preceded by a character with
+single-escape syntax or delimited by characters with multiple-escape
+syntax.  Values of @var{escape-ranges} are lists of elements of the form
+@t{(@var{start} . @var{end})} where @t{@var{start}} is the index of
+the first escaped character and @t{@var{end}} is the index
+@emph{following} the last escaped character.  Note that @t{@var{start}}
+and @t{@var{var}} can be identical indicating no escaped characters.
+This can happen in cases like @t{a||b}.  The information conveyed by the
+@var{escape-ranges} parameter is used to convert the characters in
+@var{token} according to the @emph{readtable case} of the current
+readtable before a token is constructed.
 @end deffn
 
 @defgena {check-symbol-token,@readerpackage{}} client@
@@ -471,11 +481,12 @@ constructed.
   position-package-marker-1 position-package-marker-2
 
 This generic function is called by the default method on
-@t{interpret-token} when the syntax of the token corresponds to that of
-a symbol.  This function checks the syntactic validity of the symbol
-token and signals an error in case of a syntax error.  If there are no
-syntax errors (or error recovery has been performed, @pxref{Recovering
-from errors}), this function returns three values:
+@genref{interpret-token,@readerpackage{}} when the syntax of the token
+corresponds to that of a symbol.  This function checks the syntactic
+validity of the symbol token and signals an error in case of a syntax
+error.  If there are no syntax errors (or error recovery has been
+performed, @pxref{Recovering from errors}), this function returns three
+values:
 @enumerate
 @item
 @var{token} or a value derived from @var{token} by error recovery
@@ -512,32 +523,32 @@ errors and allows error recovery as described above.
   position-package-marker-2
 
 This generic function is called by the default method on
-@t{interpret-token} when the syntax of the token corresponds to
-that of a valid symbol.  The parameter @var{input-stream} is the
-input stream from which the characters were read.  The parameter
-@var{token} is a string that contains all the characters of the
-token.  The parameter @var{position-package-marker-1} contains the
-index into @var{token} of the first package marker, or @t{nil}
-if the token contains no package markers.  The parameter
-@var{position-package-marker-2} contains the index into
-@var{token} of the second package marker, or @t{nil} if the
-token contains no package markers or only a single package marker.
+@genref{interpret-token,@readerpackage{}} when the syntax of the token
+corresponds to that of a valid symbol.  The parameter @var{input-stream}
+is the input stream from which the characters were read.  The parameter
+@var{token} is a string that contains all the characters of the token.
+The parameter @var{position-package-marker-1} contains the index into
+@var{token} of the first package marker, or @t{nil} if the token
+contains no package markers.  The parameter
+@var{position-package-marker-2} contains the index into @var{token} of
+the second package marker, or @t{nil} if the token contains no package
+markers or only a single package marker.
 
 The default method on this generic function calls
-@t{interpret-symbol} (see below) with a symbol name string and a
-package indicator.
+@genref{interpret-symbol,@readerpackage{}} with a symbol name string and
+a package indicator.
 @end deffn
 
 @defgena {interpret-symbol,@readerpackage{}} client input-stream@
   package-indicator symbol-name internp
 
 This generic function is called by the default method on
-@t{interpret-symbol-token} as well as the default
-@t{#:} reader macro function to resolve a symbol name string and
-a package indicator to a representation of the designated symbol.  The
+@genref{interpret-symbol-token,@readerpackage{}} as well as the default
+@t{#:} reader macro function to resolve a symbol name string and a
+package indicator to a representation of the designated symbol.  The
 parameter @var{input-stream} is the input stream from which
-@var{package-indicator} and @var{symbol-name} were read.  The
-parameter @var{package-indicator} is a either
+@var{package-indicator} and @var{symbol-name} were read.  The parameter
+@var{package-indicator} is a either
 
 @itemize
 @item
@@ -635,10 +646,10 @@ the structure type.
 
 @defgena {evaluate-expression,@readerpackage{}} client expression
 
-This generic function is called by the default @t{#.} reader
-macro function to perform read-time evaluation.  @var{expression}
-is the expression that should be evaluated as it was returned by a
-recursive @t{read} call and potentially influenced by
+This generic function is called by the default @t{#.} reader macro
+function to perform read-time evaluation.  @var{expression} is the
+expression that should be evaluated as it was returned by a recursive
+@funref{read,@readerpackage{}} call and potentially influenced by
 @var{client}.  The function has to either return the result of
 evaluating @var{expression} or signal an error.
 
@@ -683,10 +694,10 @@ be read without error when the @t{:my-cl-implementation} feature is
 absent.
 
 The default method on this generic function first calls
-@t{check-feature-expression} to check the well-formedness of
-@var{feature-expression}.  It then evaluates
-@var{feature-expression} according to standard @commonlisp{}
-semantics for feature expressions.
+@genref{check-feature-expression,@readerpackage{}} to check the
+well-formedness of @var{feature-expression}.  It then evaluates
+@var{feature-expression} according to standard @commonlisp{} semantics
+for feature expressions.
 @end deffn
 
 @node Reader state protocol
@@ -715,7 +726,7 @@ Like the @speclinkl{v,readtable,cl:*readtable*} special variable, this
 aspect controls the readtable object in which the reader looks up the
 syntax types of characters, the case conversion mode as well as reader
 macros.  By default, values of this aspect must satisfy the
-@t{@rtpackage{}:readtablep} predicate.
+@genref{readtablep,@rtpackage{}} predicate.
 
 @item cl:*package*
 
@@ -859,14 +870,15 @@ table} must be recognized by any client.
 
 @var{new-value} is the desired new value for the designated aspect.
 @var{new-value} has to be a valid value for @var{aspect} in the sense
-that @code{(@readerpackage{}:valid-state-value-p @var{client} @var{aspect}
-@var{value})} must return true.
+that
+@code{(@genref{valid-state-value-p,@readerpackage{}} @var{client} @var{aspect} @var{value})}
+must return @emph{true}.
 
 The @t{cl:*package*} aspect mandates further explanation: When the
 client uses only the default methods of the reader state protocol, the
 method on this generic function which handles the @t{cl:*package*}
 aspect coerces @var{new-value} from designators to package objects so
-that a subsequent @t{@readerpackage{}:state-value} call returns the
+that a subsequent @genref{state-value,@readerpackage{}} call returns the
 designated package object.
 @end deffn
 
@@ -885,22 +897,22 @@ The following properties must hold:
 @itemize
 @item
 @var{value} has to be a valid value for @var{aspect} in the sense that
-@code{(@readerpackage{}:valid-state-value-p @var{client} @var{aspect}
-@var{value})} must return true.
+@code{(@genref{valid-state-value-p,@readerpackage{}} @var{client} @var{aspect} @var{value})}
+must return @emph{true}.
 
 @item
 During the call to @var{thunk} and absent any intervening calls to
-@t{@readerpackage{}:call-with-state-value}, the expression
-@code{(@readerpackage{}:state-value @var{client} @var{aspect})} must
-evaluate to @var{value}.
+@genref{call-with-state-value,@readerpackage{}}, the expression
+@code{(@genref{state-value,@readerpackage{}} @var{client} @var{aspect})}
+must evaluate to @var{value}.
 @end itemize
 
 When @sysname{} calls this generic function with @t{cl:*package*} as the
 value of @var{aspect}, the @var{value} is a always a string designator
 and never a package object.  The default method on this generic function
 coerces such string designators to package objects so that a subsequent
-@t{@readerpackage{}:state-value} call returns the designated package
-object.
+@genref{state-value,@readerpackage{}} call returns the designated
+package object.
 @end deffn
 
 @cindex quasiquote
@@ -943,7 +955,7 @@ forbidden.  The value @t{:keep} causes the binding to remain unchanged.
 @quotation Warning
 This macro is deprecated as of @sysname{} 0.11 and will be removed in a
 future version.  This macro is replaced by the macro
-@t{@readerpackage{}::with-quasiquotation-state} but that macro is
+@macref{with-quasiquotation-state,@readerpackage{}} but that macro is
 experimental and its name is not exported for now.
 @end quotation
 
@@ -983,13 +995,14 @@ that @t{#@var{N}=@var{expression}} @dfn{defines} the labeled object and
 @t{#@var{N}#} @dfn{references} the labeled object.  We call the
 reference @dfn{circular} if @t{#@var{N}#} occurs within
 @var{expression}.  Labeled objects are internal to the reader and only
-exist during @t{@readerpackage{}:read} calls: before such a call returns
-an object, each labeled object within the returned object is replaced by
-its respective final object.  Callers of @t{@readerpackage{}:read} and
-related functions will therefore only ever see the object, never the
-labeled object@footnote{Reader macro functions which call
-@t{@readerpackage{}:read} may receive labeled objects under certain
-circumstances (@pxref{Circular objects and custom reader macros}).}.
+exist during @funref{read,@readerpackage{}} calls: before such a call
+returns an object, each labeled object within the returned object is
+replaced by its respective final object.  Callers of
+@funref{read,@readerpackage{}} and related functions will therefore only
+ever see the object, never the labeled object@footnote{Reader macro
+functions which call @funref{read,@readerpackage{}} may receive labeled
+objects under certain circumstances (@pxref{Circular objects and custom
+reader macros}).}.
 
 On a technical level, a labeled object is represented as a data type
 with a current state and a single (possibly unbound) slot containing the
@@ -1031,28 +1044,32 @@ functions with corresponding state transitions.}
 @end float
 
 In addition to the generic functions referenced in the above diagram,
-the generic functions @t{fixup-graph-p}, @t{fixup-graph}, @t{fixup} and
-@t{new-value-for-fixup} are part of the protocol.  Those functions are
-used to replace labeled objects with their respective final objects
-within an object that is about to be returned to the caller of
-@t{@readerpackage:read} @footnote{This fixup processing has to be
-delayed under certain circumstances (@pxref{Circular objects and custom
-reader macros}).}.  To this end, the @t{#=} reader macro function must
-inspect and update the state of the labeled object it is processing
-after reading @t{@var{expression}} by calling
-@t{finalize-labeled-object}.  @t{finalize-labeled-object} decides
-whether @t{fixup-graph} (see below) must be called: If after reading
-@t{@var{expression}} the labeled object is in state @t{:circular},
-@t{@var{expression}} must have contained circular references and the
-result of reading it contains labeled objects that have to be replaced
-with their respective final objects.  @t{fixup-graph}, @t{fixup} and
-@t{new-value-for-fixup} perform this replacement.  The replacement is
-performed by recursively@footnote{The implementation of the traversal is
-not purely recursive since a purely recursive implementation could lead
-to function call nesting of an unbounded depth.} traversing objects
-which are reachable from the final object of the labeled objects, for
-example by visiting the slots of standard objects, and replacing labeled
-objects with their respective final object.
+the generic functions @genref{fixup-graph-p,@readerpackage{}},
+@genref{fixup-graph,@readerpackage{}}, @genref{fixup,@readerpackage{}}
+and @genref{new-value-for-fixup,@readerpackage{}} are part of the
+protocol.  Those functions are used to replace labeled objects with
+their respective final objects within an object that is about to be
+returned to the caller of @funref{read,@readerpackage{}} @footnote{This
+fixup processing has to be delayed under certain circumstances
+(@pxref{Circular objects and custom reader macros}).}.  To this end, the
+@t{#=} reader macro function must inspect and update the state of the
+labeled object it is processing after reading @t{@var{expression}} by
+calling @genref{finalize-labeled-object,@readerpackage{}}.
+@genref{finalize-labeled-object,@readerpackage{}} decides whether
+@genref{fixup-graph,@readerpackage{}} (see below) must be called: If
+after reading @t{@var{expression}} the labeled object is in state
+@t{:circular}, @t{@var{expression}} must have contained circular
+references and the result of reading it contains labeled objects that
+have to be replaced with their respective final objects.
+@genref{fixup-graph,@readerpackage{}}, @genref{fixup,@readerpackage{}}
+and @genref{new-value-for-fixup,@readerpackage{}} perform this
+replacement.  The replacement is performed by recursively@footnote{The
+implementation of the traversal is not purely recursive since a purely
+recursive implementation could lead to function call nesting of an
+unbounded depth.} traversing objects which are reachable from the final
+object of the labeled objects, for example by visiting the slots of
+standard objects, and replacing labeled objects with their respective
+final object.
 
 In certain cases, the computational complexity of this traversal and
 replacement can be rather high, depending on when and how exactly the
@@ -1072,20 +1089,20 @@ sub-graph of the whole object graph may be circular in which case most
 of the work for traversing the whole graph would be wasted.  To address
 both problems, @sysname{} allows clients to track the nesting of labeled
 objects and fix up sub-graphs which contain multiple nested objects in
-one go
-(@pxref{Generic-Function @readerpackage{}|fixup-graph-p, fixup-graph-p}).
+one go (see @genref{fixup-graph-p,@readerpackage{}}).
 
 @defgena{call-with-label-tracking,@readerpackage{}} client thunk
 
 This generic function is called by the default method on
-@t{call-as-top-level-read} in order to establish a context for tracking
-@t{#=} label definitions and @t{##} label references around a call to
-@var{thunk}.
+@genref{call-as-top-level-read,@readerpackage{}} in order to establish a
+context for tracking @t{#=} label definitions and @t{##} label
+references around a call to @var{thunk}.
 
 The default method on this generic function establishes a context in
 which the default @t{#=} and @t{##} reader macro functions can make the
-appropriate calls to @t{note-labeled-object}, @t{forget-labeled-object},
-@t{find-labeled-object}.
+appropriate calls to @genref{note-labeled-object,@readerpackage{}},
+@genref{forget-labeled-object,@readerpackage{}},
+@genref{find-labeled-object,@readerpackage{}}.
 @end deffn
 
 @defgena{note-labeled-object,@readerpackage{}} client input-stream label@
@@ -1096,9 +1113,10 @@ function to note the definition of a labeled object with label
 @var{label} while reading from @var{input-stream}.  The function
 creates, registers and returns a representation of the labeled object.
 The returned object is registered in the sense that a subsequent call to
-@t{find-labeled-object} with arguments @var{client} and @var{label}
-returns the same object unless @t{forget-labeled-object} has been called
-to unregister the object.
+@genref{find-labeled-object,@readerpackage{}} with arguments
+@var{client} and @var{label} returns the same object unless
+@genref{forget-labeled-object,@readerpackage{}} has been called to
+unregister the object.
 
 @var{parent} is either @t{nil} or a (previously created) surrounding
 labeled object.  The parent labeled object is provided to allow the
@@ -1113,15 +1131,16 @@ Note that, when reading an expression of the form
 is defined but does not have an object associated with it.
 
 The default method on this generic function calls
-@t{make-labeled-object} with @var{client}, @var{input-stream} and
-@var{label} to create an object of an unspecified type.  The method
-registers and returns the created object.  Client code should manipulate
-the object only via the generic functions described in this section and
-in particular not rely on the object being of a particular type (since
-methods on @t{make-labeled-object} specialized to certain client classes
-could return unexpected objects).  The default method requires the
-context established by the default method on
-@t{call-with-label-tracking}.
+@genref{make-labeled-object,@readerpackage{}} with @var{client},
+@var{input-stream} and @var{label} to create an object of an unspecified
+type.  The method registers and returns the created object.  Client code
+should manipulate the object only via the generic functions described in
+this section and in particular not rely on the object being of a
+particular type (since methods on
+@genref{make-labeled-object,@readerpackage{}} specialized to certain
+client classes could return unexpected objects).  The default method
+requires the context established by the default method on
+@genref{call-with-label-tracking,@readerpackage{}}.
 @end deffn
 
 @defgena{forget-labeled-object,@readerpackage{}} client label
@@ -1132,11 +1151,13 @@ function when @sysname{} reads an invalid labeled object of the form
 resulting error (@pxref{Recovering from errors}).  In that situation,
 the remainder of the input is processed as if there had been no labeled
 object with label @var{N}.  This function makes the labeled object
-undefined so that a subsequent @t{find-labeled-object} call for
-@var{label} will return @t{nil}.
+undefined so that a subsequent
+@genref{find-labeled-object,@readerpackage{}} call for @var{label} will
+return @t{nil}.
 
 The default method on this generic function requires the context
-established by the default method on @t{call-with-label-tracking}.
+established by the default method on
+@genref{call-with-label-tracking,@readerpackage{}}.
 @end deffn
 
 @defgena{find-labeled-object,@readerpackage{}} client label
@@ -1148,26 +1169,30 @@ object has been registered for @var{label} and the registered object
 otherwise.
 
 The default method on this generic function requires the context
-established by the default method on @t{call-with-label-tracking}.
+established by the default method on
+@genref{call-with-label-tracking,@readerpackage{}}.
 @end deffn
 
 @defgena{make-labeled-object,@readerpackage{}} client input-stream label@
   parent
 
-This generic function is called by @t{note-labeled-object} to create and
-return a representation of a labeled object with label @var{label}.
-@var{parent} is either @t{nil} or a previously created, surrounding
-labeled object which allows the client to potentially defer fixup
-processing for the new labeled object if the processing for the
-surrounding labeled object subsumes the processing.
+This generic function is called by
+@genref{note-labeled-object,@readerpackage{}} to create and return a
+representation of a labeled object with label @var{label}.  @var{parent}
+is either @t{nil} or a previously created, surrounding labeled object
+which allows the client to potentially defer fixup processing for the
+new labeled object if the processing for the surrounding labeled object
+subsumes the processing.
 
 The default method on this generic function creates and returns an
 object of an unspecified type.  Client code should manipulate the object
-only via the generic functions @t{labeled-object-state},
-@t{finalize-labeled-object} and @t{reference-labeled-object} and in
-particular not rely on the object being of a particular type (since
-methods on this generic function specialized to certain client classes
-could return unexpected objects).
+only via the generic functions
+@genref{labeled-object-state,@readerpackage{}},
+@genref{finalize-labeled-object,@readerpackage{}} and
+@genref{reference-labeled-object,@readerpackage{}} and in particular not
+rely on the object being of a particular type (since methods on this
+generic function specialized to certain client classes could return
+unexpected objects).
 @end deffn
 
 @defgena{labeled-object-state,@readerpackage{}} client object
@@ -1207,7 +1232,8 @@ return the additional values.
 
 The default method on this generic function is applicable to labeled
 object representations returned by the default methods on
-@t{note-labeled-object} and @t{make-labeled-object}.
+@genref{note-labeled-object,@readerpackage{}} and
+@genref{make-labeled-object,@readerpackage{}}.
 @end deffn
 
 @defgena{finalize-labeled-object,@readerpackage{}} client labeled-object@
@@ -1222,7 +1248,8 @@ new state of @var{labeled-object}.
 
 The default method on this generic function is applicable to labeled
 object representations returned by the default methods on
-@t{note-labeled-object} and @t{make-labeled-object}.
+@genref{note-labeled-object,@readerpackage{}} and
+@genref{make-labeled-object,@readerpackage{}}.
 @end deffn
 
 @defgena{reference-labeled-object,@readerpackage{}} client input-stream@
@@ -1232,35 +1259,40 @@ This generic function is called by the default @t{##} reader macro
 function to process a reference to @var{labeled-object} while reading
 from @var{input-stream}.  @var{labeled-object} must be a representation
 of a labeled object and has, in the context of the @t{##} reader macro
-function, likely been obtained by calling @t{find-labeled-object}.
-Depending on the state of @var{labeled-object}, this function returns
-either @var{labeled-object} itself or an object that can be returned to
-the caller as-is.  In case @var{labeled-object} is returned, it will be
-replaced by its associated object later, when @t{fixup-graph} is called.
+function, likely been obtained by calling
+@genref{find-labeled-object,@readerpackage{}}.  Depending on the state
+of @var{labeled-object}, this function returns either
+@var{labeled-object} itself or an object that can be returned to the
+caller as-is.  In case @var{labeled-object} is returned, it will be
+replaced by its associated object later, when
+@genref{fixup-graph,@readerpackage{}} is called.
 
 The default method on this generic function is applicable to labeled
 object representations returned by the default methods on
-@t{note-labeled-object} and @t{make-labeled-object}.
+@genref{note-labeled-object,@readerpackage{}} and
+@genref{make-labeled-object,@readerpackage{}}.
 @end deffn
 
-As briefly mentioned above, the generic functions @t{fixup-graph} and
-@t{fixup} traverse and inspect objects in the object graph reachable
-from an object that is about to be returned to the caller of
-@t{@readerpackage{}:read}.  In order to distinguish ordinary objects from
-labeled objects that act as placeholders in the object graph and must be
-replaced with their respective final objects, @t{fixup} methods call
-@t{labeled-object-state} on all encountered objects.
-@t{labeled-object-state} returns @t{nil} for all objects that are not
-labeled objects and @t{:final} for labeled objects which must be
-replaced with their final object.
+As briefly mentioned above, the generic functions
+@genref{fixup-graph,@readerpackage{}} and
+@genref{fixup,@readerpackage{}} traverse and inspect objects in the
+object graph reachable from an object that is about to be returned to
+the caller of @funref{read,@readerpackage{}}.  In order to distinguish
+ordinary objects from labeled objects that act as placeholders in the
+object graph and must be replaced with their respective final objects,
+@genref{fixup,@readerpackage{}} methods call
+@genref{labeled-object-state,@readerpackage{}} on all encountered
+objects.  @genref{labeled-object-state,@readerpackage{}} returns @t{nil}
+for all objects that are not labeled objects and @t{:final} for labeled
+objects which must be replaced with their final object.
 
 @defgena {fixup-graph-p,@readerpackage{}} client root-labeled-object
 
 This generic function is potentially called by a method on
-@t{finalize-labeled-object} to determine whether the object graph
-reachable from the object of @var{root-labeled-object} should be fixed
-up by calling @t{fixup-graph} with @var{client} and
-@var{labeled-object}.
+@genref{finalize-labeled-object,@readerpackage{}} to determine whether
+the object graph reachable from the object of @var{root-labeled-object}
+should be fixed up by calling @genref{fixup-graph,@readerpackage{}} with
+@var{client} and @var{labeled-object}.
 
 Multiple default methods on this generic function jointly implement the
 following behavior:
@@ -1269,7 +1301,7 @@ following behavior:
 
 @item
 If @var{root-labeled-object} has a parent labeled object,
-@var{root-labeled-object} should not be fixup up immediately (since the
+@var{root-labeled-object} should not be fixed up immediately (since the
 fixup processing for ancestor labeled objects will subsume the fixup
 processing for @var{root-labeled-object}).
 
@@ -1292,17 +1324,18 @@ This generic function is potentially called after the reader has
 constructed an object graph which is reachable from the object of
 @var{root-labeled-object} and noticed circular references within this
 graph to fix up circular references before the object of
-@var{root-labeled-object} is returned to the caller (of @t{read} or
-related functions).
+@var{root-labeled-object} is returned to the caller (of
+@funref{read,@readerpackage{}} or related functions).
 
 @var{object-key} is a function that accepts a labeled object and returns
 the object of the labeled object.
 
 The default method on this generic function creates a hash table for
-tracking already processed objects and calls @t{fixup} with
-@var{client}, the object of @var{root-labeled-object} and the hash table
-to recursively process objects in the object graph which is reachable
-from the object of @var{root-labeled-object}.
+tracking already processed objects and calls
+@genref{fixup,@readerpackage{}} with @var{client}, the object of
+@var{root-labeled-object} and the hash table to recursively process
+objects in the object graph which is reachable from the object of
+@var{root-labeled-object}.
 @end deffn
 
 @defgena {fixup,@readerpackage{}} client object traversal-state
@@ -1315,25 +1348,24 @@ things, to track already processed objects (see below).  A method
 specialized to a class, instances of which consist of parts, should
 modify @var{object} by scanning its parts for labeled object markers,
 replacing found labeled object markers with the respective final object
-and recursively calling @t{fixup} for all parts.
+and recursively calling @genref{fixup,@readerpackage{}} for all parts.
 
 To recognize labeled objects which have to be replaced, methods should
-call @t{labeled-object-state} on each part of @var{object} and interpret
-the returned values as follows: if @t{nil} is returned, the part should
-not be replaced but recursively processed.  If @t{:final} is returned as
-the first value, the part should be replaced with the final object that
-is returned as the second value.  Parts are replaced by mutating
-@var{object}.
+call @genref{labeled-object-state,@readerpackage{}} on each part of
+@var{object} and interpret the returned values as follows: if @t{nil} is
+returned, the part should not be replaced but recursively processed.  If
+@t{:final} is returned as the first value, the part should be replaced
+with the final object that is returned as the second value.  Parts are
+replaced by mutating @var{object}.
 
-@t{fixup} is called for side effects -- its return value is ignored.
+This generic function is called for side effects -- its return value is
+ignored.
 
 Default methods specializing the @var{object} parameter to
 @speclink{t,cons}, @speclink{t,array}, @speclink{t,standard-object} and
 @speclink{t,hash-table} process instances of those classes by calling
-@ref{Generic-Function
-@readerpackage{}|new-value-for-fixup,new-value-for-fixup} for each
-``place'' in @var{object} and storing the returned object in the
-``place''.
+@genref{new-value-for-fixup,@readerpackage{}} for each ``place'' in
+@var{object} and storing the returned object in the ``place''.
 
 An unspecialized @t{:around} method queries and updates
 @var{traversal-state} to ensure that each object reachable from
@@ -1358,10 +1390,9 @@ objects that are logically at a deeper nesting level.
   current-value final-value
 
 This generic function is called by the generic function
-@ref{Generic-Function @readerpackage{}|fixup,fixup,fixup} when a new
-value for a ``place'' within a circular object must be produced.  This
-function is used when fixup processing is applied to both ordinary
-objects and parse results.
+@genref{fixup,@readerpackage{}} when a new value for a ``place'' within
+a circular object must be produced.  This function is used when fixup
+processing is applied to both ordinary objects and parse results.
 
 @var{labeled-object} is the labeled object marker which will be
 replaced by the computed value to finalize the circular object.
@@ -1524,10 +1555,10 @@ Symbols bound to additional functions and condition types.
 @defgena {readtablep,@rtpackage{}} object
 
 This function is the generic version of the standard @commonlisp{}
-function @speclink{f,readtablep}.  The function returns true if
-@var{object} can be used as a readtable in @sysname{} via the
-protocol functions in the @t{ecelctor.readtable} package.  The
-default method returns @t{nil}.
+function @speclink{f,readtablep}.  The function returns @emph{true} if
+@var{object} can be used as a readtable in @sysname{} via the protocol
+functions in the @t{@rtpackage{}} package.  The default method returns
+@t{nil}.
 @end deffn
 
 TODO
@@ -1551,11 +1582,13 @@ the client chooses, represent comments and other kinds of input that
 source location information with parse results.
 
 Clients using this package pass a ``client'' object for which methods on
-the generic functions described below are applicable to @t{read},
-@t{read-preserving-whitespace} or @t{read-from-string}.  Suitable client
-classes can be defined by using @t{parse-result-client} as a superclass
-and at least defining a method on the generic function
-@t{make-expression-result}.
+the generic functions described below are applicable to
+@funref{read,@prpackage{}},
+@funref{read-preserving-whitespace,@prpackage{}} or
+@funref{read-from-string,@prpackage{}}.  Suitable client classes can be
+defined by using @classref{parse-result-client,@prpackage{}} as a
+superclass and at least defining a method on the generic function
+@genref{make-expression-result,@prpackage{}}.
 
 When a client constructs parse results, some of the generic functions
 for customizing the behavior of the reader (@pxref{Reader behavior
@@ -1563,26 +1596,26 @@ protocol}, @pxref{Labeled objects and references}) return additional
 values:
 
 @multitable @columnfractions .25 .15 .3 .3
-@headitem Generic function                       @tab Situation    @tab Ordinary values                   @tab Extended values
+@headitem Generic function                             @tab Situation    @tab Ordinary values                   @tab Extended values
 
-@item @t{@readerpackage{}:call-as-top-level-read} @tab object       @tab @emph{object}                     @tab @emph{object}, @emph{parse result}, @emph{orphan results}
-@item @t{@readerpackage{}:read-common}            @tab object       @tab @emph{object}                     @tab @emph{object}, @emph{parse result}
-@item @t{@readerpackage{}:read-maybe-nothing}     @tab object       @tab @emph{object}, @emph{kind}        @tab @emph{object}, @emph{kind}, @emph{parse result}
+@item @genref{call-as-top-level-read,@readerpackage{}} @tab object       @tab @emph{object}                     @tab @emph{object}, @emph{parse result}, @emph{orphan results}
+@item @genref{read-common,@readerpackage{}}            @tab object       @tab @emph{object}                     @tab @emph{object}, @emph{parse result}
+@item @genref{read-maybe-nothing,@readerpackage{}}     @tab object       @tab @emph{object}, @emph{kind}        @tab @emph{object}, @emph{kind}, @emph{parse result}
 
-@item @t{@readerpackage{}:call-as-top-level-read} @tab end of input @tab @var{eof-value}                   @tab @var{eof-value}, @emph{orphan results}
-@item @t{@readerpackage{}:read-common}            @tab end of input @tab @var{eof-value}                   @tab @var{eof-value}
-@item @t{@readerpackage{}:read-maybe-nothing}     @tab end of input @tab @var{eof-value}, @t{:eof}         @tab @var{eof-value}, @t{:eof}
-@item @t{@readerpackage{}:labeled-object-state}   @tab @emph{any}   @tab @emph{state}, @emph{final object} @tab @emph{state}, @emph{final object}, @emph{parse result}, @emph{inner labeled object}
+@item @genref{call-as-top-level-read,@readerpackage{}} @tab end of input @tab @var{eof-value}                   @tab @var{eof-value}, @emph{orphan results}
+@item @genref{read-common,@readerpackage{}}            @tab end of input @tab @var{eof-value}                   @tab @var{eof-value}
+@item @genref{read-maybe-nothing,@readerpackage{}}     @tab end of input @tab @var{eof-value}, @t{:eof}         @tab @var{eof-value}, @t{:eof}
+@item @genref{labeled-object-state,@readerpackage{}}   @tab @emph{any}   @tab @emph{state}, @emph{final object} @tab @emph{state}, @emph{final object}, @emph{parse result}, @emph{inner labeled object}
 @end multitable
 
-Note how @t{@readerpackage{}:call-as-top-level-read} and
-@t{@readerpackage{}:read-common} return fewer values for the ``end of
-input'' situation.  This difference in return value count allows the
+Note how @genref{call-as-top-level-read,@readerpackage{}} and
+@genref{read-common,@readerpackage{}} return fewer values for the ``end
+of input'' situation.  This difference in return value count allows the
 caller to recognize the ``end of input'' situation even if
 @var{eof-value} is an object that could be read such as @t{nil}.  Using
 such an @var{eof-value} makes sense for clients which construct parse
-results since top-level @t{@prpackage{}:read} calls return
-these parse results so that there is no risk of confusing the chosen
+results since top-level @funref{read,@prpackage{}} calls return these
+parse results so that there is no risk of confusing the chosen
 @var{eof-value}, even if something like @t{nil}, with having read a
 similar object.
 
@@ -1596,9 +1629,11 @@ from the non-parse result version are highlighted with bold text.}
 
 @ref{fig:read-call-sequence-parse-result} shows typical function call
 patterns, including ordinary and additional return values, that arise
-when the functions @t{read}, @t{read-preserving-whitespace},
-@t{read-from-string} and @t{read-delimited-list} are called by client
-code.
+when the functions @funref{read,@prpackage{}},
+@funref{read-preserving-whitespace,@prpackage{}},
+@funref{read-from-string,@prpackage{}}
+@c and @funref{read-delimited-list,@prpackage{}}
+are called by client code.
 
 @deffuna {read,@prpackage{}} client @optional@
   (input-stream @t{*standard-input*})@
@@ -1621,14 +1656,14 @@ read object.
 @item
 The second return value, unless @var{eof-value} is returned, is a list
 of ``orphan'' results.  These results are return values of
-@t{make-skipped-input-result} and arise when skipping input at the
-toplevel such as comments which are not lexically contained in lists:
-@t{#|orphan|# (#|not orphan|#)}.
+@genref{make-skipped-input-result,@prpackage{}} and arise when skipping
+input at the toplevel such as comments which are not lexically contained
+in lists: @t{#|orphan|# (#|not orphan|#)}.
 
 @item
 The function does not accept a @var{recursive} parameter since it sets
-up a dynamic environment in which calls to @t{@readerpackage{}:read}
-behave suitably.
+up a dynamic environment in which calls to
+@funref{read,@readerpackage{}} behave suitably.
 @end itemize
 @end deffn
 
@@ -1639,11 +1674,12 @@ behave suitably.
 
 This function is similar to the standard @commonlisp{} function
 @speclinkl{f,read,cl:read-preserving-whitespace}.  The differences are
-the same as described above for @t{read} compared to @speclink{f,read}.
+the same as described above for @funref{read,@prpackage{}} compared to
+@speclink{f,read}.
 @end deffn
 
 @deffuna {read-from-string,@prpackage{}} client string@
-   @optional@
+  @optional@
   (eof-error-p @t{t})@
   (eof-value @t{nil})@
   @pkey@
@@ -1683,9 +1719,9 @@ object.  The value of the @var{result} parameter is the raw object read.
 The value of the @var{children} parameter is a list of already
 constructed parse result objects representing objects read by recursive
 @t{read} calls.  The value of the @var{source} parameter is a source
-range, as returned by @t{@basepackage{}:make-source-range} and
-@t{@basepackage{}:source-position} delimiting the range of characters
-from which @var{result} has been read.
+range, as returned by @genref{make-source-range,@basepackage{}} and
+@genref{source-position,@basepackage{}} delimiting the range of
+characters from which @var{result} has been read.
 
 This generic function does not have a default method since the purpose
 of the package is the construction of @emph{custom} parse results.
@@ -1695,21 +1731,22 @@ Thus, a client must define a method on this generic function.
 @defgena {make-skipped-input-result,@prpackage{}} client@
   stream reason children source
 
-This generic function is called after the reader skipped over a range
-of characters in @var{stream}.  It returns either @t{nil} if the
-skipped input should not be represented or a client-specific
-representation of the skipped input.  The value of the @var{children}
-parameter is a list of already constructed parse result objects which
-represent object read by recursive @t{read} calls (Such as the feature
-expression and the ignored expression in @t{#+(and (or) some-feature)
-skipped-expression}).  The value of the @var{source} parameter
-designates the skipped range using a source range representation
-obtained via @t{make-source-range} and @t{source-position}.
+This generic function is called after the reader skipped over a range of
+characters in @var{stream}.  It returns either @t{nil} if the skipped
+input should not be represented or a client-specific representation of
+the skipped input.  The value of the @var{children} parameter is a list
+of already constructed parse result objects which represent object read
+by recursive @t{read} calls (Such as the feature expression and the
+ignored expression in @t{#+(and (or) some-feature) skipped-expression}).
+The value of the @var{source} parameter designates the skipped range
+using a source range representation obtained via
+@genref{make-source-range,@basepackage{}} and
+@genref{source-position,@basepackage{}}.
 
-Reasons for skipping input include comments, the @t{#+} and
-@t{#-} reader macros and @t{*read-suppress*}.  The
-aforementioned reasons are reflected by the value of the
-@var{reason} parameter as follows:
+Reasons for skipping input include comments, the @t{#+} and @t{#-}
+reader macros and @t{*read-suppress*}.  The
+aforementioned reasons are reflected by the value of the @var{reason}
+parameter as follows:
 
 @multitable @columnfractions .5 .5
 @headitem Input                            @tab Value of the @var{reason} parameter
@@ -1753,8 +1790,8 @@ a subclass of @t{concrete-syntax-tree:cst}.
 
 @item
 The function does not accept a @var{recursive} parameter since it sets
-up a dynamic environment in which calls to @t{@readerpackage{}:read}
-behave suitably.
+up a dynamic environment in which calls to
+@funref{read,@readerpackage{}} behave suitably.
 @end itemize
 @end deffn
 
@@ -1763,8 +1800,9 @@ behave suitably.
   (eof-value @t{nil})
 
 This function is similar to the standard @commonlisp{} function
-@speclinkl{f,read,cl:read-preserving-whitespace}.  The differences are the same
-as described above for @t{read} compared to @speclink{f,read}.
+@speclinkl{f,read,cl:read-preserving-whitespace}.  The differences are
+the same as described above for @funref{read,@cstpackage{}} compared to
+@speclink{f,read}.
 @end deffn
 
 @deffuna {read-from-string,@cstpackage{}} string@
@@ -1778,5 +1816,6 @@ as described above for @t{read} compared to @speclink{f,read}.
 
 This function is similar to the standard @commonlisp{} function
 @speclink{f,read-from-string}.  The differences are the same as
-described above for @t{read} compared to @speclink{f,read}.
+described above for @funref{read,@cstpackage{}} compared to
+@speclink{f,read}.
 @end deffn

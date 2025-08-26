@@ -62,25 +62,40 @@ eclector
 @anchor{Variable \PACKAGE\|\NAME\}
 @defvar {@symbol{\NAME\,\PACKAGE\}}
 @end macro
+@macro varref{NAME,PACKAGE}
+@link{Variable \PACKAGE\|\NAME\,@t{\PACKAGE\:\NAME\}}
+@end macro
 
 @macro deffuna{NAME,PACKAGE}
 @anchor{Function \PACKAGE\|\NAME\}
 @deffn {Function} {@symbol{\NAME\,\PACKAGE\}}
+@end macro
+@macro funref{NAME,PACKAGE}
+@link{Function \PACKAGE\|\NAME\,@t{\PACKAGE\:\NAME\}}
 @end macro
 
 @macro defgena{NAME,PACKAGE}
 @anchor{Generic-Function \PACKAGE\|\NAME\}
 @deffn {Generic Function} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
+@macro genref{NAME,PACKAGE}
+@link{Generic-Function \PACKAGE\|\NAME\,@t{\PACKAGE\:\NAME\}}
+@end macro
 
 @macro defmaca{NAME,PACKAGE}
 @anchor{Macro \PACKAGE\|\NAME\}
 @deffn {Macro} {@symbol{\NAME\,\PACKAGE\}}
 @end macro
+@macro macref{NAME,PACKAGE}
+@link{Macro \PACKAGE\|\NAME\,@t{\PACKAGE\:\NAME\}}
+@end macro
 
 @macro defclassa{NAME,PACKAGE}
 @anchor{Class \PACKAGE\|\NAME\}
 @deftp {Class} {@symbol{\NAME\,\PACKAGE\}}
+@end macro
+@macro classref{NAME,PACKAGE}
+@link{Class \PACKAGE\|\NAME\,@t{\PACKAGE\:\NAME\}}
 @end macro
 
 @c Link to Common Lisp specification

@@ -152,7 +152,7 @@ of a compound object.
 
 The following example violates this principle since the reader macro
 function in @t{custom-macro-readtable} calls @speclink{f,first} on the
-object returned by @t{@readerpackage{}:read}:
+object returned by @funref{read,@readerpackage{}}:
 
 @lisp
 (defun custom-macro-readtable ()

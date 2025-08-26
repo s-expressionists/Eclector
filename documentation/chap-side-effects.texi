@@ -4,9 +4,9 @@
 @cindex side effects
 
 This chapter describes potential side effects of calling
-@t{@readerpackage{}:read},
-@t{@readerpackage{}:read-preserving-whitespace} or
-@t{@readerpackage{}:read-from-string} for different kinds of
+@funref{read,@readerpackage{}},
+@funref{read-preserving-whitespace,@readerpackage{}} or
+@funref{read-from-string,@readerpackage{}} for different kinds of
 clients.
 
 @menu
@@ -35,12 +35,12 @@ following assumptions:
 @itemize
 
 @item
-The stream object passed to @t{@readerpackage{}:read} does not cause
-additional side effects on its own.
+The stream object passed to @funref{read,@readerpackage{}} does not
+cause additional side effects on its own.
 
 @item
-The variable @t{@readerpackage{}:*client*} is bound to an object for
-which there are no custom applicable methods on generic functions
+The variable @varref{*client*,@basepackage{}} is bound to an object
+for which there are no custom applicable methods on generic functions
 belonging to protocols provided by @sysname{} that introduce additional
 side effects.
 
@@ -75,25 +75,25 @@ below are possible.  For notes regarding non-default clients,
 @subsection Symbols and packages (default client)
 
 The default method on the generic function
-@t{@readerpackage{}:interpret-symbol} may create and intern
+@genref{interpret-symbol,@readerpackage{}} may create and intern
 symbols, thereby modifying the package system.
 
 @node Read-time evaluation (default client)
 @subsection Read-time evaluation (default client)
 
 The default method on the generic function
-@t{@readerpackage{}:evaluate-expression} uses @speclink{f,eval} to
-evaluate arbitrary expressions, potentially causing side effects.
-With the default readtable, the generic function is only called by the
-macro function of the @t{#.} reader macro.
+@genref{evaluate-expression,@readerpackage{}} uses @speclink{f,eval} to
+evaluate arbitrary expressions, potentially causing side effects.  With
+the default readtable, the generic function is only called by the macro
+function of the @t{#.} reader macro.
 
 @node Standard reader macros (default client)
 @subsection Standard reader macros (default client)
 
 The default method on the generic function
-@t{@readerpackage{}:call-reader-macro} can cause side effects by
-calling macro functions that cause side effects.  The following
-standard reader macros potentially cause side-effects:
+@genref{call-reader-macro,@readerpackage{}} can cause side effects by
+calling macro functions that cause side effects.  The following standard
+reader macros potentially cause side-effects:
 
 @itemize
 @item
@@ -116,7 +116,7 @@ standard reader macros potentially cause side-effects:
 
 In addition to the potential side effects described in @ref{Symbols and
 packages (default client)}, strings passed as the third argument of
-@t{@readerpackage{}:interpret-token} are potentially destructively
+@genref{interpret-token,@readerpackage{}} are potentially destructively
 modified during conversion to the current readtable case.
 
 @node Read-time evaluation
@@ -129,10 +129,10 @@ client)} apply.
 @subsection Structure instance creation
 
 Clients defining methods on
-@t{@readerpackage{}:make-structure-instance} which implement the
+@genref{make-structure-instance,@readerpackage{}} which implement the
 standard behavior of calling the default constructor (if any) of the
-named structure should consider side effects caused by slot initforms
-of the structure.  The following example illustrates this problem:
+named structure should consider side effects caused by slot initforms of
+the structure.  The following example illustrates this problem:
 @lisp
   (defvar *counter* 0)
   (defstruct foo (bar (incf *counter*)))
@@ -145,12 +145,12 @@ of the structure.  The following example illustrates this problem:
 @node Circular structure
 @subsection Circular structure
 
-The @t{fixup} generic function potentially modifies its second
-argument destructively.  Clients that define methods on
-@t{@readerpackage{}:make-structure-instance} should be aware of
-this potential modification in cases like @t{#1=#S(foo :bar
-  #1#)}.  Similar considerations apply for other ways of
-constructing compound objects such as @t{#1=(t . #1#)}.
+The @genref{fixup,@readerpackage{}} generic function potentially
+modifies its second argument destructively.  Clients that define methods
+on @genref{make-structure-instance,@readerpackage{}} should be aware of
+this potential modification in cases like @t{#1=#S(foo :bar #1#)}.
+Similar considerations apply for other ways of constructing compound
+objects such as @t{#1=(t . #1#)}.
 
 @node Standard reader macros
 @subsection Standard reader macros
