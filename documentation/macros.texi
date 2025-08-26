@@ -7,6 +7,28 @@ Eclector
 Common Lisp
 @end macro
 
+@macro clpackage
+common-lisp
+@end macro
+@macro toppackage
+eclector
+@end macro
+@macro basepackage
+@toppackage{}.base
+@end macro
+@macro rtpackage
+@toppackage{}.readtable
+@end macro
+@macro readerpackage
+@toppackage{}.reader
+@end macro
+@macro prpackage
+@toppackage{}.parse-result
+@end macro
+@macro cstpackage
+@toppackage{}.concrete-syntax-tree
+@end macro
+
 @c Lambda list keywords
 
 @macro optional

@@ -17,15 +17,15 @@
 errors, continuing to read from the input stream and return a result
 that somewhat resembles what would have been returned in case the
 syntax had been valid.  To this end, a restart named
-@t{eclector.reader:recover} is established when recoverable
+@t{@readerpackage{}:recover} is established when recoverable
 errors are signaled.  Like the standard @commonlisp{} restart
 @t{cl:continue}, this restart can be invoked by a function of the
 same name:
 
-@deffuna {recover,eclector.reader} @optional condition
+@deffuna {recover,@readerpackage{}} @optional condition
 
 This function recovers from an error by invoking the most recently
-established applicable restart named @t{eclector.reader:recover}.  If no
+established applicable restart named @t{@readerpackage{}:recover}.  If no
 such restart is currently established, it returns @t{nil}.  If
 @var{condition} is non-@t{nil}, only restarts that are either explicitly
 associated with @var{condition}, or not associated with any condition
@@ -45,7 +45,7 @@ number @t{#b11111}.
 
 A syntax error and a corresponding recovery strategy are characterized
 by the type of the signaled condition and the report of the
-established @t{eclector.reader:recover} restart respectively.
+established @t{@readerpackage{}:recover} restart respectively.
 Attempting to list and describe all examples of both would provide
 little insight.  Instead, this section describes different classes of
 errors and corresponding recovery strategies in broad terms:
