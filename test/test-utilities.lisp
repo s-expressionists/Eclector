@@ -345,4 +345,3 @@
                                       list-maker)))
     (with-input-from-string (stream "#1=?#1#")
       (eclector.reader:read stream))))
-

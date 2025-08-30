@@ -3,8 +3,9 @@
 (def-suite* :eclector.reader.recover
   :in :eclector.reader)
 
-(defun read-with-context-and-client (stream)
-  (let ((eclector.reader::*client* (make-instance 'sharpsign-s-client)))
+(defun read-with-context-and-client (stream &key (client (make-instance
+                                                          'sharpsign-s-client)))
+  (let ((eclector.base:*client* client))
     (eclector.reader:read stream nil)))
 
 (test recover/smoke
@@ -245,17 +246,12 @@
                         eclector.reader:unterminated-list)
                                                             (1 "a")))))
 
-;;; Binding *READ-DEFAULT-FLOAT-FORMAT* to a non-standard value is
-;;; allowed if the implementation accepts the value. SBCL allows the
-;;; specific value RATIONAL. CCL doesn't seem to type-check the value
-;;; so we can get away with it. Other implementations could signal an
-;;; error.
-#+(or sbcl ccl)
 (test recover-from-invalid-float-format
   "Test recovering from invalid value of *READ-DEFAULT-FLOAT-FORMAT*."
-  (let ((*read-default-float-format* 'rational))
-    (mapc (alexandria:rcurry #'do-recover-test-case
-                             #'read-with-context-and-client)
+  (let ((client (make-instance 'invalid-float-format-client)))
+    (mapc (alexandria:rcurry
+           #'do-recover-test-case
+           (alexandria:rcurry #'read-with-context-and-client :client client))
           '(("1.0" (eclector.reader:invalid-default-float-format) 1.0f0)
             ("1e0" (eclector.reader:invalid-default-float-format) 1.0f0)))))
 

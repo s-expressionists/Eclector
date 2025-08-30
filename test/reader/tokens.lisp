@@ -185,9 +185,10 @@
       (flet ((do-it ()
                (with-input-from-string (stream token)
                  (loop :repeat (length token) :do (read-char stream))
-                 (let ((eclector.reader:*readtable* table))
+                 (let ((token (copy-seq token))
+                       (eclector.reader:*readtable* table))
                    (eclector.reader:interpret-token
-                    nil stream (copy-seq token) token-escapes)))))
+                    eclector.base:*client* stream token token-escapes)))))
         (error-case (token expected expected-position expected-length)
           (error (do-it))
           (t
@@ -393,15 +394,9 @@
             ("4444.4321"  ()                4  :upcase    4444.4321f0)
             ("4444.4444"  ()                4  :upcase    4444.4444f0)))))
 
-;;; Binding *READ-DEFAULT-FLOAT-FORMAT* to a non-standard value is
-;;; allowed if the implementation accepts the value. SBCL allows the
-;;; specific value RATIONAL. CCL doesn't seem to type-check the value
-;;; so we can get away with it. Other implementations could signal an
-;;; error.
-#+(or sbcl ccl)
 (test interpret-token.default/default-float-format
   "Test default float format handling in the default method on INTERPRET-TOKEN."
-  (let ((*read-default-float-format* 'rational))
+  (let ((eclector.base:*client* (make-instance 'invalid-float-format-client)))
     (mapc #'do-interpret-token-test-case
           '(("1.0" () 10 :upcase eclector.reader:invalid-default-float-format 3 0)
             ("1e0" () 10 :upcase eclector.reader:invalid-default-float-format 1 1)))))
