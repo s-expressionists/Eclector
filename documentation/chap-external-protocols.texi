@@ -670,7 +670,7 @@ unspecified value if @var{feature-expression} is well-formed and
 signals an error otherwise.
 
 The default method on this generic function accepts standard
-@commonlisp{} feature expression, i.e. expressions recursively
+@commonlisp{} feature expressions, i.e. expressions recursively
 composed of symbols, @t{:not}-expressions,
 @t{:and}-expressions and @t{:or}-expressions.
 @end deffn
@@ -681,7 +681,7 @@ composed of symbols, @t{:not}-expressions,
 This generic function is called by the default @t{#+} and
 @t{#-} reader macro functions to evaluate
 @var{feature-expression} which has been read from the input stream.
-The function returns either true or false if
+The function returns either @emph{true} or @emph{false} if
 @var{feature-expression} is well-formed and signals an error
 otherwise.
 
@@ -1410,6 +1410,7 @@ processing is applied to both ordinary objects and parse results.
 @var{labeled-object} is the labeled object marker which will be
 replaced by the computed value to finalize the circular object.
 
+@cindex parse result
 @var{current-value} is the current value of the ``place'' in the
 circular object.  The value of this parameter is the same as
 @var{labeled-object} when fixup processing is applied to an ordinary
@@ -1428,6 +1429,7 @@ replace @var{current-value}.
 The default method on this generic function simply returns
 @var{final-value}.
 
+@cindex concrete syntax tree
 A method specialized to @t{(client cst-client)} and @t{(current-value
 cst:cst)} returns a CST that represents @var{final-value}.  Depending on
 the client, the returned CST is either another occurrence of the CST
@@ -1667,6 +1669,8 @@ arbitrary parse result object created by the client, not generally the
 read object.
 
 @item
+
+@cindex orphan result
 The second return value, unless @var{eof-value} is returned, is a list
 of ``orphan'' results.  These results are return values of
 @genref{make-skipped-input-result,@prpackage{}} and arise when skipping
@@ -1713,6 +1717,8 @@ arbitrary parse result object created by the client, not generally the
 read object.
 
 @item
+
+@cindex orphan result
 The @emph{third} return value, unless @var{eof-value} is returned, is a
 list of ``orphan'' results (Described above).
 @end itemize
@@ -1784,8 +1790,7 @@ not represented as a parse result.
 @cindex concrete syntax tree
 
 In this section, symbols written without package marker are in the
-@t{@cstpackage{}} package (@pxref{Package for CST
-features}).
+@t{@cstpackage{}} package (@pxref{Package for CST features}).
 
 @deffuna {read,@cstpackage{}} @optional@
   (input-stream @t{*standard-input*})@
