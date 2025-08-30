@@ -45,8 +45,8 @@ belonging to protocols provided by @sysname{} that introduce additional
 side effects.
 
 @item
-The variable @t{@rtpackage{}:*readtable*} is bound to an object for
-which
+The aspect @link{aspect-readtable,@t{cl:*readtable*}} is bound to an
+object for which
 
 @itemize
 @item
