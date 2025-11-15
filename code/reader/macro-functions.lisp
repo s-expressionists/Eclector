@@ -1350,7 +1350,7 @@
                  (unread-char (%character condition) stream)
                  fallback-value))))
       (let ((feature-expression
-              (with-state-values (client '*package*       '#:keyword
+              (with-state-values (client '*package*       "KEYWORD"
                                          '*read-suppress* nil)
                 (with-quasiquotation-state (client context t t)
                   (read-expression
