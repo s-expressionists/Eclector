@@ -127,8 +127,10 @@
               (package-name* (desired-symbol-package condition))))
 
     (define-reporter ((condition symbol-is-not-external) stream)
-      (format stream "~@<Symbol named ~S is not external in the ~A package.~@:>"
+      (format stream "~@<Symbol named ~S is not external (but ~A) in the ~A ~
+                      package.~@:>"
               (desired-symbol-name condition)
+              (string-downcase (status condition))
               (package-name* (desired-symbol-package condition)))))
 
   (define-reporter ((condition invalid-constituent-character) stream)

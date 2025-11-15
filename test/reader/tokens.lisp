@@ -316,6 +316,8 @@
             ("::a"        ()                10 :upcase   eclector.reader:two-package-markers-must-not-be-first 0 2)
             ("keyword:b"  ()                10 :upcase   :b)
             ("keyword::b" ()                10 :upcase   :b)
+            ("cl:foo"     ()                10 :upcase   eclector.reader:symbol-does-not-exist 3 3)
+            ("cl-user:floor" ()             10 :upcase   eclector.reader:symbol-is-not-external 8 5)
             ;; decimal-integer
             ("1"          ()                10 :upcase      1)
             ("-1"         ()                10 :upcase     -1)

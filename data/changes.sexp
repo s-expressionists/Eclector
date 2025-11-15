@@ -6,7 +6,15 @@
     (:symbol "eclector.reader:call-with-current-package")
     "has" "been" "removed" "." "Clients" "should" "use"
     (:symbol "eclector.base:call-with-state-value") "with" "the"
-    (:symbol "cl:*package*") "aspect" ".")))
+    (:symbol "cl:*package*") "aspect" "."))
+  (:item
+   (:paragraph
+    "Eclector" "no" "longer" "processes" "inherited" "symbols" "like"
+    (:symbol "cl:floor") "in" "package" (:tt "COMMON-LISP-USER")  "as" "if"
+    "they" "were" "exported" "when" "spelled" "as" (:tt "cl-user:floor") "."
+    "Instead" "," "Eclector" "now" "signals" "an" "error" "of" "type"
+    (:symbol "eclector.reader:symbol-is-not-external") "for" "inputs" "like"
+    "the" "above" ".")))
 
  (:release "0.11" "2025-06-08"
   (:item

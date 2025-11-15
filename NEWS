@@ -4,6 +4,11 @@ Release 0.12 (not yet released)
   has been removed. Clients should use ECLECTOR.BASE:CALL-WITH-STATE-VALUE with
   the CL:*PACKAGE* aspect.
 
+* Eclector no longer processes inherited symbols like CL:FLOOR in package
+  COMMON-LISP-USER as if they were exported when spelled as cl-user:floor.
+  Instead, Eclector now signals an error of type
+  ECLECTOR.READER:SYMBOL-IS-NOT-EXTERNAL for inputs like the above.
+
 Release 0.11 (2025-06-08)
 
 * Major incompatible change

@@ -582,11 +582,11 @@
                 (format-recovery-report stream 'intern package symbol-name))
       (intern symbol-name package))))
 
-(defun symbol-is-not-external (input-stream package symbol-name symbol)
+(defun symbol-is-not-external (input-stream package symbol-name symbol status)
   (restart-case
       (%reader-error input-stream 'symbol-is-not-external
                      :position-offset (- (length symbol-name))
-                     :package package :symbol-name symbol-name)
+                     :package package :symbol-name symbol-name :status status)
     (recover ()
       :report (lambda (stream)
                 (format-recovery-report stream 'use-anyway
@@ -635,9 +635,9 @@
                         (cond ((null status)
                                (symbol-does-not-exist
                                 input-stream package symbol-name))
-                              ((eq status :internal)
+                              ((not (eq status :external))
                                (symbol-is-not-external
-                                input-stream package symbol-name symbol))
+                                input-stream package symbol-name symbol status))
                               (t
                                symbol)))))
    done

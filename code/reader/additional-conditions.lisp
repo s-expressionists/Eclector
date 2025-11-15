@@ -37,7 +37,7 @@
   ())
 
 (define-condition symbol-is-not-external (symbol-access-error)
-  ())
+  ((%status :initarg :status :reader status)))
 
 (define-condition symbol-syntax-error (stream-position-reader-error)
   ((%token :initarg :token :reader token)))
