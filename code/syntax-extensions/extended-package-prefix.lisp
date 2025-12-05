@@ -41,5 +41,5 @@
          client
          (lambda ()
            (eclector.reader:read input-stream t nil t))
-         '*package* package-name))
+         '*package* (eclector.reader:find-package client package-name)))
       (call-next-method)))
