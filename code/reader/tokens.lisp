@@ -613,8 +613,8 @@
    package
      (setf package (case package-indicator
                      (:current (state-value client '*package*))
-                     (:keyword (find-package "KEYWORD"))
-                     (t        (or (find-package package-indicator)
+                     (:keyword (find-package client "KEYWORD"))
+                     (t        (or (find-package client package-indicator)
                                    (multiple-value-bind (value kind)
                                        (package-does-not-exist
                                         input-stream
