@@ -9,7 +9,7 @@
 
 (cl:in-package #:eclector.reader)
 
-(defparameter *package* (find-package '#:common-lisp-user))
+(defparameter *package* (cl:find-package '#:common-lisp-user))
 
 (defparameter *read-eval* t)
 

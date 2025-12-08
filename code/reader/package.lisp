@@ -8,6 +8,7 @@
   ;; COMMON-LISP.
   (:shadow
    #:peek-char
+   #:find-package
    #:read
    #:read-preserving-whitespace
    #:read-from-string
@@ -98,6 +99,7 @@
 
    #:call-reader-macro
    #:find-character
+   #:find-package
    #:make-structure-instance
 
    #:evaluate-expression
