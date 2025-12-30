@@ -102,7 +102,7 @@
     "." "For" "example" "," "before" "this" "change" "," "a"
     (:symbol "eclector.parse-result:read") "call" "which" "encountered" "the"
     "expression" (:tt "#+no-such-feature foo bar") "potentially" "constructed"
-    "parse" "results" "for" "all" "(" "recursive" ")" (:symbol "read") "calls"
+    "parse" "results" "for" "all" "(" "recursive" ")" (:tt "read") "calls"
     "," "that" "is" "for" "the" "whole" "expression" "," "for"
     (:tt "no-such-feature") "," "for" (:tt "foo") "and" "for" (:tt "bar") ","
     "but" "the" "parse" "results" "for" (:tt "no-such-feature") "and"
@@ -143,7 +143,7 @@ expression result    bar")
     "The" "above" "code" "pushes" "a" "symbol" "that" "is" "interned" "in" "a"
     "package" "under" "the" "control" "of" "the" "respective" "client" "(" "as"
     "opposed" "to" "the" (:tt "KEYWORD") "package" ")" "onto"
-    (:symbol "*features*") "before" "the" "second" "form" "is" "read" "and"
+    (:symbol "cl:*features*") "before" "the" "second" "form" "is" "read" "and"
     "uses" "that" "feature" "to" "select" "either" "the" "version" "with" "or"
     "the" "version" "without" "the" (:tt "children") "parameter" "of" "the"
     "method" "definition" "." "See" "Maintaining" "Portable" "Lisp" "Programs"
@@ -511,9 +511,9 @@ expression result    bar")
    (:paragraph
     "When" "Eclector" "is" "used" "to" "produce" "parse" "results" "," "it"
     "no" "longer" "confuses" "end-of-input" "with" "having" "read"
-    (:symbol "nil") "when" (:tt "nil") "is" "used" "as" "the"
-    (:tt "eof-value") "(" (:tt "nil") "makes" "sense" "as" "an"
-    (:tt "eof-value") "in" "that" "case" "since" (:tt "nil") "is"
+    (:symbol "cl:nil") "when" (:symbol "cl:nil") "is" "used" "as" "the"
+    (:tt "eof-value") "(" (:symbol "cl:nil") "makes" "sense" "as" "an"
+    (:tt "eof-value") "in" "that" "case" "since" (:symbol "cl:nil") "is"
     "generally" "not" "a" "possible" "parse" "result" ")" "."))
   (:item
    (:paragraph
@@ -600,7 +600,7 @@ expression result    bar")
    (:paragraph
     "The" "default" "error" "recovery" "strategy" "for" "invalid" "symbols"
     "now" "constructs" "an" "uninterned" "symbol" "of" "the" "given" "name"
-    "instead" "of" "using" (:symbol "nil") "."))
+    "instead" "of" "using" (:symbol "cl:nil") "."))
   (:item
    (:paragraph
     "The" "\"consing dot\"" "is" "no" "longer" "accepted" "in"
@@ -651,8 +651,8 @@ expression result    bar")
     (:symbol "eclector.reader:call-as-top-level-read") "give" "clients"
     "additional" "entry" "points" "to" "the" "reader" "as" "well" "as"
     "customization" "possibilities" "." "With" "these" "functions" "," "the"
-    "chain" "of" "functions" "calls" "for" "a" (:symbol "read") "call"
-    "looks" "like" "this:")
+    "chain" "of" "functions" "calls" "for" "a" (:symbol "eclector.reader:read")
+    "call" "looks" "like" "this:")
    (:code nil "eclector.reader:read
   eclector.reader:call-as-top-level-read
     eclector.reader:read-common
@@ -671,7 +671,7 @@ expression result    bar")
   (:item
    (:paragraph
     "The" "function" (:symbol "eclector.reader::read-rational") "now"
-    "better" "respects" "the" "value" "of" (:symbol "*read-suppress*") "."))
+    "better" "respects" "the" "value" "of" (:symbol "cl:*read-suppress*") "."))
   (:item
    (:paragraph
     "Fix" "return" "value" "of"
@@ -814,7 +814,7 @@ expression result    bar")
    (:paragraph
     "The" "default" "methods" "on" "the" "generic" "function"
     (:symbol "eclector.reader:fixup") "now" "works" "correctly" "for"
-    (:symbol "standard-object") "instances" "with" "unbound" "slots" "."))
+    (:symbol "cl:standard-object") "instances" "with" "unbound" "slots" "."))
   (:item
    (:paragraph
     "The" "reader" "macro" "function"
