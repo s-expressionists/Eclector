@@ -70,8 +70,8 @@
 
 (defmacro unquote (argument)
   (error 'unquote-not-inside-backquote-during-macroexpansion
-         :splicing-p nil :argument argument))
+         :splicingp nil :argument argument))
 
 (defmacro unquote-splicing (argument)
   (error 'unquote-not-inside-backquote-during-macroexpansion
-         :splicing-p t :argument argument))
+         :splicingp t :argument argument))

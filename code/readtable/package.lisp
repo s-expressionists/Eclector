@@ -18,14 +18,16 @@
   (:export
    . #1#)
 
+  ;; Conditions
+  (:export
+   #:unterminated-dispatch-macro
+   #:character-must-be-a-dispatching-character
+   #:sub-character-must-not-be-a-decimal-digit
+   #:unknown-macro-sub-character)
+
   ;; Other exported symbols
   (:export
    #:copy-readtable-into
-
-   #:unterminated-dispatch-macro
-   #:sub-char-must-not-be-a-decimal-digit
-   #:char-must-be-a-dispatching-character
-   #:unknown-macro-sub-character
 
    #:syntax-type
    #:syntax-from-char)) ; SETF

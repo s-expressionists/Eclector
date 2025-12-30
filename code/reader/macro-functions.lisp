@@ -227,10 +227,10 @@
          (unquote-forbidden (cdr quasiquotation-state))
          (depth (state-value client '*quasiquotation-depth*))
          (char2 (read-char stream nil nil t))
-         (splicing-p (case char2
-                       ((#\@ #\.) t)
-                       ((nil) nil) ; end-of-input, but we may recover
-                       (t (unread-char char2 stream)))))
+         (splicingp (case char2
+                      ((#\@ #\.) t)
+                      ((nil) nil) ; end-of-input, but we may recover
+                      (t (unread-char char2 stream)))))
     (flet ((read-material ()
              (handler-case
                  (read stream t nil t)
@@ -238,33 +238,36 @@
                  (%recoverable-reader-error
                   stream 'end-of-input-after-unquote
                   :stream-position (stream-position condition)
-                  :splicing-p splicing-p :report 'inject-nil)
+                  :splicingp       splicingp
+                  :report          'inject-nil)
                  nil)
                (end-of-list (condition)
                  (%recoverable-reader-error
                   stream 'object-must-follow-unquote
                   :position-offset -1
-                  :splicing-p splicing-p :report 'inject-nil)
+                  :splicingp       splicingp
+                  :report          'inject-nil)
                  (unread-char (%character condition) stream)
                  nil))))
       (unless (plusp depth)
         (%recoverable-reader-error
          stream 'unquote-not-inside-backquote
-         :position-offset (if splicing-p -2 -1)
-         :splicing-p splicing-p :report 'ignore-unquote)
+         :position-offset (if splicingp -2 -1)
+         :splicingp       splicingp
+         :report          'ignore-unquote)
         (return-from comma (read-material)))
       (when (and (not (null unquote-forbidden))
                  (not (state-value client '*read-suppress*)))
         (%recoverable-reader-error
          stream 'unquote-in-invalid-context
-         :position-offset (if splicing-p -2 -1)
-         :splicing-p splicing-p
-         :context unquote-forbidden
-         :report 'ignore-unquote)
+         :position-offset (if splicingp -2 -1)
+         :splicingp       splicingp
+         :context         unquote-forbidden
+         :report          'ignore-unquote)
         (return-from comma (read-material)))
       (let ((form (with-state-values (client '*quasiquotation-depth* (1- depth))
                     (read-material))))
-        (if splicing-p
+        (if splicingp
             (wrap-in-unquote-splicing client form)
             (wrap-in-unquote client form))))))
 
@@ -438,8 +441,9 @@
                                   (%recoverable-reader-error
                                    stream 'no-elements-found
                                    :position-offset -1
-                                   :array-type 'vector :expected-number parameter
-                                   :report 'use-empty-vector)
+                                   :array-type      'vector
+                                   :expected-count  parameter
+                                   :report          'use-empty-vector)
                                   (setf result (make-array 0)
                                         index parameter))
                                  ((> index parameter)
@@ -447,10 +451,10 @@
                                    stream 'too-many-elements
                                    :stream-position excess-position ; inaccurate
                                    :position-offset -1
-                                   :array-type 'vector
-                                   :expected-number parameter
-                                   :number-found index
-                                   :report 'ignore-excess-elements)))
+                                   :array-type      'vector
+                                   :expected-count  parameter
+                                   :found-count     index
+                                   :report          'ignore-excess-elements)))
                            (return
                              (if (< index parameter)
                                  (fill result (aref result (1- index))
@@ -591,7 +595,7 @@
              (%recoverable-reader-error
               stream 'digit-expected
               :position-offset -1
-              :character-found char :base base
+              :found-character char :base base
               :report 'replace-invalid-digit)
              (unless (eq type :constituent)
                (unread-char char stream))
@@ -736,7 +740,7 @@
                       (%recoverable-reader-error
                        stream 'digit-expected
                        :position-offset -1
-                       :character-found char :base 2.
+                       :found-character char :base 2.
                        :report 'replace-invalid-digit)
                       0)))))
       (cond (read-suppress
@@ -758,9 +762,9 @@
                    finally (cond ((and (zerop index) (plusp parameter))
                                   (%recoverable-reader-error
                                    stream 'no-elements-found
-                                   :array-type 'bit-vector
-                                   :expected-number parameter
-                                   :report 'use-empty-vector)
+                                   :array-type     'bit-vector
+                                   :expected-count parameter
+                                   :report         'use-empty-vector)
                                   (setf result (make-array 0 :element-type 'bit)
                                         index parameter))
                                  ((> index parameter)
@@ -768,11 +772,11 @@
                                     (%recoverable-reader-error
                                      stream 'too-many-elements
                                      :position-offset (- excess-count)
-                                     :length excess-count
-                                     :array-type 'bit-vector
-                                     :expected-number parameter
-                                     :number-found index
-                                     :report 'ignore-excess-elements))))
+                                     :length          excess-count
+                                     :array-type      'bit-vector
+                                     :expected-count  parameter
+                                     :found-count     index
+                                     :report          'ignore-excess-elements))))
                            (return
                              (if (< index parameter)
                                  (fill result (sbit result (1- index))
@@ -1485,5 +1489,5 @@
   (declare (ignore parameter))
   (%recoverable-reader-error
    stream 'sharpsign-invalid
-   :position-offset -1 :character-found char :report 'inject-nil)
+   :position-offset -1 :found-character char :report 'inject-nil)
   nil)

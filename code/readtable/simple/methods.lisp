@@ -21,8 +21,9 @@
           (end-of-file (condition)
             (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unterminated-dispatch-macro
-             :stream-position (eclector.base:stream-position condition)
-             :disp-char disp-char :report 'ignore-partial-dispatch-macro)
+             :stream-position    (eclector.base:stream-position condition)
+             :dispatch-character disp-char
+             :report             'ignore-partial-dispatch-macro)
             (return-from dispatcher)))
       (let ((macro-function
               (eclector.readtable:get-dispatch-macro-character
@@ -52,9 +53,10 @@
         (if (null macro-function)
             (eclector.base:%recoverable-reader-error
              stream 'eclector.readtable:unknown-macro-sub-character
-             :position-offset -1
-             :disp-char disp-char :sub-char sub-char
-             :report 'ignore-partial-macro)
+             :position-offset    -1
+             :dispatch-character disp-char
+             :sub-characater     sub-char
+             :report             'ignore-partial-macro)
             (funcall macro-function stream sub-char parameter))))))
 
 (defmethod eclector.readtable:make-dispatch-macro-character
@@ -92,21 +94,21 @@
   (setf sub-char (char-upcase sub-char))
   (let ((subtable (gethash disp-char (dispatch-macro-characters readtable))))
     (when (null subtable)
-      (error 'eclector.readtable:char-must-be-a-dispatching-character
-             :disp-char disp-char))
+      (error 'eclector.readtable:character-must-be-a-dispatching-character
+             :dispatch-character disp-char))
     (nth-value 0 (gethash sub-char subtable))))
 
 (defmethod eclector.readtable:set-dispatch-macro-character
     ((readtable readtable) disp-char sub-char function)
   (when (digit-char-p sub-char)
-    (error 'eclector.readtable:sub-char-must-not-be-a-decimal-digit
-           :disp-char disp-char
-           :sub-char sub-char))
+    (error 'eclector.readtable:sub-character-must-not-be-a-decimal-digit
+           :dispatch-character disp-char
+           :sub-characater     sub-char))
   (setf sub-char (char-upcase sub-char))
   (let ((subtable (gethash disp-char (dispatch-macro-characters readtable))))
     (when (null subtable)
-      (error 'eclector.readtable:char-must-be-a-dispatching-character
-             :disp-char disp-char))
+      (error 'eclector.readtable:character-must-be-a-dispatching-character
+             :dispatch-character disp-char))
     (setf (gethash sub-char subtable) function)))
 
 (defmethod eclector.readtable:syntax-type ((readtable readtable) char)

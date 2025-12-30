@@ -181,7 +181,7 @@
   (define-reporter ((condition sharpsign-invalid) stream)
     (format stream "~@<The ~/eclector.base::describe-character-english/ is not ~
                     a valid sub-character for the # dispatch macro.~@:>"
-            (character-found condition)))
+            (found-character condition)))
 
   (define-reporter ((condition numeric-parameter-supplied-but-ignored) stream)
     (format stream "~@<Dispatch reader macro ~A was supplied with a ~
@@ -236,21 +236,21 @@
 
   (define-reporter ((condition unquote-not-inside-backquote) stream)
     (format stream "~@<~:[Unquote~;Splicing unquote~] not inside backquote.~@:>"
-            (splicing-p condition)))
+            (splicingp condition)))
 
   (define-reporter ((condition unquote-in-invalid-context) stream)
     (format stream "~@<~:[Unquote~;Splicing unquote~] is illegal in ~A.~@:>"
-            (splicing-p condition)
+            (splicingp condition)
             (context-name (context condition) language)))
 
   (define-reporter ((condition end-of-input-after-unquote) stream)
     (format stream "~@<While reading ~:[~;splicing ~]unquote, expected an ~
                     object when input ended.~@:>"
-            (splicing-p condition)))
+            (splicingp condition)))
 
   (define-reporter ((condition object-must-follow-unquote) stream)
     (format stream "~@<An object must follow a~:[~; splicing~] unquote.~@:>"
-            (splicing-p condition)))
+            (splicingp condition)))
 
   (define-reporter ((condition unquote-splicing-in-dotted-list) stream)
     (format stream "~@<Splicing unquote at end of list (like a . ,@b).~@:>"))
@@ -262,7 +262,7 @@
       ((condition unquote-not-inside-backquote-during-macroexpansion) stream)
     (let ((argument (argument condition)))
       (multiple-value-bind (operator description reader-macro)
-          (if (splicing-p condition)
+          (if (splicingp condition)
               (values 'unquote-splicing "A splicing unquote" '(",@" ",."))
               (values 'unquote          "An unquote"         '(",")))
         (format stream "~@<~A expression (indicated by a call of the ~S ~
@@ -373,7 +373,7 @@
   (define-reporter ((condition digit-expected) stream)
     (format stream "~@<The ~/eclector.base::describe-character-english/ is ~
                     not a digit in base ~D.~@:>"
-            (character-found condition) (base condition)))
+            (found-character condition) (base condition)))
 
   (define-reporter ((condition zero-denominator) stream)
     (format stream "~@<The denominator of a rational number literal is 0.~@:>"))
@@ -429,14 +429,14 @@
   (define-reporter ((condition too-many-elements) stream)
     (format stream "~@<~A was specified to have length ~D, but ~D ~
                     element~:P ~:*~[were~;was~:;were~] found.~@:>"
-            (array-type condition)
-            (expected-number condition)
-            (number-found condition)))
+            (array-type     condition)
+            (expected-count condition)
+            (found-count    condition)))
 
   (define-reporter ((condition no-elements-found) stream)
     (format stream "~@<~A was specified to have length ~D, but no ~
                     elements were found.~@:>"
-            (array-type condition) (expected-number condition)))
+            (array-type condition) (expected-count condition)))
 
   (define-reporter ((condition incorrect-initialization-length) stream)
     (format stream "~@<~A was specified to have length ~D along the ~:R ~

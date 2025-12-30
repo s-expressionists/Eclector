@@ -5,7 +5,8 @@
 (define-condition state-value-type-error (acclimation:condition
                                           reader-error
                                           type-error)
-  ((%aspect :initarg :aspect :reader aspect)))
+  ((%aspect :initarg :aspect
+            :reader  aspect)))
 
 ;;; Type error
 
@@ -17,7 +18,8 @@
 
 (define-condition unterminated-single-escape (end-of-file
                                               incomplete-construct)
-  ((%escape-char :initarg :escape-char :reader escape-char)))
+  ((%escape-char :initarg :escape-char
+                 :reader  escape-char)))
 
 (define-condition unterminated-multiple-escape (missing-delimiter)
   ())
@@ -27,20 +29,25 @@
 ;;; See HyperSpec section 2.3.5 (Valid Patterns for Tokens).
 
 (define-condition package-does-not-exist (stream-position-reader-error)
-  ((%package-name :initarg :package-name :reader desired-package-name)))
+  ((%package-name :initarg :package-name
+                  :reader  desired-package-name)))
 
 (define-condition symbol-access-error (stream-position-reader-error)
-  ((%symbol-name :initarg :symbol-name :reader desired-symbol-name)
-   (%package :initarg :package :reader desired-symbol-package)))
+  ((%symbol-name :initarg :symbol-name
+                 :reader  desired-symbol-name)
+   (%package     :initarg :package
+                 :reader  desired-symbol-package)))
 
 (define-condition symbol-does-not-exist (symbol-access-error)
   ())
 
 (define-condition symbol-is-not-external (symbol-access-error)
-  ((%status :initarg :status :reader status)))
+  ((%status :initarg :status
+            :reader  status)))
 
 (define-condition symbol-syntax-error (stream-position-reader-error)
-  ((%token :initarg :token :reader token)))
+  ((%token :initarg :token
+           :reader  token)))
 
 (define-condition invalid-constituent-character (symbol-syntax-error)
   ())
@@ -74,11 +81,17 @@
 ;;; General reader macro conditions
 
 (define-condition sharpsign-invalid (stream-position-reader-error)
-  ((%character-found :initarg :character-found :reader character-found)))
+  ((%found-character :initarg :found-character
+                     :reader  found-character)))
 
-(define-condition numeric-parameter-supplied-but-ignored (stream-position-reader-error)
-  ((%parameter :initarg :parameter :reader parameter)
-   (%macro-name :initarg :macro-name :reader macro-name)))
+(define-condition reader-macro-parameter-error (stream-position-reader-error)
+   ((%macro-name :initarg :macro-name
+                 :reader  macro-name)))
+
+(define-condition numeric-parameter-supplied-but-ignored
+    (reader-macro-parameter-error)
+  ((%parameter :initarg :parameter
+               :reader  parameter)))
 
 (defun numeric-parameter-ignored (stream macro-name parameter suppress)
   (unless suppress
@@ -88,8 +101,9 @@
        :position-offset (- (1+ length)) :length length
        :parameter parameter :macro-name macro-name :report 'ignore-parameter))))
 
-(define-condition numeric-parameter-not-supplied-but-required (stream-position-reader-error)
-  ((%macro-name :initarg :macro-name :reader macro-name)))
+(define-condition numeric-parameter-not-supplied-but-required
+    (reader-macro-parameter-error)
+  ())
 
 (defun numeric-parameter-not-supplied (stream macro-name suppress)
   (unless suppress
@@ -122,7 +136,8 @@
   ())
 
 (define-condition backquote-context-error (backquote-error)
-  ((%context :initarg :context :reader context)))
+  ((%context :initarg :context
+             :reader  context)))
 
 (define-condition backquote-in-invalid-context (backquote-context-error)
   ())
@@ -137,7 +152,8 @@
   ())
 
 (define-condition unquote-condition ()
-  ((%splicing-p :initarg :splicing-p :reader splicing-p)))
+  ((%splicingp :initarg :splicingp
+               :reader  splicingp)))
 
 (define-condition unquote-error (backquote-error unquote-condition)
   ())
@@ -164,17 +180,18 @@
 (define-condition unquote-macroexpansion-error (acclimation:condition
                                                 unquote-condition
                                                 error)
-  ((%argument :initarg :argument :reader argument)))
+  ((%argument :initarg :argument
+              :reader  argument)))
 
 (define-condition unquote-splicing-in-dotted-list (unquote-macroexpansion-error)
   ()
   (:default-initargs
-   :splicing-p t))
+   :splicingp t))
 
 (define-condition unquote-splicing-at-top (unquote-macroexpansion-error)
   ()
   (:default-initargs
-   :splicing-p t))
+   :splicingp t))
 
 ;;; Not intended for use by clients for now.  A similar condition type
 ;;; will be provided by a dedicated module for quasiquote macros and a
@@ -205,11 +222,11 @@
   ())
 
 (define-condition invalid-context-for-right-parenthesis (stream-position-reader-error)
-  ((%expected-character :initarg :expected-character
-                        :reader expected-character
+  ((%expected-character :initarg  :expected-character
+                        :reader   expected-character
                         :initform nil)
-   (%found-character :initarg :found-character
-                     :reader found-character)))
+   (%found-character    :initarg  :found-character
+                        :reader   found-character)))
 
 ;;; Conditions related to SHARPSIGN-DOT
 
@@ -233,8 +250,10 @@
   ())
 
 (define-condition read-time-evaluation-error (stream-position-reader-error)
-  ((%expression :initarg :expression :reader expression)
-   (%original-condition :initarg :original-condition :reader original-condition)))
+  ((%expression         :initarg :expression
+                        :reader  expression)
+   (%original-condition :initarg :original-condition
+                        :reader  original-condition)))
 
 ;;; Conditions related to characters
 
@@ -251,12 +270,14 @@
   ())
 
 (define-condition unknown-character-name (stream-position-reader-error)
-  ((%name :initarg :name :reader name)))
+  ((%name :initarg :name
+          :reader  name)))
 
 ;;; Conditions related to rational numbers
 
 (define-condition digit-condition (condition)
-  ((%base :initarg :base :reader base)))
+  ((%base :initarg :base
+          :reader  base)))
 
 (define-condition end-of-input-before-digit (end-of-file
                                              incomplete-construct
@@ -265,17 +286,21 @@
 
 (define-condition digit-expected (stream-position-reader-error
                                   digit-condition)
-  ((%character-found :initarg :character-found :reader character-found)))
+  ((%found-character :initarg :found-character
+                     :reader  found-character)))
 
 (define-condition zero-denominator (stream-position-reader-error)
   ())
 
 (define-condition invalid-radix (stream-position-reader-error)
-  ((%radix :initarg :radix :reader radix)))
+  ((%radix :initarg :radix
+           :reader  radix)))
 
 (define-condition invalid-default-float-format (stream-position-reader-error)
-  ((%exponent-marker :initarg :exponent-marker :reader exponent-marker)
-   (%float-format :initarg :float-format :reader float-format)))
+  ((%exponent-marker :initarg :exponent-marker
+                     :reader  exponent-marker)
+   (%float-format    :initarg :float-format
+                     :reader  float-format)))
 
 ;;; Conditions related to block comments
 
@@ -295,19 +320,26 @@
   ())
 
 (define-condition array-initialization-error (stream-position-reader-error)
-  ((%array-type :initarg :array-type :reader array-type)))
+  ((%array-type :initarg :array-type
+                :reader  array-type)))
 
 (define-condition too-many-elements (array-initialization-error)
-  ((%expected-number :initarg :expected-number :reader expected-number)
-   (%number-found :initarg :number-found :reader number-found)))
+  ((%expected-count :initarg :expected-count
+                    :reader  expected-count)
+   (%found-count    :initarg :found-count
+                    :reader  found-count)))
 
 (define-condition no-elements-found (array-initialization-error)
-  ((%expected-number :initarg :expected-number :reader expected-number)))
+  ((%expected-count :initarg :expected-count
+                    :reader  expected-count)))
 
 (define-condition incorrect-initialization-length (array-initialization-error)
-  ((%axis :initarg :axis :reader axis)
-   (%expected-length :initarg :expected-length :reader expected-length)
-   (%datum :initarg :datum :reader datum)))
+  ((%axis            :initarg :axis
+                     :reader  axis)
+   (%expected-length :initarg :expected-length
+                     :reader  expected-length)
+   (%datum           :initarg :datum
+                     :reader  datum)))
 
 ;;; Sharpsign C conditions
 
@@ -322,7 +354,8 @@
   ())
 
 (define-condition complex-part-condition ()
-  ((%which :initarg :which :reader which)))
+  ((%which :initarg :which
+           :reader  which)))
 
 (define-condition end-of-input-before-complex-part (end-of-file
                                                     incomplete-construct
@@ -370,7 +403,7 @@
 
 (define-condition slot-value-condition (condition)
   ((%slot-name :initarg :slot-name
-               :reader slot-name)))
+               :reader  slot-name)))
 
 (define-condition end-of-input-before-slot-value (slot-value-condition
                                                   end-of-file
@@ -395,11 +428,12 @@
 
 ;;; Conditions related to feature expressions
 ;;;
-;;; Can be evaluated without a stream context. Therefore each
+;;; Can be evaluated without a stream context.  Therefore each
 ;;; condition has a stream- and a non-stream-variant.
 
 (define-condition reader-conditional-condition (condition)
-  ((%context :initarg :context :reader context)))
+  ((%context :initarg :context
+             :reader  context)))
 
 (define-condition end-of-input-after-sharpsign-plus-minus
     (reader-conditional-condition
@@ -420,7 +454,8 @@
   ())
 
 (define-condition single-feature-expected (acclimation:condition error)
-  ((%features :initarg :features :reader features)))
+  ((%features :initarg :features
+              :reader  features)))
 
 (define-condition single-feature-expected/reader
     (single-feature-expected stream-position-reader-error)
@@ -447,7 +482,8 @@
   ())
 
 (define-condition reference-error (stream-position-reader-error)
-  ((%label :initarg :label :reader label)))
+  ((%label :initarg :label
+           :reader  label)))
 
 (define-condition sharpsign-equals-label-defined-more-than-once (reference-error)
   ())

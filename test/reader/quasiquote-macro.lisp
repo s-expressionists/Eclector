@@ -48,7 +48,7 @@ cases the random test cannot."
                     but got ~S~@:>"
                    form expected-condition-type condition)
                (is (eq expected-splicing-p
-                       (eclector.reader::splicing-p condition)))
+                       (eclector.reader::splicingp condition)))
                ;; Make sure CONDITION prints properly.
                (is (not (string= "" (princ-to-string condition)))
                    "~@<When printing the signaled condition ~S expected a ~
