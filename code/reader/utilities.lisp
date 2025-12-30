@@ -22,8 +22,8 @@
                '((not base-string))))
          ;; Try to figure out whether adjusting a simple array makes it
          ;; non-simple.
-         ,(if (opaque-identity ; avoid code deletion note
-               (adjustable-array-p
+         ,(if (adjustable-array-p
+               (opaque-identity ; avoid code deletion note
                 (adjust-array (make-array 1 :element-type 'character) 2)))
               '(array character 1)
               '(simple-array character 1)))

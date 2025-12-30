@@ -56,7 +56,13 @@
    #:*readtable*)
 
   (:import-from #:eclector.readtable
+   #:dispatch-macro-character-error
+   #:dispatch-character ; reader
    #:unterminated-dispatch-macro
+   #:character-must-be-a-dispatching-character
+   #:sub-character-condition
+   #:sub-character ; reader
+   #:sub-character-must-not-be-a-decimal-digit
    #:unknown-macro-sub-character)
 
   (:export
@@ -142,19 +148,27 @@
    #:incomplete-construct
 
    #:missing-delimiter
-   #:delimiter
+   #:delimiter ; reader
 
    #:state-value-type-error
-   #:aspect
+   #:aspect ; reader
 
    #:read-object-type-error
 
    #:unterminated-single-escape
+   #:escape-char ; reader
    #:unterminated-multiple-escape
 
    #:package-does-not-exist
+   #:desired-package-name ; reader
+   #:symbol-access-error
+   #:desired-symbol-name ; reader
+   #:desired-symbol-package ;reader
    #:symbol-does-not-exist
    #:symbol-is-not-external
+   #:status ; reader
+   #:symbol-syntax-error
+   #:token ; reader
 
    #:invalid-constituent-character
    #:unterminated-single-escape-in-symbol
@@ -168,12 +182,21 @@
 
   ;; Conditions related to reader macros.
   (:export
-   #:sharpsign-invalid
-
+   #:dispatch-macro-character-error
+   #:dispatch-character ; reader
    #:unterminated-dispatch-macro
+   #:character-must-be-a-dispatching-character
+   #:sub-character-condition
+   #:sub-character ; reader
+   #:sub-character-must-not-be-a-decimal-digit
    #:unknown-macro-sub-character
 
+   #:sharpsign-invalid
+
+   #:reader-macro-parameter-error
+   #:macro-name ; reader
    #:numeric-parameter-supplied-but-ignored
+   #:parameter ; reader
    #:numeric-parameter-not-supplied-but-required
 
    #:end-of-input-after-quote
@@ -187,12 +210,16 @@
    #:backquote-in-invalid-context
    #:object-must-follow-backquote
    #:end-of-input-after-backquote
+   #:unquote-condition
+   #:splicingp ; reader
    #:unquote-error
    #:invalid-context-for-unquote
    #:unquote-not-inside-backquote
    #:unquote-in-invalid-context
    #:end-of-input-after-unquote
    #:object-must-follow-unquote
+   #:unquote-macroexpansion-error
+   #:argument ; reader
    #:unquote-splicing-in-dotted-list
    #:unquote-splicing-at-top
 
@@ -203,6 +230,7 @@
    #:object-must-follow-consing-dot
    #:multiple-objects-following-consing-dot
    #:invalid-context-for-right-parenthesis
+   #:expected-character ; reader
 
    #:end-of-input-after-sharpsign-single-quote
    #:object-must-follow-sharpsign-single-quote
@@ -211,30 +239,48 @@
    #:object-must-follow-sharpsign-dot
    #:read-time-evaluation-inhibited
    #:read-time-evaluation-error
+   #:expression ; reader
+   #:original-condition ; reader
 
    #:end-of-input-after-backslash
    #:unterminated-single-escape-in-character-name
    #:unterminated-multiple-escape-in-character-name
    #:unknown-character-name
+   #:name ; reader
 
+   #:digit-condition
+   #:base ; reader
    #:end-of-input-before-digit
    #:digit-expected
+   #:found-character ; reader
    #:zero-denominator
    #:invalid-radix
+   #:radix ; reader
    #:invalid-default-float-format
+   #:exponent-marker ; reader
+   #:float-format ; reader
 
    #:unterminated-block-comment
 
    #:end-of-input-after-sharpsign-a
    #:object-must-follow-sharpsign-a
    #:unterminated-vector
+   #:array-initialization-error
+   #:array-type ; reader
    #:too-many-elements
+   #:expected-count
+   #:found-count
    #:no-elements-found
    #:incorrect-initialization-length
+   #:axis ; reader
+   #:expected-length ; reader
+   #:datum ; reader
 
    #:end-of-input-after-sharpsign-c
    #:complex-parts-must-follow-sharpsign-c
    #:non-list-following-sharpsign-c
+   #:complex-part-condition
+   #:which ; reader
    #:end-of-input-before-complex-part
    #:complex-part-expected
    #:too-many-complex-parts
@@ -247,6 +293,8 @@
    #:structure-type-name-is-not-a-symbol
    #:end-of-input-before-slot-name
    #:slot-name-is-not-a-string-designator
+   #:slot-value-condition
+   #:slot-name ; reader
    #:end-of-input-before-slot-value
    #:no-slot-value-found
 
@@ -254,15 +302,20 @@
    #:namestring-must-follow-sharpsign-p
    #:non-string-following-sharpsign-p
 
+   #:reader-conditional-condition
+   #:context ; reader
    #:end-of-input-after-sharpsign-plus-minus
    #:feature-expression-must-follow-sharpsign-plus-minus
    #:feature-expression-type-error
    #:single-feature-expected
+   #:features ; reader
    #:end-of-input-after-feature-expression
    #:object-must-follow-feature-expression
 
    #:end-of-input-after-sharpsign-equals
    #:object-must-follow-sharpsign-equals
+   #:reference-error
+   #:label ; reader
    #:sharpsign-equals-label-defined-more-than-once
    #:sharpsign-equals-only-refers-to-self
    #:sharpsign-sharpsign-undefined-label)

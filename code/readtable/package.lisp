@@ -20,14 +20,18 @@
 
   ;; Conditions
   (:export
+   #:dispatch-macro-character-error
+   #:dispatch-character ; reader
    #:unterminated-dispatch-macro
    #:character-must-be-a-dispatching-character
+   #:sub-character-condition
+   #:sub-character ; reader
    #:sub-character-must-not-be-a-decimal-digit
    #:unknown-macro-sub-character)
 
   ;; Other exported symbols
   (:export
-   #:copy-readtable-into
-
    #:syntax-type
-   #:syntax-from-char)) ; SETF
+   #:syntax-from-char
+
+   #:copy-readtable-into)) ; SETF

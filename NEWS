@@ -1,5 +1,64 @@
 Release 0.12 (not yet released)
 
+* The following names of condition types and reader functions are now exported:
+
+  ECLECTOR.READER:DISPATCH-MACRO-CHARACTER-ERROR with reader
+  ECLECTOR.READER:DISPATCH-CHARACTER
+
+  ECLECTOR.READER:CHARACTER-MUST-BE-A-DISPATCHING-CHARACTER
+
+  ECLECTOR.READER:SUB-CHARACTER-CONDITION with reader
+  ECLECTOR.READER:SUB-CHARACTER
+
+  ECLECTOR.READER:SUB-CHARACTER-MUST-NOT-BE-A-DECIMAL-DIGIT
+
+  ECLECTOR.READER:READER-MACRO-PARAMETER-ERROR with reader
+  ECLECTOR.READER:MACRO-NAME
+
+  The reader ECLECTOR.READER:PARAMETER for
+  ECLECTOR.READER:NUMERIC-PARAMETER-SUPPLIED-BUT-IGNORED
+
+  ECLECTOR.READER:UNQUOTE-CONDITION with reader ECLECTOR.READER:SPLICINGP
+
+  ECLECTOR.READER:UNQUOTE-MACROEXPANSION-ERROR with reader
+  ECLECTOR.READER:ARGUMENT
+
+  The reader ECLECTOR.READER:EXPECTED-CHARACTER for
+  ECLECTOR.READER:INVALID-CONTEXT-FOR-RIGHT-PARENTHESIS
+
+  The readers ECLECTOR.READER:EXPRESSION and ECLECTOR.READER:ORIGINAL-CONDITION
+  for ECLECTOR.READER:READ-TIME-EVALUATION-ERROR
+
+  The reader ECLECTOR.READER:NAME for ECLECTOR.READER:UNKNOWN-CHARACTER-NAME
+
+  ECLECTOR.READER:DIGIT-CONDITION with reader ECLECTOR.READER:BASE
+
+  The reader ECLECTOR.READER:FOUND-CHARACTER for ECLECTOR.READER:DIGIT-EXPECTED
+
+  The readers ECLECTOR.READER:EXPONENT-MARKER and ECLECTOR.READER:FLOAT-FORMAT
+  for ECLECTOR.READER:INVALID-DEFAULT-FLOAT-FORMAT
+
+  ECLECTOR.READER:ARRAY-INITIALIZATION-ERROR with reader
+  ECLECTOR.READER:ARRAY-TYPE
+
+  The readers ECLECTOR.READER:EXPECTED-COUNT and ECLECTOR.READER:FOUND-COUNT
+  for ECLECTOR.READER:TOO-MANY-ELEMENTS
+
+  The readers ECLECTOR.READER:AXIS, ECLECTOR.READER:EXPECTED-LENGTH and
+  ECLECTOR.READER:DATUM for ECLECTOR.READER:INCORRECT-INITIALIZATION-LENGTH
+
+  ECLECTOR.READER:COMPLEX-PART-CONDITION with reader ECLECTOR.READER:WHICH
+
+  ECLECTOR.READER:SLOT-VALUE-CONDITION with reader ECLECTOR.READER:SLOT-NAME
+
+  ECLECTOR.READER:READER-CONDITIONAL-CONDITION with reader
+  ECLECTOR.READER:CONTEXT
+
+  The reader ECLECTOR.READER:FEATURES for
+  ECLECTOR.READER:SINGLE-FEATURE-EXPECTED
+
+  ECLECTOR.READER:REFERENCE-ERROR with reader ECLECTOR.READER:LABEL
+
 * The deprecated generic functions ECLECTOR.READER:CALL-WITH-CURRENT-PACKAGE
   has been removed. Clients should use ECLECTOR.BASE:CALL-WITH-STATE-VALUE with
   the CL:*PACKAGE* aspect.
@@ -18,7 +77,7 @@ Release 0.11 (2025-06-08)
   which represent skipped material can have children. For example, before this
   change, a ECLECTOR.PARSE-RESULT:READ call which encountered the expression
   #+no-such-feature foo bar potentially constructed parse results for all
-  (recursive) READ calls, that is for the whole expression, for
+  (recursive) read calls, that is for the whole expression, for
   no-such-feature, for foo and for bar, but the parse results for
   no-such-feature and foo could not be attached to a parent parse result and
   were thus lost. In other words the shape of the parse result tree was
@@ -56,7 +115,7 @@ Release 0.11 (2025-06-08)
 
   The above code pushes a symbol that is interned in a package under the
   control of the respective client (as opposed to the KEYWORD package) onto
-  *FEATURES* before the second form is read and uses that feature to select
+  CL:*FEATURES* before the second form is read and uses that feature to select
   either the version with or the version without the children parameter of the
   method definition. See Maintaining Portable Lisp Programs by Christophe
   Rhodes for a detailed discussion of this technique.
@@ -325,9 +384,9 @@ Release 0.9 (2023-03-19)
   ECLECTOR.READER::SHARPSIGN-COLON is now always present.
 
 * When Eclector is used to produce parse results, it no longer confuses
-  end-of-input with having read NIL when nil is used as the eof-value (nil
-  makes sense as an eof-value in that case since nil is generally not a
-  possible parse result).
+  end-of-input with having read CL:NIL when CL:NIL is used as the eof-value
+  (CL:NIL makes sense as an eof-value in that case since CL:NIL is generally
+  not a possible parse result).
 
 * A detailed description of the constraints on return values of the generic
   functions in the Reader behavior protocol has been added to the manual.
@@ -380,7 +439,7 @@ Release 0.7 (2021-05-16)
   non-existent packages and symbols as well as non-exported symbols.
 
   The default error recovery strategy for invalid symbols now constructs an
-  uninterned symbol of the given name instead of using NIL.
+  uninterned symbol of the given name instead of using CL:NIL.
 
 * The "consing dot" is no longer accepted in sub-expressions of
   ECLECTOR.READER::LEFT-PARENTHESIS.
@@ -416,7 +475,7 @@ Release 0.6 (2020-11-29)
 * The new generic functions ECLECTOR.READER:READ-MAYBE-NOTHING and
   ECLECTOR.READER:CALL-AS-TOP-LEVEL-READ give clients additional entry points
   to the reader as well as customization possibilities. With these functions,
-  the chain of functions calls for a READ call looks like this:
+  the chain of functions calls for a ECLECTOR.READER:READ call looks like this:
 
     eclector.reader:read
       eclector.reader:call-as-top-level-read
@@ -430,7 +489,7 @@ Release 0.6 (2020-11-29)
   functions have been added to the manual.
 
 * The function ECLECTOR.READER::READ-RATIONAL now better respects the value of
-  *READ-SUPPRESS*.
+  CL:*READ-SUPPRESS*.
 
 * Fix return value of ECLECTOR.READTABLE:SET-SYNTAX-FROM-CHAR, fix
   (SETF ECLECTOR.READTABLE:SYNTAX-FROM-CHAR) to also copy the macro character
@@ -514,7 +573,7 @@ Release 0.5 (2020-06-09)
   ECLECTOR.READER::SHARPSIGN-SHARPSIGN respect the value of CL:*READ-SUPPRESS*.
 
 * The default methods on the generic function ECLECTOR.READER:FIXUP now works
-  correctly for STANDARD-OBJECT instances with unbound slots.
+  correctly for CL:STANDARD-OBJECT instances with unbound slots.
 
 * The reader macro function ECLECTOR.READER::LEFT-PARENTHESIS now always reads
   until #\), not some "opposite" character.

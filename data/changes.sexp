@@ -1,20 +1,94 @@
 (:changes
  (:release "0.12" nil
-  (:item
-   (:paragraph
-    "The" "deprecated" "generic" "functions"
-    (:symbol "eclector.reader:call-with-current-package")
-    "has" "been" "removed" "." "Clients" "should" "use"
-    (:symbol "eclector.base:call-with-state-value") "with" "the"
-    (:symbol "cl:*package*") "aspect" "."))
-  (:item
-   (:paragraph
-    "Eclector" "no" "longer" "processes" "inherited" "symbols" "like"
-    (:symbol "cl:floor") "in" "package" (:tt "COMMON-LISP-USER")  "as" "if"
-    "they" "were" "exported" "when" "spelled" "as" (:tt "cl-user:floor") "."
-    "Instead" "," "Eclector" "now" "signals" "an" "error" "of" "type"
-    (:symbol "eclector.reader:symbol-is-not-external") "for" "inputs" "like"
-    "the" "above" ".")))
+   (:item
+    (:paragraph
+     "The" "following" "names" "of" "condition" "types" "and" "reader"
+     "functions" "are" "now" "exported:")
+    (:paragraph
+     (:symbol "eclector.reader:dispatch-macro-character-error") "with"
+     "reader" (:symbol "eclector.reader:dispatch-character"))
+    (:paragraph
+     (:symbol "eclector.reader:character-must-be-a-dispatching-character"))
+    (:paragraph
+     (:symbol "eclector.reader:sub-character-condition") "with" "reader"
+     (:symbol "eclector.reader:sub-character"))
+    (:paragraph
+     (:symbol "eclector.reader:sub-character-must-not-be-a-decimal-digit"))
+    (:paragraph
+     (:symbol "eclector.reader:reader-macro-parameter-error") "with"
+     "reader" (:symbol "eclector.reader:macro-name"))
+    (:paragraph
+     "The" "reader" (:symbol "eclector.reader:parameter") "for"
+     (:symbol "eclector.reader:numeric-parameter-supplied-but-ignored"))
+    (:paragraph
+     (:symbol "eclector.reader:unquote-condition") "with" "reader"
+     (:symbol "eclector.reader:splicingp"))
+    (:paragraph
+     (:symbol "eclector.reader:unquote-macroexpansion-error") "with"
+     "reader" (:symbol "eclector.reader:argument"))
+    (:paragraph
+     "The" "reader" (:symbol "eclector.reader:expected-character")
+     "for"
+     (:symbol "eclector.reader:invalid-context-for-right-parenthesis"))
+    (:paragraph
+     "The" "readers" (:symbol "eclector.reader:expression") "and"
+     (:symbol "eclector.reader:original-condition")
+     "for" (:symbol "eclector.reader:read-time-evaluation-error"))
+    (:paragraph
+     "The" "reader" (:symbol "eclector.reader:name")
+     "for" (:symbol "eclector.reader:unknown-character-name"))
+    (:paragraph
+     (:symbol "eclector.reader:digit-condition") "with" "reader"
+     (:symbol "eclector.reader:base"))
+    (:paragraph
+     "The" "reader" (:symbol "eclector.reader:found-character")
+     "for" (:symbol "eclector.reader:digit-expected"))
+    (:paragraph
+     "The" "readers" (:symbol "eclector.reader:exponent-marker") "and"
+     (:symbol "eclector.reader:float-format") "for"
+     (:symbol "eclector.reader:invalid-default-float-format"))
+    (:paragraph
+     (:symbol "eclector.reader:array-initialization-error") "with"
+     "reader" (:symbol "eclector.reader:array-type"))
+    (:paragraph
+     "The" "readers" (:symbol "eclector.reader:expected-count") "and"
+     (:symbol "eclector.reader:found-count") "for"
+     (:symbol "eclector.reader:too-many-elements"))
+    (:paragraph
+     "The" "readers" (:symbol "eclector.reader:axis") ","
+     (:symbol "eclector.reader:expected-length") "and"
+     (:symbol "eclector.reader:datum") "for"
+     (:symbol "eclector.reader:incorrect-initialization-length"))
+    (:paragraph
+     (:symbol "eclector.reader:complex-part-condition") "with" "reader"
+     (:symbol "eclector.reader:which"))
+    (:paragraph
+     (:symbol "eclector.reader:slot-value-condition") "with" "reader"
+     (:symbol "eclector.reader:slot-name"))
+    (:paragraph
+     (:symbol "eclector.reader:reader-conditional-condition") "with"
+     "reader" (:symbol "eclector.reader:context"))
+    (:paragraph
+     "The" "reader" (:symbol "eclector.reader:features")
+     "for" (:symbol "eclector.reader:single-feature-expected"))
+    (:paragraph
+     (:symbol "eclector.reader:reference-error") "with" "reader"
+     (:symbol "eclector.reader:label")))
+   (:item
+    (:paragraph
+     "The" "deprecated" "generic" "functions"
+     (:symbol "eclector.reader:call-with-current-package")
+     "has" "been" "removed" "." "Clients" "should" "use"
+     (:symbol "eclector.base:call-with-state-value") "with" "the"
+     (:symbol "cl:*package*") "aspect" "."))
+   (:item
+    (:paragraph
+     "Eclector" "no" "longer" "processes" "inherited" "symbols" "like"
+     (:symbol "cl:floor") "in" "package" (:tt "COMMON-LISP-USER")  "as" "if"
+     "they" "were" "exported" "when" "spelled" "as" (:tt "cl-user:floor") "."
+     "Instead" "," "Eclector" "now" "signals" "an" "error" "of" "type"
+     (:symbol "eclector.reader:symbol-is-not-external") "for" "inputs" "like"
+     "the" "above" ".")))
 
  (:release "0.11" "2025-06-08"
   (:item
