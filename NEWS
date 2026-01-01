@@ -1,5 +1,14 @@
 Release 0.12 (not yet released)
 
+* The deprecated generic functions ECLECTOR.READER:CALL-WITH-CURRENT-PACKAGE
+  has been removed. Clients should use ECLECTOR.BASE:CALL-WITH-STATE-VALUE with
+  the CL:*PACKAGE* aspect.
+
+* Eclector no longer processes inherited symbols like CL:FLOOR in package
+  COMMON-LISP-USER as if they were exported when spelled as cl-user:floor.
+  Instead, Eclector now signals an error of type
+  ECLECTOR.READER:SYMBOL-IS-NOT-EXTERNAL for inputs like the above.
+
 * The following names of condition types and reader functions are now exported:
 
   ECLECTOR.READER:DISPATCH-MACRO-CHARACTER-ERROR with reader
@@ -58,15 +67,6 @@ Release 0.12 (not yet released)
   ECLECTOR.READER:SINGLE-FEATURE-EXPECTED
 
   ECLECTOR.READER:REFERENCE-ERROR with reader ECLECTOR.READER:LABEL
-
-* The deprecated generic functions ECLECTOR.READER:CALL-WITH-CURRENT-PACKAGE
-  has been removed. Clients should use ECLECTOR.BASE:CALL-WITH-STATE-VALUE with
-  the CL:*PACKAGE* aspect.
-
-* Eclector no longer processes inherited symbols like CL:FLOOR in package
-  COMMON-LISP-USER as if they were exported when spelled as cl-user:floor.
-  Instead, Eclector now signals an error of type
-  ECLECTOR.READER:SYMBOL-IS-NOT-EXTERNAL for inputs like the above.
 
 Release 0.11 (2025-06-08)
 
