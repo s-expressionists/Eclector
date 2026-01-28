@@ -100,7 +100,7 @@ input (due to e.g. comments and reader conditionals):
 
 ### Concrete Syntax Trees
 
-The `eclector.concrete-syntax-tree` system provides a variant of the
+The `eclector-concrete-syntax-tree` system provides a variant of the
 `eclector` reader that produces instances of the concrete syntax tree
 classes provided by the [concrete syntax tree library]:
 
