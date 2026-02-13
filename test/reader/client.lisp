@@ -286,7 +286,7 @@
   (declare (ignore char))
   (let ((new-base (eclector.reader:read stream t nil t)))
     (setf (eclector.reader:state-value eclector.base:*client* '*package*)
-          new-base)
+          (find-package new-base))
     (values)))
 
 (test setf-state-value/smoke

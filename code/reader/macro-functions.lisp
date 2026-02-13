@@ -1327,6 +1327,20 @@
     ((cons (eql :and))
      (every recurse (rest feature-expression)))))
 
+(defun find-package-or-lose (client designator stream)
+  (loop for package = (find-package client designator)
+        when package
+          return package
+        do (restart-case
+               (%reader-error stream 'package-does-not-exist
+                              :package-name designator)
+             (use-value (new-designator)
+               :report (lambda (stream)
+                         (format-recovery-report stream 'use-replacement-package
+                                                 designator))
+               :interactive accept-package-name
+               (setf designator new-designator)))))
+
 (defun sharpsign-plus-minus (stream char parameter invertp)
   (declare (ignore char))
   (let ((client *client*)
@@ -1354,7 +1368,8 @@
                  (unread-char (%character condition) stream)
                  fallback-value))))
       (let ((feature-expression
-              (with-state-values (client '*package*       "KEYWORD"
+              (with-state-values (client '*package*
+                                         (find-package-or-lose client "KEYWORD" stream)
                                          '*read-suppress* nil)
                 (with-quasiquotation-state (client context t t)
                   (read-expression
