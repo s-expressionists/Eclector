@@ -236,7 +236,8 @@
 (defmethod make-literal
     ((client t) (input-stream t) (kind structure-instance-kind)
      &key type initargs)
-  (make-structure-instance client type initargs))
+  (locally #+sbcl (declare (sb-ext:muffle-conditions sb-ext:deprecation-condition))
+    (make-structure-instance client type initargs)))
 
 (define-kind pathname-kind (literal-kind) ())
 (defmethod make-literal ((client t) (input-stream t) (kind pathname-kind)
@@ -255,8 +256,6 @@
     designator)
   (:method ((client t) (designator string))
     (find-standard-character designator)))
-
-(defgeneric make-structure-instance (client name initargs))
 
 (defgeneric evaluate-expression (client expression)
   (:method ((client t) (expression t))

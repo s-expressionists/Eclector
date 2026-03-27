@@ -16,6 +16,15 @@
                  (function with-forbidden-quasiquotation
                            :replacement with-quasiquotation-state)))
 
+;;; Calling reader macros and behavior of standard reader macros
+
+(defgeneric make-structure-instance (client name initargs))
+
+#+sbcl
+(declaim (sb-ext:deprecated
+          :early ("Eclector" "0.12")
+          (function make-structure-instance :replacement make-literal)))
+
 ;;; Creating s-expressions; replaced by `make-expression'
 
 (defgeneric wrap-in-function (client name)
