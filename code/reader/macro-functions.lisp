@@ -136,7 +136,8 @@
                             :escape-char char2 :report 'use-partial-string))
           when char2
             do (vector-push-extend char2 characters)
-          finally (return (make-literal client *string-kind* :characters characters)))))
+          finally (return (make-literal client stream string-kind
+                                        :characters characters)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -457,7 +458,7 @@
                                    :found-count     index
                                    :report          'ignore-excess-elements)))
                            (return
-                             ;; TODO (make-literal client *vector-kind* elements)
+                             ;; TODO: (make-literal client *vector-kind* elements)
                              (if (< index parameter)
                                  (fill result (aref result (1- index))
                                        :start index)
@@ -552,7 +553,7 @@
                     stream 'unterminated-multiple-escape-in-character-name
                     :delimiter delimiter :report 'use-partial-character-name))
                  (lookup (name)
-                   ;; TODO (make-literal client *character-kind* :name name)
+                   ;; TODO: (make-literal client stream character-kind :name name)
                    (let ((character (find-character client name)))
                      (cond ((null character)
                             (%recoverable-reader-error
@@ -669,15 +670,24 @@
                      (t
                       value)))))
     (multiple-value-bind (sign numerator) (maybe-sign)
-      (if (null sign)
-          0
-          (multiple-value-bind (numerator slashp)
-              (integer (= sign 1) t numerator)
-            (unless suppress ; When READ-SUPPRESS, / has been consumed
-              (let ((denominator (when slashp (read-denominator))))
-                (make-literal *client* *rational-kind* :sign sign
-                                                       :numerator numerator
-                                                       :denominator denominator))))))))
+      (flet ((make-ratio (sign numerator denominator)
+               (if (null denominator)
+                   (make-literal *client* stream ratio-kind
+                                 :sign sign :numerator numerator)
+                   (make-literal *client* stream ratio-kind
+                                 :sign sign
+                                 :numerator numerator
+                                 :denominator denominator))))
+        (if (null sign)
+            (make-ratio 0 0 nil)
+            (multiple-value-bind (numerator slashp)
+                (integer (= sign 1) t numerator)
+              (cond (suppress
+                     nil) ; When READ-SUPPRESS, / has been consumed
+                    (slashp
+                     (make-ratio sign numerator (read-denominator)))
+                    (t
+                     (make-ratio sign numerator nil)))))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
@@ -781,7 +791,7 @@
                                      :found-count     index
                                      :report          'ignore-excess-elements))))
                            (return
-                             ;; TODO make-literal
+                             ;; TODO: make-literal
                              (if (< index parameter)
                                  (fill result (sbit result (1- index))
                                        :start index)
@@ -898,7 +908,7 @@
                   (values dimensions init))
               (%make-empty ()
                 (values (make-empty-dimensions rank) '())))
-          ;; TODO: (make-literal client *array-kind* :dimensions dimensions :initial-contents init)
+          ;; TODO: (make-literal client stream array-kind :dimensions dimensions :initial-contents init)
           (make-array dimensions :initial-contents init))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1077,7 +1087,7 @@
                     :position-offset -1 ; inaccurate
                     :datum object :expected-type #3#
                     :report 'use-replacement-part)))))
-        (make-literal *client* *complex-kind*
+        (make-literal client stream complex-kind
                       :real-part real :imaginary-part imaginary)))))
 
 (defun sharpsign-c (stream char parameter)
@@ -1234,7 +1244,7 @@
                            do (collect-name name)
                               (collect-value value)))))))
         (if (not (null type))
-            (make-literal client *structure-instance-kind*
+            (make-literal client stream structure-instance-kind
                           :type type :initargs (nreverse initargs))
             nil)))))
 
@@ -1273,14 +1283,15 @@
                   (unread-char (%character condition) stream)
                   ".")))))
       (cond ((stringp expression)
-             (make-literal *client* *pathname-kind* :namestring expression))
+             (make-literal client stream pathname-kind
+                           :namestring expression))
             (t
              (%recoverable-reader-error
               stream 'non-string-following-sharpsign-p
               :position-offset -1
               :expected-type 'string :datum expression
               :report 'replace-namestring)
-             #P".")))))
+             (make-literal client stream pathname-kind :namestring "."))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

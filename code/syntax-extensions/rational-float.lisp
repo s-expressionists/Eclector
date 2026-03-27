@@ -38,8 +38,9 @@
   (let ((*extended-read-default-float-format* value))
     (funcall thunk)))
 
-(defmethod eclector.reader:make-literal ((client client)
-                                         (class  eclector.reader::float-kind)
+(defmethod eclector.reader:make-literal ((client       client)
+                                         (input-stream t)
+                                         (kind         eclector.reader::float-kind)
                                          &key type sign decimal-mantissa decimal-exponent
                                               exponent-sign exponent)
   (case type

@@ -147,12 +147,13 @@
 
 (defclass literal-kind (kind) ()) ; abstract
 
-(defgeneric make-literal (client class &key &allow-other-keys))
+(defgeneric make-literal (client input-stream kind &key &allow-other-keys))
 
 (define-kind character-kind (literal-kind) ())
 
 (define-kind string-kind (literal-kind) ())
-(defmethod make-literal ((client t) (kind string-kind) &key characters)
+(defmethod make-literal ((client t) (input-stream t) (kind string-kind)
+                         &key characters)
   ;; CHARACTERS is an adjustable array with a fill pointer. Make a
   ;; simple array.
   (copy-seq characters))
@@ -176,9 +177,8 @@
                              #.(cl:floor (cl:log 10 2)))))))
 
 (define-kind float-kind (number-kind) ())
-(defmethod make-literal ((client t) (kind float-kind)
-                         &key stream ; TODO pass stream as required parameter for source information and error reporting?
-                              type sign decimal-mantissa
+(defmethod make-literal ((client t) (input-stream t) (kind float-kind)
+                         &key type sign decimal-mantissa
                               exponent-sign (exponent nil exponentp)
                               decimal-exponent)
   (let* ((exponent*  (-  (if exponentp
@@ -195,7 +195,7 @@
                          (if (zerop decimal-exponent) 0 1) ; TODO not accurate
                          )))
           (%recoverable-reader-error
-           stream 'overflow-in-float
+           input-stream 'overflow-in-float
            :position-offset (- length)
            :operation 'coerce           ; arithmetic-error
            :operands (list magnitude type)
@@ -208,24 +208,39 @@
 
 ;;; TODO separate file?
 (define-kind rational-kind (number-kind) ())
-(defmethod make-literal ((client t) (kind rational-kind)
-                         &key sign numerator denominator)
-  (* sign (if denominator
-              (/ numerator denominator)
-              numerator)))
+
+(define-kind integer-kind (rational-kind) ())
+(defmethod make-literal ((client t) (input-stream t) (kind integer-kind)
+                         &key sign magnitude)
+  (* sign magnitude))
+
+(define-kind ratio-kind (rational-kind) ())
+(defmethod make-literal ((client t) (input-stream t) (kind ratio-kind)
+                         &key sign numerator (denominator nil denominator?))
+  (cond ((not denominator?)
+         (* sign numerator))
+        ((zerop denominator)
+         (%recoverable-reader-error
+          input-stream 'zero-denominator
+          :position-offset -1 :report 'replace-invalid-digit)
+         (* sign numerator))
+        (t
+         (* sign (/ numerator denominator)))))
 
 (define-kind complex-kind (number-kind) ())
-(defmethod make-literal ((client t) (kind complex-kind)
+(defmethod make-literal ((client t) (input-stream t) (kind complex-kind)
                          &key real-part imaginary-part)
   (complex real-part imaginary-part))
 
 (define-kind structure-instance-kind (literal-kind) ())
-(defmethod make-literal ((client t) (kind structure-instance-kind)
-                         &key type initargs)
+(defmethod make-literal
+    ((client t) (input-stream t) (kind structure-instance-kind)
+     &key type initargs)
   (make-structure-instance client type initargs))
 
 (define-kind pathname-kind (literal-kind) ())
-(defmethod make-literal ((client t) (kind pathname-kind) &key namestring)
+(defmethod make-literal ((client t) (input-stream t) (kind pathname-kind)
+                         &key namestring)
   (values (parse-namestring namestring)))
 
 ;;; Calling reader macros and behavior of standard reader macros

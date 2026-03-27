@@ -200,6 +200,9 @@
                    (values (interpret-symbol-token client input-stream token
                                                    position-package-marker-1
                                                    position-package-marker-2))))
+               (make-integer (sign magnitude)
+                 (make-literal client input-stream integer-kind
+                               :sign sign :magnitude magnitude))
                (make-float (exponentp)
                  (multiple-value-bind (type default-format)
                      (reader-float-format client exponent-marker)
@@ -218,14 +221,14 @@
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
                    (if exponentp
-                       (make-literal client float-kind :stream input-stream ; HACK pass stream as required argument?
+                       (make-literal client input-stream float-kind
                                      :type type
                                      :sign sign
                                      :decimal-mantissa (decimal-mantissa)
                                      :exponent-sign exponent-sign
                                      :exponent (exponent)
                                      :decimal-exponent decimal-exponent)
-                       (make-literal client float-kind :stream input-stream
+                       (make-literal client input-stream float-kind
                                      :type type
                                      :sign sign
                                      :decimal-mantissa (decimal-mantissa)
@@ -346,7 +349,8 @@
              decimal-integer-final ; [sign] decimal-digit+ decimal-point
                (next-cond (char)
                  ((not char)
-                  (return-from interpret-token (* sign (decimal-mantissa))))
+                  (return-from interpret-token
+                    (make-integer sign (decimal-mantissa))))
                  ((decimal-mantissa char)
                   (incf decimal-exponent)
                   (go float-no-exponent))
@@ -356,7 +360,10 @@
              integer ; [sign] digit+ (At least one digit is not decimal)
                (next-cond (char)
                  ((not char)
-                  (return-from interpret-token (* sign (numerator*))))
+                  (return-from interpret-token
+                    (make-literal client input-stream integer-kind
+                                  :sign sign
+                                  :magnitude (numerator*))))
                  ((numerator* char)
                   (go integer))
                  ((eql char #\/)
@@ -370,13 +377,10 @@
                  ((not char)
                   (return-from interpret-token
                     (alexandria:if-let ((numerator (numerator*)))
-                      (let ((denominator (denominator*)))
-                        (when (zerop denominator)
-                          (%recoverable-reader-error
-                           input-stream 'zero-denominator
-                           :position-offset -1 :report 'replace-invalid-digit)
-                          (setf denominator 1))
-                        (* sign (/ numerator denominator)))
+                      (make-literal client input-stream ratio-kind
+                                    :sign sign
+                                    :numerator numerator
+                                    :denominator (denominator*))
                       (symbol))))
                  ((denominator* char)
                   (go ratio)))
