@@ -2,10 +2,15 @@
   ())
 
 (defmethod perform ((operation load-op) (component source-file-without-load-time-deprecation-warnings))
-  #-sbcl (funcall compile-it)
-  #+sbcl (handler-bind ((sb-ext:deprecation-condition
-                          #'muffle-warning))
-           (call-next-method)) )
+  #-sbcl (call-next-method)
+  ;; At load time, SBCL writes to error output something like
+  ;;
+  ;;   ; While loading (SB-PCL::FAST-METHOD MAKE-LITERAL (T T RATIO-KIND)):
+  ;;
+  ;; We cannot prevent that.  After that, SBCL signals the deprecation
+  ;; warning which we /can/ muffle.
+  #+sbcl (handler-bind ((sb-ext:deprecation-condition #'muffle-warning))
+           (call-next-method)))
 
 (defsystem "eclector"
   :description "A portable, extensible Common Lisp reader."
@@ -58,6 +63,7 @@
                  :depends-on ("base"
                               "readtable")
                  :serial t
+                 :default-component-class source-file-without-load-time-deprecation-warnings
                  :components ((:file "package")
                               ;; The file variables defines standard
                               ;; variables with names in the
