@@ -131,14 +131,19 @@
 
 ;;; Source locations
 
-(defun check-source-locations (cst expected-source-locations)
+(defun check-source-locations (input cst expected-source-locations)
   (labels ((check (cst expected)
              (destructuring-bind (expected-location . children) expected
-               (is (equal expected-location (cst:source cst)))
+               (let ((actual-location (cst:source cst)))
+                 (is (equal expected-location actual-location)
+                     "~@<For input ~S, expected ~S to have source location ~S ~
+                      but got ~S.~@:>"
+                     input cst expected-location actual-location))
                (cond ((not children)
                       (is-true (cst:atom cst)))
                      ((not (cst:consp cst))
-                      (fail "Expected CONS CST, but got ~S" cst))
+                      (fail "~@<For input ~S, expected CONS CST, but got ~S~:@>"
+                            input cst))
                      (t
                       (check (cst:first cst) (first children))
                       (check (cst:rest cst) (rest children)))))))
@@ -146,10 +151,10 @@
 
 (test read/source-locations
   "Test source locations assigned by READ."
-  (do-stream-input-cases (() expected)
+  (do-stream-input-cases ((input) expected)
       (let ((result (with-stream (stream)
                       (eclector.concrete-syntax-tree:read stream))))
-        (check-source-locations result expected))
+        (check-source-locations input result expected))
     (macrolet ((scons ((&optional start end) &optional car cdr)
                  `(cons ,(if start `(cons ,start ,end) 'nil)
                         ,(if car `(cons ,car ,cdr) 'nil))))
