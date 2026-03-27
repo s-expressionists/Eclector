@@ -144,6 +144,7 @@
                               (:file "gen-quasiquote")
 
                               (:file "utilities")
+                              (:file "literals")
                               (:file "labeled-objects")
                               (:file "tokens")
                               (:file "read")
