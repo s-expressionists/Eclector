@@ -17,10 +17,10 @@
                                      (let ((eclector.base:*client* client))
                                        (eclector.reader:read stream)))))
 
-      `(("1"   (,eclector.reader::integer-kind :sign  1 :magnitude 1))
+      `(("1"   (,eclector.reader::integer-kind          :magnitude 1))
         ("+2"  (,eclector.reader::integer-kind :sign  1 :magnitude 2))
         ("-3"  (,eclector.reader::integer-kind :sign -1 :magnitude 3))
-        ("4."  (,eclector.reader::integer-kind :sign  1 :magnitude 4))
+        ("4."  (,eclector.reader::integer-kind          :magnitude 4))
         ("+5." (,eclector.reader::integer-kind :sign  1 :magnitude 5))
         ("-6." (,eclector.reader::integer-kind :sign -1 :magnitude 6))))))
 
@@ -31,18 +31,20 @@
                                      (let ((eclector.base:*client* client))
                                        (eclector.reader:read stream)))))
 
-      `(("1/2"  (,eclector.reader::ratio-kind :sign  1 :numerator 1 :denominator 2))
+      `(("1/2"  (,eclector.reader::ratio-kind          :numerator 1 :denominator 2))
         ("+3/4" (,eclector.reader::ratio-kind :sign  1 :numerator 3 :denominator 4))
         ("-5/6" (,eclector.reader::ratio-kind :sign -1 :numerator 5 :denominator 6))
         ;; Invalid
-        ("1/0"  (,eclector.reader::ratio-kind :sign  1 :numerator 1 :denominator 0))))))
+        ("1/0"  (,eclector.reader::ratio-kind          :numerator 1 :denominator 0))))))
 
 (test custom-float-literal
   (let ((client (make-instance 'custom-literal-client)))
     (do-stream-input-cases (() expected-literal)
       (is (equalp expected-literal (with-stream (stream)
                                      (let ((eclector.base:*client* client))
-                                       (eclector.reader:read stream)))))
+                                       (eclector.reader:call-with-state-value client
+                                        (lambda () (eclector.reader:read stream))
+                                        '*read-default-float-format* 'single-float)))))
 
       `((".0"        (,eclector.reader::float-kind :type             single-float
                                                    :decimal-mantissa 0

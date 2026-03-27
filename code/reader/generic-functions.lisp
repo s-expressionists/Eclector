@@ -178,7 +178,7 @@
 
 (define-kind float-kind (number-kind) ())
 (defmethod make-literal ((client t) (input-stream t) (kind float-kind)
-                         &key type sign decimal-mantissa
+                         &key type (sign 1) decimal-mantissa
                               exponent-sign (exponent nil exponentp)
                               decimal-exponent)
   (let* ((exponent*  (-  (if exponentp
@@ -211,12 +211,12 @@
 
 (define-kind integer-kind (rational-kind) ())
 (defmethod make-literal ((client t) (input-stream t) (kind integer-kind)
-                         &key sign magnitude)
+                         &key (sign 1) magnitude)
   (* sign magnitude))
 
 (define-kind ratio-kind (rational-kind) ())
 (defmethod make-literal ((client t) (input-stream t) (kind ratio-kind)
-                         &key sign numerator (denominator nil denominator?))
+                         &key (sign 1) numerator (denominator nil denominator?))
   (cond ((not denominator?)
          (* sign numerator))
         ((zerop denominator)

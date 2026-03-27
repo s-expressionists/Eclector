@@ -169,7 +169,7 @@
     (let* ((length (length token))
            (remaining-escape-ranges escape-ranges)
            (escape-range (first remaining-escape-ranges))
-           (sign 1)
+           (sign nil)
            (decimal-exponent 0)
            (exponent-sign 1)
            (exponent-marker nil)
@@ -200,9 +200,12 @@
                    (values (interpret-symbol-token client input-stream token
                                                    position-package-marker-1
                                                    position-package-marker-2))))
-               (make-integer (sign magnitude)
-                 (make-literal client input-stream integer-kind
-                               :sign sign :magnitude magnitude))
+               (make-integer (magnitude)
+                 (if (null sign)
+                     (make-literal client input-stream integer-kind
+                                   :magnitude magnitude)
+                     (make-literal client input-stream integer-kind
+                                   :sign sign :magnitude magnitude)))
                (make-float (exponentp)
                  (multiple-value-bind (type default-format)
                      (reader-float-format client exponent-marker)
@@ -220,19 +223,32 @@
                         :float-format default-format
                         :report 'use-replacement-float-format))
                      (setf type 'single-float))
+                   ;; TODO: handle combinations better
                    (if exponentp
-                       (make-literal client input-stream float-kind
-                                     :type type
-                                     :sign sign
-                                     :decimal-mantissa (decimal-mantissa)
-                                     :exponent-sign exponent-sign
-                                     :exponent (exponent)
-                                     :decimal-exponent decimal-exponent)
-                       (make-literal client input-stream float-kind
-                                     :type type
-                                     :sign sign
-                                     :decimal-mantissa (decimal-mantissa)
-                                     :decimal-exponent decimal-exponent)))))
+                       (if (null sign)
+                           (make-literal client input-stream float-kind
+                                         :type type
+                                         :decimal-mantissa (decimal-mantissa)
+                                         :decimal-exponent decimal-exponent
+                                         :exponent-sign exponent-sign
+                                         :exponent (exponent))
+                           (make-literal client input-stream float-kind
+                                         :type type
+                                         :sign sign
+                                         :decimal-mantissa (decimal-mantissa)
+                                         :decimal-exponent decimal-exponent
+                                         :exponent-sign exponent-sign
+                                         :exponent (exponent)))
+                       (if (null sign)
+                           (make-literal client input-stream float-kind
+                                         :type type
+                                         :decimal-mantissa (decimal-mantissa)
+                                         :decimal-exponent decimal-exponent)
+                           (make-literal client input-stream float-kind
+                                         :type type
+                                         :sign sign
+                                         :decimal-mantissa (decimal-mantissa)
+                                         :decimal-exponent decimal-exponent))))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
@@ -271,6 +287,7 @@
                   ;; Numbers).
                   (go symbol))
                  ((eql char #\+)
+                  (setf sign 1)
                   (go sign))
                  ((eql char #\-)
                   (setf sign -1)
@@ -332,7 +349,7 @@
                  ((not char)
                   (return-from interpret-token
                     (alexandria:if-let ((value (numerator*)))
-                      (* sign value)
+                      (make-integer value)
                       (symbol))))
                  ((eql char #\.)
                   (go decimal-integer-final))
@@ -350,7 +367,7 @@
                (next-cond (char)
                  ((not char)
                   (return-from interpret-token
-                    (make-integer sign (decimal-mantissa))))
+                    (make-integer (decimal-mantissa))))
                  ((decimal-mantissa char)
                   (incf decimal-exponent)
                   (go float-no-exponent))
@@ -360,10 +377,7 @@
              integer ; [sign] digit+ (At least one digit is not decimal)
                (next-cond (char)
                  ((not char)
-                  (return-from interpret-token
-                    (make-literal client input-stream integer-kind
-                                  :sign sign
-                                  :magnitude (numerator*))))
+                  (return-from interpret-token (make-integer (numerator*))))
                  ((numerator* char)
                   (go integer))
                  ((eql char #\/)
@@ -377,10 +391,15 @@
                  ((not char)
                   (return-from interpret-token
                     (alexandria:if-let ((numerator (numerator*)))
-                      (make-literal client input-stream ratio-kind
-                                    :sign sign
-                                    :numerator numerator
-                                    :denominator (denominator*))
+                      (let ((denominator (denominator*)))
+                       (if (null sign)
+                           (make-literal client input-stream ratio-kind
+                                         :numerator numerator
+                                         :denominator denominator)
+                           (make-literal client input-stream ratio-kind
+                                         :sign sign
+                                         :numerator numerator
+                                         :denominator denominator)))
                       (symbol))))
                  ((denominator* char)
                   (go ratio)))
