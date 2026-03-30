@@ -228,9 +228,9 @@ Labels above arrows represent arguments and return values.}
 into the @commonlisp{} reader compatible interface and the extensible
 behavior protocol as well as typical function call patterns that arise
 when the functions @funref{read,@readerpackage{}},
-@funref{read-preserving-whitespace,@readerpackage},
-@funref{read-from-string,@readerpackage} and
-@funref{read-delimited-list,@readerpackage} are called by client code.
+@funref{read-preserving-whitespace,@readerpackage{}},
+@funref{read-from-string,@readerpackage{}} and
+@funref{read-delimited-list,@readerpackage{}} are called by client code.
 
 @menu
 * @commonlisp{} reader compatible interface::
