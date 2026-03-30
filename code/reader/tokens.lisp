@@ -115,28 +115,6 @@
 
 ;;; Token interpretation
 
-(declaim (inline reader-float-format))
-(defun reader-float-format (client &optional exponent-marker)
-  (ecase exponent-marker
-    ((nil #\e #\E)
-     (let ((default-format (state-value client '*read-default-float-format*)))
-       (case default-format
-         (single-float 'single-float)
-         (short-float 'short-float)
-         (double-float 'double-float)
-         (long-float 'long-float)
-         ;; *READ-DEFAULT-FLOAT-FORMAT* may be some other type
-         ;; specifier which the implementation chooses to allow.
-         (t
-          (if (subtypep default-format 'float) ; TODO maybe use (valid-state-value-p client '*read-default-float-format* default-format)? or is the protocol specified such that values returned by (state-value client '*read-default-float-format*) are by definition valid?
-              default-format
-              (values nil default-format))))))
-    ((#\f #\F) 'single-float)
-    ((#\s #\S) 'short-float)
-    ((#\d #\D) 'double-float)
-    ((#\l #\L) 'long-float)
-    ((#\r #\R) :custom)))
-
 (defmacro with-accumulators ((&rest specs) &body body)
   (loop for (name base) in specs
         for variable = (gensym (string name))
@@ -171,7 +149,7 @@
            (escape-range (first remaining-escape-ranges))
            (sign nil)
            (decimal-exponent 0)
-           (exponent-sign 1)
+           (exponent-sign nil)
            (exponent-marker nil)
            (position-package-marker-1 nil)
            (position-package-marker-2 nil)
@@ -207,48 +185,23 @@
                      (make-literal client input-stream integer-kind
                                    :sign sign :magnitude magnitude)))
                (make-float (exponentp)
-                 (multiple-value-bind (type default-format)
-                     (reader-float-format client exponent-marker)
-                   (when (null type)
-                     (multiple-value-bind (offset length)
-                         (if exponentp
-                             (values
-                              (- (+ 1 (numeric-token-length (exponent))))
-                              1)
-                             (values 0 0))
-                       (%recoverable-reader-error
-                        input-stream 'invalid-default-float-format
-                        :position-offset offset :length length
-                        :exponent-marker exponent-marker
-                        :float-format default-format
-                        :report 'use-replacement-float-format))
-                     (setf type 'single-float))
-                   ;; TODO: handle combinations better
-                   (if exponentp
-                       (if (null sign)
-                           (make-literal client input-stream float-kind
-                                         :type type
-                                         :decimal-mantissa (decimal-mantissa)
-                                         :decimal-exponent decimal-exponent
-                                         :exponent-sign exponent-sign
-                                         :exponent (exponent))
-                           (make-literal client input-stream float-kind
-                                         :type type
-                                         :sign sign
-                                         :decimal-mantissa (decimal-mantissa)
-                                         :decimal-exponent decimal-exponent
-                                         :exponent-sign exponent-sign
-                                         :exponent (exponent)))
-                       (if (null sign)
-                           (make-literal client input-stream float-kind
-                                         :type type
-                                         :decimal-mantissa (decimal-mantissa)
-                                         :decimal-exponent decimal-exponent)
-                           (make-literal client input-stream float-kind
-                                         :type type
-                                         :sign sign
-                                         :decimal-mantissa (decimal-mantissa)
-                                         :decimal-exponent decimal-exponent))))))
+                 (let* ((decimal-mantissa (decimal-mantissa))
+                        (args1            (list :decimal-mantissa decimal-mantissa
+                                                :decimal-exponent decimal-exponent))
+                        (args2            (if (null sign)
+                                              args1
+                                              (list* :sign sign args1))))
+                    (declare (dynamic-extent args1 args2))
+                    (if (not exponentp)
+                        (apply #'make-literal client input-stream default-float-kind args2)
+                        (let* ((args3 (list* :exponent-marker exponent-marker
+                                             :exponent        (exponent)
+                                             args2))
+                               (args4 (if (null exponent-sign)
+                                          args3
+                                          (list* :exponent-sign exponent-sign args3))))
+                          (declare (dynamic-extent args3 args4))
+                          (apply #'make-literal client input-stream explicit-format-float-kind args4))))))
           (macrolet ((next-cond ((char-var &optional return-symbol-if-eoi
                                                      (colon-go-symbol t))
                                  &body clauses)
@@ -420,6 +373,7 @@
                ;; [sign] decimal-digit* decimal-point decimal-digit+ exponent-marker
                (next-cond (char t)
                  ((eq char #\+)
+                  (setf exponent-sign 1)
                   (go float-exponent-sign))
                  ((eq char #\-)
                   (setf exponent-sign -1)

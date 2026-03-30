@@ -612,16 +612,16 @@
            (maybe-sign ()
              (multiple-value-bind (char type) (next-char t)
                (cond (suppress
-                      (values 1 0))
+                      (values nil nil t))
                      ;; #x10 where 1 is non-terminating macro character
                      ((not (member type '(:constituent :non-terminating-macro)))
-                      (digit-expected char type nil))
+                      (values nil (digit-expected char type nil) nil))
                      ((char= char #\-)
-                      (values -1 0))
+                      (values -1 0 t))
                      ((char= char #\+)
-                      (values 1 0))
+                      (values 1 0 t))
                      (t
-                      (values 1 (ensure-digit char type))))))
+                      (values nil (ensure-digit char type) t)))))
            (integer (empty-allowed /-allowed initial-value)
              (let ((value initial-value))
                (tagbody
@@ -669,25 +669,38 @@
                       nil)
                      (t
                       value)))))
-    (multiple-value-bind (sign numerator) (maybe-sign)
-      (flet ((make-ratio (sign numerator denominator)
-               (if (null denominator)
-                   (make-literal *client* stream ratio-kind
-                                 :sign sign :numerator numerator)
-                   (make-literal *client* stream ratio-kind
-                                 :sign sign
-                                 :numerator numerator
-                                 :denominator denominator))))
-        (if (null sign)
-            (make-ratio 0 0 nil)
+    ;; TODO: is this needed in multiple places? should we define top-level functions for this?
+    ;;       Could be inline functions?
+    (flet ((make-integer (sign magnitude)
+             (let* ((args1 (list :magnitude magnitude))
+                    (args2 (if (null sign)
+                               args1
+                               (list* :sign sign args1))))
+               (declare (dynamic-extent args1 args2))
+               (apply #'make-literal *client* stream integer-kind args2)))
+           (make-ratio (sign numerator denominator)
+             (let* ((args1 (list :numerator numerator :denominator denominator))
+                    (args2 (if (null sign)
+                               args1
+                               (list* :sign sign args1))))
+               (declare (dynamic-extent args1 args2))
+               (apply #'make-literal *client* stream ratio-kind args2))))
+      ;; TODO: this logic is wrong now
+      (multiple-value-bind (sign numerator more?) (maybe-sign)
+        (if (not more?) ; for example #b" and then recover
+            (make-integer sign 0)
             (multiple-value-bind (numerator slashp)
-                (integer (= sign 1) t numerator)
+                (integer (null sign) t numerator)
               (cond (suppress
                      nil) ; When READ-SUPPRESS, / has been consumed
                     (slashp
-                     (make-ratio sign numerator (read-denominator)))
+                     ;; DENOMINATOR can be null if we see a / not
+                     ;; followed by a valid digit and recover.
+                     (alexandria:if-let ((denominator (read-denominator)))
+                       (make-ratio sign numerator denominator)
+                       (make-integer sign numerator)))
                     (t
-                     (make-ratio sign numerator nil)))))))))
+                     (make-integer sign numerator)))))))))
 
 (defun sharpsign-b (stream char parameter)
   (declare (ignore char))
@@ -1282,16 +1295,7 @@
                    :position-offset -1 :report 'replace-namestring)
                   (unread-char (%character condition) stream)
                   ".")))))
-      (cond ((stringp expression)
-             (make-literal client stream pathname-kind
-                           :namestring expression))
-            (t
-             (%recoverable-reader-error
-              stream 'non-string-following-sharpsign-p
-              :position-offset -1
-              :expected-type 'string :datum expression
-              :report 'replace-namestring)
-             (make-literal client stream pathname-kind :namestring "."))))))
+      (make-literal client stream pathname-kind :namestring expression))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
