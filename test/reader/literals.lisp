@@ -8,9 +8,9 @@
 (defmethod eclector.reader:make-literal
     ((client custom-literal-client) (input-stream t) (kind t)
      &rest args &key &allow-other-keys)
-  (if (typep kind '(or eclector.reader::undecided-float-kind
+  (if (typep kind '(or eclector.reader::explicit-format-float-kind
                        eclector.reader::default-float-kind))
-      (call-next-method) ; TODO: do we have to capture this somehow? (list :via-undecided (call-next-method))
+      (call-next-method) ; TODO: do we have to capture this somehow? (list :via-explicit-format (call-next-method))
       (list* kind args)))
 
 (defun map-literal-test-cases (thunk cases)
@@ -52,7 +52,7 @@
   "Test construction of `float' literals."
   (do-literal-test-cases (stream)
       (eclector.reader:call-with-state-value
-       client (lambda () (eclector.reader:read stream))
+       eclector.base:*client* (lambda () (eclector.reader:read stream))
        '*read-default-float-format* 'single-float)
     `((".0"        (,eclector.reader::single-float-kind :decimal-mantissa 0
                                                         :decimal-exponent 1))
@@ -111,9 +111,9 @@
 (test custom-ratio-reader-macro-literals
   "Test construction of `ratio' literals via reader macro."
   (do-literal-test-cases (stream)
-    (eclector.reader:read stream)
-    `(("#b-10" (,eclector.reader::ratio-kind :sign -1 :numerator 2))
-      ("#b-10/11" (,eclector.reader::ratio-kind :sign -1 :denominator 3 :numerator 2)))))
+      (eclector.reader:read stream)
+    `(("#b-10"    (,eclector.reader::integer-kind :sign -1 :magnitude 2))
+      ("#b-10/11" (,eclector.reader::ratio-kind :sign -1 :numerator 2 :denominator 3)))))
 
 (test custom-pathname-literals
   "Test construction of `pathname' literals."

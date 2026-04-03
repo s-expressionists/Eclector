@@ -192,6 +192,7 @@
         (error-case (token expected expected-position expected-length)
           (error (do-it))
           (t
+           ;; Check EXPECTED against host reader if possible.
            (unless (or token-escapes
                        (zerop (length token))
                        (eq expected eclector.reader::*consing-dot*))
@@ -200,7 +201,11 @@
                                   (*read-default-float-format* 'single-float))
                               (setf (readtable-case *readtable*) case)
                               (read-from-string token)))))
-           (is (equal expected (do-it)))))))))
+           (let ((actual (do-it)))
+             (is (equal expected actual)
+                 "~@<For token ~S with escapes ~S read base ~S and case ~S, ~
+                  expected ~S but got ~S.~@:>"
+                 token token-escapes *read-base* case expected actual))))))))
 
 (test interpret-token.default/smoke
   "Smoke test for the default method on INTERPRET-TOKEN."

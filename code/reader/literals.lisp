@@ -126,6 +126,7 @@
 
 ;;; Taken from SBCL code
 ;;; Truncate EXPONENT if it's too large for a float.
+#+sbcl
 (defun truncate-exponent (exponent mantissa)
   ;; Work with base-2 logarithms to avoid conversions to floats, and
   ;; convert to base-10 conservatively at the end.  Use the least
@@ -146,7 +147,14 @@
                                   (* exponent-sign exponent)
                                   0)
                               decimal-exponent))
-                (exponent2 (truncate-exponent exponent1 decimal-mantissa)))
+                ;; Truncate EXPONENT1 so that the result is roughly in
+                ;; the right range but will still signal a
+                ;; `floating-point-overflow-in-float-literal' if
+                ;; appropriate.  The purpose of this truncation is to
+                ;; defend against large intermediate bignums that
+                ;; could exhaust the available memory.
+                (exponent2 #+sbcl (truncate-exponent exponent1 decimal-mantissa)
+                           #-sbcl exponent1))
            (* decimal-mantissa (expt 10 exponent2)))))
 
   (macrolet
@@ -161,7 +169,7 @@
                     (exponent-sign 1)
                     (exponent nil exponent?))
             (let ((magnitude (magnitude decimal-mantissa decimal-exponent
-                                        exponent? exponent-sign decimal-exponent)))
+                                        exponent? exponent-sign exponent)))
               (handler-case
                   (* sign (float magnitude ,prototype))
                 (floating-point-overflow ()
