@@ -5,7 +5,7 @@
     "The" "deprecated" "generic" "functions"
     (:symbol "eclector.reader:call-with-current-package")
     "has" "been" "removed" "." "Clients" "should" "use"
-    (:symbol "eclector.base:call-with-state-value") "with" "the"
+    (:symbol "eclector.reader:call-with-state-value") "with" "the"
     (:symbol "cl:*package*") "aspect" "."))
   (:item
    (:paragraph
