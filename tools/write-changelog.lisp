@@ -1,19 +1,15 @@
-#.(cl:progn
-    (cl:load (cl:merge-pathnames "../tools-for-build/read-changes" cl:*load-pathname*))
-    cl:nil)
-
-(cl:defpackage #:eclector.documentation.write-changelog
+(cl:defpackage #:eclector.tools.write-changelog
   (:use
    #:cl)
 
-  (:import-from #:eclector.tools-for-build.read-changes
+  (:import-from #:eclector.tools.read-changes
    #:read-changes
    #:punctuationp)
 
   (:export
    #:write-changelog))
 
-(cl:in-package #:eclector.documentation.write-changelog)
+(cl:in-package #:eclector.tools.write-changelog)
 
 (defun write-escaped (string stream)
   (loop for character across string

@@ -1,15 +1,15 @@
-(cl:defpackage #:eclector.tools-for-build.write-news
+(cl:defpackage #:eclector.tools.write-news
   (:use
    #:cl)
 
-  (:import-from #:eclector.tools-for-build.read-changes
+  (:import-from #:eclector.tools.read-changes
    #:punctuationp
    #:split-into-lines)
 
   (:export
    #:write-news))
 
-(cl:in-package #:eclector.tools-for-build.write-news)
+(cl:in-package #:eclector.tools.write-news)
 
 ;;; Write plaintext NEWS
 

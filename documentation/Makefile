@@ -35,8 +35,12 @@ generated-version.texi: ../data/version-string.sexp
                 --quit                                                                             \
 	  > $@
 
-generated-chapter-changelog.texi: ../data/changes.sexp write-changelog.lisp
-	$(SBCL) --script write-changelog.lisp > $@
+generated-chapter-changelog.texi: ../data/changes.sexp          \
+                                  ../tools/read-changes.lisp    \
+                                  ../tools/write-changelog.lisp
+	$(SBCL) --noinform                                  \
+                --load ../tools/read-changes.lisp           \
+                --script ../tools/write-changelog.lisp > $@
 
 $(NAME).info: $(INPUTS) $(PNGS) $(GENERATED_PNGS)
 	makeinfo --output $@ $(NAME).texi

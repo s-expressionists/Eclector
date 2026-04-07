@@ -1,4 +1,4 @@
-(cl:defpackage #:eclector.tools-for-build.read-changes
+(cl:defpackage #:eclector.tools.read-changes
   (:use
    #:cl)
 
@@ -7,7 +7,7 @@
    #:punctuationp
    #:split-into-lines))
 
-(cl:in-package #:eclector.tools-for-build.read-changes)
+(cl:in-package #:eclector.tools.read-changes)
 
 ;;; Read changes
 
