@@ -371,16 +371,16 @@
                         stream 'end-of-input-after-sharpsign-single-quote
                         :stream-position (stream-position condition)
                         :report 'inject-nil)
-                       nil)
+                       (return-from %sharpsign-single-quote nil))
                      (end-of-list (condition)
                        (%recoverable-reader-error
                         stream 'object-must-follow-sharpsign-single-quote
                         :position-offset -1 :report 'inject-nil)
                        (unread-char (%character condition) stream)
-                       nil)))))
-      (cond (suppress nil)
-            ((null name) nil)
-            (t (wrap-in-function client name))))))
+                       (return-from %sharpsign-single-quote nil))))))
+      (if suppress
+          nil
+          (wrap-in-function client name)))))
 
 ;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
 ;;; that is `#',(foo) is read as
