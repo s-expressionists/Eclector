@@ -31,7 +31,7 @@
 ;;; Main test suite and test entry point
 
 (def-suite :eclector.reader
-    :in :eclector)
+  :in :eclector)
 
 (defun run-tests ()
   (run! :eclector.reader))

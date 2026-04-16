@@ -257,7 +257,7 @@
                             input)
                    (unless restart
                      (return-from read-and-check-recover))
-                   (is (not (string= "" (princ-to-string restart)))
+                   (is (not (emptyp (princ-to-string restart)))
                        "~@<For input ~S expected restart to print ~
                         properly~@:>"
                        input)

@@ -202,17 +202,17 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
       ("X"               1   nil eclector.reader:numeric-parameter-supplied-but-ignored -2)
       ("X"               10  nil eclector.reader:numeric-parameter-supplied-but-ignored -3 2)
       (",foo"            nil nil (function (eclector.reader:unquote foo))   4 1
-       eclector.reader:unquote-in-invalid-context 0)
+                                 eclector.reader:unquote-in-invalid-context 0)
       ("(lambda () ,1)"  nil nil (function (lambda () (eclector.reader:unquote 1))) 14 1
                                  eclector.reader:unquote-in-invalid-context         11)
       ;; Valid
-      ("X"               nil nil (function X))
+      ("X"               nil nil (function x))
       ("CL-USER::X"      nil nil (function cl-user::x))
       ("NIL"             nil nil (function nil))
       ("(lambda ())"     nil nil (function (lambda ())))
       ("(lambda () `,1)" nil nil (function (lambda ()
-                                   (eclector.reader:quasiquote
-                                    (eclector.reader:unquote 1)))))
+                                             (eclector.reader:quasiquote
+                                              (eclector.reader:unquote 1)))))
       ("X "              nil nil (function x) 1 nil
                                  (function x) 1)
       ;; With *READ-SUPPRESS* bound to T
