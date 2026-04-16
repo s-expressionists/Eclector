@@ -361,26 +361,27 @@
     (unless (null parameter)
       (numeric-parameter-ignored
        stream 'sharpsign-single-quote parameter suppress))
-    (let* ((unquote-forbidden-p (if allow-unquote :keep t))
-           (name (with-quasiquotation-state
-                     (client 'sharpsign-single-quote :keep unquote-forbidden-p)
-                   (handler-case
-                       (read stream t nil t)
-                     ((and end-of-file (not incomplete-construct)) (condition)
-                       (%recoverable-reader-error
-                        stream 'end-of-input-after-sharpsign-single-quote
-                        :stream-position (stream-position condition)
-                        :report 'inject-nil)
-                       nil)
-                     (end-of-list (condition)
-                       (%recoverable-reader-error
-                        stream 'object-must-follow-sharpsign-single-quote
-                        :position-offset -1 :report 'inject-nil)
-                       (unread-char (%character condition) stream)
-                       nil)))))
-      (cond (suppress nil)
-            ((null name) nil)
-            (t (wrap-in-function client name))))))
+    (let ((unquote-forbidden-p (if allow-unquote :keep t)))
+      (multiple-value-bind (name name?)
+          (with-quasiquotation-state
+              (client 'sharpsign-single-quote :keep unquote-forbidden-p)
+            (handler-case
+                (values (read stream t nil t) t)
+              ((and end-of-file (not incomplete-construct)) (condition)
+                (%recoverable-reader-error
+                 stream 'end-of-input-after-sharpsign-single-quote
+                 :stream-position (stream-position condition)
+                 :report 'inject-nil)
+                (values nil nil))
+              (end-of-list (condition)
+                (%recoverable-reader-error
+                 stream 'object-must-follow-sharpsign-single-quote
+                 :position-offset -1 :report 'inject-nil)
+                (unread-char (%character condition) stream)
+                (values nil nil))))
+        (cond (suppress nil)
+              ((not name?) nil)
+              (t (wrap-in-function client name)))))))
 
 ;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
 ;;; that is `#',(foo) is read as

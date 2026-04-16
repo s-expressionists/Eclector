@@ -208,6 +208,7 @@ Tests the \"relaxed\" variant, that is SHARPSIGN-SINGLE-QUOTE, and the
       ;; Valid
       ("X"               nil nil (function X))
       ("CL-USER::X"      nil nil (function cl-user::x))
+      ("NIL"             nil nil (function nil))
       ("(lambda ())"     nil nil (function (lambda ())))
       ("(lambda () `,1)" nil nil (function (lambda ()
                                    (eclector.reader:quasiquote

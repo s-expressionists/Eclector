@@ -17,6 +17,10 @@
     "the" "above" "."))
   (:item
    (:paragraph
+    "Eclector" "no" "longer" "incorrectly" "reads" (:tt "#'nil") "as"
+    (:tt "nil") "."))
+  (:item
+   (:paragraph
     "The" "following" "names" "of" "condition" "types" "and" "reader"
     "functions" "are" "now" "exported:")
    (:paragraph

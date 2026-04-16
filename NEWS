@@ -9,6 +9,8 @@ Release 0.12 (not yet released)
   Instead, Eclector now signals an error of type
   ECLECTOR.READER:SYMBOL-IS-NOT-EXTERNAL for inputs like the above.
 
+* Eclector no longer incorrectly reads #'nil as nil.
+
 * The following names of condition types and reader functions are now exported:
 
   ECLECTOR.READER:DISPATCH-MACRO-CHARACTER-ERROR with reader
