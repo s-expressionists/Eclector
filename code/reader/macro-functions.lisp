@@ -362,7 +362,7 @@
       (numeric-parameter-ignored
        stream 'sharpsign-single-quote parameter suppress))
     (let ((unquote-forbidden-p (if allow-unquote :keep t)))
-      (multiple-value-bind (name name?)
+      (multiple-value-bind (expression-or-replacement wrap?)
           (with-quasiquotation-state
               (client 'sharpsign-single-quote :keep unquote-forbidden-p)
             (handler-case
@@ -380,8 +380,8 @@
                 (unread-char (%character condition) stream)
                 (values nil nil))))
         (cond (suppress nil)
-              ((not name?) nil)
-              (t (wrap-in-function client name)))))))
+              ((not wrap?) expression-or-replacement)
+              (t (wrap-in-function client expression-or-replacement)))))))
 
 ;;; This variation of SHARPSIGN-SINGLE-QUOTE allows unquote within #',
 ;;; that is `#',(foo) is read as
