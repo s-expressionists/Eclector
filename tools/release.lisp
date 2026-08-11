@@ -1,6 +1,6 @@
-#!/usr/bin/env -S cl -s alexandria -s split-sequence -s inferior-shell -s eclector-concrete-syntax-tree -L tools-for-build/read-changes.lisp -L tools-for-build/write-news.lisp
+#!/usr/bin/env -S cl -s alexandria -s split-sequence -s inferior-shell -s eclector-concrete-syntax-tree -L tools/read-changes.lisp -L tools/write-news.lisp
 
-(cl:defpackage #:eclector.tools-for-build.release
+(cl:defpackage #:eclector.tools.release
   (:use
    #:cl
    #:alexandria
@@ -8,10 +8,10 @@
 
   (:local-nicknames
    (#:shell   #:inferior-shell)
-   (#:changes #:eclector.tools-for-build.read-changes)
-   (#:news    #:eclector.tools-for-build.write-news)))
+   (#:changes #:eclector.tools.read-changes)
+   (#:news    #:eclector.tools.write-news)))
 
-(cl:in-package #:eclector.tools-for-build.release)
+(cl:in-package #:eclector.tools.release)
 
 ;;; Data
 
