@@ -4,7 +4,7 @@
  (:release "0.12" "2026-08-11"
   (:item
    (:paragraph
-    "The" "deprecated" "generic" "functions"
+    "The" "deprecated" "generic" "function"
     (:symbol "eclector.reader:call-with-current-package")
     "has" "been" "removed" "." "Clients" "should" "use"
     (:symbol "eclector.reader:call-with-state-value") "with" "the"
