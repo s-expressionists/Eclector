@@ -146,18 +146,17 @@
                 :delimiter close-char :report 'use-partial-list)))))))
 
 (defun %read-delimited-list (stream close-char)
-  (alexandria:when-let ((list-reader *list-reader*))
-    (return-from %read-delimited-list
-      (funcall list-reader stream close-char)))
-  ;; Continue with default list reader.
-  (let ((reversed-result '())
-        (tail nil))
-    (flet ((element (state value)
-             (case state
-               (:proper (push value reversed-result))
-               (:tail (setf tail value)))))
-      (%read-list-elements stream #'element nil nil close-char t))
-    (nreconc reversed-result tail)))
+  (alexandria:if-let ((list-reader *list-reader*))
+    (funcall list-reader stream close-char)
+    ;; Otherwise use default list reader.
+    (let ((reversed-result '())
+          (tail nil))
+      (flet ((element (state value)
+               (case state
+                 (:proper (push value reversed-result))
+                 (:tail (setf tail value)))))
+        (%read-list-elements stream #'element nil nil close-char t))
+      (nreconc reversed-result tail))))
 
 (defun read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
   (if recursive-p
