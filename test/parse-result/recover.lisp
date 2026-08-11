@@ -34,3 +34,18 @@
                         :children ()
                         :source   (8 . 11)))
             :source   (0 . 11))))))
+
+(test recover/consing-dot
+  "Test recovering from syntax errors related to the consing dot."
+  (mapc (alexandria:rcurry #'eclector.test:do-recover-test-case
+                           #'read-with-list-result-client)
+        '(("(. 1)"
+           (eclector.reader:invalid-context-for-consing-dot)
+           (:result   (1)
+            :children ((:reason   eclector.base:recover
+                        :children ()
+                        :source   (1 . 2))
+                       (:result   1
+                        :children ()
+                        :source   (3 . 4)))
+            :source   (0 . 5))))))

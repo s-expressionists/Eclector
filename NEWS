@@ -11,6 +11,20 @@ Release 0.12 (not yet released)
 
 * Eclector no longer incorrectly reads #'nil as nil.
 
+* Eclector now reports an invalid consing dot as skipped material by calling
+  ECLECTOR.READER:NOTE-SKIPPED-INPUT after recovering from the error. Examples
+  of an invalid consing dot include . 1 and (. foo). For clients interested in
+  parse results, the call to ECLECTOR.READER:NOTE-SKIPPED-INPUT leads to a call
+  to ECLECTOR.PARSE-RESULT:MAKE-SKIPPED-INPUT-RESULT so that such clients can
+  construct a representation of the skipped invalid consing dot.
+
+  Previously, the function ECLECTOR.READER:READ-MAYBE-NOTHING returned the
+  values nil :skip in the above situation but did not call
+  ECLECTOR.READER:NOTE-SKIPPED-INPUT so that clients would know that something
+  had been skipped but not receive a detailed indication of the skipped
+  material or reason and could thus not construct a representation of the
+  skipped material.
+
 * The following names of condition types and reader functions are now exported:
 
   ECLECTOR.READER:DISPATCH-MACRO-CHARACTER-ERROR with reader

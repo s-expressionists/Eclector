@@ -1763,20 +1763,22 @@ using a source range representation obtained via
 @genref{source-position,@basepackage{}}.
 
 Reasons for skipping input include comments, the @t{#+} and @t{#-}
-reader macros and @link{aspect-read-suppress,@t{*read-suppress*}}.  The
-aforementioned reasons are reflected by the value of the @var{reason}
-parameter as follows:
+reader macros, @link{aspect-read-suppress,@t{*read-suppress*}} and
+@ref{Recovering from errors,error recovery}.  The aforementioned
+reasons are reflected by the value of the @var{reason} parameter as
+follows:
 
 @multitable @columnfractions .5 .5
-@headitem Input                            @tab Value of the @var{reason} parameter
-@item Comment starting with @t{;}          @tab @t{(:line-comment . 1)}
-@item Comment starting with @t{;;}         @tab @t{(:line-comment . 2)}
-@item Comment starting with @math{n} @t{;} @tab @t{(:line-comment . @math{n})}
-@item Comment delimited by @t{#|} @t{|#}   @tab @t{:block-comment}
-@item @t{#+@emph{false-expression}}        @tab @t{(:sharpsign-plus . @emph{false-expression})}
-@item @t{#-@emph{true-expression}}         @tab @t{(:sharpsign-minus . @emph{true-expression})}
-@item @t{*read-suppress*} is true          @tab @t{*read-suppress*}
-@item A reader macro returns no values     @tab @t{:reader-macro}
+@headitem Input                              @tab Value of the @var{reason} parameter
+@item Comment starting with @t{;}            @tab @t{(:line-comment . 1)}
+@item Comment starting with @t{;;}           @tab @t{(:line-comment . 2)}
+@item Comment starting with @math{n} @t{;}   @tab @t{(:line-comment . @math{n})}
+@item Comment delimited by @t{#|} @t{|#}     @tab @t{:block-comment}
+@item @t{#+@emph{false-expression}}          @tab @t{(:sharpsign-plus . @emph{false-expression})}
+@item @t{#-@emph{true-expression}}           @tab @t{(:sharpsign-minus . @emph{true-expression})}
+@item @t{*read-suppress*} is true            @tab @t{cl:*read-suppress*}
+@item A reader macro returns no values       @tab @t{:reader-macro}
+@item An error recovery results in no object @tab @t{@basepackage{}:recover}
 @end multitable
 
 The default method returns @t{nil}, that is the skipped input is

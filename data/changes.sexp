@@ -21,6 +21,26 @@
     (:tt "nil") "."))
   (:item
    (:paragraph
+    "Eclector" "now" "reports" "an" "invalid" "consing" "dot"  "as" "skipped"
+    "material" "by" "calling" (:symbol "eclector.reader:note-skipped-input")
+    "after" "recovering" "from" "the" "error" "." "Examples" "of" "an"
+    "invalid" "consing" "dot" "include" (:tt ". 1") "and" (:tt "(. foo)") "."
+    "For" "clients" "interested" "in" "parse" "results" "," "the" "call" "to"
+    (:symbol "eclector.reader:note-skipped-input") "leads" "to" "a" "call"
+    "to" (:symbol "eclector.parse-result:make-skipped-input-result") "so"
+    "that" "such" "clients" "can" "construct" "a" "representation" "of" "the"
+    "skipped" "invalid" "consing" "dot" ".")
+   (:paragraph
+    "Previously" "," "the" "function"
+    (:symbol "eclector.reader:read-maybe-nothing") "returned" "the" "values"
+    (:tt "nil :skip") "in" "the" "above" "situation" "but" "did" "not" "call"
+    (:symbol "eclector.reader:note-skipped-input") "so" "that" "clients"
+    "would" "know" "that" "something" "had" "been" "skipped" "but" "not"
+    "receive" "a" "detailed" "indication" "of" "the" "skipped" "material"
+    "or" "reason" "and" "could" "thus" "not" "construct" "a" "representation"
+    "of" "the" "skipped" "material" "."))
+  (:item
+   (:paragraph
     "The" "following" "names" "of" "condition" "types" "and" "reader"
     "functions" "are" "now" "exported:")
    (:paragraph
