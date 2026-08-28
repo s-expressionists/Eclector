@@ -28,7 +28,9 @@ jobs:
           cp eclector.pdf           build/pdf/
           cp eclector.info          build/info/
           cp -r online-lisp-meeting-2020-presentation-slides build/
-          ( cd build/online-lisp-meeting-2020-presentation-slides && tar -xzf reveal.js.tar.gz && rm reveal.js.tar.gz )
+          ( cd build/online-lisp-meeting-2020-presentation-slides && tar -xzf reveal.js.tar.gz && rm reveal.js.tar.gz)
+          cp -r european-lisp-symposium-2026-presentation-slides build/
+          ( cd build/european-lisp-symposium-2026-presentation-slides && tar -xzf reveal.js.tar.gz && rm reveal.js.tar.gz)
 
       - name: Create artifact
         uses: actions/upload-pages-artifact@v3
