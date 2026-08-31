@@ -24,25 +24,6 @@
 
 ;;; Default methods for the reader state protocol
 
-(defmethod valid-state-value-p ((client t) (aspect (eql '*package*)) (value t))
-  (typep value '(or package alexandria:string-designator)))
-
-(defmethod state-value ((client t) (aspect (eql '*package*)))
-  *package*)
-
-(defmethod (setf state-value) ((new-value t)
-                               (client t)
-                               (aspect (eql '*package*)))
-  (setf *package* (find-package new-value))
-  new-value)
-
-(defmethod call-with-state-value ((client t)
-                                  (thunk t)
-                                  (aspect (eql '*package*))
-                                  (value t))
-  (let ((*package* (find-package value)))
-    (funcall thunk)))
-
 (macrolet ((define (aspect &key (variable aspect) predicate type)
              `(progn
                 (defmethod valid-state-value-p ((client t)
@@ -72,6 +53,7 @@
                     (funcall thunk))))))
   (define cl:*readtable*              :variable eclector.reader:*readtable*
                                       :predicate eclector.readtable:readtablep)
+  (define *package*                   :predicate packagep)
   (define *read-suppress*)
   (define *read-eval*)
   (define *features*                  :predicate listp)
@@ -129,6 +111,10 @@
     designator)
   (:method ((client t) (designator string))
     (find-standard-character designator)))
+
+(defgeneric find-package (client designator)
+  (:method ((client t) designator)
+    (cl:find-package designator)))
 
 (defgeneric make-structure-instance (client name initargs))
 

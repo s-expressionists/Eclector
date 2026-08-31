@@ -625,6 +625,21 @@ to any particular client but is specialized to @var{designator} being a
 @t{character} just returns @var{designator}.
 @end deffn
 
+@defgena {find-package,@readerpackage{}} client designator
+
+This generic function is called by the reader to find the package with
+the given name. If no package with the given name exists, this function
+should return @t{nil}, as @t{cl:find-package} does.
+
+Unlike the standard @t{cl:find-package}, this function only needs to
+accept string designators, and not package objects. Because
+the reader only ever calls it with string designators, it does not have
+any defined behavior when called with other arguments.
+
+A default method on this generic function that is not specialized to any
+particular client uses @t{cl:find-package}.
+@end deffn
+
 @defgena {make-structure-instance,@readerpackage{}} client name initargs
 
 This generic function is called by the default @t{#S} reader
@@ -835,14 +850,13 @@ aspect that is recognized by @var{client}.  At least the aspects listed
 in the @ref{table:minimal-reader-state-aspects,,minimal reader state
 aspects table} must be recognized by any client.
 
-With the exceptions of @link{aspect-readtable,@t{cl:*readtable*}} and
-@link{aspect-package,@t{cl:*package*}}, the default methods on this
-generic function recognize state aspects and implement type restrictions
-informed by the @commonlisp{} specification:
+With the exception of @link{aspect-readtable,@t{cl:*readtable*}},
+the default methods on this generic function recognize state aspects
+and implement type restrictions informed by the @commonlisp{} specification:
 @multitable @columnfractions .3 .7
 @headitem Aspect                             @tab Type
 @item     @t{cl:*readtable*}                 @tab @t{(satisfies @rtpackage{}:readtablep)}
-@item     @t{cl:*package*}                   @tab @t{(or cl:package cl:symbol cl:string cl:character)} (package designator)
+@item     @t{cl:*package*}                   @tab @t{cl:package}
 @item     @t{cl:*read-suppress*}             @tab @t{t} (generalized Boolean)
 @item     @t{cl:*read-eval*}                 @tab @t{t} (generalized Boolean)
 @item     @t{cl:*features*}                  @tab @t{list} (proper list)
@@ -860,13 +874,6 @@ Return the current value of the reader state aspect designated by
 @var{client}.  At least the aspects listed in the
 @ref{table:minimal-reader-state-aspects,,minimal reader state aspects
 table} must be recognized by any client.
-
-The @link{aspect-package,@t{cl:*package*}} aspect mandates further
-explanation: When the client uses only the default methods of the reader
-state protocol, the return value of this generic function for the
-@t{cl:*package*} aspect is of type @speclink{t,package} which is a
-strict subtype of the type of valid values for this aspect.  In other
-words, the defaults coerce package designators to package objects.
 @end deffn
 
 @defgena{(setf state-value),@readerpackage{}} new-value client aspect
@@ -884,14 +891,6 @@ table} must be recognized by any client.
 that
 @code{(@genref{valid-state-value-p,@readerpackage{}} @var{client} @var{aspect} @var{value})}
 must return @emph{true}.
-
-The @link{aspect-package,@t{cl:*package*}} aspect mandates further
-explanation: When the client uses only the default methods of the reader
-state protocol, the method on this generic function which handles the
-@t{cl:*package*} aspect coerces @var{new-value} from designators to
-package objects so that a subsequent
-@genref{state-value,@readerpackage{}} call returns the designated
-package object.
 @end deffn
 
 @defgena{call-with-state-value,@readerpackage{}} client thunk aspect value
@@ -918,13 +917,6 @@ During the call to @var{thunk} and absent any intervening calls to
 @code{(@genref{state-value,@readerpackage{}} @var{client} @var{aspect})}
 must evaluate to @var{value}.
 @end itemize
-
-When @sysname{} calls this generic function with @t{cl:*package*} as the
-value of @var{aspect}, the @var{value} is a always a string designator
-and never a package object.  The default method on this generic function
-coerces such string designators to package objects so that a subsequent
-@genref{state-value,@readerpackage{}} call returns the designated
-package object.
 @end deffn
 
 @cindex quasiquote
